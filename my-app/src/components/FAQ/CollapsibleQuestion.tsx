@@ -1,6 +1,6 @@
 import React, { useState, ReactElement } from 'react';
 import { Collapse, Button, Card, CardBody, CardHeader } from 'reactstrap';
-import styles from './CollapsableQuestion.module.scss';
+import styles from './CollapsibleQuestion.module.scss';
 
 type Props = {
   readonly question: string;

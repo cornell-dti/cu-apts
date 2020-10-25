@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import CollapsableQuestion from './components/FAQ/CollapsableQuestion';
+import CollapsibleQuestion from './components/FAQ/CollapsibleQuestion';
 
 function App() {
 
@@ -22,7 +22,7 @@ function App() {
   return (
     <div className="App">
       <div className="faq-questions">
-        {data.map((questionSet, index) => (<CollapsableQuestion key={index} {...questionSet} />))}
+        {data.map((questionSet, index) => (<CollapsibleQuestion key={index} {...questionSet} />))}
       </div>
     </div>
   );
