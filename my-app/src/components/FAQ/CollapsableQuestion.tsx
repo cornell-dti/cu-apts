@@ -15,7 +15,7 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
 
   return (
     <div>
-      <Card>
+      <Card className={styles.card}>
 
         <CardHeader className={styles.header}>
           <div className={styles.question}>{question}</div>
