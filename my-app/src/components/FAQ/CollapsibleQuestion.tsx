@@ -17,14 +17,14 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
     <div>
       <Card className={styles.card}>
 
-        <CardHeader className={styles.header}>
+        <CardHeader className={styles.cardHeader}>
           <div className={styles.question}>{question}</div>
-          {!isOpen && <Button className={styles.Button} style={styles} color="primary" onClick={toggle}>+</Button>}
-          {isOpen && <Button className={styles.Button} style={styles} color="primary" onClick={toggle}>-</Button>}
+          {!isOpen && <Button className={styles.toggleBtn} style={styles} color="primary" onClick={toggle}>+</Button>}
+          {isOpen && <Button className={styles.toggleBtn} style={styles} color="primary" onClick={toggle}>-</Button>}
         </CardHeader>
 
         <Collapse {...collapseProps}>
-          <CardBody className={styles.question}>
+          <CardBody className={styles.answer}>
             {answer}
           </CardBody>
         </Collapse>

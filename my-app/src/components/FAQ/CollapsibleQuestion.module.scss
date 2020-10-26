@@ -2,7 +2,7 @@
   border-top: none !important;
 }
 
-Button {
+.toggleBtn {
   margin-right: 10px;
   display: inline-block;
   padding: 4px 10px !important;
@@ -12,9 +12,14 @@ Button {
 .question {
   display: inline-block;
   text-align: left;
+  align-self: flex-start;
 }
 
-.header {
+.cardHeader {
   display: flex;
   justify-content: space-between !important;
+}
+
+.answer {
+  text-align: left;
 }
