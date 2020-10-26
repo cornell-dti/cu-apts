@@ -28,10 +28,10 @@ const useStyles = makeStyles((theme) => ({
       alignItems: 'center',
       justifyContent: 'center',
     },
-    inputRoot: {
+    root: {
       color: 'inherit',
     },
-    inputInput: {
+    input: {
       padding: theme.spacing(1, 1, 1, 0),
       // vertical padding + font size from searchIcon
       paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
@@ -53,8 +53,8 @@ const useStyles = makeStyles((theme) => ({
             <InputBase
               placeholder="Search by any location"
               classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
+                root: classes.root,
+                input: classes.input,
               }}
               inputProps={{ 'aria-label': 'search' }}
             />
