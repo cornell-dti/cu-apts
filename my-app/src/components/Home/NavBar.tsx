@@ -22,11 +22,11 @@ const NavBar= (): ReactElement => {
         <ul className="navbar-nav ml-auto w-100 justify-content-end">
           <li className="nav-item active">
             {toggleMenu? <a className="nav-link" href="/faq">FAQ</a> : 
-              <button type="button" className="btn btn-outline-dark">FAQ</button> }
+              <button type="button" className="btn btn-lg btn-outline-dark">FAQ</button> }
           </li>
           <li className="nav-item active">
             {toggleMenu? <a className="nav-link" href="#">Resources</a> : 
-              <button type="button" className="btn btn-outline-dark" style={{marginLeft: "10%"}}>Resources</button> }
+              <button type="button" className="btn btn-lg btn-outline-dark" style={{marginLeft: "10%"}}>Resources</button> }
           </li>
         </ul>
       </div>  
