@@ -1,64 +1,17 @@
 import React, {ReactElement} from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import SearchIcon from '@material-ui/icons/Search';
-import InputBase from '@material-ui/core/InputBase';
-
-
-const useStyles = makeStyles((theme) => ({
-
-    search: {
-      position: 'relative',
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: 'white',
-      marginRight: '20%',
-      marginLeft: '20%',
-      marginTop: '15%',
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: '20%',
-        width: '60%',
-      },
-    },
-    searchIcon: {
-      padding: theme.spacing(0, 2),
-      height: '100%',
-      position: 'absolute',
-      pointerEvents: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    root: {
-      color: 'inherit',
-    },
-    input: {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-      transition: theme.transitions.create('width'),
-      width: '100%',
-      [theme.breakpoints.up('md')]: {
-        width: '20ch',
-      },
-    },
-  }));
-
 
   const SearchBar=(): ReactElement => {
-    const classes = useStyles();
-    return <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon />
-            </div>
-            <InputBase
-              placeholder="Search by any location"
-              classes={{
-                root: classes.root,
-                input: classes.input,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
+    return <div className="search input-group mb-3">
+    <input type="text" className="form-control" placeholder="Search by any location..." aria-label="Search locations" aria-describedby="basic-addon2"/>
+    <div className="input-group-append">
+      <button className="btn btn-light" type="button">
+      <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+      <path fillRule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+    </svg>
+      </button>
     </div>
+  </div>
     }
 
 export default SearchBar;

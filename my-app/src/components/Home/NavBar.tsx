@@ -1,41 +1,40 @@
 import React, { ReactElement } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
 import icon from './home-icon.png'
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  button: {
-    '& > *': {
-      margin: theme.spacing(1),
-    },
-  },
-}));
-
 const NavBar= (): ReactElement => {
-  const classes = useStyles();
+  const [toggleMenu, setToggle] = React.useState(false)
+  const clickToggle = (): void => {
+    setToggle(!toggleMenu)
+  }
+
+  const show: string = toggleMenu? "show" : "";
 
   return (
-    <div className={classes.root}>
-      <Grid container spacing={3}>
-        <Grid item xs={8}>
-        <div>
-            
-            <h1><img className='Logo'src={icon} alt='logo'/>CU Housing</h1>
-            <h4>Search for off-campus housing, review apartments, and share feedback!</h4>
-        </div>
-        </Grid>
-        <Grid item xs={4} >
-            <div className={classes.button}> 
-                <Button variant="outlined">FAQ</Button>
-                <Button variant="outlined">Resources</Button>
-            </div>
-        </Grid>
-      </Grid>
-    </div>
+    <div>
+    <nav className="navbar navbar-expand-lg navbar-light">
+      <a className="navbar-brand" href="/">
+      <h1><img src={icon} width="40" height="40" alt="home icon"/> CU Housing</h1>
+      </a>
+      <button className="navbar-toggler collapsed" onClick={clickToggle} type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span className="navbar-toggler-icon"></span>
+      </button>
+      <div className={"collapse navbar-collapse "+ show} id="navbarNav">
+        <ul className="navbar-nav ml-auto w-100 justify-content-end">
+          <li className="nav-item active">
+            {toggleMenu? <a className="nav-link" href="/faq">FAQ</a> : 
+              <button type="button" className="btn btn-outline-dark">FAQ</button> }
+          </li>
+          <li className="nav-item active">
+            {toggleMenu? <a className="nav-link" href="#">Resources</a> : 
+              <button type="button" className="btn btn-outline-dark" style={{marginLeft: "10%"}}>Resources</button> }
+          </li>
+        </ul>
+      </div>  
+    </nav>
+    <div>
+    <h5>Search for off-campus housing, review apartments, and share feedback!</h5>
+  </div>
+  </div>
   );
 }
 
