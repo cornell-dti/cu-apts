@@ -16,6 +16,10 @@ body {
     margin-bottom: 8px
 }
 
+.navbar-toggler {
+    margin-bottom: 0.5rem;
+}
+
 .homepage-description {
     padding-left: 16px;
 }
@@ -36,6 +40,42 @@ body {
       margin-right: 5%;
     }
   }
+
+@media only screen and (max-width: 600px) and (min-width: 360px) {
+.navbar {
+    h1 {
+        font-size: 1.5em;
+    }
+}
+.homepage-description {
+    h5 {
+        font-size: 0.9em;
+    }
+}
+}
+    
+// to get the toggler on the same line for smaller phone screens
+@media only screen and (max-width: 360px) {
+    .navbar-toggler {
+        font-size: 1rem;
+    }
+}
+
+// for iPhone 5
+@media only screen and (max-width: 320px) {
+    .navbar {
+        h1 {
+            font-size: 1.2em;
+        }
+    }
+
+    .homepage-description {
+        h5 {
+            font-size: 0.85em;
+        }
+    }
+
+}
 
 .links {
     text-decoration: none;
