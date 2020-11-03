@@ -1,6 +1,8 @@
 import React, { useState, ReactElement } from 'react';
 import { Collapse, Button, Card, CardBody, CardHeader } from 'reactstrap';
-import styles from './CollapsibleQuestion.module.scss';
+import styles from './CollapsibleFAQ.module.scss';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 
 type Props = {
   readonly question: string;
@@ -17,10 +19,9 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
     <div>
       <Card className={styles.card}>
 
-        <CardHeader className={styles.cardHeader}>
+        <CardHeader className={styles.questionCardHeader}>
           <div className={styles.question}>{question}</div>
-          {!isOpen && <Button className={styles.toggleBtn} style={styles} color="primary" onClick={toggle}>+</Button>}
-          {isOpen && <Button className={styles.toggleBtn} style={styles} color="primary" onClick={toggle}>-</Button>}
+          <Button className={styles.toggleBtn} style={styles} color="transparent" onClick={toggle}>{isOpen ? <RemoveIcon /> : <AddIcon />}</Button>
         </CardHeader>
 
         <Collapse {...collapseProps}>
