@@ -30,7 +30,7 @@ export default function CollapsibleHeader({ headerName, faqs }: Props): ReactEle
           <Button className={isOpen ? styles.sectionToggleBtnOpen :
             styles.sectionToggleBtnClosed} style={styles} color="transparent"
             onClick={toggle}>{isOpen ? <ExpandMoreIcon fontSize="large" /> : <NavigateNextIcon fontSize="large" />}</Button>
-          <div className={isOpen ? styles.questionOpen : styles.questionClosed}>{headerName}</div>
+          <div className={isOpen ? styles.sectionOpen : styles.sectionClosed}>{headerName}</div>
         </CardHeader>
 
         <Collapse {...collapseProps}>

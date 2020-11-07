@@ -12,6 +12,7 @@
   vertical-align: baseline !important;
 }
 
+/* CollapsibleHeader*/
 Button:focus {
   box-shadow: none !important;
 }
@@ -20,23 +21,23 @@ Button:focus {
   color: #FFF !important;
 }
 
-/* CollapsibleHeader*/
 .sectionCardHeaderOpen {
   background-color: #B94630 !important;
 }
 
-/* CollapsibleQuestion*/
-.questionOpen, .questionClosed {
+.sectionOpen, .sectionClosed {
   display: inline-block;
   text-align: left;
   align-self: flex-start;
   font-size: 18px;
+  vertical-align: middle !important;
 }
 
-.questionOpen {
+.sectionOpen {
   color: #FFF;
 }
 
+/* CollapsibleQuestion*/
 .question {
   padding-top: 6px;
 }
