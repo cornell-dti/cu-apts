@@ -86,3 +86,19 @@ body {
     color: white;
     text-decoration: none
 }
+
+
+.hamburgerDropDown {
+    position: fixed;
+    margin-bottom: 8px;
+    padding: 1%;
+    right: 7%;
+    width: 50vw;
+    background-color: white;
+    border: 1px solid bisque;
+    list-style: none;
+  }
+
+.nav-button-margin {
+    margin-bottom: 0.5rem;
+}
