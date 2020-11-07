@@ -77,28 +77,39 @@ body {
 
 }
 
-.links {
+.links, .links:hover {
     text-decoration: none;
     color: black
 }
 
-.links:hover {
-    color: white;
-    text-decoration: none
-}
 
 
-.hamburgerDropDown {
-    position: fixed;
-    margin-bottom: 8px;
-    padding: 1%;
-    right: 7%;
-    width: 50vw;
-    background-color: white;
-    border: 1px solid bisque;
-    list-style: none;
-  }
 
 .nav-button-margin {
     margin-bottom: 0.5rem;
+}
+
+@media (min-width: 992px) {
+    .navbar-expand-lg {
+        justify-content: space-between;
+    }
+}
+
+.dropdown {
+    .btn-secondary {
+        color: white;
+        background-color: transparent;
+        margin-bottom: 0.5rem
+    }
+
+    .btn-secondary:focus,  .btn-secondary.focus{
+        background-color: transparent;
+        box-shadow: none;
+        border-color: #545b62
+    }
+}
+
+.navbar-toggler-icon {
+    width: 2em;
+    height: 2em
 }
