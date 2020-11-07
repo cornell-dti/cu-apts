@@ -54,7 +54,7 @@ const NavBar= (): ReactElement => {
       <h1><img className="logo" src={icon} width="40" height="auto" alt="home icon"/> CU Housing</h1>
       </a>
 
-      {width > 1200 ? displayNavBar() : displayMobileMenu()}
+      {width > 600 ? displayNavBar() : displayMobileMenu()}
       
     </nav>
     
