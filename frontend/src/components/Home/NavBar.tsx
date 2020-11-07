@@ -11,7 +11,7 @@ const NavBar= (): ReactElement => {
   const [width, setWidth] = React.useState(0)
   const update = (): void => {
     setWidth(window.innerWidth)
-    if (width > 1200) {
+    if (width > 600) {
       setToggle(false)
     }
   }
