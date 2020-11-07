@@ -33,6 +33,11 @@ body {
 
 }
 
+.navbar-toggler-icon {
+    width: 2em;
+    height: 2em
+}
+
 @media only screen and (max-width: 600px) {
     .search {
       width: 90%;
@@ -74,15 +79,16 @@ body {
             font-size: 0.85em;
         }
     }
-
+    .navbar-toggler-icon {
+        width: 1.5em;
+        height: 1.5em
+    }
 }
 
 .links, .links:hover {
     text-decoration: none;
     color: black
 }
-
-
 
 
 .nav-button-margin {
@@ -109,7 +115,3 @@ body {
     }
 }
 
-.navbar-toggler-icon {
-    width: 2em;
-    height: 2em
-}
