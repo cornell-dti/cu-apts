@@ -1,8 +1,10 @@
-import React from 'react';
-import './App.css';
+import React, {ReactElement} from 'react';
+import './App.scss';
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import HomePage from './pages/HomePage'
 import CollapsibleQuestion from './components/FAQ/CollapsibleQuestion';
 
-function App() {
+const App = (): ReactElement => {
 
   const data = [
     {
@@ -18,13 +20,22 @@ function App() {
       answer: "Anim pariatur cliche reprehenderit enim eiusmod high life accusamus terry richardson ad squid. Nihilanim keffiyeh helvetica, craft beer labore wes anderson crednesciunt sapiente ea proident"
     },
   ]
-
-  return (
-    <div className="App">
+  
+  const Faq = (): ReactElement => {
+    return <div className="App">
       <div className="faq-questions">
         {data.map((questionSet, index) => (<CollapsibleQuestion key={index} {...questionSet} />))}
       </div>
     </div>
+  }
+
+  return (
+    <Router>
+      <Switch>
+        <Route exact path ='/' component={HomePage}/> 
+        <Route exact path ='/faq' component={Faq}/> 
+      </Switch>
+    </Router>
   );
 }
 
