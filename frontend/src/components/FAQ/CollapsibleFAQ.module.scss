@@ -1,0 +1,52 @@
+
+.card {
+  border-top: none !important;
+  text-align: left !important;
+}
+
+.toggleBtn, .sectionToggleBtnOpen, .sectionToggleBtnClosed {
+  margin-right: 14px;
+  display: inline-block;
+  padding: 4px 0px !important;
+  width: 34px;
+  vertical-align: baseline !important;
+}
+
+/* CollapsibleHeader*/
+Button:focus {
+  box-shadow: none !important;
+}
+
+.sectionToggleBtnOpen {
+  color: #FFF !important;
+}
+
+.sectionCardHeaderOpen {
+  background-color: #B94630 !important;
+}
+
+.sectionOpen, .sectionClosed {
+  display: inline-block;
+  text-align: left;
+  align-self: flex-start;
+  font-size: 18px;
+  vertical-align: middle !important;
+}
+
+.sectionOpen {
+  color: #FFF;
+}
+
+/* CollapsibleQuestion*/
+.question {
+  padding-top: 6px;
+}
+
+.questionCardHeader {
+  display: flex;
+  justify-content: space-between !important;
+}
+
+.answer {
+  text-align: left;
+}
