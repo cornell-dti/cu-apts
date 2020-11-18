@@ -27,10 +27,7 @@ const FaqPage= (): ReactElement => {
     React.useEffect(() => {
       axios.get("http://localhost:8080/")
       .then(response => {
-        console.log(response);
         setData(response.data)
-        console.log(data);
-        
       })
       .catch(error => {
         console.log('error',error);
