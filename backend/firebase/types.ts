@@ -4,3 +4,8 @@ export type Faq = {
     answer: string
 }
 
+export type Section = {
+    headerName: string;
+    faqs: [Faq]
+}
+
