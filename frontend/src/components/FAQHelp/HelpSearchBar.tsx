@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 
 const SearchBar = (): ReactElement => {
-  return <div className="search input-group mb-3">
-    <input type="text" className="form-control" placeholder="Search by any location..." aria-label="Search locations" aria-describedby="basic-addon2" />
+  return <div className="faq-help-search input-group mb-3">
+    <input type="text" className="form-control" placeholder="Search for any question!" aria-label="Search locations" aria-describedby="basic-addon2" />
     <div className="input-group-append">
       <button className="btn btn-light" type="button">
         <svg width="1em" height="1em" viewBox="0 0 16 16" className="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

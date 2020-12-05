@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import HomePage from './pages/HomePage'
+import FAQPage from './pages/FAQPage'
 import CollapsibleHeader from './components/FAQ/CollapsibleHeader';
 
 const App = (): ReactElement => {
@@ -38,7 +39,8 @@ const App = (): ReactElement => {
     <Router>
       <Switch>
         <Route exact path='/' component={HomePage} />
-        <Route exact path='/faq' component={Faq} />
+        <Route exact path='/faq' component={FAQPage} />
+        {/* <Route exact path='/faq' component={Faq} /> */}
       </Switch>
     </Router>
   );

@@ -38,6 +38,35 @@ body {
     height: 2em
 }
 
+// FAQ Page
+
+.faq-page {
+    padding: 3vh 3vw; 
+    height: 100vh; 
+}
+.faq-navbar {
+    padding: 0 !important;
+}
+
+.faq-help {
+    margin: 20px 0 30px 0!important;
+}
+
+.faq-help-search {
+    width: 60%;
+    margin: 10px auto 20px auto;
+}
+
+.faq-header-title {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.faq-header-title > h2 {
+    font-size: 22px;
+}
+
+
 @media only screen and (max-width: 600px) {
     .search {
       width: 90%;
@@ -87,7 +116,12 @@ body {
 
 .links, .links:hover {
     text-decoration: none;
-    color: black
+    color: black;
+}
+
+
+.faq-button:hover > .links {
+    color: white !important;
 }
 
 
@@ -114,4 +148,3 @@ body {
         border-color: #545b62
     }
 }
-
