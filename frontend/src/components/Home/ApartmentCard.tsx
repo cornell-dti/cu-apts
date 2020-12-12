@@ -55,10 +55,10 @@ const ApartmentCard = (props: Props): ReactElement =>{
 
   function renderOptionalTopReviewBar(){
     if(props.topReviewDisplay){
-    return<div className="text-center font-weight-bold"style={{backgroundColor:"#388893", position:"absolute", right:"0px", top:"100px", width:"105px", height: "27px", color:"white"}}><img src={WhiteHeartIcon} className="pr-2" style={{paddingBottom: "3px"}}></img>{props.topReviewDisplay}</div>;
+    return<div className="text-center font-weight-bold review-rectangle"style={{position:"absolute", right:"0px", top:"100px", width:"105px" }}><img src={WhiteHeartIcon} className="pr-2" style={{paddingBottom: "3px"}}></img>{props.topReviewDisplay}</div>;
     }
     else if(props.percentReview){
-    return <div className="text-center font-weight-bold" style={{backgroundColor:"#388893", position:"absolute", right:"0px", top:"100px", width:"82px", height: "27px", color:"white"}}>{props.percentReview}<img src={SmileyFace} className="pl-2" style={{paddingBottom: "4px"}}></img></div>;
+    return <div className="text-center font-weight-bold review-rectangle" style={{position:"absolute", right:"0px", top:"100px", width:"82px"}}>{props.percentReview}<img src={SmileyFace} className="pl-2" style={{paddingBottom: "4px"}}></img></div>;
     }
   }
 
@@ -71,7 +71,7 @@ const ApartmentCard = (props: Props): ReactElement =>{
         {renderAdressSection()}
         {props.company && <CardSubtitle tag="h6" className="pb-4">{props.company}</CardSubtitle>}
         <CardSubtitle tag="h6" className="pb-2" style={{color:"#495057"}}>{props.bedsAndBaths}</CardSubtitle>
-        {props.amenities && <div style={{width:100, height:30, border:1, backgroundColor:"#8CDCA3", color:"#495057", borderRadius:"200px"}} className="text-center mt-2">AMENITIES</div>}
+        {props.amenities && <div style={{}} className="text-center mt-2 amenities-button">AMENITIES</div>}
         {props.numReviews && <CardText className="pb-2" style={{position:"absolute", right:"10px", bottom:"10px", fontSize:"14px"}}>{props.numReviews}</CardText>}
         </CardBody>
       </Card>
