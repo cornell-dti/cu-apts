@@ -42,6 +42,7 @@ const NavBar = (): ReactElement => {
 
   const displayNavBar = (): ReactElement => {
     return (
+<<<<<<< HEAD
       <ul className={`nav ${styles.navButtonMargin}`}>
         <li>
           <button type="button" className="btn btn-lg btn-outline-dark">
@@ -50,6 +51,17 @@ const NavBar = (): ReactElement => {
             </Link>
           </button>
         </li>
+=======
+      <ul className='nav nav-button-margin' >
+              <li>
+                <button type="button" className="btn btn-lg btn-outline-dark mr-4" > 
+                <Link to='/faq' className="links">FAQ</Link>
+                </button>
+                <button type="button" className="btn btn-lg btn-outline-dark">
+                  <Link to='' className="links">Write Review</Link>
+                </button>
+              </li>
+>>>>>>> Made homepage listings page based off of initial homepage
       </ul>
     );
   };

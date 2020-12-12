@@ -6,6 +6,17 @@ body {
 .links:hover {
   text-decoration: none;
   color: black;
+.Home {
+    padding: 7vh 7vw; 
+    height: 100vh; 
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color:#F6F6F6;
+}
+
+.logo {
+    margin-bottom: 8px
 }
 
 .dropdown {
@@ -21,4 +32,14 @@ body {
     box-shadow: none;
     border-color: #545b62;
   }
+}
+:focus {
+    outline: 0 !important;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
+    border-color: #ced4da !important;
+  }
+
+.divider{
+    border: 3px solid black;
+    width: 201px;
 }
