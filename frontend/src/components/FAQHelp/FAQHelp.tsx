@@ -6,9 +6,9 @@ const FAQHelp = (): ReactElement => {
   return (
 
     <div className={styles.helpComponent}>
-      <p className={styles.helpTitle}>
+      <h2 className={styles.helpTitle}>
         Need Help?
-      </p>
+      </h2>
       <HelpSearchBar />
     </div>
   )
