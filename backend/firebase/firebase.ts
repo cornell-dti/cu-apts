@@ -18,5 +18,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 let db = firebase.firestore();
+let increment = firebase.firestore.FieldValue.increment(1)
 
-export  {db};
+export  {db, increment};
