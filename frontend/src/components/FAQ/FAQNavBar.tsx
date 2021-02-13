@@ -2,7 +2,6 @@ import React, { ReactElement } from 'react';
 import icon from '../images/home-icon.png'
 import { Link } from 'react-router-dom'
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import styles from './FAQNavBar.module.scss';
 
 const FAQNavBar = (): ReactElement => {
   const [toggleMenu, setToggle] = React.useState(false)
