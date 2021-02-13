@@ -7,10 +7,9 @@ import RemoveIcon from '@material-ui/icons/Remove';
 type Props = {
   readonly question: string;
   readonly answer: string;
-}
+};
 
 export default function CollapsableQuestion({ answer, question }: Props): ReactElement {
-
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const collapseProps = { isOpen: isOpen };
@@ -18,20 +17,17 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
   return (
     <div>
       <Card className={styles.card}>
-
         <CardHeader className={styles.questionCardHeader}>
           <div className={styles.question}>{question}</div>
-          <Button className={styles.toggleBtn} style={styles} color="transparent" onClick={toggle}>{isOpen ? <RemoveIcon /> : <AddIcon />}</Button>
+          <Button className={styles.toggleBtn} style={styles} color="transparent" onClick={toggle}>
+            {isOpen ? <RemoveIcon /> : <AddIcon />}
+          </Button>
         </CardHeader>
 
         <Collapse {...collapseProps}>
-          <CardBody className={styles.answer}>
-            {answer}
-          </CardBody>
+          <CardBody className={styles.answer}>{answer}</CardBody>
         </Collapse>
-
       </Card>
     </div>
-  )
-
+  );
 }
