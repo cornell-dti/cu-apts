@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react'
 import FAQNavBar from '../components/FAQ/FAQNavBar'
 import FAQHelp from '../components/FAQHelp/FAQHelp'
-import CollapsibleHeader from '../components/FAQ/CollapsibleHeader'
+import Faqs from '../components/FAQ/Faqs'
 
 const data = [
   {
@@ -23,15 +23,6 @@ const data = [
   }
 ]
 
-const FAQs = (): ReactElement => {
-  return <div className="App">
-    <div className="faq-questions">
-      {data.map((section, index) => (<CollapsibleHeader key={index} {...section} />))}
-    </div>
-  </div>
-}
-
-
 const FAQPage = (): ReactElement => {
   return (
 
@@ -44,8 +35,7 @@ const FAQPage = (): ReactElement => {
       <div className='faq-header-title'>
         <h2>Frequently Asked Questions</h2>
       </div>
-      <FAQs />
-
+      <Faqs data={data} />
     </div>
   )
 }
