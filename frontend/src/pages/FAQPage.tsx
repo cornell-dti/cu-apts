@@ -23,7 +23,7 @@ const data = [
   }
 ]
 
-const FAQPage = (): ReactElement => {
+const FaqPage = (): ReactElement => {
   return (
 
     <div className='faq-page'>
@@ -40,4 +40,4 @@ const FAQPage = (): ReactElement => {
   )
 }
 
-export default FAQPage;
+export default FaqPage;
