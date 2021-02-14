@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { db } from './firebase/firebase';
+import { db } from './firebase';
 import { Faq, Section } from './firebase/types';
 
 const app: Express = express();
