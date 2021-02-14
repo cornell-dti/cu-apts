@@ -1,9 +1,8 @@
-import React, { ReactElement } from 'react'
-import FAQNavBar from '../components/FAQ/FAQNavBar'
-import FAQHelp from '../components/FAQHelp/FAQHelp'
-import Faqs from '../components/FAQ/Faqs'
+import React, {ReactElement} from 'react'
+import CollapsibleHeader from '../components/FAQ/CollapsibleHeader';
+import axios from 'axios'
 
-const data = [
+const dummyData = [
   {
     headerName: "Section 1",
     faqs: [
@@ -23,21 +22,23 @@ const data = [
   }
 ]
 
-const FAQPage = (): ReactElement => {
-  return (
+const FaqPage= (): ReactElement => {
+    const [data, setData] = React.useState(dummyData)
+    React.useEffect(() => {
+      axios.get("http://localhost:8080/")
+      .then(response => {
+        setData(response.data)
+      })
+      .catch(error => {
+        console.log('error',error);
+      })
 
-    <div className='faq-page'>
-      <FAQNavBar />
-      <div className='faq-help'>
-        <FAQHelp />
-      </div>
-
-      <div className='faq-header-title'>
-        <h2>Frequently Asked Questions</h2>
-      </div>
-      <Faqs data={data} />
+    },[])
+    return <div className="App">
+    <div className="faq-questions">
+      {data.map((section, index) => (<CollapsibleHeader key={index} {...section} />))}
     </div>
-  )
+  </div>
 }
 
-export default FAQPage;
+export default FaqPage;
