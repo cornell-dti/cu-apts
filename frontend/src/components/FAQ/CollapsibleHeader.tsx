@@ -35,7 +35,7 @@ export default function CollapsibleHeader({ headerName, faqs }: Props): ReactEle
 
         <Collapse {...collapseProps}>
           <CardBody className={styles.sectionBody}>
-            {faqs? faqs.map((faq, index) => (<CollapsibleQuestion key={index} {...faq} />)) : null}
+            {faqs.map((faq, index) => (<CollapsibleQuestion key={index} {...faq} />))}
           </CardBody>
         </Collapse>
 
