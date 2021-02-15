@@ -6,7 +6,7 @@
   "scripts": {
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node server.ts"
+    "start": "ts-node src/server.ts"
   },
   "author": "",
   "license": "ISC",

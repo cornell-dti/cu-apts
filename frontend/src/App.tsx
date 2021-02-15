@@ -5,7 +5,6 @@ import HomePage from './pages/HomePage'
 import FAQPage from './pages/FAQPage'
 
 const App = (): ReactElement => {
-
   return (
     <Router>
       <Switch>
@@ -14,6 +13,6 @@ const App = (): ReactElement => {
       </Switch>
     </Router>
   );
-}
+};
 
 export default App;

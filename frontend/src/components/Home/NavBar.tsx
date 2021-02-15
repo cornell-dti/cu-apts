@@ -1,26 +1,26 @@
-import React, { ReactElement } from 'react';
-import icon from '../images/home-icon.png'
-import { Link } from 'react-router-dom'
+import React, { ReactElement, useState, useEffect } from 'react';
+import icon from '../images/home-icon.png';
+import { Link } from 'react-router-dom';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 const NavBar = (): ReactElement => {
-  const [toggleMenu, setToggle] = React.useState(false)
+  const [toggleMenu, setToggle] = useState(false)
   const clickToggle = (): void => {
-    setToggle(!toggleMenu)
-  }
-  const [width, setWidth] = React.useState(0)
+    setToggle(!toggleMenu);
+  };
+  const [width, setWidth] = useState(0);
   const update = (): void => {
-    setWidth(window.innerWidth)
+    setWidth(window.innerWidth);
     if (width > 600) {
-      setToggle(false)
+      setToggle(false);
     }
-  }
+  };
 
-  window.addEventListener('resize', update)
-  React.useEffect(() => {
-    update()
+  window.addEventListener('resize', update);
+  useEffect(() => {
+    update();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   const displayMobileMenu = (): ReactElement => {
     return (
@@ -51,11 +51,12 @@ const NavBar = (): ReactElement => {
     <div>
       <nav className="navbar navbar-expand-lg navbar-light">
         <a className="navbar-brand" href="/">
-          <h1><img className="logo" src={icon} width="40" height="auto" alt="home icon" /> CU Housing</h1>
+          <h1>
+            <img className="logo" src={icon} width="40" height="auto" alt="home icon" /> CU Housing
+          </h1>
         </a>
 
         {width > 600 ? displayNavBar() : displayMobileMenu()}
-
       </nav>
 
       <div className="homepage-description">
@@ -63,6 +64,6 @@ const NavBar = (): ReactElement => {
       </div>
     </div>
   );
-}
+};
 
 export default NavBar;

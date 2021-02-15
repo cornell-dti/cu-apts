@@ -1,41 +1,39 @@
 body {
-    width: 100vw;
+  width: 100vw;
 }
 
 .Home {
-    padding: 7vh 7vw; 
-    height: 100vh; 
-    background-image: url("./components/images/home.png");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
+  padding: 7vh 7vw;
+  height: 100vh;
+  background-image: url('./components/images/home.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .logo {
-    margin-bottom: 8px
+  margin-bottom: 8px;
 }
 
 .navbar-toggler {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .homepage-description {
-    padding-left: 16px;
+  padding-left: 16px;
 }
 
 .search {
-    width: 60%;
-    align-items: center;
-    margin-left: 20%;
-    margin-right: 20%;
-    margin-top: 10%
-
+  width: 60%;
+  align-items: center;
+  margin-left: 20%;
+  margin-right: 20%;
+  margin-top: 10%;
 }
 
 .navbar-toggler-icon {
-    width: 2em;
-    height: 2em
+  width: 2em;
+  height: 2em;
 }
 
 // FAQ Page
@@ -68,90 +66,79 @@ body {
 
 
 @media only screen and (max-width: 600px) {
-    .search {
-      width: 90%;
-      margin-left: 5%;
-      margin-right: 5%;
-    }
+  .search {
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
   }
+}
 
 @media only screen and (max-width: 600px) and (min-width: 360px) {
-.navbar {
+  .navbar {
     h1 {
-        font-size: 1.5em;
+      font-size: 1.5em;
     }
-}
-.homepage-description {
+  }
+  .homepage-description {
     h5 {
-        font-size: 0.9em;
+      font-size: 0.9em;
     }
+  }
 }
-}
-    
+
 // to get the toggler on the same line for smaller phone screens
 @media only screen and (max-width: 360px) {
-    .navbar-toggler {
-        font-size: 1rem;
-    }
+  .navbar-toggler {
+    font-size: 1rem;
+  }
 }
 
 // for iPhone 5
 @media only screen and (max-width: 320px) {
-    .navbar {
-        h1 {
-            font-size: 1.2em;
-        }
+  .navbar {
+    h1 {
+      font-size: 1.2em;
     }
+  }
 
-    .homepage-description {
-        h5 {
-            font-size: 0.85em;
-        }
+  .homepage-description {
+    h5 {
+      font-size: 0.85em;
     }
-    .navbar-toggler-icon {
-        width: 1.5em;
-        height: 1.5em
-    }
+  }
+  .navbar-toggler-icon {
+    width: 1.5em;
+    height: 1.5em;
+  }
 }
 
-.links, .links:hover {
-    text-decoration: none;
+.links,
+.links:hover {
+  text-decoration: none;
+  color: black;
 }
-
-.links {
-    color: black;
-}
-
-.btn-outline-dark:hover > .links {
-    color: white;
-}
-
-
-.faq-button:hover > .links {
-    color: white !important;
-}
-
 
 .nav-button-margin {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 @media (min-width: 992px) {
-    .navbar-expand-lg {
-        justify-content: space-between;
-    }
+  .navbar-expand-lg {
+    justify-content: space-between;
+  }
 }
 
 .dropdown {
-    .btn-secondary {
-        color: white;
-        background-color: transparent;
-        margin-bottom: 0.5rem
-    }
+  .btn-secondary {
+    color: white;
+    background-color: transparent;
+    margin-bottom: 0.5rem;
+  }
 
-    .btn-secondary:focus,  .btn-secondary.focus{
-        background-color: transparent;
-        box-shadow: none;
-        border-color: #545b62
-    }
+  .btn-secondary:focus,
+  .btn-secondary.focus {
+    background-color: transparent;
+    box-shadow: none;
+    border-color: #545b62;
+  }
 }
