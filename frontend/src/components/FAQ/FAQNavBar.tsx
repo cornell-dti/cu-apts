@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import icon from '../images/home-icon.png'
 import { Link } from 'react-router-dom'
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
@@ -8,7 +8,7 @@ const FAQNavBar = (): ReactElement => {
   const clickToggle = (): void => {
     setToggle(!toggleMenu)
   }
-  const [width, setWidth] = React.useState(0)
+  const [width, setWidth] = useState(0)
   const update = (): void => {
     setWidth(window.innerWidth)
     if (width > 600) {
@@ -17,7 +17,7 @@ const FAQNavBar = (): ReactElement => {
   }
 
   window.addEventListener('resize', update)
-  React.useEffect(() => {
+  useEffect(() => {
     update()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

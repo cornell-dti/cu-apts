@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react'
 import FAQNavBar from '../components/FAQ/FAQNavBar'
 import FAQHelp from '../components/FAQHelp/FAQHelp'
-import Faqs from '../components/FAQ/Faqs'
+import Faqs from '../components/FAQ/FAQs'
 
 const data = [
   {
@@ -23,7 +23,17 @@ const data = [
   }
 ]
 
-const FaqPage = (): ReactElement => {
+export type FAQ = {
+  question: string;
+  answer: string;
+}
+
+export type FAQData = {
+  headerName: string;
+  faqs: FAQ[]
+}
+
+const FAQPage = (): ReactElement => {
   return (
 
     <div className='faq-page'>
@@ -40,4 +50,4 @@ const FaqPage = (): ReactElement => {
   )
 }
 
-export default FaqPage;
+export default FAQPage;

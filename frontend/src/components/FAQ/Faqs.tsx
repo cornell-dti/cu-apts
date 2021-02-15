@@ -1,17 +1,12 @@
 import React, { ReactElement } from 'react';
 import CollapsibleHeader from './CollapsibleHeader'
+import { FAQData } from '../../pages/FAQPage'
 
 type Props = {
-  readonly data: {
-    headerName: string;
-    faqs: {
-      question: string;
-      answer: string;
-    }[];
-  }[];
+  readonly data: FAQData[]
 }
 
-export default function Faqs({ data }: Props): ReactElement {
+export default function FAQs({ data }: Props): ReactElement {
 
   return (
     <div className="App">
