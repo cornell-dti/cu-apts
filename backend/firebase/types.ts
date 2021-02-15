@@ -1,11 +1,9 @@
-
 export type Faq = {
-    question: string;
-    answer: string
-}
+  question: string;
+  answer: string;
+};
 
 export type Section = {
-    headerName: string;
-    faqs: [Faq]
-}
-
+  headerName: string;
+  faqs: [Faq];
+};

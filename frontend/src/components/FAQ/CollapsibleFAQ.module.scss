@@ -1,10 +1,11 @@
-
 .card {
   border-top: none !important;
   text-align: left !important;
 }
 
-.toggleBtn, .sectionToggleBtnOpen, .sectionToggleBtnClosed {
+.toggleBtn,
+.sectionToggleBtnOpen,
+.sectionToggleBtnClosed {
   margin-right: 14px;
   display: inline-block;
   padding: 4px 0px !important;
@@ -18,14 +19,15 @@ Button:focus {
 }
 
 .sectionToggleBtnOpen {
-  color: #FFF !important;
+  color: #fff !important;
 }
 
 .sectionCardHeaderOpen {
-  background-color: #B94630 !important;
+  background-color: #b94630 !important;
 }
 
-.sectionOpen, .sectionClosed {
+.sectionOpen,
+.sectionClosed {
   display: inline-block;
   text-align: left;
   align-self: flex-start;
@@ -34,7 +36,7 @@ Button:focus {
 }
 
 .sectionOpen {
-  color: #FFF;
+  color: #fff;
 }
 
 /* CollapsibleQuestion*/
