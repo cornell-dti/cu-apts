@@ -6,11 +6,10 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { FAQ } from '../../pages/FAQPage';
 
-
 type Props = {
   readonly headerName: string;
   readonly faqs: FAQ[];
-}
+};
 
 export default function CollapsibleHeader({ headerName, faqs }: Props): ReactElement {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +35,7 @@ export default function CollapsibleHeader({ headerName, faqs }: Props): ReactEle
 
         <Collapse {...collapseProps}>
           <CardBody className={styles.sectionBody}>
-            {faqs && faqs.map((faq, index) => (<CollapsibleQuestion key={index} {...faq} />))}
+            {faqs && faqs.map((faq, index) => <CollapsibleQuestion key={index} {...faq} />)}
           </CardBody>
         </Collapse>
       </Card>

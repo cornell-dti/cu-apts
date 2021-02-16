@@ -39,31 +39,30 @@ body {
 // FAQ Page
 
 .faq-page {
-    padding: 3vh 3vw; 
-    height: 100vh; 
+  padding: 3vh 3vw;
+  height: 100vh;
 }
 .faq-navbar {
-    padding: 0;
+  padding: 0;
 }
 
 .faq-help {
-    margin: 2vh 0 4vh 0;
+  margin: 2vh 0 4vh 0;
 }
 
 .faq-help-search {
-    width: 60%;
-    margin: 10px auto 20px auto;
+  width: 60%;
+  margin: 10px auto 20px auto;
 }
 
 .faq-header-title {
-    margin-top: 20px;
-    margin-bottom: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .faq-header-title > h2 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
-
 
 @media only screen and (max-width: 600px) {
   .search {

@@ -1,7 +1,7 @@
-import React, { ReactElement, useState, useEffect } from 'react'
-import FAQNavBar from '../components/FAQ/FAQNavBar'
-import FAQHelp from '../components/FAQHelp/FAQHelp'
-import Faqs from '../components/FAQ/FAQs'
+import React, { ReactElement, useState, useEffect } from 'react';
+import FAQNavBar from '../components/FAQ/FAQNavBar';
+import FAQHelp from '../components/FAQHelp/FAQHelp';
+import Faqs from '../components/FAQ/FAQs';
 import axios from 'axios';
 
 const dummyData = [
@@ -30,12 +30,12 @@ const dummyData = [
 export type FAQ = {
   question: string;
   answer: string;
-}
+};
 
 export type FAQData = {
   headerName: string;
-  faqs: FAQ[]
-}
+  faqs: FAQ[];
+};
 
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState(dummyData);
@@ -50,19 +50,18 @@ const FAQPage = (): ReactElement => {
       });
   }, []);
   return (
-
-    <div className='faq-page'>
+    <div className="faq-page">
       <FAQNavBar />
-      <div className='faq-help'>
+      <div className="faq-help">
         <FAQHelp />
       </div>
 
-      <div className='faq-header-title'>
+      <div className="faq-header-title">
         <h2>Frequently Asked Questions</h2>
       </div>
       <Faqs data={data} />
     </div>
-  )
-}
+  );
+};
 
 export default FAQPage;

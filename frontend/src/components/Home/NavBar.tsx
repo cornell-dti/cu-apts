@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 const NavBar = (): ReactElement => {
-  const [toggleMenu, setToggle] = useState(false)
+  const [toggleMenu, setToggle] = useState(false);
   const clickToggle = (): void => {
     setToggle(!toggleMenu);
   };
@@ -29,23 +29,29 @@ const NavBar = (): ReactElement => {
           <span className="navbar-toggler-icon"></span>
         </DropdownToggle>
         <DropdownMenu right>
-          <DropdownItem><Link className="links" to="/faq">FAQ</Link></DropdownItem>
+          <DropdownItem>
+            <Link className="links" to="/faq">
+              FAQ
+            </Link>
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
-    )
-  }
+    );
+  };
 
   const displayNavBar = (): ReactElement => {
     return (
-      <ul className='nav nav-button-margin' >
+      <ul className="nav nav-button-margin">
         <li>
-          <button type="button" className="btn btn-lg btn-outline-dark" >
-            <Link to='/faq' className="links">FAQ</Link>
+          <button type="button" className="btn btn-lg btn-outline-dark">
+            <Link to="/faq" className="links">
+              FAQ
+            </Link>
           </button>
         </li>
       </ul>
-    )
-  }
+    );
+  };
 
   return (
     <div>
