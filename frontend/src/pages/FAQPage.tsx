@@ -1,5 +1,7 @@
-import React, { ReactElement } from 'react';
-import CollapsibleHeader from '../components/FAQ/CollapsibleHeader';
+import React, { ReactElement, useState, useEffect } from 'react';
+import FAQNavBar from '../components/FAQ/FAQNavBar';
+import FAQHelp from '../components/FAQHelp/FAQHelp';
+import Faqs from '../components/FAQ/FAQs';
 import axios from 'axios';
 
 const dummyData = [
@@ -25,9 +27,19 @@ const dummyData = [
   },
 ];
 
-const FaqPage = (): ReactElement => {
-  const [data, setData] = React.useState(dummyData);
-  React.useEffect(() => {
+export type FAQ = {
+  question: string;
+  answer: string;
+};
+
+export type FAQData = {
+  headerName: string;
+  faqs: FAQ[];
+};
+
+const FAQPage = (): ReactElement => {
+  const [data, setData] = useState(dummyData);
+  useEffect(() => {
     axios
       .get('http://localhost:8080/')
       .then((response) => {
@@ -38,14 +50,18 @@ const FaqPage = (): ReactElement => {
       });
   }, []);
   return (
-    <div className="App">
-      <div className="faq-questions">
-        {data.map((section, index) => (
-          <CollapsibleHeader key={index} {...section} />
-        ))}
+    <div className="faq-page">
+      <FAQNavBar />
+      <div className="faq-help">
+        <FAQHelp />
       </div>
+
+      <div className="faq-header-title">
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <Faqs data={data} />
     </div>
   );
 };
 
-export default FaqPage;
+export default FAQPage;

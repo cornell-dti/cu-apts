@@ -4,15 +4,11 @@ import CollapsibleQuestion from './CollapsibleQuestion';
 import styles from './CollapsibleFAQ.module.scss';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-type faqQuestion = {
-  readonly question: string;
-  readonly answer: string;
-};
+import { FAQ } from '../../pages/FAQPage';
 
 type Props = {
   readonly headerName: string;
-  readonly faqs: faqQuestion[];
+  readonly faqs: FAQ[];
 };
 
 export default function CollapsibleHeader({ headerName, faqs }: Props): ReactElement {
@@ -39,7 +35,7 @@ export default function CollapsibleHeader({ headerName, faqs }: Props): ReactEle
 
         <Collapse {...collapseProps}>
           <CardBody className={styles.sectionBody}>
-            {faqs ? faqs.map((faq, index) => <CollapsibleQuestion key={index} {...faq} />) : null}
+            {faqs && faqs.map((faq, index) => <CollapsibleQuestion key={index} {...faq} />)}
           </CardBody>
         </Collapse>
       </Card>

@@ -3,11 +3,11 @@ import { ReactComponent as SearchIcon } from '../../assets/search.svg';
 
 const SearchBar = (): ReactElement => {
   return (
-    <div className="search input-group mb-3">
+    <div className="faq-help-search input-group mb-3">
       <input
         type="text"
         className="form-control"
-        placeholder="Search by any location..."
+        placeholder="Search for any question!"
         aria-label="Search locations"
         aria-describedby="basic-addon2"
       />
