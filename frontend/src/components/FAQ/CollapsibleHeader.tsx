@@ -4,7 +4,7 @@ import CollapsibleQuestion from './CollapsibleQuestion';
 import styles from './CollapsibleFAQ.module.scss';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { FAQ } from '../../pages/FAQPage';
+import { FAQ } from '../../types';
 
 type Props = {
   readonly headerName: string;

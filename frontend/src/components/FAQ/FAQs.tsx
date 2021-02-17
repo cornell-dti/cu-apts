@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import CollapsibleHeader from './CollapsibleHeader';
-import { FAQData } from '../../pages/FAQPage';
+import { FAQData } from '../../types';
 
 type Props = {
   readonly data: FAQData[];

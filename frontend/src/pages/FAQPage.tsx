@@ -27,15 +27,6 @@ const dummyData = [
   },
 ];
 
-export type FAQ = {
-  question: string;
-  answer: string;
-};
-
-export type FAQData = {
-  headerName: string;
-  faqs: FAQ[];
-};
 
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState(dummyData);
