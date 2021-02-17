@@ -1,4 +1,4 @@
-name: CI (Monorepo)
+name: CI Backend
 on: push
 
 jobs:
@@ -16,7 +16,5 @@ jobs:
           restore-keys: yarn-
       - name: Yarn Install
         run: yarn install
-      - name: Run Prettier
-        run: yarn format:check
-      - name: Run Linter
-        run: yarn lint
+      - name: Run TypeScript Compiler
+        run: yarn workspace backend tsc
