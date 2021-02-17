@@ -3,6 +3,7 @@ import FAQNavBar from '../components/FAQ/FAQNavBar';
 import FAQHelp from '../components/FAQHelp';
 import Faqs from '../components/FAQ/FAQs';
 import axios from 'axios';
+import styles from './FAQPage.module.scss';
 
 const dummyData = [
   {
@@ -40,13 +41,13 @@ const FAQPage = (): ReactElement => {
       });
   }, []);
   return (
-    <div className="faq-page">
+    <div className={styles.faqPage}>
       <FAQNavBar />
-      <div className="faq-help">
+      <div className={styles.faqHelp}>
         <FAQHelp />
       </div>
 
-      <div className="faq-header-title">
+      <div className={styles.faqHeaderTitle}>
         <h2>Frequently Asked Questions</h2>
       </div>
       <Faqs data={data} />
