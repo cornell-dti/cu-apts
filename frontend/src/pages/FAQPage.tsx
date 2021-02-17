@@ -1,6 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import FAQNavBar from '../components/FAQ/FAQNavBar';
-import FAQHelp from '../components/FAQHelp/FAQHelp';
+import FAQHelp from '../components/FAQHelp';
 import Faqs from '../components/FAQ/FAQs';
 import axios from 'axios';
 
