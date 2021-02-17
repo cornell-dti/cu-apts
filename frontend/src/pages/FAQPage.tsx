@@ -27,7 +27,6 @@ const dummyData = [
   },
 ];
 
-
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState(dummyData);
   useEffect(() => {
