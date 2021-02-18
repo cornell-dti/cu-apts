@@ -4,7 +4,7 @@ import styles from './SearchBar.module.scss';
 
 const SearchBar = (): ReactElement => {
   return (
-    <div className={styles.search + ' input-group mb-3'}>
+    <div className={`${styles.search} input-group mb-3`}>
       <input
         type="text"
         className="form-control"
