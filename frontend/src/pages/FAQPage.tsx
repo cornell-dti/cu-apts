@@ -1,7 +1,7 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import FAQNavBar from '../components/FAQ/FAQNavBar';
 import FAQHelp from '../components/FAQHelp';
-import Faqs from '../components/FAQ/FAQs';
+import Faqs from '../components/FAQ';
 import axios from 'axios';
 import styles from './FAQPage.module.scss';
 
