@@ -2,6 +2,7 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import icon from '../images/home-icon.png';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import styles from './NavBar.module.scss';
 
 const NavBar = (): ReactElement => {
   const [toggleMenu, setToggle] = useState(false);
@@ -26,7 +27,7 @@ const NavBar = (): ReactElement => {
     return (
       <Dropdown isOpen={toggleMenu} toggle={clickToggle}>
         <DropdownToggle>
-          <span className="navbar-toggler-icon"></span>
+          <span className={`navbar-toggler-icon ${styles.navbarTogglerIcon}`}></span>
         </DropdownToggle>
         <DropdownMenu right>
           <DropdownItem>
@@ -41,7 +42,7 @@ const NavBar = (): ReactElement => {
 
   const displayNavBar = (): ReactElement => {
     return (
-      <ul className="nav nav-button-margin">
+      <ul className={`nav ${styles.navButtonMargin}`}>
         <li>
           <button type="button" className="btn btn-lg btn-outline-dark">
             <Link to="/faq" className="links">
@@ -55,17 +56,18 @@ const NavBar = (): ReactElement => {
 
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-light">
+      <nav className={`navbar navbar-light ${styles.navbarExpandLg}`}>
         <a className="navbar-brand" href="/">
           <h1>
-            <img className="logo" src={icon} width="40" height="auto" alt="home icon" /> CU Housing
+            <img className={styles.logo} src={icon} width="40" height="auto" alt="home icon" /> CU
+            Housing
           </h1>
         </a>
 
         {width > 600 ? displayNavBar() : displayMobileMenu()}
       </nav>
 
-      <div className="homepage-description">
+      <div className={styles.homepageDescription}>
         <h5>Search for off-campus housing, review apartments, and share feedback!</h5>
       </div>
     </div>

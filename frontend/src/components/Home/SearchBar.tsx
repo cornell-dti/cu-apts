@@ -1,9 +1,10 @@
 import React, { ReactElement } from 'react';
 import { ReactComponent as SearchIcon } from '../../assets/search.svg';
+import styles from './SearchBar.module.scss';
 
 const SearchBar = (): ReactElement => {
   return (
-    <div className="search input-group mb-3">
+    <div className={`${styles.search} input-group mb-3`}>
       <input
         type="text"
         className="form-control"
