@@ -4,8 +4,8 @@ import styles from './FAQSpinner.module.scss';
 
 export default function FAQSpinner(): ReactElement {
   return (
-    <div className={styles.container}> 
+    <div className={styles.container}>
       <Spinner animation="border" className={styles.spinner} />
     </div>
-  )
+  );
 }
