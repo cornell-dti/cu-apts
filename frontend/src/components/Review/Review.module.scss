@@ -1,0 +1,15 @@
+.card {
+  div {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  width: 60vw;
+  border-radius: 10px;
+  margin: 3vw;
+}
+
+@media (max-width: 600px) {
+  .card {
+    width: 94vw;
+  }
+}
