@@ -1,10 +1,10 @@
 import React, { useState, ReactElement } from 'react';
-import { Collapse, Button, Card, CardBody, CardHeader } from 'reactstrap';
 import CollapsibleQuestion from './CollapsibleQuestion';
 import styles from './CollapsibleFAQ.module.scss';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { FAQ } from '../../pages/FAQPage';
+import { Button, Card, Collapse } from 'react-bootstrap';
 
 type Props = {
   readonly headerName: string;
@@ -12,31 +12,31 @@ type Props = {
 };
 
 export default function CollapsibleHeader({ headerName, faqs }: Props): ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-  const collapseProps = { isOpen: isOpen };
+  const [collapseOpen, setCollapseOpen] = useState(false);
+  const toggle = () => setCollapseOpen(!collapseOpen);
+  const collapseProps = { in: collapseOpen };
 
   return (
     <div>
       <Card className={styles.card}>
-        <CardHeader
-          className={isOpen ? styles.sectionCardHeaderOpen : styles.sectionCardHeaderClosed}
+        <Card.Header
+          className={collapseOpen ? styles.sectionCardHeaderOpen : styles.sectionCardHeaderClosed}
         >
           <Button
-            className={isOpen ? styles.sectionToggleBtnOpen : styles.sectionToggleBtnClosed}
+            className={collapseOpen ? styles.sectionToggleBtnOpen : styles.sectionToggleBtnClosed}
             style={styles}
             color="transparent"
             onClick={toggle}
           >
-            {isOpen ? <ExpandMoreIcon fontSize="large" /> : <NavigateNextIcon fontSize="large" />}
+            {collapseOpen ? <ExpandMoreIcon fontSize="large" /> : <NavigateNextIcon fontSize="large" />}
           </Button>
-          <div className={isOpen ? styles.sectionOpen : styles.sectionClosed}>{headerName}</div>
-        </CardHeader>
+          <div className={collapseOpen ? styles.sectionOpen : styles.sectionClosed}>{headerName}</div>
+        </Card.Header>
 
         <Collapse {...collapseProps}>
-          <CardBody className={styles.sectionBody}>
+          <Card.Body className={styles.sectionBody}>
             {faqs && faqs.map((faq, index) => <CollapsibleQuestion key={index} {...faq} />)}
-          </CardBody>
+          </Card.Body>
         </Collapse>
       </Card>
     </div>
