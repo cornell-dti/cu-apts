@@ -2,7 +2,7 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import FAQNavBar from '../components/FAQ/FAQNavBar';
 import FAQHelp from '../components/FAQHelp';
 import Faqs from '../components/FAQ';
-import FAQSpinner from '../components/FAQ/FAQSpinner';
+import ProgressSpinner from '../components/utils/ProgressSpinner';
 import axios from 'axios';
 import styles from './FAQPage.module.scss';
 
@@ -38,7 +38,7 @@ const FAQPage = (): ReactElement => {
       <div className={styles.faqHeaderTitle}>
         <h2>Frequently Asked Questions</h2>
       </div>
-      {data ? <Faqs data={data} /> : <FAQSpinner />}
+      {data ? <Faqs data={data} /> : <ProgressSpinner />}
     </div>
   );
 };

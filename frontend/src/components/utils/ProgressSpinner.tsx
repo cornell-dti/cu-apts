@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
-import styles from './FAQSpinner.module.scss';
+import styles from './ProgressSpinner.module.scss';
 
-export default function FAQSpinner(): ReactElement {
+export default function ProgressSpinner(): ReactElement {
   return (
     <div className={styles.container}>
       <Spinner animation="border" className={styles.spinner} />
