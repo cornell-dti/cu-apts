@@ -8,7 +8,15 @@
   margin: 3vw;
 }
 
-@media (max-width: 600px) {
+@media (min-width: 500px) {
+  .date {
+    position: relative;
+    float: right;
+    padding-top: 8px;
+  }
+}
+
+@media (max-width: 650px) {
   .card {
     width: 94vw;
   }

@@ -34,7 +34,9 @@ const Review = ({ overall_rating, date, text }: Props): ReactElement => {
       <Card.Body>
         <Card.Title>Anonymous </Card.Title>
         <Rating rating={overall_rating} />
-        <Card.Subtitle className="mb-2 text-muted">{date_to_string(date)}</Card.Subtitle>
+        <Card.Subtitle className={`${styles.date} mb-2 text-muted`}>
+          {date_to_string(date)}
+        </Card.Subtitle>
         <hr />
         <Card.Text>{text}</Card.Text>
       </Card.Body>
