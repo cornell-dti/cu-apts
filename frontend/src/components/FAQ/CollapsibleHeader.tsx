@@ -28,9 +28,15 @@ export default function CollapsibleHeader({ headerName, faqs }: Props): ReactEle
             color="transparent"
             onClick={toggle}
           >
-            {collapseOpen ? <ExpandMoreIcon fontSize="large" /> : <NavigateNextIcon fontSize="large" />}
+            {collapseOpen ? (
+              <ExpandMoreIcon fontSize="large" />
+            ) : (
+              <NavigateNextIcon fontSize="large" />
+            )}
           </Button>
-          <div className={collapseOpen ? styles.sectionOpen : styles.sectionClosed}>{headerName}</div>
+          <div className={collapseOpen ? styles.sectionOpen : styles.sectionClosed}>
+            {headerName}
+          </div>
         </Card.Header>
 
         <Collapse {...collapseProps}>
