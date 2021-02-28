@@ -6,27 +6,21 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 type Props = {
   readonly rating: number;
 };
-const filled_hearts = (n: number) => {
-  let rows = [];
-  for (let i = 0; i < n; i++) {
-    rows.push(<FavoriteIcon fontSize="small" className={styles.rating} />);
-  }
-  return rows;
+const filled_hearts = (rating: number) => {
+  return [...Array(rating)].map(() => <FavoriteIcon fontSize="small" className={styles.rating} />);
 };
 
-const empty_hearts = (n: number) => {
-  let rows = [];
-  for (let i = 0; i < n; i++) {
-    rows.push(<FavoriteBorderIcon fontSize="small" className={styles.rating} />);
-  }
-  return rows;
+const empty_hearts = (rating: number) => {
+  return [...Array(5 - rating)].map(() => (
+    <FavoriteBorderIcon fontSize="small" className={styles.rating} />
+  ));
 };
 
 const Rating = ({ rating }: Props): ReactElement => {
   return (
     <div>
       {filled_hearts(rating)}
-      {empty_hearts(5 - rating)}
+      {empty_hearts(rating)}
     </div>
   );
 };

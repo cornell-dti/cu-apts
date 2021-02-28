@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import { useParams } from 'react-router-dom';
 import Review from '../components/Review';
 
-let reviews = [
+const reviews = [
   {
     name: 'user1',
     overall_rating: 3,
@@ -32,12 +32,8 @@ const LandlordPage = (): ReactElement => {
   return (
     <div>
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
-      {reviews.map((review) => (
-        <Review
-          overall_rating={review.overall_rating}
-          date={review.date}
-          text={review.text}
-        ></Review>
+      {reviews.map(({ date, text, overall_rating }) => (
+        <Review overall_rating={overall_rating} date={date} text={text} />
       ))}
     </div>
   );

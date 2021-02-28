@@ -2,30 +2,12 @@ import React, { ReactElement } from 'react';
 import styles from './Review.module.scss';
 import Card from 'react-bootstrap/Card';
 import Rating from './Rating';
+import date_to_string from '../utils/date';
 
 type Props = {
   readonly overall_rating: number;
   readonly date: Date;
   readonly text: string;
-};
-
-const months = [
-  'Jan',
-  'Feb',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'Aug',
-  'Sept',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-const date_to_string = (date: Date): string => {
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 };
 
 const Review = ({ overall_rating, date, text }: Props): ReactElement => {
