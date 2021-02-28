@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import styles from './Review.module.scss';
 import Card from 'react-bootstrap/Card';
 import Rating from './Rating';
-import date_to_string from '../utils/date';
+import date_to_string from '../../utils/date';
 
 type Props = {
   readonly overall_rating: number;

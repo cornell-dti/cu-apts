@@ -15,4 +15,4 @@ const months = [
 
 export default function date_to_string(date: Date): string {
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-};
+}
