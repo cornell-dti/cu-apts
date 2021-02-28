@@ -4,78 +4,60 @@ import {
   CardTitle, CardSubtitle, Button
 } from 'reactstrap';
 import ApartmentImg from "../images/apartment-sample.png";
-import MapIcon from "../images/map-pin.png";
-import RedHeartIcon from "../images/heart_outline_red.png";
-import PriceIcon from "../images/tag-outline.png";
-import SmileyFace from "../images/happy.png";
-import WhiteHeartIcon from "../images/heart_outline.png";
-interface Props {
-  address: String;
-  company?: String;
-  bedsAndBaths?: String;
-  amenities: Boolean;
-  reviews?: Boolean;
-  reviewStars?: String;
-  price?: String;
-  topReviewDisplay?:String;
-  percentReview?:String;
-  numReviews?:String;
+import { ReactComponent as MapIcon } from "../images/map-pin.svg";
+import { ReactComponent as PriceIcon } from "../images/tag-outline.svg";
+import { Container, Row, Col, Image } from 'react-bootstrap';
+type Props = {
+  address: string;
+  company?: string;
+  bedsAndBaths?: string;
+  price?: string;
+  topReviewDisplay?: string;
+  numReviews?: string;
 }
 
-const ApartmentCard = (props: Props): ReactElement =>{
-  
-  function renderAdressSection(){
-    return props.reviews?<div><div style={{display:"inline-block"}}>
-      <img src={RedHeartIcon} className="pr-2 pb-2"></img>
-      <CardSubtitle tag="h6" className="pb-2" style={{color:"black", display:"inline-block"}}>{props.reviewStars}</CardSubtitle>
-      </div>
+const ApartmentCard = (props: Props): ReactElement => {
+
+  function renderAdressSection() {
+    return <Row>
+      <Col xs={8}>
+        <Row>
+          <MapIcon className="pr-1 mt-1" />
+          <CardTitle className="pb-1 mt-0 mb-1" style={{ fontSize: "21px" }}>{props.address}</CardTitle>
+        </Row>
+      </Col>
       {renderPrice()}
-      <div>
-      <CardTitle tag="h5" className="pb-1 mb-2" style={{color:'#495057'}}>{props.address}</CardTitle>
-      </div>
-      </div>:
-      <div>
-      <div style={{display:"inline-block"}}>
-      <img src={MapIcon} className="pb-3 pr-2"></img>
-      <CardTitle tag="h5" className="pb-1 mb-2" style={{color:'#495057', display:"inline-block"}}>{props.address}</CardTitle>
-      </div>
-      {renderPrice()}
-      </div>;
+    </Row>;
   }
 
-  function renderPrice(){
-    return props.price ? <div style={{display:"inline-block"}}> 
-    <img src={PriceIcon} className="pb-3 pr-2" style={{display:"inline-block", position:"absolute", right:50, top:200}}></img>
-    <CardSubtitle tag="h6" className="" style={{color:"black", display:"inline-block", position:"absolute", right:10, top:205}}>{props.price}</CardSubtitle>
-    </div>:
-    <div style={{display:"inline-block"}}> 
-    <CardSubtitle tag="h6" className="" style={{color:"black", display:"inline-block", position:"absolute", right:20, top:205}}>$$</CardSubtitle>
-    </div>;
+  function renderPrice() {
+    return props.price ? <Col style={{ paddingRight: "0px", paddingLeft: "10px" }} xs={4}>
+      <Row>
+        <PriceIcon style={{ marginLeft: "12px", marginBottom: "5px" }} />
+        <CardSubtitle className="ml-1" style={{ color: "black", display: "flex", position: "relative", fontSize: "14px" }}>{props.price}</CardSubtitle>
+      </Row>
+    </Col> :
+      <Col xs={3}>
+        <CardSubtitle className="pl-4" style={{ color: "black", display: "flex", position: "relative", fontSize: "14px" }}>$$</CardSubtitle>
+      </Col>;
   }
 
-  function renderOptionalTopReviewBar(){
-    if(props.topReviewDisplay){
-    return<div className="text-center font-weight-bold review-rectangle"style={{position:"absolute", right:"0px", top:"100px", width:"105px" }}><img src={WhiteHeartIcon} className="pr-2" style={{paddingBottom: "3px"}}></img>{props.topReviewDisplay}</div>;
-    }
-    else if(props.percentReview){
-    return <div className="text-center font-weight-bold review-rectangle" style={{position:"absolute", right:"0px", top:"100px", width:"82px"}}>{props.percentReview}<img src={SmileyFace} className="pl-2" style={{paddingBottom: "4px"}}></img></div>;
-    }
-  }
-
-  return(
-    <div>
+  return (
+    <Container className="mb-2">
       <Card className="shadow rounded">
         <CardImg top width="100%" src={ApartmentImg} alt="Apartment Image" />
-        {renderOptionalTopReviewBar()}
-        <CardBody>
-        {renderAdressSection()}
-        {props.company && <CardSubtitle tag="h6" className="pb-4">{props.company}</CardSubtitle>}
-        <CardSubtitle tag="h6" className="pb-2" style={{color:"#495057"}}>{props.bedsAndBaths}</CardSubtitle>
-        {props.amenities && <div style={{}} className="text-center mt-2 amenities-button">AMENITIES</div>}
-        {props.numReviews && <CardText className="pb-2" style={{position:"absolute", right:"10px", bottom:"10px", fontSize:"14px"}}>{props.numReviews}</CardText>}
+        <CardBody className="pt-2">
+          {renderAdressSection()}
+          <Row>
+            <Col>{props.company && <CardSubtitle tag="h6" className="pb-2 pr-2">{props.company}</CardSubtitle>}</Col>
+          </Row>
+          <Row>
+            <Col xs={7} style={{ paddingRight: "0px" }}><CardSubtitle tag="h6" className="pt-1" style={{ paddingRight: "2px" }}>{props.bedsAndBaths}</CardSubtitle></Col>
+            {props.numReviews && <Col xs={5} style={{ paddingLeft: "0px" }}><CardText style={{ position: "relative", fontSize: "12px" }}>{props.numReviews}</CardText></Col>}
+          </Row>
         </CardBody>
       </Card>
-    </div>
+    </Container>
   );
 }
 

@@ -6,17 +6,18 @@ body {
 .links:hover {
   text-decoration: none;
   color: black;
+}
 .Home {
-    padding: 7vh 7vw; 
-    height: 100vh; 
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-color:#F6F6F6;
+  padding: 7vh 7vw;
+  height: 100vh;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #f6f6f6;
 }
 
 .logo {
-    margin-bottom: 8px
+  margin-bottom: 8px;
 }
 
 .dropdown {
@@ -34,27 +35,27 @@ body {
   }
 }
 :focus {
-    outline: 0 !important;
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
-    border-color: #ced4da !important;
-  }
-
-.divider{
-    border: 3px solid black;
-    width: 201px;
+  outline: 0 !important;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
+  border-color: #ced4da !important;
 }
 
-.amenities-button{
-    width:100px;
-    height:30px;
-    border:1;
-    background-color:#8CDCA3; 
-    color:#495057; 
-    border-radius:200px;
+.divider {
+  border: 3px solid black;
+  width: 201px;
 }
 
-.review-rectangle{
-    background-color:#388893;
-    height: 27px; 
-    color: white;
+.amenities-button {
+  width: 100px;
+  height: 30px;
+  border: 1;
+  background-color: #8cdca3;
+  color: #495057;
+  border-radius: 200px;
+}
+
+.review-rectangle {
+  background-color: #388893;
+  height: 27px;
+  color: white;
 }
