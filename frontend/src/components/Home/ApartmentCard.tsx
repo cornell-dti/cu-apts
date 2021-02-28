@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Card, CardImg, CardText, CardBody, CardTitle, CardSubtitle, Button } from 'reactstrap';
+import { Card, CardImg } from 'react-bootstrap';
 import ApartmentImg from '../../assets/apartment-sample.png';
 import { ReactComponent as MapIcon } from '../../assets/map-pin.svg';
 import { ReactComponent as PriceIcon } from '../../assets/tag-outline.svg';
@@ -20,9 +20,9 @@ const ApartmentCard = (props: Props): ReactElement => {
         <Col xs={8}>
           <Row>
             <MapIcon className="pr-1 mt-1" />
-            <CardTitle className="pb-1 mt-0 mb-1" style={{ fontSize: '21px' }}>
+            <Card.Title className="pb-1 mt-0 mb-1" style={{ fontSize: '21px' }}>
               {props.address}
-            </CardTitle>
+            </Card.Title>
           </Row>
         </Col>
         {renderPrice()}
@@ -35,22 +35,22 @@ const ApartmentCard = (props: Props): ReactElement => {
       <Col style={{ paddingRight: '0px', paddingLeft: '10px' }} xs={4}>
         <Row>
           <PriceIcon style={{ marginLeft: '12px', marginBottom: '5px' }} />
-          <CardSubtitle
+          <Card.Subtitle
             className="ml-1"
             style={{ color: 'black', display: 'flex', position: 'relative', fontSize: '14px' }}
           >
             {props.price}
-          </CardSubtitle>
+          </Card.Subtitle>
         </Row>
       </Col>
     ) : (
       <Col xs={3}>
-        <CardSubtitle
+        <Card.Subtitle
           className="pl-4"
           style={{ color: 'black', display: 'flex', position: 'relative', fontSize: '14px' }}
         >
           $$
-        </CardSubtitle>
+        </Card.Subtitle>
       </Col>
     );
   }
@@ -59,32 +59,32 @@ const ApartmentCard = (props: Props): ReactElement => {
     <Container className="mb-2">
       <Card className="shadow rounded">
         <CardImg top width="100%" src={ApartmentImg} alt="Apartment Image" />
-        <CardBody className="pt-2">
+        <Card.Body className="pt-2">
           {renderAdressSection()}
           <Row>
             <Col>
               {props.company && (
-                <CardSubtitle tag="h6" className="pb-3 pr-2">
+                <Card.Subtitle tag="h6" className="pb-3 pr-2">
                   {props.company}
-                </CardSubtitle>
+                </Card.Subtitle>
               )}
             </Col>
           </Row>
           <Row>
             <Col xs={7} style={{ paddingRight: '0px', paddingLeft: '0px', marginLeft: '10px' }}>
-              <CardSubtitle tag="h6" className="pt-1" style={{ paddingRight: '2px' }}>
+              <Card.Subtitle tag="h6" className="pt-1" style={{ paddingRight: '2px' }}>
                 {props.bedsAndBaths}
-              </CardSubtitle>
+              </Card.Subtitle>
             </Col>
             {props.numReviews && (
               <Col xs={4} style={{ paddingRight: '0px', paddingLeft: '0px', marginLeft: '10px' }}>
-                <CardText style={{ position: 'relative', fontSize: '12px' }}>
+                <Card.Text style={{ position: 'relative', fontSize: '12px' }}>
                   {props.numReviews}
-                </CardText>
+                </Card.Text>
               </Col>
             )}
           </Row>
-        </CardBody>
+        </Card.Body>
       </Card>
     </Container>
   );
