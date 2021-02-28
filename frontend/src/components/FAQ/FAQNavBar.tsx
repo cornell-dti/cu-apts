@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import icon from '../images/home-icon.png';
+import icon from '../../assets/home-icon.png';
 import { Link } from 'react-router-dom';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import styles from './FAQNavBar.module.scss';
