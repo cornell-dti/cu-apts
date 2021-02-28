@@ -37,7 +37,13 @@ const ApartmentCard = (props: Props): ReactElement => {
           <PriceIcon style={{ marginLeft: '12px', marginBottom: '5px' }} />
           <Card.Subtitle
             className="ml-1"
-            style={{ color: 'black', display: 'flex', position: 'relative', fontSize: '14px' }}
+            style={{
+              color: 'black',
+              display: 'flex',
+              position: 'relative',
+              fontSize: '14px',
+              marginTop: '3px',
+            }}
           >
             {props.price}
           </Card.Subtitle>
@@ -58,22 +64,22 @@ const ApartmentCard = (props: Props): ReactElement => {
   return (
     <Container className="mb-2">
       <Card className="shadow rounded">
-        <CardImg top width="100%" src={ApartmentImg} alt="Apartment Image" />
+        <CardImg variant="top" width="100%" src={ApartmentImg} alt="Apartment Image" />
         <Card.Body className="pt-2">
           {renderAdressSection()}
           <Row>
             <Col>
               {props.company && (
-                <Card.Subtitle tag="h6" className="pb-3 pr-2">
-                  {props.company}
+                <Card.Subtitle className="pb-3 pr-2 pt-1">
+                  <h6>{props.company}</h6>
                 </Card.Subtitle>
               )}
             </Col>
           </Row>
           <Row>
             <Col xs={7} style={{ paddingRight: '0px', paddingLeft: '0px', marginLeft: '10px' }}>
-              <Card.Subtitle tag="h6" className="pt-1" style={{ paddingRight: '2px' }}>
-                {props.bedsAndBaths}
+              <Card.Subtitle className="pt-1" style={{ marginLeft: '5px', paddingRight: '2px' }}>
+                <h6>{props.bedsAndBaths}</h6>
               </Card.Subtitle>
             </Col>
             {props.numReviews && (
