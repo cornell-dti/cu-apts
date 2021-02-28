@@ -5,7 +5,14 @@ body {
 .links,
 .links:hover {
   text-decoration: none;
+}
+
+.links {
   color: black;
+}
+
+.btn-outline-dark:hover > .links {
+  color: white;
 }
 
 .dropdown {
