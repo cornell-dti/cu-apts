@@ -1,32 +1,10 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import FAQNavBar from '../components/FAQ/FAQNavBar';
-import FAQHelp from '../components/FAQHelp';
+import FAQHelp from '../components/FAQHelp/FAQHelp';
 import Faqs from '../components/FAQ';
+import ProgressSpinner from '../components/utils/ProgressSpinner';
 import axios from 'axios';
 import styles from './FAQPage.module.scss';
-
-const dummyData = [
-  {
-    headerName: 'Section 1',
-    faqs: [
-      {
-        question: 'Question 1',
-        answer:
-          'Anim pariatur cliche reprehenderit enim eiusmod high life accusamus terry richardson ad squid. Nihilanim keffiyeh helvetica, craft beer labore wes anderson crednesciunt sapiente ea proident',
-      },
-      {
-        question: 'Question 2',
-        answer:
-          'Anim pariatur cliche reprehenderit enim eiusmod high life accusamus terry richardson ad squid. Nihilanim keffiyeh helvetica, craft beer labore wes anderson crednesciunt sapiente ea proident',
-      },
-      {
-        question: 'Question 3',
-        answer:
-          'Anim pariatur cliche reprehenderit enim eiusmod high life accusamus terry richardson ad squid. Nihilanim keffiyeh helvetica, craft beer labore wes anderson crednesciunt sapiente ea proident',
-      },
-    ],
-  },
-];
 
 export type FAQ = {
   question: string;
@@ -39,7 +17,7 @@ export type FAQData = {
 };
 
 const FAQPage = (): ReactElement => {
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState([]);
   useEffect(() => {
     axios
       .get('http://localhost:8080/')
@@ -60,7 +38,7 @@ const FAQPage = (): ReactElement => {
       <div className={styles.faqHeaderTitle}>
         <h2>Frequently Asked Questions</h2>
       </div>
-      <Faqs data={data} />
+      {data ? <Faqs data={data} /> : <ProgressSpinner />}
     </div>
   );
 };
