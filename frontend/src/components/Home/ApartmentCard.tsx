@@ -3,9 +3,9 @@ import {
   Card, CardImg, CardText, CardBody,
   CardTitle, CardSubtitle, Button
 } from 'reactstrap';
-import ApartmentImg from "../images/apartment-sample.png";
-import { ReactComponent as MapIcon } from "../images/map-pin.svg";
-import { ReactComponent as PriceIcon } from "../images/tag-outline.svg";
+import ApartmentImg from "../../assets/apartment-sample.png";
+import { ReactComponent as MapIcon } from "../../assets/map-pin.svg";
+import { ReactComponent as PriceIcon } from "../../assets/tag-outline.svg";
 import { Container, Row, Col, Image } from 'react-bootstrap';
 type Props = {
   address: string;
@@ -49,11 +49,11 @@ const ApartmentCard = (props: Props): ReactElement => {
         <CardBody className="pt-2">
           {renderAdressSection()}
           <Row>
-            <Col>{props.company && <CardSubtitle tag="h6" className="pb-2 pr-2">{props.company}</CardSubtitle>}</Col>
+            <Col>{props.company && <CardSubtitle tag="h6" className="pb-3 pr-2">{props.company}</CardSubtitle>}</Col>
           </Row>
           <Row>
-            <Col xs={7} style={{ paddingRight: "0px" }}><CardSubtitle tag="h6" className="pt-1" style={{ paddingRight: "2px" }}>{props.bedsAndBaths}</CardSubtitle></Col>
-            {props.numReviews && <Col xs={5} style={{ paddingLeft: "0px" }}><CardText style={{ position: "relative", fontSize: "12px" }}>{props.numReviews}</CardText></Col>}
+            <Col xs={7} style={{ paddingRight: "0px", paddingLeft: "0px", marginLeft: "10px" }}><CardSubtitle tag="h6" className="pt-1" style={{ paddingRight: "2px" }}>{props.bedsAndBaths}</CardSubtitle></Col>
+            {props.numReviews && <Col xs={4} style={{ paddingRight: "0px", paddingLeft: "0px", marginLeft: "10px" }}><CardText style={{ position: "relative", fontSize: "12px" }}>{props.numReviews}</CardText></Col>}
           </Row>
         </CardBody>
       </Card>

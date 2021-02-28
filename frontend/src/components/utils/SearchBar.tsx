@@ -1,15 +1,20 @@
 import React, { ReactElement } from 'react';
 import { ReactComponent as SearchIcon } from '../../assets/search.svg';
-import styles from './HelpSearchBar.module.scss';
+import styles from './SearchBar.module.scss';
 
-const SearchBar = (): ReactElement => {
+type Props = {
+  readonly placeholder: string;
+  readonly ariaLabel: string;
+};
+
+const SearchBar = ({ placeholder, ariaLabel }: Props): ReactElement => {
   return (
-    <div className={`${styles.faqHelpSearch} input-group mb-3`}>
+    <div className={`${styles.search} input-group mb-3`}>
       <input
         type="text"
         className="form-control"
-        placeholder="Search for any question!"
-        aria-label="Search locations"
+        placeholder={placeholder}
+        aria-label={ariaLabel}
         aria-describedby="basic-addon2"
       />
       <div className="input-group-append">

@@ -1,8 +1,12 @@
 .Home {
   padding: 7vh 7vw;
   height: 100vh;
-  background-image: url('../components/images/home.png');
+  background-image: url('../assets/home.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.search {
+  margin-top: 50px;
 }

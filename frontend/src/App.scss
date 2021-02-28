@@ -5,6 +5,9 @@ body {
 .links,
 .links:hover {
   text-decoration: none;
+}
+
+.links {
   color: black;
 }
 .Home {
@@ -18,6 +21,10 @@ body {
 
 .logo {
   margin-bottom: 8px;
+}
+
+.btn-outline-dark:hover > .links {
+  color: white;
 }
 
 .dropdown {

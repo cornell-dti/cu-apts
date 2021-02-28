@@ -1,8 +1,8 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import icon from '../images/home-icon.png';
+import icon from '../../assets/home-icon.png';
 import { Link } from 'react-router-dom';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import styles from './NavBar.module.scss';
+import { Dropdown } from 'react-bootstrap';
 
 const NavBar = (): ReactElement => {
   const [toggleMenu, setToggle] = useState(false);
@@ -25,17 +25,17 @@ const NavBar = (): ReactElement => {
 
   const displayMobileMenu = (): ReactElement => {
     return (
-      <Dropdown isOpen={toggleMenu} toggle={clickToggle}>
-        <DropdownToggle>
+      <Dropdown show={toggleMenu} onToggle={clickToggle}>
+        <Dropdown.Toggle>
           <span className={`navbar-toggler-icon ${styles.navbarTogglerIcon}`}></span>
-        </DropdownToggle>
-        <DropdownMenu right>
-          <DropdownItem>
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item>
             <Link className="links" to="/faq">
               FAQ
             </Link>
-          </DropdownItem>
-        </DropdownMenu>
+          </Dropdown.Item>
+        </Dropdown.Menu>
       </Dropdown>
     );
   };
