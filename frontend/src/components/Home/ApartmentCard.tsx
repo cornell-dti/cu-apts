@@ -50,15 +50,15 @@ const ApartmentCard = (props: Props): ReactElement => {
         </Row>
       </Col>
     ) : (
-        <Col xs={3}>
-          <Card.Subtitle
-            className="pl-4"
-            style={{ color: 'black', display: 'flex', position: 'relative', fontSize: '14px' }}
-          >
-            $$
+      <Col xs={3}>
+        <Card.Subtitle
+          className="pl-4"
+          style={{ color: 'black', display: 'flex', position: 'relative', fontSize: '14px' }}
+        >
+          $$
         </Card.Subtitle>
-        </Col>
-      );
+      </Col>
+    );
   }
 
   return (
