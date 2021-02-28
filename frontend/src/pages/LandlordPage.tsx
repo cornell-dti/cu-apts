@@ -32,8 +32,8 @@ const LandlordPage = (): ReactElement => {
   return (
     <div>
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
-      {reviews.map(({ date, text, overall_rating }) => (
-        <Review overall_rating={overall_rating} date={date} text={text} />
+      {reviews.map((reviewData) => (
+        <Review {...reviewData} />
       ))}
     </div>
   );

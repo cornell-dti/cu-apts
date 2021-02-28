@@ -1,8 +1,8 @@
 const months = [
   'Jan',
   'Feb',
-  'March',
-  'April',
+  'Mar',
+  'Apr',
   'May',
   'June',
   'July',
@@ -13,6 +13,6 @@ const months = [
   'Dec',
 ];
 
-export default function date_to_string(date: Date): string {
+export default function dateToString(date: Date): string {
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
