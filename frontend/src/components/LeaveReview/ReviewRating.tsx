@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Form } from 'react-bootstrap';
 import { Rating } from '@material-ui/lab';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import styles from './ReviewRating.module.scss';
-import { ReactComponent as Heart } from '../../assets/search.svg';
-import { withStyles } from '@material-ui/core';
+import { FormLabel, Grid, withStyles } from '@material-ui/core';
 
 interface Props {
   name: string;
@@ -22,10 +20,10 @@ const StyledRating = withStyles({
 
 const ReviewRating = ({ name, label }: Props) => {
   return (
-    <>
+    <Grid item xs={5}>
       <StyledRating name={name} defaultValue={0} icon={<FavoriteIcon />} />
-      <Form.Label> {label} </Form.Label>
-    </>
+      <FormLabel> {label} </FormLabel>
+    </Grid>
   );
 };
 
