@@ -12,7 +12,6 @@ const App = (): ReactElement => {
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route exact path="/faq" component={FAQPage} />
-        <Route exact path="/test" component={ReviewModal} />
         <Route path="/landlord/:landlordId" component={LandlordPage} />
       </Switch>
     </Router>

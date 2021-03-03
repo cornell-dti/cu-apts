@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Rating } from '@material-ui/lab';
 import FavoriteIcon from '@material-ui/icons/Favorite';
-import styles from './ReviewRating.module.scss';
 import { FormLabel, Grid, withStyles } from '@material-ui/core';
 
 interface Props {
-  name: string;
   label: string;
+  onChange: (event: React.ChangeEvent<{}>, value: number | null) => void;
 }
 
 const StyledRating = withStyles({
@@ -18,11 +17,15 @@ const StyledRating = withStyles({
   },
 })(Rating);
 
-const ReviewRating = ({ name, label }: Props) => {
+const ReviewRating = ({ label, onChange }: Props) => {
   return (
-    <Grid item xs={5}>
-      <StyledRating name={name} defaultValue={0} icon={<FavoriteIcon />} />
-      <FormLabel> {label} </FormLabel>
+    <Grid container item xs={5}>
+      <Grid item xs={4}>
+        <StyledRating defaultValue={0} icon={<FavoriteIcon />} onChange={onChange} />
+      </Grid>
+      <Grid item xs={8}>
+        <FormLabel>{label}</FormLabel>
+      </Grid>
     </Grid>
   );
 };
