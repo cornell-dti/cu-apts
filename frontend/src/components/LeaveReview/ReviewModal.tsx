@@ -102,8 +102,8 @@ const ReviewModal = ({ open, onClose }: Props) => {
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent style={{ overflow: 'hidden' }}>
         <Grid container direction="column" justify="space-evenly" spacing={4}>
-          <Grid container item direction="row" justify="space-between" alignItems="center">
-            <Grid item xs={4}>
+          <Grid container item justify="space-between" alignItems="center">
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 autoFocus
@@ -112,15 +112,15 @@ const ReviewModal = ({ open, onClose }: Props) => {
                 onChange={updateName}
               />
             </Grid>
-            <Grid item xs={5}>
+            <Grid item xs={12} md={6}>
               <FormControlLabel
                 control={<Switch onChange={updateAnonymous} />}
-                label="Leave this review anonymously"
+                label="Review anonymously"
               />
             </Grid>
           </Grid>
           <Grid container item>
-            <Grid container justify="space-evenly">
+            <Grid container justify="center">
               <ReviewRating
                 name="management"
                 label="Management/Landlord"
@@ -131,8 +131,6 @@ const ReviewModal = ({ open, onClose }: Props) => {
                 label="Building Maintenence"
                 onChange={updateRating('maintenence')}
               ></ReviewRating>
-            </Grid>
-            <Grid container justify="space-evenly">
               <ReviewRating
                 name="amenities"
                 label="Building Amenities"
@@ -143,8 +141,6 @@ const ReviewModal = ({ open, onClose }: Props) => {
                 label="Building Condition"
                 onChange={updateRating('condition')}
               ></ReviewRating>
-            </Grid>
-            <Grid container justify="space-evenly">
               <ReviewRating
                 name="neighborhood"
                 label="Neighborhood & Neighbors"
