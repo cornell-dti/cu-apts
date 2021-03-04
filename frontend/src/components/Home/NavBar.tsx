@@ -1,10 +1,12 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import icon from '../images/home-icon.png';
+import icon from '../../assets/home-icon.png';
 import { Link } from 'react-router-dom';
 import styles from './NavBar.module.scss';
 import { Dropdown } from 'react-bootstrap';
+import ReviewModal from '../LeaveReview/ReviewModal';
 
 const NavBar = (): ReactElement => {
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [toggleMenu, setToggle] = useState(false);
   const clickToggle = (): void => {
     setToggle(!toggleMenu);
@@ -42,11 +44,20 @@ const NavBar = (): ReactElement => {
 
   const displayNavBar = (): ReactElement => {
     return (
-      <ul className={`nav ${styles.navButtonMargin}`}>
+      <ul className="nav nav-button-margin">
         <li>
-          <button type="button" className="btn btn-lg btn-outline-dark">
+          <button type="button" className="btn btn-lg btn-outline-dark mr-4">
             <Link to="/faq" className="links">
               FAQ
+            </Link>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowReviewModal(true)}
+            className="btn btn-lg btn-outline-dark"
+          >
+            <Link to="" className="links">
+              Write Review
             </Link>
           </button>
         </li>
@@ -56,6 +67,7 @@ const NavBar = (): ReactElement => {
 
   return (
     <div>
+      <ReviewModal open={showReviewModal} onClose={() => setShowReviewModal(false)} />
       <nav className={`navbar navbar-light ${styles.navbarExpandLg}`}>
         <a className="navbar-brand" href="/">
           <h1>
