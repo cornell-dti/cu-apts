@@ -21,10 +21,10 @@ const StyledRating = withStyles({
 const ReviewRating = ({ name, label, onChange }: Props) => {
   return (
     <Grid container justify="center" item xs={12} md={6}>
-      <Grid item xs={12} sm={3} md={4}>
+      <Grid container justify="center" item xs={12} sm={3} md={4}>
         <StyledRating name={name} defaultValue={0} icon={<FavoriteIcon />} onChange={onChange} />
       </Grid>
-      <Grid item xs={12} sm={3} md={6}>
+      <Grid container justify="center" item xs={12} sm={5} md={6}>
         <FormLabel>{label}</FormLabel>
       </Grid>
     </Grid>

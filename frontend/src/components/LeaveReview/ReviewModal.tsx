@@ -102,8 +102,8 @@ const ReviewModal = ({ open, onClose }: Props) => {
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent style={{ overflow: 'hidden' }}>
         <Grid container direction="column" justify="space-evenly" spacing={4}>
-          <Grid container item justify="space-between" alignItems="center">
-            <Grid item xs={12} md={6}>
+          <Grid container item alignContent="center">
+            <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
                 fullWidth
                 autoFocus
@@ -112,11 +112,13 @@ const ReviewModal = ({ open, onClose }: Props) => {
                 onChange={updateName}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControlLabel
-                control={<Switch onChange={updateAnonymous} />}
-                label="Review anonymously"
-              />
+            <Grid container justify="center" item xs={12} sm={6}>
+              <Grid item>
+                <FormControlLabel
+                  control={<Switch onChange={updateAnonymous} />}
+                  label="Review anonymously"
+                />
+              </Grid>
             </Grid>
           </Grid>
           <Grid container item>
