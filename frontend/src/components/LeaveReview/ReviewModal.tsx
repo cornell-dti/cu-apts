@@ -23,12 +23,14 @@ interface Ratings {
 
 interface Review {
   name: string;
+  isAnonymous: boolean;
   ratings: Ratings;
   body: string;
 }
 
 const defaultReview: Review = {
   name: '',
+  isAnonymous: false,
   ratings: {
     amenities: 0,
     condition: 0,
@@ -42,6 +44,7 @@ const defaultReview: Review = {
 
 type Action =
   | { type: 'updateName'; name: string }
+  | { type: 'updateAnonymous'; isAnonymous: boolean }
   | { type: 'updateRating'; category: keyof Ratings; rating: number }
   | { type: 'updateBody'; body: string }
   | { type: 'reset' };
@@ -50,6 +53,8 @@ const reducer = (state: Review, action: Action) => {
   switch (action.type) {
     case 'updateName':
       return { ...state, name: action.name };
+    case 'updateAnonymous':
+      return { ...state, isAnonymous: action.isAnonymous };
     case 'updateRating':
       return { ...state, ratings: { ...state.ratings, [action.category]: action.rating } };
     case 'updateBody':
@@ -57,7 +62,7 @@ const reducer = (state: Review, action: Action) => {
     case 'reset':
       return defaultReview;
     default:
-      throw new Error();
+      throw new Error("invalid action type");
   }
 };
 
@@ -68,6 +73,10 @@ const ReviewModal = () => {
     dispatch({ type: 'updateName', name: event.target.value });
   };
 
+  const updateAnonymous = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: 'updateAnonymous', isAnonymous: event.target.checked });
+  };
+
   const updateRating = (category: keyof Ratings) => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
       const rating = value || 0;
@@ -75,7 +84,7 @@ const ReviewModal = () => {
     };
   };
 
-  const updateBody = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const updateBody = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'updateBody', body: event.target.value });
   };
 
@@ -99,38 +108,47 @@ const ReviewModal = () => {
               />
             </Grid>
             <Grid item xs={5}>
-              <FormControlLabel control={<Switch />} label="Leave this review anonymously" />
+              <FormControlLabel
+                control={<Switch onChange={updateAnonymous} />}
+                label="Leave this review anonymously"
+              />
             </Grid>
           </Grid>
           <Grid container item>
             <Grid container justify="space-evenly">
               <ReviewRating
+                name="management"
                 label="Management/Landlord"
                 onChange={updateRating('management')}
               ></ReviewRating>
               <ReviewRating
+                name="maintenence"
                 label="Building Maintenence"
-                onChange={updateRating('management')}
+                onChange={updateRating('maintenence')}
               ></ReviewRating>
             </Grid>
             <Grid container justify="space-evenly">
               <ReviewRating
+                name="amenities"
                 label="Building Amenities"
-                onChange={updateRating('management')}
+                onChange={updateRating('amenities')}
               ></ReviewRating>
               <ReviewRating
+                name="condition"
                 label="Building Condition"
-                onChange={updateRating('management')}
+                onChange={updateRating('condition')}
               ></ReviewRating>
             </Grid>
             <Grid container justify="space-evenly">
               <ReviewRating
+                name="neighborhood"
                 label="Neighborhood & Neighbors"
-                onChange={updateRating('management')}
+                onChange={updateRating('neighborhood')}
               ></ReviewRating>
               <ReviewRating
+                name="transportation"
                 label="Transportation and Parking"
-                onChange={updateRating('management')}
+                onChange={updateRating('transportation')}
               ></ReviewRating>
             </Grid>
           </Grid>
