@@ -12,6 +12,11 @@ import {
 import React, { useReducer } from 'react';
 import ReviewRating from './ReviewRating';
 
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
 interface Ratings {
   management: number;
   maintenence: number;
@@ -66,7 +71,7 @@ const reducer = (state: Review, action: Action) => {
   }
 };
 
-const ReviewModal = () => {
+const ReviewModal = ({ open, onClose }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
 
   const updateName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +98,7 @@ const ReviewModal = () => {
   };
 
   return (
-    <Dialog open={true} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent style={{ overflow: 'hidden' }}>
         <Grid container direction="column" justify="space-evenly" spacing={4}>
