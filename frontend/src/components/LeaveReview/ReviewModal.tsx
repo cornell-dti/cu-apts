@@ -62,7 +62,7 @@ const reducer = (state: Review, action: Action) => {
     case 'reset':
       return defaultReview;
     default:
-      throw new Error("invalid action type");
+      throw new Error('invalid action type');
   }
 };
 
