@@ -12,26 +12,25 @@ import {
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
-import icon from '../../assets/home-icon.png';
+import icon from '../../../assets/home-icon.png';
 
-const headersData = [
-  {
-    label: 'FAQ',
-    href: '/faq',
-  },
-  {
-    label: 'Reviews',
-    href: '/reviews',
-  },
-];
+export type navbarButton = {
+  label: string;
+  href: string;
+};
+
+type Props = {
+  readonly headersData: navbarButton[];
+};
 
 const useStyles = makeStyles(() => ({
+  grow: {
+    flexGrow: 1,
+  },
   header: {
     backgroundColor: 'transparent',
-    paddingRight: '7%',
-    paddingLeft: '7%',
     paddingTop: '3%',
-    '@media (max-width: 900px)': {
+    '@media (max-width: 992px)': {
       paddingLeft: 0,
     },
     boxShadow: 'none',
@@ -39,6 +38,9 @@ const useStyles = makeStyles(() => ({
   logo: {
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 500,
+    '@media only screen and (max-width: 320px) ': {
+      fontSize: '1.3em',
+    },
     color: 'black',
     textAlign: 'left',
   },
@@ -48,7 +50,6 @@ const useStyles = makeStyles(() => ({
     color: 'black',
     fontSize: '1.2rem',
     marginLeft: '38px',
-    borderStyle: 'solid',
   },
   toolbar: {
     display: 'flex',
@@ -62,20 +63,30 @@ const useStyles = makeStyles(() => ({
   },
   menuDrawer: {
     alignSelf: 'right',
+    marginBottom: '8px',
   },
 }));
 
-const Header = (): ReactElement => {
+const NavBar = ({ headersData }: Props): ReactElement => {
   const [state, setState] = useState({
     mobileView: false,
     drawerOpen: false,
   });
   const { mobileView, drawerOpen } = state;
-  const { header, logo, menuButton, toolbar, drawerContainer, homeImage, menuDrawer } = useStyles();
+  const {
+    grow,
+    header,
+    logo,
+    menuButton,
+    toolbar,
+    drawerContainer,
+    homeImage,
+    menuDrawer,
+  } = useStyles();
 
   useEffect(() => {
     const setResponsiveness = () => {
-      return window.innerWidth < 900
+      return window.innerWidth < 992
         ? setState((prevState) => ({ ...prevState, mobileView: true }))
         : setState((prevState) => ({ ...prevState, mobileView: false }));
     };
@@ -121,7 +132,10 @@ const Header = (): ReactElement => {
 
   const homeLogo = (
     <Typography variant="h4" component="h1" className={logo}>
-      <img className={homeImage} src={icon} width="40" height="auto" alt="home icon" /> CU Housing
+      <a href="/">
+        <img className={homeImage} src={icon} width="40" height="auto" alt="home icon" />
+      </a>{' '}
+      CU Housing
     </Typography>
   );
 
@@ -141,6 +155,7 @@ const Header = (): ReactElement => {
     return (
       <Toolbar>
         <div>{homeLogo}</div>
+        <div className={grow} />
         <IconButton
           className={menuDrawer}
           {...{
@@ -151,7 +166,7 @@ const Header = (): ReactElement => {
             onClick: handleDrawerOpen,
           }}
         >
-          <MenuIcon />
+          <MenuIcon fontSize="large" />
         </IconButton>
         <Drawer
           {...{
@@ -168,9 +183,11 @@ const Header = (): ReactElement => {
 
   return (
     <header>
-      <AppBar className={header}>{mobileView ? displayMobile() : displayDesktop()}</AppBar>
+      <AppBar position="static" className={header}>
+        {mobileView ? displayMobile() : displayDesktop()}
+      </AppBar>
     </header>
   );
 };
 
-export default Header;
+export default NavBar;

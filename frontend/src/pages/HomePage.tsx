@@ -1,17 +1,30 @@
 import React, { ReactElement } from 'react';
 import SearchBar from '../components/utils/SearchBar';
-import NavBar from '../components/Home/NavBar';
 import SectionDivider from '../components/Home/SectionDivider';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Container, Row, Col } from 'react-bootstrap';
 import styles from './HomePage.module.scss';
-import AppBar from '../components/NavBar/Header';
+import AppBar from '../components/utils/NavBar';
+import { navbarButton } from '../components/utils/NavBar';
+
+const faq: navbarButton = {
+  label: 'FAQ',
+  href: '/faq',
+};
+
+const review: navbarButton = {
+  label: 'Reviews',
+  href: '/reviews',
+};
+const headersData = [faq, review];
 
 const HomePage = (): ReactElement => {
   return (
     <Container className={styles.Home}>
-      <AppBar />
-      <NavBar />
+      <AppBar headersData={headersData} />
+      <div className={styles.homepageDescription}>
+        <h5>Search for off-campus housing, review apartments, and share feedback!</h5>
+      </div>
       <SearchBar placeholder="Search by any location e.g. “301 College Ave" ariaLabel="" />
       <SectionDivider />
       <Row>
