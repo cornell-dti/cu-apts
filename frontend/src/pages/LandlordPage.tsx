@@ -4,6 +4,31 @@ import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import styles from '../components/Reviews/Reviews.module.scss';
 import InfoFeatures from '../components/Reviews/InfoFeatures';
+import Review from '../components/Review/Review';
+
+const reviews = [
+  {
+    name: 'user1',
+    overallRating: 3,
+    date: new Date(),
+    text:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+  },
+  {
+    name: 'user2',
+    overallRating: 2,
+    date: new Date(),
+    text:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+  },
+  {
+    name: 'user3',
+    overallRating: 1,
+    date: new Date(),
+    text:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+  },
+];
 
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
@@ -26,9 +51,11 @@ const LandlordPage = (): ReactElement => {
             <>
               <Grid item xs={9}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <div className={styles.component}>placeholder</div>
-                  </Grid>
+                  {reviews.map((reviewData, index) => (
+                    <Grid item xs={12}>
+                      <Review {...reviewData} key={index}/>
+                    </Grid>
+                  ))}
                 </Grid>
               </Grid>
 
@@ -40,9 +67,11 @@ const LandlordPage = (): ReactElement => {
 
               <Grid item xs={12}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <div className={styles.component}>placeholder</div>
-                  </Grid>
+                  {reviews.map((reviewData, index) => (
+                    <Grid item xs={12}>
+                      <Review {...reviewData} key={index} />
+                    </Grid>
+                  ))}
                 </Grid>
               </Grid>
             </>

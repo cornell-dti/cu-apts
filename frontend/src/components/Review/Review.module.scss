@@ -1,0 +1,51 @@
+.card {
+  div {
+    display: inline-block;
+    margin-right: 10px;
+  }
+}
+
+body {
+  background-color: #f6f6f6;
+}
+
+.component {
+  padding: 14px;
+  height: 100%;
+  background-color: white;
+}
+
+.card,
+.component {
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.title {
+  font-weight: 700;
+}
+
+ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.detail {
+  text-transform: uppercase;
+  color: '#5D5D5D';
+  font-size: 0.8em;
+}
+
+p {
+  margin-bottom: 8px;
+}
+
+.image {
+  height: 70%;
+  width: 70%;
+}
