@@ -124,7 +124,7 @@ const ReviewModal = ({ open, onClose }: Props) => {
               </Grid>
             </Grid>
             <Grid container item>
-              <Grid container justify="center">
+              <Grid container spacing={1} justify="center">
                 <ReviewRating
                   name="management"
                   label="Management/Landlord"
