@@ -1,0 +1,23 @@
+.card {
+  div {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  width: 60vw;
+  border-radius: 10px;
+  margin: 3vw;
+}
+
+@media (min-width: 500px) {
+  .date {
+    position: relative;
+    float: right;
+    padding-top: 8px;
+  }
+}
+
+@media (max-width: 650px) {
+  .card {
+    width: 94vw;
+  }
+}
