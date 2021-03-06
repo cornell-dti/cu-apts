@@ -14,7 +14,7 @@ const faq: navbarButton = {
 
 const review: navbarButton = {
   label: 'Reviews',
-  href: '/reviews',
+  href: '/landlord/1',
 };
 const headersData = [faq, review];
 

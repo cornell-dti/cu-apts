@@ -28,11 +28,10 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
   },
   header: {
-    backgroundColor: 'transparent',
+    backgroundColor: 'white',
     paddingTop: '3%',
-    '@media (max-width: 992px)': {
-      paddingLeft: 0,
-    },
+    paddingLeft: '7%',
+    paddingRight: '7%',
     boxShadow: 'none',
   },
   logo: {
@@ -49,6 +48,7 @@ const useStyles = makeStyles(() => ({
     size: '18px',
     color: 'black',
     fontSize: '1.2rem',
+    textTransform: 'none',
     marginLeft: '38px',
   },
   toolbar: {
@@ -94,7 +94,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     window.addEventListener('resize', () => setResponsiveness());
   }, []);
 
-  const getDrawerChoices = () => {
+  const getDrawerChoices = (): ReactElement[] => {
     return headersData.map(({ label, href }) => {
       return (
         <Link
@@ -112,7 +112,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     });
   };
 
-  const getMenuButtons = () => {
+  const getMenuButtons = (): ReactElement[] => {
     return headersData.map(({ label, href }) => {
       return (
         <Button
@@ -130,7 +130,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     });
   };
 
-  const homeLogo = (
+  const homeLogo: ReactElement = (
     <Typography variant="h4" component="h1" className={logo}>
       <a href="/">
         <img className={homeImage} src={icon} width="40" height="auto" alt="home icon" />
@@ -139,7 +139,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     </Typography>
   );
 
-  const displayDesktop = () => {
+  const displayDesktop = (): ReactElement => {
     return (
       <Toolbar className={toolbar}>
         {homeLogo}
@@ -148,7 +148,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     );
   };
 
-  const displayMobile = () => {
+  const displayMobile = (): ReactElement => {
     const handleDrawerOpen = () => setState((prevState) => ({ ...prevState, drawerOpen: true }));
     const handleDrawerClose = () => setState((prevState) => ({ ...prevState, drawerOpen: false }));
 
@@ -183,7 +183,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   return (
     <header>
-      <AppBar position="static" className={header}>
+      <AppBar position="fixed" className={header}>
         {mobileView ? displayMobile() : displayDesktop()}
       </AppBar>
     </header>
