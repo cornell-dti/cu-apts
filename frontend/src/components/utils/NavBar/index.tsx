@@ -13,14 +13,20 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import icon from '../../../assets/home-icon.png';
+import isMobile from '../../../utils/isMobile';
 
-export type navbarButton = {
+export type NavbarButton = {
   label: string;
   href: string;
 };
 
+type View = {
+  mobileView: boolean;
+  drawerOpen: boolean;
+}
+
 type Props = {
-  readonly headersData: navbarButton[];
+  readonly headersData: NavbarButton[];
 };
 
 const useStyles = makeStyles(() => ({
@@ -29,16 +35,20 @@ const useStyles = makeStyles(() => ({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: '3%',
-    paddingLeft: '7%',
-    paddingRight: '7%',
+    paddingTop: '1.5em',
+    paddingLeft: '10vw',
+    paddingRight: '10vw',
+    '@media only screen and (max-width: 414px) ': {
+      paddingLeft: '1em',
+      paddingRight: '1em',
+    },
     boxShadow: 'none',
   },
   logo: {
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 500,
     '@media only screen and (max-width: 320px) ': {
-      fontSize: '1.3em',
+      fontSize: '1.7em',
     },
     color: 'black',
     textAlign: 'left',
@@ -68,7 +78,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const NavBar = ({ headersData }: Props): ReactElement => {
-  const [state, setState] = useState({
+  const [state, setState] = useState<View>({
     mobileView: false,
     drawerOpen: false,
   });
@@ -86,7 +96,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   useEffect(() => {
     const setResponsiveness = () => {
-      return window.innerWidth < 992
+      return isMobile()
         ? setState((prevState) => ({ ...prevState, mobileView: true }))
         : setState((prevState) => ({ ...prevState, mobileView: false }));
     };

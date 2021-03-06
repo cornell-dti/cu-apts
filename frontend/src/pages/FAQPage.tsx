@@ -1,6 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import AppBar from '../components/utils/NavBar';
-import { navbarButton } from '../components/utils/NavBar';
+import { NavbarButton } from '../components/utils/NavBar';
 import FAQHelp from '../components/FAQHelp/FAQHelp';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
@@ -17,7 +17,7 @@ export type FAQData = {
   faqs: FAQ[];
 };
 
-const review: navbarButton = {
+const review: NavbarButton = {
   label: 'Reviews',
   href: '/reviews',
 };

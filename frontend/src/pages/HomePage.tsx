@@ -5,14 +5,14 @@ import ApartmentCard from '../components/Home/ApartmentCard';
 import { Container, Row, Col } from 'react-bootstrap';
 import styles from './HomePage.module.scss';
 import AppBar from '../components/utils/NavBar';
-import { navbarButton } from '../components/utils/NavBar';
+import { NavbarButton } from '../components/utils/NavBar';
 
-const faq: navbarButton = {
+const faq: NavbarButton = {
   label: 'FAQ',
   href: '/faq',
 };
 
-const review: navbarButton = {
+const review: NavbarButton = {
   label: 'Reviews',
   href: '/landlord/1',
 };
