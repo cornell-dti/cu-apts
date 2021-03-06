@@ -23,7 +23,7 @@ export type NavbarButton = {
 type View = {
   mobileView: boolean;
   drawerOpen: boolean;
-}
+};
 
 type Props = {
   readonly headersData: NavbarButton[];
