@@ -32,23 +32,25 @@ const useStyles = makeStyles({
     '@media (min-width: 650px)': {
       position: 'relative',
       float: 'right',
-      paddingTop: '8px'
-    }
+      paddingTop: '8px',
+    },
   },
 });
 
 const Review = ({ overallRating, date, text }: Props): ReactElement => {
-  const {root, title, dateText} = useStyles();
+  const { root, title, dateText } = useStyles();
   return (
     <Card variant="outlined" className={root}>
       <CardContent>
-        <Typography className={title} variant="h5" component="h2">Anonymous </Typography>
-        <Rating rating={overallRating} />
-        <Typography className={`${dateText} mb-2 text-muted`}>
-          {dateToString(date)}
+        <Typography className={title} variant="h5" component="h2">
+          Anonymous{' '}
         </Typography>
+        <Rating rating={overallRating} />
+        <Typography className={`${dateText} mb-2 text-muted`}>{dateToString(date)}</Typography>
         <hr />
-        <Typography variant="body2" component="p">{text}</Typography>
+        <Typography variant="body2" component="p">
+          {text}
+        </Typography>
       </CardContent>
     </Card>
   );
