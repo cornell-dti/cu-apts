@@ -43,10 +43,10 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
     <Card variant="outlined" className={root}>
       <CardContent>
         <Typography className={title} variant="h5" component="h2">
-          Anonymous{' '}
+          Anonymous
         </Typography>
         <Rating rating={overallRating} />
-        <Typography className={`${dateText} mb-2 text-muted`}>{dateToString(date)}</Typography>
+        <Typography className={dateText}>{dateToString(date)}</Typography>
         <hr />
         <Typography variant="body2" component="p">
           {text}
