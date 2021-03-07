@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+. "$(dirname "$0")/common.sh"
+
+echo "Prettifying your code on commit..."
+yarn lint-staged
+echo "Running the TypeScript compiler..."
+yarn tsc
