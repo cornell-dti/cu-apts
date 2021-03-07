@@ -4,8 +4,7 @@ import SectionDivider from '../components/Home/SectionDivider';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Container, Row, Col } from 'react-bootstrap';
 import styles from './HomePage.module.scss';
-import AppBar from '../components/utils/NavBar';
-import { NavbarButton } from '../components/utils/NavBar';
+import AppBar, { NavbarButton }  from '../components/utils/NavBar';
 
 const faq: NavbarButton = {
   label: 'FAQ',

@@ -1,6 +1,5 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import AppBar from '../components/utils/NavBar';
-import { NavbarButton } from '../components/utils/NavBar';
+import NavBar, { NavbarButton } from '../components/utils/NavBar';
 import FAQHelp from '../components/FAQHelp/FAQHelp';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
@@ -38,7 +37,7 @@ const FAQPage = (): ReactElement => {
   }, []);
   return (
     <div className={styles.faqPage}>
-      <AppBar headersData={headersData} />
+      <NavBar headersData={headersData} />
       <div className={styles.faqHelp}>
         <FAQHelp />
       </div>

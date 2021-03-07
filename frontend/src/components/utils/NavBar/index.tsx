@@ -35,9 +35,9 @@ const useStyles = makeStyles(() => ({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: '1.5em',
-    paddingLeft: '10vw',
-    paddingRight: '10vw',
+    paddingTop: '1em',
+    paddingLeft: '5em',
+    paddingRight: '5em',
     '@media only screen and (max-width: 414px) ': {
       paddingLeft: '1em',
       paddingRight: '1em',
