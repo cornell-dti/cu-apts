@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import styles from '../components/Reviews/Reviews.module.scss';
-import InfoFeatures from '../components/Reviews/InfoFeatures';
+import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 
 const reviews = [
@@ -32,7 +32,8 @@ const reviews = [
 
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
-  const features = ['parking', 'heating', 'trash removal', 'snow plowing', 'maintenance'];
+  const features = ['Parking', 'Heating', 'Trash removal', 'Snow plowing', 'Maintenance'];
+  const info = ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'];
   const phone = '555-555-5555';
   const address = '119 S Cayuga St, Ithaca, NY 14850';
   const [width, setWidth] = useState(window.innerWidth);
@@ -43,13 +44,13 @@ const LandlordPage = (): ReactElement => {
   });
 
   return (
-    <div className={styles.container}>
+    <div >
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
       <Container>
-        <Grid container spacing={3} direction="row" justify="center" alignItems="stretch">
+        <Grid container spacing={3} direction="row"  >
           {width >= breakpoint ? (
             <>
-              <Grid item xs={9}>
+              <Grid item sm={8}>
                 <Grid container spacing={3}>
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
@@ -59,11 +60,11 @@ const LandlordPage = (): ReactElement => {
                 </Grid>
               </Grid>
 
-              <InfoFeatures features={features} phone={phone} address={address} />
+              <InfoFeatures propertyInfo={info} propertyFeatures={features} phone={phone} address={address} />
             </>
           ) : (
             <>
-              <InfoFeatures features={features} phone={phone} address={address} />
+              <InfoFeatures propertyInfo={info} propertyFeatures={features} phone={phone} address={address} />
 
               <Grid item xs={12}>
                 <Grid container spacing={3}>

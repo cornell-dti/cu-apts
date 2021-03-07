@@ -6,13 +6,13 @@
 }
 
 body {
-  background-color: #f6f6f6;
+  background-color: white;
 }
 
 .component {
-  padding: 14px;
   height: 100%;
   background-color: white;
+  padding: 14px;
 }
 
 .card,
@@ -36,7 +36,6 @@ ul {
 }
 
 .detail {
-  text-transform: uppercase;
   color: '#5D5D5D';
   font-size: 0.8em;
 }
