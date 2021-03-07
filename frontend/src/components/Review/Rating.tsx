@@ -12,7 +12,7 @@ const filledHearts = (rating: number) => {
 
 const emptyHearts = (rating: number) => {
   return [...Array(5 - rating)].map(() => (
-    <FavoriteBorderIcon fontSize="small" className={styles.rating} />
+    <FavoriteBorderIcon fontSize="small" className={styles.ratingDiv} />
   ));
 };
 
