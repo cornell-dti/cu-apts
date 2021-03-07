@@ -12,13 +12,13 @@ const filledHearts = (rating: number) => {
 
 const emptyHearts = (rating: number) => {
   return [...Array(5 - rating)].map(() => (
-    <FavoriteBorderIcon fontSize="small" className={styles.ratingDiv} />
+    <FavoriteBorderIcon fontSize="small" className={styles.rating} />
   ));
 };
 
 const Rating = ({ rating }: Props): ReactElement => {
   return (
-    <div>
+    <div className={styles.ratingDiv}>
       {filledHearts(rating)}
       {emptyHearts(rating)}
     </div>
