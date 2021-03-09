@@ -1,3 +1,4 @@
+import { Box } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { ReactComponent as SearchIcon } from '../../assets/search.svg';
 import styles from './SearchBar.module.scss';
@@ -9,7 +10,7 @@ type Props = {
 
 const SearchBar = ({ placeholder, ariaLabel }: Props): ReactElement => {
   return (
-    <div className={`${styles.search} input-group mb-3`}>
+    <Box mt={10}>
       <input
         type="text"
         className="form-control"
@@ -22,7 +23,7 @@ const SearchBar = ({ placeholder, ariaLabel }: Props): ReactElement => {
           <SearchIcon />
         </button>
       </div>
-    </div>
+    </Box>
   );
 };
 
