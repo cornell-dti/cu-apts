@@ -44,27 +44,37 @@ const LandlordPage = (): ReactElement => {
   });
 
   return (
-    <div >
+    <div>
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
       <Container>
-        <Grid container spacing={3} direction="row"  >
+        <Grid container spacing={3} direction="row">
           {width >= breakpoint ? (
             <>
-              <Grid item sm={8}>
+              <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
-                      <Review {...reviewData} key={index}/>
+                      <Review {...reviewData} key={index} />
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
 
-              <InfoFeatures propertyInfo={info} propertyFeatures={features} phone={phone} address={address} />
+              <InfoFeatures
+                propertyInfo={info}
+                propertyFeatures={features}
+                phone={phone}
+                address={address}
+              />
             </>
           ) : (
             <>
-              <InfoFeatures propertyInfo={info} propertyFeatures={features} phone={phone} address={address} />
+              <InfoFeatures
+                propertyInfo={info}
+                propertyFeatures={features}
+                phone={phone}
+                address={address}
+              />
 
               <Grid item xs={12}>
                 <Grid container spacing={3}>

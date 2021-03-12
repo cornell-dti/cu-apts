@@ -8,7 +8,6 @@ type Props = {
 };
 
 export default function PropertyInfo({ info, title }: Props): ReactElement {
-
   return (
     <div className={styles.component}>
       <p className={styles.title}>{title}</p>
