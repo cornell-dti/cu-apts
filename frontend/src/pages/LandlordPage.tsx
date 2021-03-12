@@ -2,7 +2,6 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
-import styles from '../components/Reviews/Reviews.module.scss';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 
