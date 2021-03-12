@@ -12,7 +12,6 @@ import {
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
-import icon from '../../../assets/home-icon.png';
 import isMobile from '../../../utils/isMobile';
 
 export type NavbarButton = {
@@ -83,16 +82,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerOpen: false,
   });
   const { mobileView, drawerOpen } = state;
-  const {
-    grow,
-    header,
-    logo,
-    menuButton,
-    toolbar,
-    drawerContainer,
-    homeImage,
-    menuDrawer,
-  } = useStyles();
+  const { grow, header, logo, menuButton, toolbar, drawerContainer, menuDrawer } = useStyles();
 
   useEffect(() => {
     const setResponsiveness = () => {

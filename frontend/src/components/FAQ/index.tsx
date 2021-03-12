@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import CollapsibleHeader from './CollapsibleHeader';
 import { FAQData } from '../../pages/FAQPage';
-import { Container, Grid, Typography } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 
 type Props = {
   readonly data: FAQData[];

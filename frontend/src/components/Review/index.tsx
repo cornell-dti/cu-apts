@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Card, CardContent, CardHeader, Grid, Paper, Typography } from '@material-ui/core';
+import { Card, CardContent, Grid, Typography } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 
@@ -36,17 +36,6 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
         </CardContent>
       </Card>
     </Grid>
-    // <Card className={styles.card}>
-    //   <Card.Body>
-    //     <Card.Title>Anonymous </Card.Title>
-    //     <Rating rating={overallRating} />
-    //     <Card.Subtitle className={`${styles.date} mb-2 text-muted`}>
-    //       {dateToString(date)}
-    //     </Card.Subtitle>
-    //     <hr />
-    //     <Card.Text>{text}</Card.Text>
-    //   </Card.Body>
-    // </Card>
   );
 };
 
