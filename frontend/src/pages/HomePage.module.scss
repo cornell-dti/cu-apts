@@ -1,12 +1,17 @@
 .Home {
   padding: 7vh 7vw;
   height: 100vh;
-  background-image: url('../assets/home.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: #f6f6f6;
 }
 
 .search {
   margin-top: 50px;
+}
+
+.homepageDescription {
+  padding-left: 2vw;
+  padding-top: 1vh;
 }
