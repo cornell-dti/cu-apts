@@ -1,13 +1,22 @@
+import { Box, Grid, Typography } from '@material-ui/core';
+import SearchBar from 'material-ui-search-bar';
 import React, { ReactElement } from 'react';
-import SearchBar from '../utils/SearchBar';
 import styles from './FAQHelp.module.scss';
 
 const FAQHelp = (): ReactElement => {
   return (
-    <div className={styles.helpComponent}>
-      <h2 className={styles.helpTitle}>Need Help?</h2>
-      <SearchBar placeholder="Search for any question..." ariaLabel="Search questions" />
-    </div>
+    <Box bgcolor="#b94630" p={4}>
+      <Grid container direction="column" alignItems="center" spacing={1}>
+        <Grid item>
+          <Typography color="initial" variant="h5">
+            Need Help?
+          </Typography>
+        </Grid>
+        <Grid item xs="auto">
+          <SearchBar placeholder="Search by any location e.g. “301 College Ave" />
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

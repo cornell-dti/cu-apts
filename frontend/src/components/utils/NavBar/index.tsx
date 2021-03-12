@@ -69,7 +69,7 @@ const useStyles = makeStyles(() => ({
     padding: '20px 30px',
   },
   homeImage: {
-    marginBottom: '8px',
+    marginBottom: '-8px',
   },
   menuDrawer: {
     alignSelf: 'right',
@@ -142,10 +142,9 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   const homeLogo: ReactElement = (
     <Typography variant="h4" component="h1" className={logo}>
-      <a href="/">
-        <img className={homeImage} src={icon} width="40" height="auto" alt="home icon" />
-      </a>{' '}
-      CU Housing
+      <Link color="textPrimary" underline="none" href="/">
+        CU Housing
+      </Link>
     </Typography>
   );
 

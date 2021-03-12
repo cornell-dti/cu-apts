@@ -1,10 +1,8 @@
 import React, { ReactElement } from 'react';
 import SearchBar from 'material-ui-search-bar';
-import SectionDivider from '../components/Home/SectionDivider';
 import ApartmentCard from '../components/Home/ApartmentCard';
-import styles from './HomePage.module.scss';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
-import { Box, Container, Grid, Paper, Typography } from '@material-ui/core';
+import { Box, Container, Grid, Typography } from '@material-ui/core';
 
 const faq: NavbarButton = {
   label: 'FAQ',

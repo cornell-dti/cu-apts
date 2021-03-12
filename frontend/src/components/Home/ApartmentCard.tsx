@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import ApartmentImg from '../../assets/apartment-sample.png';
-import { Box, Card, CardContent, CardMedia, Grid, Typography } from '@material-ui/core';
+import { Card, CardContent, CardMedia, Grid, Typography } from '@material-ui/core';
 import RoomOutlinedIcon from '@material-ui/icons/RoomOutlined';
 import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
 
@@ -20,15 +20,19 @@ const ApartmentCard = (props: Props): ReactElement => {
         <CardMedia image={ApartmentImg} component="img" title="Apartment Image" />
         <CardContent>
           <Grid container spacing={1}>
-            <Grid container item direction="row" justify="space-between" alignItems="center">
+            <Grid container item justify="space-between" alignItems="center">
               <Grid item>
                 <Typography variant="h6">
-                  <RoomOutlinedIcon /> {props.address}
+                  <Grid container alignItems="center">
+                    <RoomOutlinedIcon /> {props.address}
+                  </Grid>
                 </Typography>
               </Grid>
               <Grid item>
                 <Typography variant="body1">
-                  <LocalOfferOutlinedIcon /> {props.price || '$$'}
+                  <Grid container alignItems="center">
+                    <LocalOfferOutlinedIcon /> {props.price || '$$'}
+                  </Grid>
                 </Typography>
               </Grid>
             </Grid>
