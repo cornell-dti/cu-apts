@@ -19,13 +19,13 @@ export default function InfoFeatures({
 }: Props): ReactElement {
   return (
     <Grid item xs={12} sm={4}>
-    <div className={styles.component}>
-    <Info phone={phone} address={address} />
+      <div className={styles.component}>
+        <Info phone={phone} address={address} />
         <hr />
-        <PropertyInfo title='Property Info' info={propertyInfo} />
+        <PropertyInfo title="Property Info" info={propertyInfo} />
         <hr />
-      <PropertyInfo title="Property Features" info={propertyFeatures} />
-    </div>
-  </Grid>
+        <PropertyInfo title="Property Features" info={propertyFeatures} />
+      </div>
+    </Grid>
   );
 }

@@ -9,7 +9,7 @@ type Props = {
 
 export default function PropertyInfo({ info, title }: Props): ReactElement {
   return (
-    <div >
+    <div>
       <p className={styles.title}>{title}</p>
       <div className={styles.detail}>
         <Grid container spacing={1} direction="row">
