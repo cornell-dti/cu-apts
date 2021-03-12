@@ -8,7 +8,7 @@ type Props = {
 
 export default function Info({ phone, address }: Props): ReactElement {
   return (
-    <div className={styles.component}>
+    <div>
       <p className={styles.title}>Info</p>
       <div className={styles.detail}>
         <p>{phone}</p>
