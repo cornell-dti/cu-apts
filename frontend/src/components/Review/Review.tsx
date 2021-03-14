@@ -13,7 +13,7 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
   const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
   return (
     <Grid item>
-      <Card>
+      <Card variant="outlined">
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justify="space-between">

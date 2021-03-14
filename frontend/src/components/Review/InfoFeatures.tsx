@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import Info from './Info';
 import PropertyInfo from './PropertyInfo';
 import styles from './Review.module.scss';
+import { Card, CardContent, Divider } from '@material-ui/core';
 
 type Props = {
   readonly propertyInfo: string[];
@@ -19,13 +20,15 @@ export default function InfoFeatures({
 }: Props): ReactElement {
   return (
     <Grid item xs={12} sm={4}>
-      <div className={styles.component}>
-        <Info phone={phone} address={address} />
-        <hr />
-        <PropertyInfo title="Property Info" info={propertyInfo} />
-        <hr />
-        <PropertyInfo title="Property Features" info={propertyFeatures} />
-      </div>
+      <Card variant="outlined">
+        <CardContent>
+          <Info phone={phone} address={address} />
+          <hr />
+          <PropertyInfo title="Property Info" info={propertyInfo} />
+          <hr />
+          <PropertyInfo title="Property Features" info={propertyFeatures} />
+        </CardContent>
+      </Card>
     </Grid>
   );
 }
