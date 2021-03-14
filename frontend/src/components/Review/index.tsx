@@ -26,7 +26,7 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
                 </Grid>
               </Grid>
               <Grid item>
-                <Typography variant={'h6'}>Anonymous</Typography>
+                <Typography variant="h6">Anonymous</Typography>
               </Grid>
             </Grid>
             <Grid item container alignContent="center">
