@@ -2,8 +2,7 @@ import React, { ReactElement } from 'react';
 import Grid from '@material-ui/core/Grid';
 import Info from './Info';
 import PropertyInfo from './PropertyInfo';
-import styles from './Review.module.scss';
-import { Card, CardContent, Divider } from '@material-ui/core';
+import { Card, CardContent } from '@material-ui/core';
 
 type Props = {
   readonly propertyInfo: string[];
