@@ -7,12 +7,14 @@ type Props = {
   readonly rating: number;
 };
 const filledHearts = (rating: number) => {
-  return [...Array(rating)].map(() => <FavoriteIcon fontSize="small" className={styles.rating} />);
+  return [...Array(rating)].map((value, index) => (
+    <FavoriteIcon fontSize="small" className={styles.rating} key={index} />
+  ));
 };
 
 const emptyHearts = (rating: number) => {
-  return [...Array(5 - rating)].map(() => (
-    <FavoriteBorderIcon fontSize="small" className={styles.rating} />
+  return [...Array(5 - rating)].map((value, index) => (
+    <FavoriteBorderIcon fontSize="small" className={styles.rating} key={index} />
   ));
 };
 

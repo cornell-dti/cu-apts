@@ -14,13 +14,7 @@ type Props = {
 
 const useStyles = makeStyles({
   root: {
-    width: '60vw',
-    '@media (max-width: 650px)': {
-      width: '94vw',
-    },
     borderRadius: '10px',
-    marginLeft: '3vw',
-    marginRight: '3vw',
     marginBottom: '3vh',
     boxShadow: 'none',
   },
@@ -37,8 +31,9 @@ const useStyles = makeStyles({
   },
 });
 
-const Review = ({ overallRating, date, text }: Props): ReactElement => {
+export default function Review({ overallRating, date, text }: Props): ReactElement {
   const { root, title, dateText } = useStyles();
+
   return (
     <Card variant="outlined" className={root}>
       <CardContent>
@@ -54,6 +49,4 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
       </CardContent>
     </Card>
   );
-};
-
-export default Review;
+}
