@@ -1,5 +1,5 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import FAQNavBar from '../components/FAQ/FAQNavBar';
+import NavBar, { NavbarButton } from '../components/utils/NavBar';
 import FAQHelp from '../components/FAQHelp/FAQHelp';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
@@ -16,6 +16,13 @@ export type FAQData = {
   faqs: FAQ[];
 };
 
+const review: NavbarButton = {
+  label: 'Reviews',
+  href: '/reviews',
+};
+
+const headersData = [review];
+
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState([]);
   useEffect(() => {
@@ -30,7 +37,7 @@ const FAQPage = (): ReactElement => {
   }, []);
   return (
     <div className={styles.faqPage}>
-      <FAQNavBar />
+      <NavBar headersData={headersData} />
       <div className={styles.faqHelp}>
         <FAQHelp />
       </div>

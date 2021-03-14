@@ -67,3 +67,6 @@ yarn-error.log*
 
 # Firebase admin key
 firebase-adminsdk.json
+
+# TSConfig build info (incremental)
+**/tsconfig.tsbuildinfo

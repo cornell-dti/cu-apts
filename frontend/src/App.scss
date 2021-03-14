@@ -1,5 +1,6 @@
 body {
-  width: 100vw;
+  width: 100%;
+  padding-top: 70px;
 }
 
 .links,
@@ -9,14 +10,6 @@ body {
 
 .links {
   color: black;
-}
-.Home {
-  padding: 7vh 7vw;
-  height: 100vh;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-color: #f6f6f6;
 }
 
 .logo {

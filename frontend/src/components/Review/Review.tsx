@@ -10,7 +10,7 @@ type Props = {
   readonly text: string;
 };
 
-const Review = ({ overallRating, date, text }: Props): ReactElement => {
+export default function Review({ overallRating, date, text }: Props): ReactElement {
   return (
     <Card className={styles.card}>
       <Card.Body>
@@ -24,6 +24,4 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
       </Card.Body>
     </Card>
   );
-};
-
-export default Review;
+}
