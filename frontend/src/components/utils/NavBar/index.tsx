@@ -13,7 +13,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import icon from '../../../assets/home-icon.png';
-import isMobile from '../../../utils/isMobile';
+import { isMobile } from '../../../utils/isMobile';
 
 export type NavbarButton = {
   label: string;
