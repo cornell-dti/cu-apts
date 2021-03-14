@@ -5,6 +5,7 @@ import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
 import axios from 'axios';
 import styles from './FAQPage.module.scss';
+import { useTitle } from '../utils';
 
 export type FAQ = {
   question: string;
@@ -25,6 +26,9 @@ const headersData = [review];
 
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState([]);
+
+  useTitle('FAQ');
+
   useEffect(() => {
     axios
       .get('http://localhost:8080/')
