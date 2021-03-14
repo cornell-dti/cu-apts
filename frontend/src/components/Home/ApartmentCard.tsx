@@ -6,14 +6,19 @@ import LocalOfferOutlinedIcon from '@material-ui/icons/LocalOfferOutlined';
 
 type Props = {
   address: string;
-  company?: string;
   bedsAndBaths?: string;
-  price?: string;
-  topReviewDisplay?: string;
+  company?: string;
   numReviews?: string;
+  price?: string;
 };
 
-const ApartmentCard = (props: Props): ReactElement => {
+const ApartmentCard = ({
+  address,
+  bedsAndBaths,
+  company,
+  numReviews,
+  price,
+}: Props): ReactElement => {
   return (
     <Grid item xs={7} lg={3}>
       <Card>
@@ -24,27 +29,27 @@ const ApartmentCard = (props: Props): ReactElement => {
               <Grid item>
                 <Typography variant="h6">
                   <Grid container alignItems="center">
-                    <RoomOutlinedIcon /> {props.address}
+                    <RoomOutlinedIcon /> {address}
                   </Grid>
                 </Typography>
               </Grid>
               <Grid item>
                 <Typography variant="body1">
                   <Grid container alignItems="center">
-                    <LocalOfferOutlinedIcon /> {props.price || '$$'}
+                    <LocalOfferOutlinedIcon /> {price || '$$'}
                   </Grid>
                 </Typography>
               </Grid>
             </Grid>
             <Grid item>
-              <Typography variant="subtitle1">{props.company}</Typography>
+              <Typography variant="subtitle1">{company}</Typography>
             </Grid>
             <Grid container item justify="space-between">
               <Grid item>
-                <Typography variant="subtitle2">{props.bedsAndBaths}</Typography>
+                <Typography variant="subtitle2">{bedsAndBaths}</Typography>
               </Grid>
               <Grid item>
-                <Typography variant="body2">{props.numReviews}</Typography>
+                <Typography variant="body2">{numReviews}</Typography>
               </Grid>
             </Grid>
           </Grid>

@@ -40,12 +40,7 @@ const HomePage = (): ReactElement => {
             numReviews="5 Reviews"
           />
           <ApartmentCard address="117 Eddy St" bedsAndBaths="1 Br | 2 B" />
-          <ApartmentCard
-            address="117 Eddy St"
-            bedsAndBaths="5 Br | 2 B"
-            price="$800"
-            topReviewDisplay="3.62 (12)"
-          />
+          <ApartmentCard address="117 Eddy St" bedsAndBaths="5 Br | 2 B" price="$800" />
         </Grid>
       </Container>
     </Box>
