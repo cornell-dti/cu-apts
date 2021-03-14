@@ -20,7 +20,7 @@ const ApartmentCard = ({
   price,
 }: Props): ReactElement => {
   return (
-    <Grid item xs={7} lg={3}>
+    <Grid item xs={9} md={4}>
       <Card>
         <CardMedia image={ApartmentImg} component="img" title="Apartment Image" />
         <CardContent>

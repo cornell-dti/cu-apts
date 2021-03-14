@@ -13,25 +13,28 @@ const review: NavbarButton = {
   label: 'Reviews',
   href: '/landlord/1',
 };
+
 const headersData = [faq, review];
 
 const HomePage = (): ReactElement => {
   return (
-    <Box style={{ background: '#f6f6f6' }}>
-      <Container>
-        <AppBar headersData={headersData} />
-        <Box py={7} px={15}>
+    <Box bgcolor="grey.100">
+      <AppBar headersData={headersData} />
+      <Container maxWidth="sm">
+        <Box py={6}>
           <Typography variant="h5">
             Search for off-campus housing, review apartments, and share feedback!
           </Typography>
         </Box>
-        <Box py={3} textAlign="center">
+        <Box pb={3} textAlign="center">
           <Typography variant="h4">Browse Renting Companies</Typography>
         </Box>
-        <Box pb={5} px={30}>
+        <Box pb={5} mx={0}>
           <SearchBar placeholder="Search by any location e.g. “301 College Ave" />
         </Box>
-        <Grid container justify="space-evenly">
+      </Container>
+      <Container maxWidth="md">
+        <Grid container justify="space-evenly" spacing={4}>
           <ApartmentCard
             address="117 Eddy St"
             company="Ithaca Renting Company"
