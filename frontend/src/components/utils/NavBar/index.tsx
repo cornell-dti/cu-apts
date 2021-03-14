@@ -67,9 +67,6 @@ const useStyles = makeStyles(() => ({
   drawerContainer: {
     padding: '20px 30px',
   },
-  homeImage: {
-    marginBottom: '-8px',
-  },
   menuDrawer: {
     alignSelf: 'right',
     marginBottom: '8px',
