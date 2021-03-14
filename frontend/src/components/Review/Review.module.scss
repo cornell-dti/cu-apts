@@ -48,3 +48,21 @@ p {
   height: 70%;
   width: 70%;
 }
+
+.bar {
+  background-color: #c4c4c4;
+}
+
+.bar > div {
+  background-color: #eb5757;
+}
+
+.headerContainer {
+  display: inline-block;
+}
+
+.headerTitle {
+  font-weight: 600;
+  font-size: 2em;
+  margin-bottom: 18px;
+}

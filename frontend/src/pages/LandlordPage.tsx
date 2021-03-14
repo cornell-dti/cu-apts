@@ -4,6 +4,7 @@ import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
+import ReviewHeader from '../components/Review/ReviewHeader';
 
 const reviews = [
   {
@@ -51,6 +52,10 @@ const LandlordPage = (): ReactElement => {
             <>
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <ReviewHeader aveRatingInfo={features} />
+                  </Grid>
+
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
                       <Review {...reviewData} key={index} />
@@ -68,6 +73,9 @@ const LandlordPage = (): ReactElement => {
             </>
           ) : (
             <>
+              <Grid item xs={12}>
+                <ReviewHeader aveRatingInfo={features} />
+              </Grid>
               <InfoFeatures
                 propertyInfo={info}
                 propertyFeatures={features}
