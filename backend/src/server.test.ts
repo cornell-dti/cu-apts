@@ -4,8 +4,8 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/testing';
-// import request from 'supertest';
-// import app from './app';
+import request from 'supertest';
+import app from './app';
 import { db } from './firebase';
 
 describe('firestore permissions', () => {
@@ -36,11 +36,10 @@ describe('firestore permissions', () => {
 
 describe('Faqs', () => {
   // the get request should get faqs
-  // it('get faqs', async () => {
-  //   const response = await request(app).get('/');
-  //   expect(response.status).toEqual(200);
-  //   expect(response.body).toEqual({ count: 2 });
-  // });
+  it('get faqs', async () => {
+    const response = await request(app).get('/');
+    expect(response.status).toEqual(200);
+  });
 
   // faqs should exist in the firestore collection
   it('faqs should exist', async () => {
