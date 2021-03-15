@@ -5,7 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "tsc": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
     "start": "ts-node src/server.ts"
   },
   "author": "",
