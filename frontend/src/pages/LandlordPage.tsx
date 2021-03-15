@@ -71,12 +71,12 @@ const LandlordPage = (): ReactElement => {
             <>
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={1}>
-                {reviews.map((reviewData, index) => (
-                  <Grid item xs={12}>
-                    <Review {...reviewData} key={index} />
-                  </Grid>
-                ))}
-              </Grid>
+                  {reviews.map((reviewData, index) => (
+                    <Grid item xs={12}>
+                      <Review {...reviewData} key={index} />
+                    </Grid>
+                  ))}
+                </Grid>
               </Grid>
               <InfoFeatures
                 propertyInfo={landlordData.properties}
@@ -95,7 +95,7 @@ const LandlordPage = (): ReactElement => {
               />
 
               <Grid item xs={12}>
-                <Grid container spacing={3}>
+                <Grid container spacing={1}>
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
                       <Review {...reviewData} key={index} />
