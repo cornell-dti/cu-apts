@@ -74,7 +74,6 @@ p {
 }
 
 .headerContainer {
-  margin-bottom: 18px;
   align-items: center;
   display: flex;
   justify-content: space-between;
@@ -88,6 +87,18 @@ p {
   text-align: end;
 }
 
-.infoContainer > .info {
-  padding-bottom: 1px;
+.individualInfo {
+  align-items: center;
+}
+
+.info {
+  padding-bottom: 1px !important;
+}
+
+.divider {
+  margin-top: 18px;
+  background-color: rgba(0, 0, 0, 0.12);
+  height: 1px;
+  width: 95%;
+  margin: 18px auto 0 auto;
 }

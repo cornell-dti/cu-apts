@@ -23,7 +23,7 @@ export default function PropertyInfo({ numReviews, aveRatingInfo }: Props): Reac
         <Grid className={styles.infoContainer} container spacing={2} direction="row">
           {aveRatingInfo.map((info, index) => (
             <Grid className={styles.info} item xs={12} md={6} lg={6} key={index}>
-              <Grid container spacing={0} direction="row">
+              <Grid className={styles.individualInfo} container spacing={0} direction="row">
                 <Grid item xs={5} md={5} lg={5} key={index}>
                   {info}
                 </Grid>

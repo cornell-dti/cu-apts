@@ -12,7 +12,6 @@ import {
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
-import icon from '../../../assets/home-icon.png';
 import { isMobile } from '../../../utils/isMobile';
 
 export type NavbarButton = {
@@ -68,9 +67,6 @@ const useStyles = makeStyles(() => ({
   drawerContainer: {
     padding: '20px 30px',
   },
-  homeImage: {
-    marginBottom: '8px',
-  },
   menuDrawer: {
     alignSelf: 'right',
     marginBottom: '8px',
@@ -83,16 +79,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerOpen: false,
   });
   const { mobileView, drawerOpen } = state;
-  const {
-    grow,
-    header,
-    logo,
-    menuButton,
-    toolbar,
-    drawerContainer,
-    homeImage,
-    menuDrawer,
-  } = useStyles();
+  const { grow, header, logo, menuButton, toolbar, drawerContainer, menuDrawer } = useStyles();
 
   useEffect(() => {
     const setResponsiveness = () => {
@@ -142,10 +129,9 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   const homeLogo: ReactElement = (
     <Typography variant="h4" component="h1" className={logo}>
-      <a href="/">
-        <img className={homeImage} src={icon} width="40" height="auto" alt="home icon" />
-      </a>{' '}
-      CU Housing
+      <Link color="textPrimary" underline="none" href="/">
+        CU Housing
+      </Link>
     </Typography>
   );
 
