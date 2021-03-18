@@ -13,6 +13,11 @@ type LandlordData = {
   address: string;
 };
 
+export type RatingInfo = {
+  feature: string;
+  rating: number;
+};
+
 const reviews = [
   {
     overallRating: 3,
@@ -42,10 +47,34 @@ const dummyData: LandlordData = {
   address: '119 S Cayuga St, Ithaca, NY 14850',
 };
 
+const dummyRatingInfo: RatingInfo[] = [
+  {
+    feature: 'Parking',
+    rating: 4.9,
+  },
+  {
+    feature: 'Heating',
+    rating: 4.0,
+  },
+  {
+    feature: 'Trash Removal',
+    rating: 4.4,
+  },
+  {
+    feature: 'Snow Plowing',
+    rating: 3.2,
+  },
+  {
+    feature: 'Maintenance',
+    rating: 2.7,
+  },
+];
+
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
+  const [aveRatingInfo] = useState(dummyRatingInfo);
   const breakpoint = 600;
 
   useEffect(() => {
@@ -62,10 +91,7 @@ const LandlordPage = (): ReactElement => {
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <ReviewHeader
-                      numReviews={reviews.length}
-                      aveRatingInfo={landlordData.features}
-                    />
+                    <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
                   </Grid>
 
                   {reviews.map((reviewData, index) => (
@@ -86,7 +112,7 @@ const LandlordPage = (): ReactElement => {
           ) : (
             <>
               <Grid item xs={12}>
-                <ReviewHeader numReviews={reviews.length} aveRatingInfo={landlordData.features} />
+                <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
               </Grid>
               <InfoFeatures
                 propertyInfo={landlordData.properties}
