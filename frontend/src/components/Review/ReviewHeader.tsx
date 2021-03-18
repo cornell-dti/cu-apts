@@ -2,19 +2,27 @@ import React, { ReactElement } from 'react';
 import Grid from '@material-ui/core/Grid';
 import styles from './Review.module.scss';
 import LabeledLinearProgress from '../utils/LabeledLinearProgress';
+import Button from '@material-ui/core/Button';
 
 type Props = {
+  readonly numReviews: number;
   readonly aveRatingInfo: string[];
 };
 
-export default function PropertyInfo({ aveRatingInfo }: Props): ReactElement {
+export default function PropertyInfo({ numReviews, aveRatingInfo }: Props): ReactElement {
   return (
     <div>
-      <h2 className={styles.headerTitle}>Reviews(12)</h2>
+      <div className={styles.headerContainer}>
+        <h2 className={styles.headerTitle}>Reviews ({numReviews})</h2>
+        <Button className={styles.button} variant="contained">
+          Leave a Review
+        </Button>
+      </div>
+
       <div className={styles.detail}>
-        <Grid container spacing={1} direction="row">
+        <Grid className={styles.infoContainer} container spacing={2} direction="row">
           {aveRatingInfo.map((info, index) => (
-            <Grid item xs={12} md={6} lg={6} key={index}>
+            <Grid className={styles.info} item xs={12} md={6} lg={6} key={index}>
               <Grid container spacing={0} direction="row">
                 <Grid item xs={5} md={5} lg={5} key={index}>
                   {info}

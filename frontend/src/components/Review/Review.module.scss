@@ -57,12 +57,37 @@ p {
   background-color: #eb5757;
 }
 
-.headerContainer {
-  display: inline-block;
+.headerContainer > .button {
+  background-color: #b94630;
+  color: white;
+}
+
+.headerContainer > .button:hover {
+  background-color: #cf553e;
+  color: white;
 }
 
 .headerTitle {
   font-weight: 600;
   font-size: 2em;
+  margin-right: 30px;
+}
+
+.headerContainer {
   margin-bottom: 18px;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.barContainer {
+  justify-content: space-between;
+}
+
+.aveRating {
+  text-align: end;
+}
+
+.infoContainer > .info {
+  padding-bottom: 1px;
 }

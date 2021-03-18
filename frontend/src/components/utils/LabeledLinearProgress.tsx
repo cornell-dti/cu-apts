@@ -10,12 +10,16 @@ type Props = {
 
 export default function LabeledLinearProgress({ value }: Props): ReactElement {
   return (
-    <Box display="flex" alignItems="center">
-      <Box width="80%" mr={1}>
+    <Box className={styles.barContainer} display="flex" alignItems="center">
+      <Box width="90%" mr={1}>
         <LinearProgress className={styles.bar} variant="determinate" value={value * 20} />
       </Box>
       <Box minWidth={35}>
-        <Typography variant="body2" color="textSecondary">{`${value.toFixed(1)}`}</Typography>
+        <Typography
+          className={styles.aveRating}
+          variant="body2"
+          color="textSecondary"
+        >{`${value.toFixed(1)}`}</Typography>
       </Box>
     </Box>
   );

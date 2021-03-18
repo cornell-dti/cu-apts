@@ -5,6 +5,14 @@ import Container from '@material-ui/core/Container';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
+import { getWidth } from '../utils/isMobile';
+
+type LandlordData = {
+  features: string[];
+  properties: string[];
+  phone: string;
+  address: string;
+};
 
 const reviews = [
   {
@@ -30,17 +38,21 @@ const reviews = [
   },
 ];
 
+const dummyData: LandlordData = {
+  properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
+  features: ['Parking', 'Heating', 'Trash removal', 'Snow plowing', 'Maintenance'],
+  phone: '555-555-5555',
+  address: '119 S Cayuga St, Ithaca, NY 14850',
+};
+
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
-  const features = ['Parking', 'Heating', 'Trash removal', 'Snow plowing', 'Maintenance'];
-  const info = ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'];
-  const phone = '555-555-5555';
-  const address = '119 S Cayuga St, Ithaca, NY 14850';
   const [width, setWidth] = useState(window.innerWidth);
+  const [landlordData] = useState(dummyData);
   const breakpoint = 600;
 
   useEffect(() => {
-    window.addEventListener('resize', () => setWidth(window.innerWidth));
+    window.addEventListener('resize', () => setWidth(getWidth()));
   });
 
   return (
@@ -53,7 +65,10 @@ const LandlordPage = (): ReactElement => {
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <ReviewHeader aveRatingInfo={features} />
+                    <ReviewHeader
+                      numReviews={reviews.length}
+                      aveRatingInfo={landlordData.features}
+                    />
                   </Grid>
 
                   {reviews.map((reviewData, index) => (
@@ -65,22 +80,22 @@ const LandlordPage = (): ReactElement => {
               </Grid>
 
               <InfoFeatures
-                propertyInfo={info}
-                propertyFeatures={features}
-                phone={phone}
-                address={address}
+                propertyInfo={landlordData.properties}
+                propertyFeatures={landlordData.features}
+                phone={landlordData.phone}
+                address={landlordData.address}
               />
             </>
           ) : (
             <>
               <Grid item xs={12}>
-                <ReviewHeader aveRatingInfo={features} />
+                <ReviewHeader numReviews={reviews.length} aveRatingInfo={landlordData.features} />
               </Grid>
               <InfoFeatures
-                propertyInfo={info}
-                propertyFeatures={features}
-                phone={phone}
-                address={address}
+                propertyInfo={landlordData.properties}
+                propertyFeatures={landlordData.features}
+                phone={landlordData.phone}
+                address={landlordData.address}
               />
 
               <Grid item xs={12}>
