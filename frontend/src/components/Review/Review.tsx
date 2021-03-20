@@ -38,8 +38,8 @@ const useStyles = makeStyles(() => ({
     transform: 'rotate(180deg)',
   },
   dateText: {
-    color: '#5D5D5D'
-  }
+    color: '#5D5D5D',
+  },
 }));
 
 const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => {
@@ -74,11 +74,10 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
                     <ExpandMoreIcon />
                   </IconButton>
                 </Grid>
-                
               </Grid>
               <Grid item>
-                  <Typography className={dateText}>{formattedDate}</Typography>
-                </Grid>
+                <Typography className={dateText}>{formattedDate}</Typography>
+              </Grid>
             </Grid>
             <Grid item>
               <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -92,14 +91,8 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
             </Grid>
             <Grid container alignItems="center" justify="center">
               <Grid item xs={12} sm={6}>
-              <CardMedia
-              component="img"
-              alt="Apt image"
-              image={ApartmentImg}
-              title="Apt image"
-            />
+                <CardMedia component="img" alt="Apt image" image={ApartmentImg} title="Apt image" />
               </Grid>
-            
             </Grid>
           </Grid>
         </CardContent>

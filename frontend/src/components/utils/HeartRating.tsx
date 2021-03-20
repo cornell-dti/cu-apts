@@ -10,9 +10,6 @@ const StyledRating = withStyles({
   iconFilled: {
     color: '#EB5757',
   },
-  icon: {
-    color: '#EB5757',
-  },
   iconHover: {
     color: '#ff3d47',
   },
