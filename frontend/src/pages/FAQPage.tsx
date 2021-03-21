@@ -1,11 +1,11 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import NavBar, { NavbarButton } from '../components/utils/NavBar';
-import FAQHelp from '../components/FAQHelp/FAQHelp';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
 import axios from 'axios';
 import styles from './FAQPage.module.scss';
 import { useTitle } from '../utils';
+import { Typography } from '@material-ui/core';
 
 export type FAQ = {
   question: string;
@@ -42,12 +42,8 @@ const FAQPage = (): ReactElement => {
   return (
     <div className={styles.faqPage}>
       <NavBar headersData={headersData} />
-      <div className={styles.faqHelp}>
-        <FAQHelp />
-      </div>
-
       <div className={styles.faqHeaderTitle}>
-        <h2>Frequently Asked Questions</h2>
+        <Typography variant="h5">Frequently Asked Questions</Typography>
       </div>
       {data ? <Faqs data={data} /> : <ProgressSpinner />}
     </div>

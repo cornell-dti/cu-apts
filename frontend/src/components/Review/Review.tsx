@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
-import styles from './Review.module.scss';
-import Card from 'react-bootstrap/Card';
-import Rating from './Rating';
-import dateToString from '../../utils/date';
+import { Card, CardContent, Grid, Typography } from '@material-ui/core';
+import HeartRating from '../utils/HeartRating';
+import { format } from 'date-fns';
 
 type Props = {
   readonly overallRating: number;
@@ -10,18 +9,34 @@ type Props = {
   readonly text: string;
 };
 
-export default function Review({ overallRating, date, text }: Props): ReactElement {
+const Review = ({ overallRating, date, text }: Props): ReactElement => {
+  const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
   return (
-    <Card className={styles.card}>
-      <Card.Body>
-        <Card.Title>Anonymous </Card.Title>
-        <Rating rating={overallRating} />
-        <Card.Subtitle className={`${styles.date} mb-2 text-muted`}>
-          {dateToString(date)}
-        </Card.Subtitle>
-        <hr />
-        <Card.Text>{text}</Card.Text>
-      </Card.Body>
-    </Card>
+    <Grid item>
+      <Card variant="outlined">
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item container justify="space-between">
+              <Grid container xs={6} spacing={2}>
+                <Grid item>
+                  <HeartRating value={overallRating} readOnly />
+                </Grid>
+                <Grid item>
+                  <Typography>{formattedDate}</Typography>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6">Anonymous</Typography>
+              </Grid>
+            </Grid>
+            <Grid item container alignContent="center">
+              <Typography>{text}</Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Grid>
   );
-}
+};
+
+export default Review;

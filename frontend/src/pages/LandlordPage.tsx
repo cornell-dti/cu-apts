@@ -1,7 +1,6 @@
+import { Container, Grid } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Grid from '@material-ui/core/Grid';
-import Container from '@material-ui/core/Container';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import { getWidth } from '../utils/isMobile';
@@ -16,7 +15,6 @@ type LandlordData = {
 
 const reviews = [
   {
-    name: 'user1',
     overallRating: 3,
     date: new Date(),
     text:
@@ -30,7 +28,6 @@ const reviews = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
   },
   {
-    name: 'user3',
     overallRating: 1,
     date: new Date(),
     text:
@@ -57,10 +54,10 @@ const LandlordPage = (): ReactElement => {
   });
 
   return (
-    <div>
+    <Container>
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
       <Container>
-        <Grid container spacing={3} direction="row">
+        <Grid container spacing={3}>
           {width >= breakpoint ? (
             <>
               <Grid item xs={12} sm={8}>
@@ -102,7 +99,7 @@ const LandlordPage = (): ReactElement => {
           )}
         </Grid>
       </Container>
-    </div>
+    </Container>
   );
 };
 
