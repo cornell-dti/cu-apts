@@ -3,21 +3,48 @@
     display: inline-block;
     margin-right: 10px;
   }
-  width: 60vw;
+}
+
+body {
+  background-color: white;
+}
+
+.component {
+  background-color: white;
+  padding: 18px;
+  width: 100%;
+}
+
+.card,
+.component {
   border-radius: 10px;
-  margin: 3vw;
+  border: 1px solid rgba(0, 0, 0, 0.125);
 }
 
-@media (min-width: 500px) {
-  .date {
-    position: relative;
-    float: right;
-    padding-top: 8px;
-  }
+.container {
+  margin-left: auto;
+  margin-right: auto;
 }
 
-@media (max-width: 650px) {
-  .card {
-    width: 94vw;
-  }
+.title {
+  font-weight: 700;
+}
+
+ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.detail {
+  color: '#5D5D5D';
+  font-size: 0.8em;
+}
+
+p {
+  margin-bottom: 8px;
+}
+
+.image {
+  height: 70%;
+  width: 70%;
 }
