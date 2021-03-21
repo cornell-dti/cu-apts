@@ -40,11 +40,14 @@ const useStyles = makeStyles(() => ({
   dateText: {
     color: '#5D5D5D',
   },
+  button: {
+    textTransform: 'none'
+  }
 }));
 
 const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => {
   const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
-  const { root, expand, expandOpen, dateText } = useStyles();
+  const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
 
   const handleExpandClick = () => {
@@ -99,10 +102,10 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
-              <Button size="small">Helpful</Button>
+              <Button className={button} size="small">Helpful</Button>
             </Grid>
             <Grid item>
-              <Button size="small">Report Abuse</Button>
+              <Button className={button} size="small">Report Abuse</Button>
             </Grid>
           </Grid>
         </CardActions>
