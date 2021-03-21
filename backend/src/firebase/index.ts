@@ -1,8 +1,7 @@
 import firebase from 'firebase';
+import { config } from 'dotenv';
 
-import dotenv from 'dotenv';
-
-dotenv.config();
+config();
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,6 +17,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
+
+if (process.env.NODE_ENV === 'test') {
+  db.useEmulator('localhost', 4000);
+}
+
 const auth = firebase.auth();
 
 export { db, auth };

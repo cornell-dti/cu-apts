@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "cu-apts-staging"
+    "default": "cu-apts-staging",
+    "cu-apts": "cuapts-68201"
   }
 }
