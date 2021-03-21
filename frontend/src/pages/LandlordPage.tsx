@@ -3,6 +3,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
+import ReviewHeader from '../components/Review/ReviewHeader';
 import { getWidth } from '../utils/isMobile';
 import { useTitle } from '../utils';
 
@@ -11,6 +12,11 @@ type LandlordData = {
   properties: string[];
   phone: string;
   address: string;
+};
+
+export type RatingInfo = {
+  feature: string;
+  rating: number;
 };
 
 const reviews = [
@@ -42,10 +48,34 @@ const dummyData: LandlordData = {
   address: '119 S Cayuga St, Ithaca, NY 14850',
 };
 
+const dummyRatingInfo: RatingInfo[] = [
+  {
+    feature: 'Parking',
+    rating: 4.9,
+  },
+  {
+    feature: 'Heating',
+    rating: 4.0,
+  },
+  {
+    feature: 'Trash Removal',
+    rating: 4.4,
+  },
+  {
+    feature: 'Snow Plowing',
+    rating: 3.2,
+  },
+  {
+    feature: 'Maintenance',
+    rating: 2.7,
+  },
+];
+
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
+  const [aveRatingInfo] = useState(dummyRatingInfo);
   const breakpoint = 600;
 
   useTitle(`Reviews for ${landlordId}`);
@@ -57,11 +87,15 @@ const LandlordPage = (): ReactElement => {
     <Container>
       <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
       <Container>
-        <Grid container spacing={3}>
+        <Grid container spacing={5}>
           {width >= breakpoint ? (
             <>
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
+                  </Grid>
+
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
                       <Review {...reviewData} key={index} />
@@ -79,6 +113,9 @@ const LandlordPage = (): ReactElement => {
             </>
           ) : (
             <>
+              <Grid item xs={12}>
+                <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
+              </Grid>
               <InfoFeatures
                 propertyInfo={landlordData.properties}
                 propertyFeatures={landlordData.features}

@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import Info from './Info';
 import PropertyInfo from './PropertyInfo';
 import { Card, CardContent } from '@material-ui/core';
+import styles from './Review.module.scss';
 
 type Props = {
   readonly propertyInfo: string[];
@@ -22,9 +23,9 @@ export default function InfoFeatures({
       <Card variant="outlined">
         <CardContent>
           <Info phone={phone} address={address} />
-          <hr />
+          <div className={styles.divider}></div>
           <PropertyInfo title="Property Info" info={propertyInfo} />
-          <hr />
+          <div className={styles.divider}></div>
           <PropertyInfo title="Property Features" info={propertyFeatures} />
         </CardContent>
       </Card>
