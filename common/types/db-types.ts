@@ -34,6 +34,6 @@ export type Apartment = {
   readonly landlordId: string | null;
   readonly numBaths: number | null;
   readonly numBeds: number | null;
-  readonly photos: string[]; // can be empty
+  readonly photos: readonly string[]; // can be empty
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
 };
