@@ -22,14 +22,14 @@ export default function PropertyInfo({ numReviews, aveRatingInfo }: Props): Reac
 
       <div className={styles.detail}>
         <Grid className={styles.infoContainer} container spacing={2} direction="row">
-          {aveRatingInfo.map((ratingInfo, index) => (
+          {aveRatingInfo.map(({ feature, rating }: RatingInfo, index) => (
             <Grid className={styles.info} item xs={12} md={6} lg={6} key={index}>
               <Grid className={styles.individualInfo} container spacing={0} direction="row">
                 <Grid item xs={5} md={5} lg={5} key={index}>
-                  {ratingInfo.feature}
+                  {feature}
                 </Grid>
                 <Grid item xs={7} md={7} lg={7} key={index}>
-                  <LabeledLinearProgress value={ratingInfo.rating} />
+                  <LabeledLinearProgress value={rating} />
                 </Grid>
               </Grid>
             </Grid>

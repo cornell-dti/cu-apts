@@ -91,14 +91,14 @@ p {
   align-items: center;
 }
 
-.info {
-  padding-bottom: 1px !important;
-}
-
 .divider {
   margin-top: 18px;
   background-color: rgba(0, 0, 0, 0.12);
   height: 1px;
   width: 95%;
   margin: 18px auto 0 auto;
+}
+
+.detail > .infoContainer > .info {
+  padding-bottom: 1px;
 }
