@@ -5,6 +5,7 @@ import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { getWidth } from '../utils/isMobile';
+import { useTitle } from '../utils';
 
 type LandlordData = {
   features: string[];
@@ -77,6 +78,7 @@ const LandlordPage = (): ReactElement => {
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const breakpoint = 600;
 
+  useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     window.addEventListener('resize', () => setWidth(getWidth()));
   });
