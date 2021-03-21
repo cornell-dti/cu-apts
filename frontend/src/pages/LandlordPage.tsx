@@ -5,6 +5,7 @@ import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import { getWidth } from '../utils/isMobile';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
+import { useTitle } from '../utils';
 
 type LandlordData = {
   features: string[];
@@ -85,6 +86,7 @@ const LandlordPage = (): ReactElement => {
   const [landlordData] = useState(dummyData);
   const breakpoint = 600;
 
+  useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     window.addEventListener('resize', () => setWidth(getWidth()));
   });
