@@ -41,8 +41,8 @@ const useStyles = makeStyles(() => ({
     color: '#5D5D5D',
   },
   button: {
-    textTransform: 'none'
-  }
+    textTransform: 'none',
+  },
 }));
 
 const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => {
@@ -102,10 +102,14 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
-              <Button className={button} size="small">Helpful</Button>
+              <Button className={button} size="small">
+                Helpful
+              </Button>
             </Grid>
             <Grid item>
-              <Button className={button} size="small">Report Abuse</Button>
+              <Button className={button} size="small">
+                Report Abuse
+              </Button>
             </Grid>
           </Grid>
         </CardActions>
