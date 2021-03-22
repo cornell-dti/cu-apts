@@ -19,7 +19,7 @@ interface Props {
 
 interface Ratings {
   management: number;
-  maintenence: number;
+  maintenance: number;
   amenities: number;
   condition: number;
   neighborhood: number;
@@ -39,7 +39,7 @@ const defaultReview: Review = {
   ratings: {
     amenities: 0,
     condition: 0,
-    maintenence: 0,
+    maintenance: 0,
     management: 0,
     neighborhood: 0,
     transportation: 0,
@@ -131,9 +131,9 @@ const ReviewModal = ({ open, onClose }: Props) => {
                   onChange={updateRating('management')}
                 ></ReviewRating>
                 <ReviewRating
-                  name="maintenence"
-                  label="Building Maintenence"
-                  onChange={updateRating('maintenence')}
+                  name="maintenance"
+                  label="Building maintenance"
+                  onChange={updateRating('maintenance')}
                 ></ReviewRating>
                 <ReviewRating
                   name="amenities"

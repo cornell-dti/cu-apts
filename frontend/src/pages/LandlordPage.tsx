@@ -41,7 +41,7 @@ const reviews = [
     ratings: {
       amenities: 3,
       condition: 2,
-      maintenence: 1,
+      maintenance: 1,
       management: 4,
       neighborhood: 5,
       transportation: 3,
@@ -56,7 +56,7 @@ const reviews = [
     ratings: {
       amenities: 3,
       condition: 2,
-      maintenence: 1,
+      maintenance: 1,
       management: 4,
       neighborhood: 5,
       transportation: 3,
@@ -70,7 +70,7 @@ const reviews = [
     ratings: {
       amenities: 3,
       condition: 2,
-      maintenence: 1,
+      maintenance: 1,
       management: 4,
       neighborhood: 5,
       transportation: 3,

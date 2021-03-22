@@ -7,12 +7,12 @@ type Props = {
 };
 
 export type Ratings = {
-  amenities: number;
-  condition: number;
-  maintenence: number;
-  management: number;
-  neighborhood: number;
-  transportation: number;
+  readonly amenities: number;
+  readonly condition: number;
+  readonly maintenance: number;
+  readonly management: number;
+  readonly neighborhood: number;
+  readonly transportation: number;
 };
 
 type ItemProps = {
@@ -33,15 +33,16 @@ const Item = ({ aspect, rating }: ItemProps): ReactElement => {
 };
 
 const DetailedRating = ({ ratings }: Props): ReactElement => {
+  const { amenities, condition, maintenance, management, neighborhood, transportation } = ratings;
   return (
     <Grid container spacing={1}>
       <Grid container item xs={12} spacing={2}>
-        <Item aspect="Building Amenities" rating={ratings.amenities} />
-        <Item aspect="Building Condition" rating={ratings.condition} />
-        <Item aspect="Building Maintenance" rating={ratings.maintenence} />
-        <Item aspect="Mangement/ Landlord" rating={ratings.management} />
-        <Item aspect="Neighborhood & Neighbors" rating={ratings.neighborhood} />
-        <Item aspect="Transportation & Parking" rating={ratings.transportation} />
+        <Item aspect="Building Amenities" rating={amenities} />
+        <Item aspect="Building Condition" rating={condition} />
+        <Item aspect="Building Maintenance" rating={maintenance} />
+        <Item aspect="Mangement/ Landlord" rating={management} />
+        <Item aspect="Neighborhood & Neighbors" rating={neighborhood} />
+        <Item aspect="Transportation & Parking" rating={transportation} />
       </Grid>
     </Grid>
   );
