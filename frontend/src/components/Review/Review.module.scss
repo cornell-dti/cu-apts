@@ -48,3 +48,57 @@ p {
   height: 70%;
   width: 70%;
 }
+
+.bar {
+  background-color: #c4c4c4;
+}
+
+.bar > div {
+  background-color: #eb5757;
+}
+
+.headerContainer > .button {
+  background-color: #b94630;
+  color: white;
+}
+
+.headerContainer > .button:hover {
+  background-color: #cf553e;
+  color: white;
+}
+
+.headerTitle {
+  font-weight: 600;
+  font-size: 2em;
+  margin-right: 30px;
+}
+
+.headerContainer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.barContainer {
+  justify-content: space-between;
+}
+
+.aveRating {
+  text-align: end;
+}
+
+.individualInfo {
+  align-items: center;
+}
+
+.divider {
+  margin-top: 18px;
+  background-color: rgba(0, 0, 0, 0.12);
+  height: 1px;
+  width: 95%;
+  margin: 18px auto 0 auto;
+}
+
+.detail > .infoContainer > .info {
+  padding-bottom: 1px;
+}

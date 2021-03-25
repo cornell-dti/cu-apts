@@ -1,11 +1,13 @@
-import { Button, Container, Grid } from '@material-ui/core';
+import { Box, Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
+import ReviewHeader from '../components/Review/ReviewHeader';
 import { getWidth } from '../utils/isMobile';
+import { useTitle } from '../utils';
 
 type LandlordData = {
   features: string[];
@@ -13,6 +15,11 @@ type LandlordData = {
   photos: string[];
   phone: string;
   address: string;
+};
+
+export type RatingInfo = {
+  feature: string;
+  rating: number;
 };
 
 const reviews = [
@@ -47,18 +54,38 @@ const dummyData: LandlordData = {
   address: '119 S Cayuga St, Ithaca, NY 14850',
 };
 
+const dummyRatingInfo: RatingInfo[] = [
+  {
+    feature: 'Parking',
+    rating: 4.9,
+  },
+  {
+    feature: 'Heating',
+    rating: 4.0,
+  },
+  {
+    feature: 'Trash Removal',
+    rating: 4.4,
+  },
+  {
+    feature: 'Snow Plowing',
+    rating: 3.2,
+  },
+  {
+    feature: 'Maintenance',
+    rating: 2.7,
+  },
+];
+
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
-  const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
-  const breakpoint = 600;
+  const [aveRatingInfo] = useState(dummyRatingInfo);
 
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 
-  useEffect(() => {
-    window.addEventListener('resize', () => setWidth(getWidth()));
-  });
+  useTitle(`Reviews for ${landlordId}`);
 
   const Modals = (
     <>
@@ -71,14 +98,16 @@ const LandlordPage = (): ReactElement => {
     </>
   );
 
-  return (
+  const Header = (
     <>
-      <Container>
-        <h1>{`This is dummy text! My current landlordId is ${landlordId}`}</h1>
-        <Container>
-          <Button variant="contained" disableElevation onClick={() => setCarouselOpen(true)}>
-            Show all photos
-          </Button>
+      <Grid container item spacing={3} justify="space-between" alignItems="center">
+        <Grid item>
+          <Typography variant="h4">Reviews ({reviews.length})</Typography>
+        </Grid>
+        <Button variant="contained" disableElevation onClick={() => setCarouselOpen(true)}>
+          Show all photos
+        </Button>
+        <Grid item>
           <Button
             color="primary"
             variant="contained"
@@ -87,22 +116,45 @@ const LandlordPage = (): ReactElement => {
           >
             Leave a Review
           </Button>
-          <Grid container spacing={3} direction={width >= breakpoint ? 'row-reverse' : 'column'}>
-            <InfoFeatures
-              propertyInfo={landlordData.properties}
-              propertyFeatures={landlordData.features}
-              phone={landlordData.phone}
-              address={landlordData.address}
-            />
-            <Grid item xs={12} sm={8}>
-              <Grid container spacing={3}>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <ReviewHeader aveRatingInfo={aveRatingInfo} />
+      </Grid>
+    </>
+  );
+
+  const InfoSection = (
+    <Grid item xs={12} sm={4}>
+      <InfoFeatures
+        propertyInfo={landlordData.properties}
+        propertyFeatures={landlordData.features}
+        phone={landlordData.phone}
+        address={landlordData.address}
+      />
+    </Grid>
+  );
+
+  return (
+    <>
+      <Container>
+        <Box py={3}>
+          <Typography variant="h4">{`This is dummy text! My current landlordId is ${landlordId}`}</Typography>
+        </Box>
+        <Container>
+          <Grid container spacing={5} justify="center">
+            <Grid container spacing={3} item xs={12} sm={8}>
+              {Header}
+              <Hidden smUp>{InfoSection}</Hidden>
+              <Grid container item spacing={3}>
                 {reviews.map((reviewData, index) => (
-                  <Grid item xs={12}>
-                    <Review {...reviewData} key={index} />
+                  <Grid item xs={12} key={index}>
+                    <Review {...reviewData} />
                   </Grid>
                 ))}
               </Grid>
             </Grid>
+            <Hidden xsDown>{InfoSection}</Hidden>
           </Grid>
         </Container>
       </Container>

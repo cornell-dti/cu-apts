@@ -23,9 +23,9 @@ const PhotoCarousel = ({ photos, open, onClose }: Props) => (
   <CenteredModal open={open} onClose={onClose} disableRestoreFocus>
     <Container>
       <Carousel autoPlay={false}>
-        {photos.map((src) => {
+        {photos.map((src, index) => {
           return (
-            <ImageBox>
+            <ImageBox key={index}>
               <CardMedia component="img" src={src} />
             </ImageBox>
           );
