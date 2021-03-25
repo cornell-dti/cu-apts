@@ -9,7 +9,6 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 
 type LandlordData = {
-  features: string[];
   properties: string[];
   photos: string[];
   phone: string;
@@ -44,7 +43,6 @@ const reviews = [
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
-  features: ['Parking', 'Heating', 'Trash removal', 'Snow plowing', 'Maintenance'],
   photos: [
     'https://lifestylepropertiesithaca.com/gridmedia/img/slide1.jpg',
     'https://images1.apartments.com/i2/F7HtEfdZCVtvQ_DcqGjQuoQ2IcmcMb2nP1PJuOwOdFw/102/carriage-house-apartments-ithaca-ny-primary-photo.jpg',
@@ -125,12 +123,7 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures
-        propertyInfo={landlordData.properties}
-        propertyFeatures={landlordData.features}
-        phone={landlordData.phone}
-        address={landlordData.address}
-      />
+      <InfoFeatures {...landlordData} />
     </Grid>
   );
 
