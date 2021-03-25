@@ -101,7 +101,12 @@ const LandlordPage = (): ReactElement => {
         <Grid item>
           <Typography variant="h4">Reviews ({reviews.length})</Typography>
         </Grid>
-        <Button variant="contained" disableElevation onClick={() => setCarouselOpen(true)}>
+        <Button
+          color="secondary"
+          variant="contained"
+          disableElevation
+          onClick={() => setCarouselOpen(true)}
+        >
           Show all photos
         </Button>
         <Grid item>
