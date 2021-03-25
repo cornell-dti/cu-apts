@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
-import Grid from '@material-ui/core/Grid';
+import { Grid } from '@material-ui/core';
 import styles from './Review.module.scss';
 import LabeledLinearProgress from '../utils/LabeledLinearProgress';
-import Button from '@material-ui/core/Button';
 import { RatingInfo } from '../../pages/LandlordPage';
 
 type Props = {

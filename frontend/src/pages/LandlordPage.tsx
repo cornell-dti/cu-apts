@@ -1,12 +1,11 @@
 import { Box, Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
-import { getWidth } from '../utils/isMobile';
 import { useTitle } from '../utils';
 
 type LandlordData = {
