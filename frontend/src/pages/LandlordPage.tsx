@@ -39,12 +39,12 @@ const reviews = [
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
     ratings: {
-      amenities: 3,
-      condition: 2,
+      value: 3,
+      conditions: 2,
       maintenance: 1,
-      management: 4,
-      neighborhood: 5,
-      transportation: 3,
+      communication: 4,
+      location: 5,
+      safety: 3,
     },
   },
   {
@@ -54,12 +54,12 @@ const reviews = [
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
     ratings: {
-      amenities: 3,
-      condition: 2,
+      value: 3,
+      conditions: 2,
       maintenance: 1,
-      management: 4,
-      neighborhood: 5,
-      transportation: 3,
+      communication: 4,
+      location: 5,
+      safety: 3,
     },
   },
   {
@@ -68,12 +68,12 @@ const reviews = [
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
     ratings: {
-      amenities: 3,
-      condition: 2,
+      value: 3,
+      conditions: 2,
       maintenance: 1,
-      management: 4,
-      neighborhood: 5,
-      transportation: 3,
+      communication: 4,
+      location: 5,
+      safety: 3,
     },
   },
 ];

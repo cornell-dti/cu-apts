@@ -15,14 +15,15 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import DetailedRating, { Ratings } from './DetailedRating';
+import DetailedRatings from './DetailedRating';
 import ApartmentImg from '../../assets/apartment-sample.png';
+import { DetailedRating } from '../../../../common/types/db-types';
 
 type Props = {
   readonly overallRating: number;
   readonly date: Date;
   readonly text: string;
-  readonly ratings: Ratings;
+  readonly ratings: DetailedRating;
 };
 
 const useStyles = makeStyles(() => ({
@@ -85,7 +86,7 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
             <Grid item>
               <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>
-                  <DetailedRating ratings={ratings} />
+                  <DetailedRatings ratings={ratings} />
                 </CardContent>
               </Collapse>
             </Grid>

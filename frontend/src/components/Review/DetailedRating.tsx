@@ -1,18 +1,10 @@
 import React, { ReactElement } from 'react';
 import { Grid, FormLabel } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
+import { DetailedRating } from '../../../../common/types/db-types';
 
 type Props = {
-  readonly ratings: Ratings;
-};
-
-export type Ratings = {
-  readonly amenities: number;
-  readonly condition: number;
-  readonly maintenance: number;
-  readonly management: number;
-  readonly neighborhood: number;
-  readonly transportation: number;
+  readonly ratings: DetailedRating;
 };
 
 type ItemProps = {
@@ -32,20 +24,20 @@ const Item = ({ aspect, rating }: ItemProps): ReactElement => {
   );
 };
 
-const DetailedRating = ({ ratings }: Props): ReactElement => {
-  const { amenities, condition, maintenance, management, neighborhood, transportation } = ratings;
+const DetailedRatings = ({ ratings }: Props): ReactElement => {
+  const { value, conditions, maintenance, communication, location, safety } = ratings;
   return (
     <Grid container spacing={1}>
       <Grid container item xs={12} spacing={2}>
-        <Item aspect="Building Amenities" rating={amenities} />
-        <Item aspect="Building Condition" rating={condition} />
+        <Item aspect="Building Value" rating={value} />
+        <Item aspect="Building Condition" rating={conditions} />
         <Item aspect="Building Maintenance" rating={maintenance} />
-        <Item aspect="Mangement/ Landlord" rating={management} />
-        <Item aspect="Neighborhood & Neighbors" rating={neighborhood} />
-        <Item aspect="Transportation & Parking" rating={transportation} />
+        <Item aspect="Mangement/ Landlord" rating={communication} />
+        <Item aspect="Neighborhood/ Location" rating={location} />
+        <Item aspect="Building Safety" rating={safety} />
       </Grid>
     </Grid>
   );
 };
 
-export default DetailedRating;
+export default DetailedRatings;
