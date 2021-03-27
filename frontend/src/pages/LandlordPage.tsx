@@ -2,10 +2,12 @@ import { Container, Grid } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import InfoFeatures from '../components/Review/InfoFeatures';
-import Review from '../components/Review/Review';
+import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { getWidth } from '../utils/isMobile';
 import { useTitle } from '../utils';
+import axios from 'axios';
+import { Review } from '../../../common/types/db-types'
 
 type LandlordData = {
   features: string[];
@@ -76,12 +78,21 @@ const LandlordPage = (): ReactElement => {
   const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
+  const [data, setData] = useState<Review []>([])
   const breakpoint = 600;
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     window.addEventListener('resize', () => setWidth(getWidth()));
-  });
+    axios
+      .get(`http://localhost:8080/reviews/${landlordId}`)
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  }, []);
 
   return (
     <Container>
@@ -98,7 +109,7 @@ const LandlordPage = (): ReactElement => {
 
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
-                      <Review {...reviewData} key={index} />
+                      <ReviewComponent {...reviewData} key={index} />
                     </Grid>
                   ))}
                 </Grid>
@@ -127,7 +138,7 @@ const LandlordPage = (): ReactElement => {
                 <Grid container spacing={3}>
                   {reviews.map((reviewData, index) => (
                     <Grid item xs={12}>
-                      <Review {...reviewData} key={index} />
+                      <ReviewComponent {...reviewData} key={index} />
                     </Grid>
                   ))}
                 </Grid>
