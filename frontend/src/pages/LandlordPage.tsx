@@ -9,6 +9,7 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 import get from '../utils/get';
+import { Review } from '../../../common/types/db-types';
 
 type LandlordData = {
   properties: string[];
@@ -36,11 +37,14 @@ export type RatingInfo = {
 
 const reviews = [
   {
+    id: '1',
     overallRating: 3,
     date: new Date(),
-    text:
+    landlordId: '1',
+    aptId: null,
+    reviewText:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
+    detailedRatings: {
       value: 3,
       conditions: 2,
       maintenance: 1,
@@ -50,11 +54,14 @@ const reviews = [
     },
   },
   {
+    id: '2',
     overallRating: 2,
     date: new Date(),
-    text:
+    landlordId: '1',
+    aptId: null,
+    reviewText:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
+    detailedRatings: {
       value: 3,
       conditions: 2,
       maintenance: 1,
@@ -64,11 +71,14 @@ const reviews = [
     },
   },
   {
+    id: '3',
     overallRating: 1,
     date: new Date(),
-    text:
+    landlordId: '1',
+    aptId: null,
+    reviewText:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
+    detailedRatings: {
       value: 3,
       conditions: 2,
       maintenance: 1,
@@ -116,13 +126,13 @@ const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const [reviewData, setReviewData] = useState(reviews);
+  const [reviewData, setReviewData] = useState<Review[]>(reviews);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
-    get(`reviews/${landlordId}`, setReviewData);
+    get<Review>(`reviews/${landlordId}`, setReviewData);
   }, [landlordId]);
 
   const Modals = (
@@ -185,7 +195,7 @@ const LandlordPage = (): ReactElement => {
               <Grid container item spacing={3}>
                 {reviewData.map((review, index) => (
                   <Grid item xs={12} key={index}>
-                    <ReviewComponent {...review} />
+                    <ReviewComponent review={review} />
                   </Grid>
                 ))}
               </Grid>
