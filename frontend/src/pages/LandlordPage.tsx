@@ -8,13 +8,16 @@ import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
-import Header from '../components/Landlord/Header';
+import LandlordHeader from '../components/Landlord/Header';
 
 type LandlordData = {
   properties: string[];
   photos: string[];
   phone: string;
   address: string;
+  name: string;
+  overallRating: number;
+  numReviews: number;
 };
 
 const faq: NavbarButton = {
@@ -33,11 +36,6 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
-const landlordData = {
-  landlord: 'Ithaca Live More',
-  overallRating: 4,
-  numReviews: 12
-}
 
 const reviews = [
   {
@@ -92,6 +90,9 @@ const dummyData: LandlordData = {
   ],
   phone: '555-555-5555',
   address: '119 S Cayuga St, Ithaca, NY 14850',
+  name: 'Ithaca Live More',
+  overallRating: 4,
+  numReviews: 12
 };
 
 const dummyRatingInfo: RatingInfo[] = [
@@ -179,7 +180,7 @@ const LandlordPage = (): ReactElement => {
     <>
       <Container>
         <AppBar headersData={headersData} />
-        <Header landlord={landlordData.landlord} overallRating={landlordData.overallRating} numReviews={landlordData.numReviews} />
+        <LandlordHeader landlord={landlordData.name} overallRating={landlordData.overallRating} numReviews={landlordData.numReviews} />
         <Container>
           <Grid container spacing={5} justify="center">
             <Grid container spacing={3} item xs={12} sm={8}>

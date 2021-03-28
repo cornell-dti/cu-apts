@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import Rating from '../Review/Review';
+import HeartRating from '../utils/HeartRating';
 import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
 import ApartmentPhoto2 from '../../assets/apartment_interior.png';
 import Logo from '../../assets/company_logo.png';
@@ -91,7 +91,11 @@ const useStyles = makeStyles({
 
 });
 
-const Header = ({ landlord, overallRating, numReviews }: Props): ReactElement => {
+const LandlordHeader = ({
+  landlord,
+  overallRating,
+  numReviews,
+}: Props): ReactElement => {
   const classes = useStyles();
   return (
     <Grid container spacing={0}>
@@ -107,7 +111,7 @@ const Header = ({ landlord, overallRating, numReviews }: Props): ReactElement =>
                 <CardHeader title={landlord} className={classes.landlord_name} disableTypography={true} />
                 <Grid container spacing={0} direction="row" xs={12} style={{ paddingTop: '10px' }}>
                   <Grid className={classes.landlord_rating} >
-                    <Rating rating={overallRating} />
+                    <HeartRating value={overallRating} readOnly />
                   </Grid>
                   <CardHeader title={numReviews + " Reviews"} className={classes.landlord_reviews} disableTypography={true} />
                 </Grid>
@@ -127,4 +131,4 @@ const Header = ({ landlord, overallRating, numReviews }: Props): ReactElement =>
   );
 };
 
-export default Header;
+export default LandlordHeader;
