@@ -2,10 +2,10 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import NavBar, { NavbarButton } from '../components/utils/NavBar';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
-import axios from 'axios';
 import styles from './FAQPage.module.scss';
 import { useTitle } from '../utils';
 import { Typography } from '@material-ui/core';
+import get from '../utils/get';
 
 export type FAQ = {
   question: string;
@@ -25,19 +25,12 @@ const review: NavbarButton = {
 const headersData = [review];
 
 const FAQPage = (): ReactElement => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<FAQData[]>([]);
 
   useTitle('FAQ');
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8080/')
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.log('error', error);
-      });
+    get<FAQData>('/', setData);
   }, []);
   return (
     <div className={styles.faqPage}>

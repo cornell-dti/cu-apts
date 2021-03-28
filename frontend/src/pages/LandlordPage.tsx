@@ -6,8 +6,7 @@ import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { getWidth } from '../utils/isMobile';
 import { useTitle } from '../utils';
-import axios from 'axios';
-import { Review } from '../../../common/types/db-types'
+import get from '../utils/get';
 
 type LandlordData = {
   features: string[];
@@ -78,21 +77,14 @@ const LandlordPage = (): ReactElement => {
   const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const [data, setData] = useState<Review []>([])
+  const [reviewData, setReviewData] = useState(reviews);
   const breakpoint = 600;
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     window.addEventListener('resize', () => setWidth(getWidth()));
-    axios
-      .get(`http://localhost:8080/reviews/${landlordId}`)
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.log('error', error);
-      });
-  }, []);
+    get(`reviews/${landlordId}`, setReviewData);
+  }, [landlordId]);
 
   return (
     <Container>
@@ -104,10 +96,10 @@ const LandlordPage = (): ReactElement => {
               <Grid item xs={12} sm={8}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
+                    <ReviewHeader numReviews={reviewData.length} aveRatingInfo={aveRatingInfo} />
                   </Grid>
 
-                  {reviews.map((reviewData, index) => (
+                  {reviewData.map((reviewData, index) => (
                     <Grid item xs={12}>
                       <ReviewComponent {...reviewData} key={index} />
                     </Grid>
@@ -125,7 +117,7 @@ const LandlordPage = (): ReactElement => {
           ) : (
             <>
               <Grid item xs={12}>
-                <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
+                <ReviewHeader numReviews={reviewData.length} aveRatingInfo={aveRatingInfo} />
               </Grid>
               <InfoFeatures
                 propertyInfo={landlordData.properties}
@@ -136,7 +128,7 @@ const LandlordPage = (): ReactElement => {
 
               <Grid item xs={12}>
                 <Grid container spacing={3}>
-                  {reviews.map((reviewData, index) => (
+                  {reviewData.map((reviewData, index) => (
                     <Grid item xs={12}>
                       <ReviewComponent {...reviewData} key={index} />
                     </Grid>
