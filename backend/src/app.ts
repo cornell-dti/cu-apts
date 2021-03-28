@@ -2,10 +2,11 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import { db } from './firebase';
 import { Section } from './firebase/types';
+import { Review } from '../../common/types/db-types';
 
 const app: Express = express();
+const reviewCollection = db.collection('reviews');
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
   cors({
@@ -27,6 +28,13 @@ app.get('/', async (req, res) => {
   });
 
   res.status(200).send(JSON.stringify(faqs));
+});
+
+app.post('/new-review', async (req, res) => {
+  const doc = reviewCollection.doc();
+  const review: Review = req.body as Review;
+  doc.set(review);
+  res.status(201).send(doc.id);
 });
 
 export default app;

@@ -6,7 +6,7 @@ import {
   AccordionDetails,
   Typography,
   Grid,
-  withStyles,
+  styled,
 } from '@material-ui/core';
 
 type Props = {
@@ -14,11 +14,9 @@ type Props = {
   readonly answer: string;
 };
 
-const StyledAccordion = withStyles({
-  root: {
-    backgroundColor: 'rgba(0, 0, 0, .03)',
-  },
-})(Accordion);
+const StyledAccordion = styled(Accordion)({
+  backgroundColor: 'rgba(0, 0, 0, .03)',
+});
 
 export default function CollapsableQuestion({ answer, question }: Props): ReactElement {
   return (

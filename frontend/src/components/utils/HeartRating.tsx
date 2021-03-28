@@ -8,7 +8,7 @@ type Props = React.ComponentProps<typeof Rating>;
 
 const StyledRating = withStyles({
   iconFilled: {
-    color: '#ff6d75',
+    color: '#EB5757',
   },
   iconHover: {
     color: '#ff3d47',
