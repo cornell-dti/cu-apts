@@ -3,6 +3,7 @@ import cors from 'cors';
 import { db } from './firebase';
 import { Section } from './firebase/types';
 import { Review } from '../../common/types/db-types';
+import authenticate from './auth';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
@@ -35,6 +36,10 @@ app.post('/new-review', async (req, res) => {
   const review: Review = req.body as Review;
   doc.set(review);
   res.status(201).send(doc.id);
+});
+
+app.get('/auth-test', authenticate, async (req, res) => {
+  res.send(req.user);
 });
 
 export default app;

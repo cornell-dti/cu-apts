@@ -16,7 +16,11 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
     "typeRoots": [
-      "/", "./node_modules/@types", "../node_modules/@types"
-    ]
-  }
+      "@types/express", "./node_modules/@types", "../node_modules/@types"
+    ],
+    "noEmit": true
+  },
+  "ts-node": {
+    "files": true
+  },
 }
