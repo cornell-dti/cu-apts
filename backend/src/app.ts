@@ -1,12 +1,12 @@
 import express, { Express } from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import { db } from './firebase';
 import { Section } from './firebase/types';
 
 const app: Express = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(
   cors({
     origin: 'http://localhost:3000',

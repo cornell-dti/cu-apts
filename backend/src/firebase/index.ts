@@ -1,4 +1,4 @@
-import firebase from 'firebase';
+import * as admin from 'firebase-admin';
 import { config } from 'dotenv';
 
 config();
@@ -14,14 +14,9 @@ const firebaseConfig = {
   appId: process.env.APP_ID,
 };
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+admin.initializeApp(firebaseConfig);
 
-const db = firebase.firestore();
-
-if (process.env.NODE_ENV === 'test') {
-  db.useEmulator('localhost', 4000);
-}
-
-const auth = firebase.auth();
+const db = admin.firestore();
+const auth = admin.auth();
 
 export { db, auth };
