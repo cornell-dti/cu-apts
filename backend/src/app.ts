@@ -5,7 +5,7 @@ import { Section } from './firebase/types';
 import { Review } from '../../common/types/db-types';
 
 const app: Express = express();
-const reviews = db.collection('reviews');
+const reviewCollection = db.collection('reviews');
 
 app.use(express.json());
 app.use(
@@ -31,8 +31,8 @@ app.get('/', async (req, res) => {
 });
 
 app.post('/new-review', async (req, res) => {
-  const doc = reviews.doc();
-  const review: Review = req.body;
+  const doc = reviewCollection.doc();
+  const review: Review = req.body as Review;
   doc.set(review);
   res.status(201).send(doc.id);
 });
