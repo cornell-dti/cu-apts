@@ -1,4 +1,4 @@
-import { Box, Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
+import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import React, { ReactElement, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
@@ -6,6 +6,7 @@ import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
+import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 
 type LandlordData = {
@@ -14,6 +15,18 @@ type LandlordData = {
   phone: string;
   address: string;
 };
+
+const faq: NavbarButton = {
+  label: 'FAQ',
+  href: '/faq',
+};
+
+const review: NavbarButton = {
+  label: 'Reviews',
+  href: '/landlord/1',
+};
+
+const headersData = [faq, review];
 
 export type RatingInfo = {
   feature: string;
@@ -26,18 +39,42 @@ const reviews = [
     date: new Date(),
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+    ratings: {
+      value: 3,
+      conditions: 2,
+      maintenance: 1,
+      communication: 4,
+      location: 5,
+      safety: 3,
+    },
   },
   {
     overallRating: 2,
     date: new Date(),
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+    ratings: {
+      value: 3,
+      conditions: 2,
+      maintenance: 1,
+      communication: 4,
+      location: 5,
+      safety: 3,
+    },
   },
   {
     overallRating: 1,
     date: new Date(),
     text:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
+    ratings: {
+      value: 3,
+      conditions: 2,
+      maintenance: 1,
+      communication: 4,
+      location: 5,
+      safety: 3,
+    },
   },
 ];
 
@@ -135,9 +172,7 @@ const LandlordPage = (): ReactElement => {
   return (
     <>
       <Container>
-        <Box py={3}>
-          <Typography variant="h4">{`This is dummy text! My current landlordId is ${landlordId}`}</Typography>
-        </Box>
+        <AppBar headersData={headersData} />
         <Container>
           <Grid container spacing={5} justify="center">
             <Grid container spacing={3} item xs={12} sm={8}>
