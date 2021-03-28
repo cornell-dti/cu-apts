@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import Rating from '../Review/Rating';
+import Rating from '../Review/Review';
 import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
 import ApartmentPhoto2 from '../../assets/apartment_interior.png';
 import Logo from '../../assets/company_logo.png';

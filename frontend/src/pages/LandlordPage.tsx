@@ -8,6 +8,7 @@ import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
+import Header from '../components/Landlord/Header';
 
 type LandlordData = {
   properties: string[];
@@ -32,6 +33,11 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
+const landlordData = {
+  landlord: 'Ithaca Live More',
+  overallRating: 4,
+  numReviews: 12
+}
 
 const reviews = [
   {
@@ -173,6 +179,7 @@ const LandlordPage = (): ReactElement => {
     <>
       <Container>
         <AppBar headersData={headersData} />
+        <Header landlord={landlordData.landlord} overallRating={landlordData.overallRating} numReviews={landlordData.numReviews} />
         <Container>
           <Grid container spacing={5} justify="center">
             <Grid container spacing={3} item xs={12} sm={8}>
