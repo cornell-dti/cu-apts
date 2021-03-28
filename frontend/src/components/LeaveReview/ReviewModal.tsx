@@ -132,7 +132,7 @@ const ReviewModal = ({ open, onClose }: Props) => {
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
-                  label="Building maintenance"
+                  label="Building Maintenance"
                   onChange={updateRating('maintenance')}
                 ></ReviewRating>
                 <ReviewRating

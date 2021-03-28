@@ -14,10 +14,10 @@ type ItemProps = {
 const Item = ({ aspect, rating }: ItemProps): ReactElement => {
   return (
     <Grid container item xs={12} md={6}>
-      <Grid container item xs={12} sm={6} lg={5}>
+      <Grid container item xs={12} sm={7} lg={5}>
         <HeartRating value={rating} readOnly />
       </Grid>
-      <Grid container item xs={12} sm={6} lg={7}>
+      <Grid container item xs={12} sm={5} lg={7}>
         <FormLabel>{aspect}</FormLabel>
       </Grid>
     </Grid>

@@ -1,19 +1,25 @@
+import { Box, List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
-import styles from './Review.module.scss';
 
 type Props = {
   readonly phone: string;
   readonly address: string;
 };
 
+const InfoItem = ({ text }: { text: string }) => (
+  <ListItem disableGutters>
+    <ListItemText primary={text} />
+  </ListItem>
+);
+
 export default function Info({ phone, address }: Props): ReactElement {
   return (
-    <div>
-      <p className={styles.title}>Info</p>
-      <div className={styles.detail}>
-        <p>{phone}</p>
-        <p>{address}</p>
-      </div>
-    </div>
+    <Box mt={1}>
+      <Typography variant="h5">Info</Typography>
+      <List dense>
+        <InfoItem text={phone} />
+        <InfoItem text={address} />
+      </List>
+    </Box>
   );
 }

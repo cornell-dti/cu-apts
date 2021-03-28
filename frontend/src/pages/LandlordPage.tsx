@@ -1,16 +1,17 @@
-import { Container, Grid } from '@material-ui/core';
-import React, { ReactElement, useEffect, useState } from 'react';
+import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
+import React, { ReactElement, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import ReviewModal from '../components/LeaveReview/ReviewModal';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import Review from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
-import { getWidth } from '../utils/isMobile';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 
 type LandlordData = {
-  features: string[];
   properties: string[];
+  photos: string[];
   phone: string;
   address: string;
 };
@@ -48,7 +49,6 @@ const reviews = [
     },
   },
   {
-    name: 'user2',
     overallRating: 2,
     date: new Date(),
     text:
@@ -80,7 +80,10 @@ const reviews = [
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
-  features: ['Parking', 'Heating', 'Trash removal', 'Snow plowing', 'Maintenance'],
+  photos: [
+    'https://lifestylepropertiesithaca.com/gridmedia/img/slide1.jpg',
+    'https://images1.apartments.com/i2/F7HtEfdZCVtvQ_DcqGjQuoQ2IcmcMb2nP1PJuOwOdFw/102/carriage-house-apartments-ithaca-ny-primary-photo.jpg',
+  ],
   phone: '555-555-5555',
   address: '119 S Cayuga St, Ithaca, NY 14850',
 };
@@ -109,72 +112,86 @@ const dummyRatingInfo: RatingInfo[] = [
 ];
 
 const LandlordPage = (): ReactElement => {
-  // eslint-disable-next-line
   const { landlordId } = useParams<Record<string, string | undefined>>();
-  const [width, setWidth] = useState(window.innerWidth);
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const breakpoint = 600;
+
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [carouselOpen, setCarouselOpen] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
-  useEffect(() => {
-    window.addEventListener('resize', () => setWidth(getWidth()));
-  });
+
+  const Modals = (
+    <>
+      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <PhotoCarousel
+        photos={landlordData.photos}
+        open={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+      />
+    </>
+  );
+
+  const Header = (
+    <>
+      <Grid container item spacing={3} justify="space-between" alignItems="center">
+        <Grid item>
+          <Typography variant="h4">Reviews ({reviews.length})</Typography>
+        </Grid>
+        <Button
+          color="secondary"
+          variant="contained"
+          disableElevation
+          onClick={() => setCarouselOpen(true)}
+        >
+          Show all photos
+        </Button>
+        <Grid item>
+          <Button
+            color="primary"
+            variant="contained"
+            disableElevation
+            onClick={() => setReviewOpen(true)}
+          >
+            Leave a Review
+          </Button>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <ReviewHeader aveRatingInfo={aveRatingInfo} />
+      </Grid>
+    </>
+  );
+
+  const InfoSection = (
+    <Grid item xs={12} sm={4}>
+      <InfoFeatures {...landlordData} />
+    </Grid>
+  );
 
   return (
-    <Container>
-      <AppBar headersData={headersData} />
+    <>
       <Container>
-        <Grid container spacing={5}>
-          {width >= breakpoint ? (
-            <>
-              <Grid item xs={12} sm={8}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
+        <AppBar headersData={headersData} />
+        <Container>
+          <Grid container spacing={5} justify="center">
+            <Grid container spacing={3} item xs={12} sm={8}>
+              {Header}
+              <Hidden smUp>{InfoSection}</Hidden>
+              <Grid container item spacing={3}>
+                {reviews.map((reviewData, index) => (
+                  <Grid item xs={12} key={index}>
+                    <Review {...reviewData} />
                   </Grid>
-
-                  {reviews.map((reviewData, index) => (
-                    <Grid item xs={12}>
-                      <Review {...reviewData} key={index} />
-                    </Grid>
-                  ))}
-                </Grid>
+                ))}
               </Grid>
-
-              <InfoFeatures
-                propertyInfo={landlordData.properties}
-                propertyFeatures={landlordData.features}
-                phone={landlordData.phone}
-                address={landlordData.address}
-              />
-            </>
-          ) : (
-            <>
-              <Grid item xs={12}>
-                <ReviewHeader numReviews={reviews.length} aveRatingInfo={aveRatingInfo} />
-              </Grid>
-              <InfoFeatures
-                propertyInfo={landlordData.properties}
-                propertyFeatures={landlordData.features}
-                phone={landlordData.phone}
-                address={landlordData.address}
-              />
-
-              <Grid item xs={12}>
-                <Grid container spacing={3}>
-                  {reviews.map((reviewData, index) => (
-                    <Grid item xs={12}>
-                      <Review {...reviewData} key={index} />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Grid>
-            </>
-          )}
-        </Grid>
+            </Grid>
+            <Hidden xsDown>{InfoSection}</Hidden>
+          </Grid>
+        </Container>
       </Container>
-    </Container>
+      {Modals}
+    </>
   );
 };
 
