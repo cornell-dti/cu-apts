@@ -1,39 +1,119 @@
 import React, { ReactElement } from 'react';
-import { Card, CardContent, Grid, Typography } from '@material-ui/core';
+import {
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Grid,
+  Typography,
+  Button,
+  IconButton,
+  Collapse,
+} from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
+import { makeStyles } from '@material-ui/styles';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import clsx from 'clsx';
+import DetailedRatings from './DetailedRating';
+import ApartmentImg from '../../assets/apartment-sample.png';
+import { DetailedRating } from '../../../../common/types/db-types';
 
 type Props = {
   readonly overallRating: number;
   readonly date: Date;
   readonly text: string;
+  readonly ratings: DetailedRating;
 };
 
-const Review = ({ overallRating, date, text }: Props): ReactElement => {
+const useStyles = makeStyles(() => ({
+  root: {
+    borderRadius: '10px',
+  },
+  expand: {
+    transform: 'rotate(0deg)',
+    marginLeft: 'auto',
+    borderColor: 'black',
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+  },
+  dateText: {
+    color: '#5D5D5D',
+  },
+  button: {
+    textTransform: 'none',
+  },
+}));
+
+const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => {
   const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
+  const { root, expand, expandOpen, dateText, button } = useStyles();
+  const [expanded, setExpanded] = React.useState(false);
+
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
   return (
     <Grid item>
-      <Card variant="outlined">
+      <Card className={root} variant="outlined">
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justify="space-between">
-              <Grid container xs={6} spacing={2}>
+              <Grid container xs={10} spacing={2}>
                 <Grid item>
                   <HeartRating value={overallRating} readOnly />
                 </Grid>
                 <Grid item>
-                  <Typography>{formattedDate}</Typography>
+                  <IconButton
+                    className={clsx(expand, {
+                      [expandOpen]: expanded,
+                    })}
+                    onClick={handleExpandClick}
+                    aria-expanded={expanded}
+                    aria-label="show more"
+                    size="small"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
                 </Grid>
               </Grid>
               <Grid item>
-                <Typography variant="h6">Anonymous</Typography>
+                <Typography className={dateText}>{formattedDate}</Typography>
               </Grid>
+            </Grid>
+            <Grid item>
+              <Collapse in={expanded} timeout="auto" unmountOnExit>
+                <CardContent>
+                  <DetailedRatings ratings={ratings} />
+                </CardContent>
+              </Collapse>
             </Grid>
             <Grid item container alignContent="center">
               <Typography>{text}</Typography>
             </Grid>
+            <Grid container alignItems="center" justify="center">
+              <Grid item xs={12} sm={6}>
+                <CardMedia component="img" alt="Apt image" image={ApartmentImg} title="Apt image" />
+              </Grid>
+            </Grid>
           </Grid>
         </CardContent>
+        <CardActions>
+          <Grid item container justify="space-between">
+            <Grid item>
+              <Button className={button} size="small">
+                Helpful
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button className={button} size="small">
+                Report Abuse
+              </Button>
+            </Grid>
+          </Grid>
+        </CardActions>
       </Card>
     </Grid>
   );
