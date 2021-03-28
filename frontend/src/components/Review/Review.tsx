@@ -17,7 +17,7 @@ const Review = ({ overallRating, date, text }: Props): ReactElement => {
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justify="space-between">
-              <Grid container xs={6} spacing={2}>
+              <Grid container item xs={6} spacing={2}>
                 <Grid item>
                   <HeartRating value={overallRating} readOnly />
                 </Grid>
