@@ -92,7 +92,7 @@ const dummyData: LandlordData = {
   address: '119 S Cayuga St, Ithaca, NY 14850',
   name: 'Ithaca Live More',
   overallRating: 4,
-  numReviews: 12
+  numReviews: 12,
 };
 
 const dummyRatingInfo: RatingInfo[] = [
@@ -180,7 +180,11 @@ const LandlordPage = (): ReactElement => {
     <>
       <Container>
         <AppBar headersData={headersData} />
-        <LandlordHeader landlord={landlordData.name} overallRating={landlordData.overallRating} numReviews={landlordData.numReviews} />
+        <LandlordHeader
+          landlord={landlordData.name}
+          overallRating={landlordData.overallRating}
+          numReviews={landlordData.numReviews}
+        />
         <Container>
           <Grid container spacing={5} justify="center">
             <Grid container spacing={3} item xs={12} sm={8}>

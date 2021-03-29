@@ -3,14 +3,7 @@ import HeartRating from '../utils/HeartRating';
 import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
 import ApartmentPhoto2 from '../../assets/apartment_interior.png';
 import Logo from '../../assets/company_logo.png';
-import {
-  CardHeader,
-  CardMedia,
-  Grid,
-  Button,
-  withStyles,
-  makeStyles
-} from '@material-ui/core';
+import { CardHeader, CardMedia, Grid, Button, withStyles, makeStyles } from '@material-ui/core';
 type Props = {
   readonly landlord: string;
   readonly overallRating: number;
@@ -54,10 +47,10 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
     borderRadius: '8px',
     padding: '0px',
-    "&:hover": {
+    '&:hover': {
       background: 'rgba(255, 255, 255, 0.8)',
     },
-    "&:focus": {
+    '&:focus': {
       borderColor: 'black !important',
     },
   },
@@ -80,40 +73,43 @@ const useStyles = makeStyles({
     lineHeight: '31px',
     marginLeft: '10px',
     position: 'relative',
-    marginBottom: 0
+    marginBottom: 0,
   },
   landlord_rating: {
     '& div': {
       display: 'inline-block',
-      marginTop: '2px'
-    }
+      marginTop: '2px',
+    },
   },
-
 });
 
-const LandlordHeader = ({
-  landlord,
-  overallRating,
-  numReviews,
-}: Props): ReactElement => {
+const LandlordHeader = ({ landlord, overallRating, numReviews }: Props): ReactElement => {
   const classes = useStyles();
   return (
     <Grid container spacing={0}>
       <React.Fragment>
         <GlobalCss />
         <Grid item xs={6}>
-          <CardMedia className={classes.media} image={ApartmentPhoto1}  >
+          <CardMedia className={classes.media} image={ApartmentPhoto1}>
             <Grid container xs={12} direction="row" alignItems="flex-end" style={{ height: '95%' }}>
               <Grid container spacing={0} direction="row" xs={2}>
                 <CardMedia image={Logo} className={classes.logo} />
               </Grid>
               <Grid container spacing={0} direction="row" xs={10} style={{ height: '25%' }}>
-                <CardHeader title={landlord} className={classes.landlord_name} disableTypography={true} />
+                <CardHeader
+                  title={landlord}
+                  className={classes.landlord_name}
+                  disableTypography={true}
+                />
                 <Grid container spacing={0} direction="row" xs={12} style={{ paddingTop: '10px' }}>
-                  <Grid className={classes.landlord_rating} >
+                  <Grid className={classes.landlord_rating}>
                     <HeartRating value={overallRating} readOnly />
                   </Grid>
-                  <CardHeader title={numReviews + " Reviews"} className={classes.landlord_reviews} disableTypography={true} />
+                  <CardHeader
+                    title={numReviews + ' Reviews'}
+                    className={classes.landlord_reviews}
+                    disableTypography={true}
+                  />
                 </Grid>
               </Grid>
             </Grid>
@@ -122,7 +118,9 @@ const LandlordHeader = ({
         <Grid item xs={6}>
           <CardMedia image={ApartmentPhoto2} className={classes.media}>
             <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
-              <Button disableFocusRipple variant='outlined' className={classes.photobutton}>Show all photos</Button>
+              <Button disableFocusRipple variant="outlined" className={classes.photobutton}>
+                Show all photos
+              </Button>
             </Grid>
           </CardMedia>
         </Grid>
