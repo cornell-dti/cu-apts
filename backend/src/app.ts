@@ -37,15 +37,10 @@ app.post('/new-review', async (req, res) => {
   res.status(201).send(doc.id);
 });
 
-const getReviewsByType = async (id: string, idType: string) => {
-  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
-  const reviews: Review[] = reviewDocs.map((doc) => doc.data() as Review);
-  return reviews;
-};
-
 app.get('/reviews/:idType/:id', async (req, res) => {
   const { idType, id } = req.params;
-  const reviews: Review[] = await getReviewsByType(id, idType);
+  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => doc.data() as Review);
   res.status(200).send(JSON.stringify(reviews));
 });
 
