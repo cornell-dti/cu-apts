@@ -31,11 +31,15 @@ app.get('/', async (req, res) => {
   res.status(200).send(JSON.stringify(faqs));
 });
 
-app.post('/new-review', async (req, res) => {
-  const doc = reviewCollection.doc();
-  const review: Review = req.body as Review;
-  doc.set(review);
-  res.status(201).send(doc.id);
+app.post('/new-review', authenticate, async (req, res) => {
+  try {
+    const doc = reviewCollection.doc();
+    const review: Review = req.body as Review;
+    doc.set(review);
+    res.status(201).send(doc.id);
+  } catch (_) {
+    res.status(400).send('Error');
+  }
 });
 
 app.get('/auth-test', authenticate, async (req, res) => {

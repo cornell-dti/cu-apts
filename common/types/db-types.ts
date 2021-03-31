@@ -1,3 +1,7 @@
+type Id = {
+  readonly id: string;
+};
+
 export type DetailedRating = {
   readonly location: number;
   readonly safety: number;
@@ -8,7 +12,6 @@ export type DetailedRating = {
 };
 
 export type Review = {
-  readonly id: string;
   readonly aptId: string | null;
   readonly landlordId: string;
   readonly overallRating: number;
@@ -17,8 +20,9 @@ export type Review = {
   readonly date: Date;
 };
 
+export type ReviewWithId = Review & Id;
+
 export type Landlord = {
-  readonly id: string;
   readonly name: string;
   readonly contact: string | null;
   readonly avgRating: number;
@@ -27,8 +31,9 @@ export type Landlord = {
   readonly properties: readonly string[]; // array of Apartment IDs in apartments collection
 };
 
+export type LandlordWithId = Landlord & Id;
+
 export type Apartment = {
-  readonly id: string;
   readonly name: string;
   readonly address: string; // may change to placeID for Google Maps integration
   readonly landlordId: string | null;
@@ -37,3 +42,5 @@ export type Apartment = {
   readonly photos: readonly string[]; // can be empty
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
 };
+
+export type ApartmentWithId = Apartment & Id;

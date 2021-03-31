@@ -22,7 +22,7 @@ const authenticate: RequestHandler = async (req, res, next) => {
 
     req.user = user;
     next();
-  } catch (error) {
+  } catch (_) {
     res.status(400).send({ error: 'Authentication Error' });
   }
 };
