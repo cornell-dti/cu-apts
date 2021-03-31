@@ -37,4 +37,11 @@ app.post('/new-review', async (req, res) => {
   res.status(201).send(doc.id);
 });
 
+app.get('/reviews/:idType/:id', async (req, res) => {
+  const { idType, id } = req.params;
+  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => doc.data() as Review);
+  res.status(200).send(JSON.stringify(reviews));
+});
+
 export default app;
