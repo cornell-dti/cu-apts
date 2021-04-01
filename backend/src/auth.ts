@@ -8,7 +8,6 @@ const authenticate: RequestHandler = async (req, res, next) => {
       res.status(400).send({ error: 'Header not found' });
       return;
     }
-
     const [bearer, token] = authorization.split(' ');
     if (bearer !== 'Bearer') {
       res.status(400).send({ error: 'Invalid token syntax' });
