@@ -3,7 +3,7 @@ import {
   clearFirestoreData,
   assertSucceeds,
   assertFails,
-} from '@firebase/testing';
+} from '@firebase/rules-unit-testing';
 import request from 'supertest';
 import app from './app';
 import { db } from './firebase';
