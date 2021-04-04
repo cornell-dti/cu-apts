@@ -11,7 +11,6 @@ import { useTitle } from '../utils';
 import get from '../utils/get';
 import { Review } from '../../../common/types/db-types';
 
-
 type LandlordData = {
   properties: string[];
   photos: string[];
@@ -35,60 +34,6 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
-
-const reviews = [
-  {
-    id: '1',
-    overallRating: 3,
-    date: new Date(),
-    landlordId: '1',
-    aptId: null,
-    reviewText:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    detailedRatings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-  {
-    id: '2',
-    overallRating: 2,
-    date: new Date(),
-    landlordId: '1',
-    aptId: null,
-    reviewText:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    detailedRatings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-  {
-    id: '3',
-    overallRating: 1,
-    date: new Date(),
-    landlordId: '1',
-    aptId: null,
-    reviewText:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    detailedRatings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-];
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
@@ -127,7 +72,7 @@ const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const [reviewData, setReviewData] = useState<Review[]>(reviews);
+  const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 

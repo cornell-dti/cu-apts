@@ -45,7 +45,7 @@ const useStyles = makeStyles(() => ({
 
 const ReviewComponent = ({ review }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText } = review;
-  const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
+  const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
 
