@@ -17,13 +17,10 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
 import ApartmentImg from '../../assets/apartment-sample.png';
-import { DetailedRating } from '../../../../common/types/db-types';
+import { Review } from '../../../../common/types/db-types';
 
 type Props = {
-  readonly overallRating: number;
-  readonly date: Date;
-  readonly text: string;
-  readonly ratings: DetailedRating;
+  readonly review: Review;
 };
 
 const useStyles = makeStyles(() => ({
@@ -46,8 +43,9 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => {
-  const formattedDate = format(date, 'MMM dd, yyyy').toUpperCase();
+const ReviewComponent = ({ review }: Props): ReactElement => {
+  const { detailedRatings, overallRating, date, reviewText } = review;
+  const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
 
@@ -86,12 +84,12 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
             <Grid item>
               <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>
-                  <DetailedRatings ratings={ratings} />
+                  <DetailedRatings ratings={detailedRatings} />
                 </CardContent>
               </Collapse>
             </Grid>
             <Grid item container alignContent="center">
-              <Typography>{text}</Typography>
+              <Typography>{reviewText}</Typography>
             </Grid>
             <Grid container alignItems="center" justify="center">
               <Grid item xs={12} sm={6}>
@@ -119,4 +117,4 @@ const Review = ({ overallRating, date, text, ratings }: Props): ReactElement => 
   );
 };
 
-export default Review;
+export default ReviewComponent;

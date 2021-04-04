@@ -46,4 +46,15 @@ app.get('/auth-test', authenticate, async (req, res) => {
   res.send(req.user);
 });
 
+app.get('/reviews/:idType/:id', async (req, res) => {
+  const { idType, id } = req.params;
+  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => {
+    let data = doc.data();
+    data = { ...data, date: data.date.toDate() };
+    return data as Review;
+  });
+  res.status(200).send(JSON.stringify(reviews));
+});
+
 export default app;

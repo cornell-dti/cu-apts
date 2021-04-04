@@ -1589,16 +1589,6 @@
     "@firebase/util" "0.4.1"
     tslib "^2.1.0"
 
-"@firebase/rules-unit-testing@^1.2.5":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@firebase/rules-unit-testing/-/rules-unit-testing-1.2.6.tgz#be7c8c226f027e3282607c4c406cba9d1d78bd6d"
-  integrity sha512-26BQxaQAhNCH4tMK5At9BTQYVhmNpfV85P0CJGQsaitesdh+WnkD1e/eZqAZzqJo/YtALRwDQQIKa6ad7UT7jg==
-  dependencies:
-    "@firebase/logger" "0.2.6"
-    "@firebase/util" "0.4.1"
-    firebase "8.3.2"
-    request "2.88.2"
-
 "@firebase/storage-types@0.3.13":
   version "0.3.13"
   resolved "https://registry.yarnpkg.com/@firebase/storage-types/-/storage-types-0.3.13.tgz#cd43e939a2ab5742e109eb639a313673a48b5458"
@@ -6267,25 +6257,25 @@ firebase@7.18.0:
     "@firebase/storage" "0.3.42"
     "@firebase/util" "0.3.1"
 
-firebase@8.3.2, firebase@^8.0.1:
-  version "8.3.2"
-  resolved "https://registry.yarnpkg.com/firebase/-/firebase-8.3.2.tgz#f647770472ede31e4411ce5ffdc2ab84796fe4dd"
-  integrity sha512-qGKASp6lXcV8NriHz/3wdltyLUjHOVkON6TQ1syGjW0sS5q/yTl9LK4O83hDLwG+UeRVRhLOaVa3jaLG4o3gnw==
+firebase@^8.0.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/firebase/-/firebase-8.3.1.tgz#7d08ca04feade96270345c6e9475d4055c93e97d"
+  integrity sha512-2BhzHQ8ZDh4BLZ9bicW8FEKFOYmu/w1sKhR5vi4X9SP+dsYNoKyFOP7Sfmk0GoENzt2+Y04GgfS5YERXLQky+w==
   dependencies:
-    "@firebase/analytics" "0.6.7"
-    "@firebase/app" "0.6.18"
+    "@firebase/analytics" "0.6.6"
+    "@firebase/app" "0.6.17"
     "@firebase/app-types" "0.6.1"
     "@firebase/auth" "0.16.4"
-    "@firebase/database" "0.9.7"
-    "@firebase/firestore" "2.2.2"
-    "@firebase/functions" "0.6.5"
-    "@firebase/installations" "0.4.23"
-    "@firebase/messaging" "0.7.7"
-    "@firebase/performance" "0.4.9"
+    "@firebase/database" "0.9.6"
+    "@firebase/firestore" "2.2.1"
+    "@firebase/functions" "0.6.4"
+    "@firebase/installations" "0.4.22"
+    "@firebase/messaging" "0.7.6"
+    "@firebase/performance" "0.4.8"
     "@firebase/polyfill" "0.3.36"
-    "@firebase/remote-config" "0.1.34"
-    "@firebase/storage" "0.4.6"
-    "@firebase/util" "0.4.1"
+    "@firebase/remote-config" "0.1.33"
+    "@firebase/storage" "0.4.5"
+    "@firebase/util" "0.4.0"
 
 flat-cache@^3.0.4:
   version "3.0.4"
