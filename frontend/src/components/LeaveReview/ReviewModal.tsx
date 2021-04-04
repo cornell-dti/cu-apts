@@ -107,7 +107,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
       }
       const token = await user.getIdToken(true);
       const res = await axios.post(
-        'http://localhost:8080/new-review',
+        '/new-review',
         formDataToReview(review),
         createAuthHeaders(token)
       );

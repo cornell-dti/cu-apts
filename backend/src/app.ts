@@ -34,7 +34,7 @@ app.get('/', async (req, res) => {
 app.post('/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
-    const review: Review = req.body as Review;
+    const review = req.body as Review;
     doc.set(review);
     res.status(201).send(doc.id);
   } catch (_) {
