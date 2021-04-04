@@ -11,6 +11,7 @@ import { useTitle } from '../utils';
 import get from '../utils/get';
 import { Review } from '../../../common/types/db-types';
 
+
 type LandlordData = {
   properties: string[];
   photos: string[];
@@ -132,7 +133,7 @@ const LandlordPage = (): ReactElement => {
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
-    get<Review>(`reviews/${landlordId}`, setReviewData);
+    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData);
   }, [landlordId]);
 
   const Modals = (
