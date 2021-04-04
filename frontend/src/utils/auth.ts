@@ -23,6 +23,7 @@ const getUser = async () => {
   if (user?.email?.endsWith('@cornell.edu')) {
     return user;
   }
+  await auth.signOut();
   return null;
 };
 
