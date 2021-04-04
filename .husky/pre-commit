@@ -4,5 +4,5 @@
 
 echo "Prettifying your code on commit..."
 yarn lint-staged
-# echo "Running the TypeScript compiler..."
-# yarn tsc --noEmit
+echo "Running the TypeScript compiler..."
+yarn tsc --noEmit
