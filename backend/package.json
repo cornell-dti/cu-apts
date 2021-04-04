@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@firebase/rules-unit-testing": "^1.2.5",
+    "@firebase/testing": "^1.2.5",
     "@types/cors": "^2.8.8",
     "@types/express": "^4.17.8",
     "@types/supertest": "^2.0.10",

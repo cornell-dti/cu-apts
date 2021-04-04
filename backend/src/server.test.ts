@@ -1,9 +1,10 @@
+// eslint-disable-next-line
 import {
   initializeTestApp,
   clearFirestoreData,
   assertSucceeds,
   assertFails,
-} from '@firebase/rules-unit-testing';
+} from '@firebase/testing';
 import request from 'supertest';
 import app from './app';
 import { db } from './firebase';

@@ -3,7 +3,7 @@ import cors from 'cors';
 import { db } from './firebase';
 import { Section } from './firebase/types';
 import { Review, Landlord, Apartment } from '../../common/types/db-types';
-import { generateKeywords } from './utils/generateKeywords';
+import generateKeywords from './utils/generateKeywords';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
