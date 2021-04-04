@@ -1581,16 +1581,6 @@
     "@firebase/util" "0.4.0"
     tslib "^2.1.0"
 
-"@firebase/rules-unit-testing@^1.2.5":
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/@firebase/rules-unit-testing/-/rules-unit-testing-1.2.5.tgz#a3d89a9214e5a8a77f2baae89d9788c24b7aac2f"
-  integrity sha512-FndDNWCOmnc8MduWcDAXK7EnNv3R+9egwnstO0mQlfEdpHdReRBMMXAuLTW5+xpkP2MrE2UpqssuYOSszR1a3A==
-  dependencies:
-    "@firebase/logger" "0.2.6"
-    "@firebase/util" "0.4.0"
-    firebase "8.3.1"
-    request "2.88.2"
-
 "@firebase/storage-types@0.3.13":
   version "0.3.13"
   resolved "https://registry.yarnpkg.com/@firebase/storage-types/-/storage-types-0.3.13.tgz#cd43e939a2ab5742e109eb639a313673a48b5458"
@@ -6258,7 +6248,7 @@ firebase@7.18.0:
     "@firebase/storage" "0.3.42"
     "@firebase/util" "0.3.1"
 
-firebase@8.3.1, firebase@^8.0.1:
+firebase@^8.0.1:
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/firebase/-/firebase-8.3.1.tgz#7d08ca04feade96270345c6e9475d4055c93e97d"
   integrity sha512-2BhzHQ8ZDh4BLZ9bicW8FEKFOYmu/w1sKhR5vi4X9SP+dsYNoKyFOP7Sfmk0GoENzt2+Y04GgfS5YERXLQky+w==
