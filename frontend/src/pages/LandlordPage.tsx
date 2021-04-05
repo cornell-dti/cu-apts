@@ -1,14 +1,16 @@
 import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
-import Review from '../components/Review/Review';
+import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
+import get from '../utils/get';
+import { Review } from '../../../common/types/db-types';
 
 type LandlordData = {
   properties: string[];
@@ -36,51 +38,6 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
-
-const reviews = [
-  {
-    overallRating: 3,
-    date: new Date(),
-    text:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-  {
-    overallRating: 2,
-    date: new Date(),
-    text:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-  {
-    overallRating: 1,
-    date: new Date(),
-    text:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam auctor mauris a scelerisque rhoncus. Nam vitae lacus at neque faucibus porttitor. Phasellus mollis maximus neque, vehicula consectetur enim sagittis ac. Sed viverra risus nibh, non pulvinar mauris fermentum sed. Praesent pellentesque dapibus felis nec interdum. ',
-    ratings: {
-      value: 3,
-      conditions: 2,
-      maintenance: 1,
-      communication: 4,
-      location: 5,
-      safety: 3,
-    },
-  },
-];
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
@@ -122,11 +79,14 @@ const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-
+  const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
+  useEffect(() => {
+    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData);
+  }, [landlordId]);
 
   const Modals = (
     <>
@@ -143,7 +103,7 @@ const LandlordPage = (): ReactElement => {
     <>
       <Grid container item spacing={3} justify="space-between" alignItems="center">
         <Grid item>
-          <Typography variant="h4">Reviews ({reviews.length})</Typography>
+          <Typography variant="h4">Reviews ({reviewData.length})</Typography>
         </Grid>
         <Grid item>
           <Button
@@ -184,9 +144,9 @@ const LandlordPage = (): ReactElement => {
               {Header}
               <Hidden smUp>{InfoSection}</Hidden>
               <Grid container item spacing={3}>
-                {reviews.map((reviewData, index) => (
+                {reviewData.map((review, index) => (
                   <Grid item xs={12} key={index}>
-                    <Review {...reviewData} />
+                    <ReviewComponent review={review} />
                   </Grid>
                 ))}
               </Grid>
