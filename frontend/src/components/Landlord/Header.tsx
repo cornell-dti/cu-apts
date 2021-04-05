@@ -1,13 +1,27 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState } from 'react';
 import HeartRating from '../utils/HeartRating';
 import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
 import ApartmentPhoto2 from '../../assets/apartment_interior.png';
 import Logo from '../../assets/company_logo.png';
-import { CardHeader, CardMedia, Grid, Button, withStyles, makeStyles } from '@material-ui/core';
+import {
+  CardHeader,
+  CardMedia,
+  Grid,
+  Button,
+  withStyles,
+  makeStyles,
+  Avatar,
+} from '@material-ui/core';
+import { isMobile } from '../../utils/isMobile';
+import { useEffect } from 'react';
+type View = {
+  mobileView: boolean;
+};
 type Props = {
-  readonly landlord: string;
+  readonly name: string;
   readonly overallRating: number;
   readonly numReviews: number;
+  handleClick: () => void;
 };
 
 const GlobalCss = withStyles({
@@ -23,15 +37,13 @@ const useStyles = makeStyles({
     height: '400px',
     backgroundColor: 'rgba(0,0,0,0.6)',
     backgroundBlendMode: 'darken',
+    position: 'relative',
   },
   logo: {
     height: '86px',
     width: '86px',
-    marginTop: '20%',
-    marginLeft: '5%',
-    borderRadius: '50%',
   },
-  photobutton: {
+  photoButton: {
     marginRight: '25px',
     height: '45px',
     width: '133px',
@@ -54,28 +66,26 @@ const useStyles = makeStyles({
       borderColor: 'black !important',
     },
   },
-  landlord_name: {
+  landlordName: {
     color: 'white',
     paddingLeft: 0,
     paddingBottom: 0,
-    paddingTop: '20px',
     fontStyle: 'normal',
     fontWeight: 'bold',
     fontSize: '36px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
   },
-  landlord_reviews: {
+  landlordReviews: {
     color: 'white',
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '24px',
     lineHeight: '31px',
-    marginLeft: '10px',
     position: 'relative',
-    marginBottom: 0,
+    marginBottom: '20px',
   },
-  landlord_rating: {
+  landlordRating: {
     '& div': {
       display: 'inline-block',
       marginTop: '2px',
@@ -83,47 +93,117 @@ const useStyles = makeStyles({
   },
 });
 
-const LandlordHeader = ({ landlord, overallRating, numReviews }: Props): ReactElement => {
-  const classes = useStyles();
+const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props): ReactElement => {
+  const [state, setState] = useState<View>({
+    mobileView: false,
+  });
+  const { mobileView } = state;
+  useEffect(() => {
+    const setResponsiveness = () => {
+      return isMobile()
+        ? setState((prevState) => ({ ...prevState, mobileView: true }))
+        : setState((prevState) => ({ ...prevState, mobileView: false }));
+    };
+    setResponsiveness();
+    window.addEventListener('resize', () => setResponsiveness());
+  }, []);
+  const { media, logo, photoButton, landlordName, landlordReviews, landlordRating } = useStyles();
   return (
     <Grid container spacing={0}>
       <React.Fragment>
         <GlobalCss />
-        <Grid item xs={6}>
-          <CardMedia className={classes.media} image={ApartmentPhoto1}>
-            <Grid container xs={12} direction="row" alignItems="flex-end" style={{ height: '95%' }}>
-              <Grid container spacing={0} direction="row" xs={2}>
-                <CardMedia image={Logo} className={classes.logo} />
-              </Grid>
-              <Grid container spacing={0} direction="row" xs={10} style={{ height: '25%' }}>
-                <CardHeader
-                  title={landlord}
-                  className={classes.landlord_name}
-                  disableTypography={true}
-                />
-                <Grid container spacing={0} direction="row" xs={12} style={{ paddingTop: '10px' }}>
-                  <Grid className={classes.landlord_rating}>
-                    <HeartRating value={overallRating} readOnly />
+        <Grid item xs={12} md={mobileView ? 12 : 6}>
+          <CardMedia className={media} image={ApartmentPhoto1}>
+            <Grid item xs={12}>
+              <div
+                style={{
+                  height: '200px',
+                  width: '100%',
+                  position: 'absolute',
+                  left: '10px',
+                  bottom: '20px',
+                }}
+              >
+                <Grid
+                  container
+                  xs={12}
+                  direction="row"
+                  style={{ height: '200px' }}
+                  alignItems="flex-end"
+                >
+                  <Grid item xs={12} md={mobileView ? 12 : 3}>
+                    <Avatar
+                      src={Logo}
+                      alt="Landlord Logo"
+                      className={logo}
+                      style={
+                        mobileView
+                          ? { marginLeft: '5px', marginBottom: '10px' }
+                          : { marginLeft: '5%', marginBottom: '20px' }
+                      }
+                    />
                   </Grid>
-                  <CardHeader
-                    title={numReviews + ' Reviews'}
-                    className={classes.landlord_reviews}
-                    disableTypography={true}
-                  />
+                  <Grid
+                    item
+                    xs={12}
+                    md={mobileView ? 12 : 8}
+                    style={mobileView ? { marginLeft: '10px' } : {}}
+                  >
+                    <CardHeader title={name} className={landlordName} disableTypography={true} />
+                    <Grid container style={{ paddingTop: '10px' }}>
+                      <Grid
+                        item
+                        className={landlordRating}
+                        xs={12}
+                        md={mobileView ? 12 : 3}
+                        style={{ paddingTop: '5px', marginRight: '45px' }}
+                      >
+                        <HeartRating value={overallRating} readOnly />
+                      </Grid>
+                      <Grid item xs={12} md={mobileView ? 12 : 6}>
+                        <CardHeader
+                          title={numReviews + ' Reviews'}
+                          className={landlordReviews}
+                          disableTypography={true}
+                          style={mobileView ? { marginLeft: '0px' } : {}}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Grid>
                 </Grid>
+              </div>
+            </Grid>
+            {mobileView && (
+              <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
+                <Button
+                  disableFocusRipple
+                  variant="outlined"
+                  className={photoButton}
+                  style={{ marginRight: '5px' }}
+                  onClick={handleClick}
+                >
+                  Show all photos
+                </Button>
               </Grid>
-            </Grid>
+            )}
           </CardMedia>
         </Grid>
-        <Grid item xs={6}>
-          <CardMedia image={ApartmentPhoto2} className={classes.media}>
-            <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
-              <Button disableFocusRipple variant="outlined" className={classes.photobutton}>
-                Show all photos
-              </Button>
-            </Grid>
-          </CardMedia>
-        </Grid>
+        {!mobileView && (
+          <Grid item xs={12} md={6}>
+            <CardMedia image={ApartmentPhoto2} className={media}>
+              <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
+                <Button
+                  disableFocusRipple
+                  variant="outlined"
+                  className={photoButton}
+                  onClick={handleClick}
+                >
+                  Show all photos
+                </Button>
+              </Grid>
+            </CardMedia>
+          </Grid>
+        )}
       </React.Fragment>
     </Grid>
   );

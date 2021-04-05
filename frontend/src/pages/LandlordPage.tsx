@@ -145,14 +145,6 @@ const LandlordPage = (): ReactElement => {
         <Grid item>
           <Typography variant="h4">Reviews ({reviews.length})</Typography>
         </Grid>
-        <Button
-          color="secondary"
-          variant="contained"
-          disableElevation
-          onClick={() => setCarouselOpen(true)}
-        >
-          Show all photos
-        </Button>
         <Grid item>
           <Button
             color="primary"
@@ -181,9 +173,10 @@ const LandlordPage = (): ReactElement => {
       <Container>
         <AppBar headersData={headersData} />
         <LandlordHeader
-          landlord={landlordData.name}
+          name={landlordData.name}
           overallRating={landlordData.overallRating}
           numReviews={landlordData.numReviews}
+          handleClick={() => setCarouselOpen(true)}
         />
         <Container>
           <Grid container spacing={5} justify="center">
