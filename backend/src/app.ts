@@ -35,15 +35,11 @@ app.post('/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
     const review = req.body as Review;
-    doc.set(review);
+    doc.set({ ...review, date: new Date(review.date) });
     res.status(201).send(doc.id);
-  } catch (_) {
+  } catch (err) {
     res.status(400).send('Error');
   }
-});
-
-app.get('/auth-test', authenticate, async (req, res) => {
-  res.send(req.user);
 });
 
 app.get('/reviews/:idType/:id', async (req, res) => {
