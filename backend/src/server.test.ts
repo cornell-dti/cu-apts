@@ -6,7 +6,7 @@ import {
 } from '@firebase/testing';
 import request from 'supertest';
 import app from './app';
-import { db } from './firebase';
+import { db } from './firebase-config';
 
 describe('firestore permissions', () => {
   beforeEach(() => {

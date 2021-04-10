@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
-import { db } from './firebase';
-import { Section } from './firebase/types';
+import { db } from './firebase-config';
+import { Section } from './firebase-config/types';
 import { Review } from '../../common/types/db-types';
 import authenticate from './auth';
 
@@ -38,7 +38,7 @@ app.post('/new-review', authenticate, async (req, res) => {
     doc.set({ ...review, date: new Date(review.date) });
     res.status(201).send(doc.id);
   } catch (err) {
-    res.status(400).send('Error');
+    res.status(401).send('Error');
   }
 });
 

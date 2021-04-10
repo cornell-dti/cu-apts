@@ -112,6 +112,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
         createAuthHeaders(token)
       );
       if (res.status !== 201) {
+        console.log(res);
         throw new Error('Failed to submit review');
       }
       console.log(review);

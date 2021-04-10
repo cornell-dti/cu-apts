@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { auth } from './firebase';
+import { auth } from './firebase-config';
 
 const authenticate: RequestHandler = async (req, res, next) => {
   try {
@@ -13,7 +13,9 @@ const authenticate: RequestHandler = async (req, res, next) => {
       res.status(400).send({ error: 'Invalid token syntax' });
       return;
     }
+    console.log(auth);
     const user = await auth.verifyIdToken(token);
+    console.log(user);
     if (!user.email?.endsWith('@cornell.edu')) {
       res.status(400).send({ error: 'Invalid domain' });
       return;
@@ -21,7 +23,8 @@ const authenticate: RequestHandler = async (req, res, next) => {
 
     req.user = user;
     next();
-  } catch (_) {
+  } catch (e) {
+    console.log(e);
     res.status(400).send({ error: 'Authentication Error' });
   }
 };
