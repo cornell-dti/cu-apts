@@ -52,26 +52,34 @@ app.get('/reviews/:idType/:id', async (req, res) => {
 });
 
 app.post('/landlords', async (req, res) => {
-  const doc = landlordCollection.doc();
-  const landlord: Landlord = req.body as Landlord;
-  doc.set(landlord);
-  res.status(201).send(doc.id);
+  try {
+    const doc = landlordCollection.doc();
+    const landlord: Landlord = req.body as Landlord;
+    doc.set(landlord);
+    res.status(201).send(doc.id);
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
 app.get('/reviews/', async (req, res) => {
-  const query = req.query.q as string;
-  const landlordDocs = (await landlordCollection.get()).docs;
-  const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
-  const aptDocs = (await aptCollection.get()).docs;
-  const apts: Apartment[] = aptDocs.map((apt) => apt.data() as Apartment);
-  const aptsLandlords: (Landlord | Apartment)[] = [...landlords, ...apts];
+  try {
+    const query = req.query.q as string;
+    const landlordDocs = (await landlordCollection.get()).docs;
+    const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
+    const aptDocs = (await aptCollection.get()).docs;
+    const apts: Apartment[] = aptDocs.map((apt) => apt.data() as Apartment);
+    const aptsLandlords: (Landlord | Apartment)[] = [...landlords, ...apts];
 
-  const options = {
-    keys: ['name', 'address'],
-  };
-  const fuse = new Fuse(aptsLandlords, options);
-  const results = fuse.search(query);
-  res.status(200).send(JSON.stringify(results));
+    const options = {
+      keys: ['name', 'address'],
+    };
+    const fuse = new Fuse(aptsLandlords, options);
+    const results = fuse.search(query);
+    res.status(200).send(JSON.stringify(results));
+  } catch (err) {
+    res.status(400).send(err);
+  }
 });
 
 export default app;
