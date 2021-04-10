@@ -1,9 +1,9 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import Fuse from 'fuse.js';
 import { db } from './firebase';
 import { Section } from './firebase/types';
 import { Review, Landlord, Apartment } from '../../common/types/db-types';
-import generateKeywords from './utils/generateKeywords';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
@@ -54,28 +54,24 @@ app.get('/reviews/:idType/:id', async (req, res) => {
 app.post('/landlords', async (req, res) => {
   const doc = landlordCollection.doc();
   const landlord: Landlord = req.body as Landlord;
-  const searchableKeywords: string[] = generateKeywords(landlord.name);
-  const data = { ...landlord, searchableKeywords };
-  doc.set(data);
+  doc.set(landlord);
   res.status(201).send(doc.id);
 });
 
-app.get('/reviews/:query', async (req, res) => {
-  const { query } = req.params;
-  const landlordDocs = (
-    await landlordCollection
-      .where('searchableKeywords', 'array-contains', query.trim().toLowerCase())
-      .get()
-  ).docs;
+app.get('/reviews/', async (req, res) => {
+  const query = req.query.q as string;
+  const landlordDocs = (await landlordCollection.get()).docs;
   const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
-  const aptDocs = (
-    await aptCollection
-      .where('searchableKeywords', 'array-contains', query.trim().toLowerCase())
-      .get()
-  ).docs;
+  const aptDocs = (await aptCollection.get()).docs;
   const apts: Apartment[] = aptDocs.map((apt) => apt.data() as Apartment);
-  const result: (Landlord | Apartment)[] = [...landlords, ...apts];
-  res.status(200).send(JSON.stringify(result));
+  const aptsLandlords: (Landlord | Apartment)[] = [...landlords, ...apts];
+
+  const options = {
+    keys: ['name', 'address'],
+  };
+  const fuse = new Fuse(aptsLandlords, options);
+  const results = fuse.search(query);
+  res.status(200).send(JSON.stringify(results));
 });
 
 export default app;
