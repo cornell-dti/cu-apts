@@ -1,8 +1,9 @@
 import express, { Express } from 'express';
 import cors from 'cors';
-import { db } from './firebase';
-import { Section } from './firebase/types';
+import { db } from './firebase-config';
+import { Section } from './firebase-config/types';
 import { Review } from '../../common/types/db-types';
+import authenticate from './auth';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
@@ -30,11 +31,15 @@ app.get('/', async (req, res) => {
   res.status(200).send(JSON.stringify(faqs));
 });
 
-app.post('/new-review', async (req, res) => {
-  const doc = reviewCollection.doc();
-  const review: Review = req.body as Review;
-  doc.set(review);
-  res.status(201).send(doc.id);
+app.post('/new-review', authenticate, async (req, res) => {
+  try {
+    const doc = reviewCollection.doc();
+    const review = req.body as Review;
+    doc.set({ ...review, date: new Date(review.date) });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    res.status(401).send('Error');
+  }
 });
 
 app.get('/reviews/:idType/:id', async (req, res) => {
