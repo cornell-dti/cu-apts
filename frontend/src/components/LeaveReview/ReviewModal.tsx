@@ -16,7 +16,8 @@ import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 
-const CHARACTER_LIMIT = 500;
+const REVIEW_CHARACTER_LIMIT = 2000;
+const REVIEW_PHOTOS_LIMIT = 5;
 
 interface Props {
   open: boolean;
@@ -84,7 +85,12 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
   };
 
   const updatePhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updatePhotos', photos: event.target.files });
+    const { files } = event.target;
+    if (files && files.length <= REVIEW_PHOTOS_LIMIT) {
+      dispatch({ type: 'updatePhotos', photos: files });
+    } else {
+      console.log(`Max file limit of ${REVIEW_PHOTOS_LIMIT} exceeded`);
+    }
   };
 
   const updateBody = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,10 +219,10 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 multiline
                 rows={6}
                 inputProps={{
-                  maxlength: CHARACTER_LIMIT,
+                  maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${CHARACTER_LIMIT}`}
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}`}
                 onChange={updateBody}
               />
             </Grid>
