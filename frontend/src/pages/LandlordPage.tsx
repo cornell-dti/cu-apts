@@ -10,6 +10,7 @@ import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 import get from '../utils/get';
 import { Review } from '../../../common/types/db-types';
+import Toast from '../components/LeaveReview/Toast';
 
 type LandlordData = {
   properties: string[];
@@ -75,15 +76,29 @@ const LandlordPage = (): ReactElement => {
   const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData);
-  }, [landlordId]);
+  }, [landlordId, showConfirmation]);
+
+  const showConfirmationToast = () => {
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+    }, 3500);
+  };
 
   const Modals = (
     <>
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} landlordId={landlordId} />
+      <ReviewModal
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        setOpen={setReviewOpen}
+        landlordId={landlordId}
+        onSuccess={showConfirmationToast}
+      />
       <PhotoCarousel
         photos={landlordData.photos}
         open={carouselOpen}
@@ -138,6 +153,13 @@ const LandlordPage = (): ReactElement => {
             <Grid container spacing={3} item xs={12} sm={8}>
               {Header}
               <Hidden smUp>{InfoSection}</Hidden>
+              {showConfirmation && (
+                <Toast
+                  isOpen={showConfirmation}
+                  severity="success"
+                  message="Review successfully submitted!"
+                />
+              )}
               <Grid container item spacing={3}>
                 {reviewData.map((review, index) => (
                   <Grid item xs={12} key={index}>

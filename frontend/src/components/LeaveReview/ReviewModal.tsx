@@ -10,16 +10,19 @@ import {
   FormLabel,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { useReducer } from 'react';
+import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
+import Toast from './Toast';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  setOpen: Dispatch<SetStateAction<boolean>>;
   landlordId: string;
+  onSuccess: () => void;
 }
 
 interface FormData {
@@ -67,8 +70,9 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-const ReviewModal = ({ open, onClose, landlordId }: Props) => {
+const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [showError, setShowError] = useState(false);
 
   const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'updateAddress', address: event.target.value });
@@ -118,9 +122,15 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
         throw new Error('Failed to submit review');
       }
       console.log(review);
+      setOpen(false);
+      onSuccess();
     } catch (err) {
       console.log(err);
       console.log('Failed to submit form');
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 3500);
     }
   };
 
@@ -137,6 +147,13 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
       <DialogContent>
         {/* This div padding prevents the scrollbar from displaying unnecessarily */}
         <div style={{ padding: 8 }}>
+          {showError && (
+            <Toast
+              isOpen={true}
+              severity="error"
+              message="Error submitting review. Please try again."
+            />
+          )}
           <Grid container direction="column" justify="space-evenly" spacing={4}>
             <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
