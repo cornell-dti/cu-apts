@@ -3,6 +3,7 @@ import SearchBar from 'material-ui-search-bar';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { Box, Container, Grid, Typography } from '@material-ui/core';
+import Asynchronous from '../components/Home/Autocomplete';
 
 const faq: NavbarButton = {
   label: 'FAQ',
@@ -31,6 +32,7 @@ const HomePage = (): ReactElement => {
         </Box>
         <Box pb={5} mx={0}>
           <SearchBar placeholder="Search by any location e.g. “301 College Ave" />
+          <Asynchronous />
         </Box>
       </Container>
       <Container maxWidth="md">
