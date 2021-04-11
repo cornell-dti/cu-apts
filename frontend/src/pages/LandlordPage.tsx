@@ -77,6 +77,7 @@ const LandlordPage = (): ReactElement => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const toastTime = 3500;
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
@@ -87,7 +88,7 @@ const LandlordPage = (): ReactElement => {
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
-    }, 3500);
+    }, toastTime);
   };
 
   const Modals = (
@@ -98,6 +99,7 @@ const LandlordPage = (): ReactElement => {
         setOpen={setReviewOpen}
         landlordId={landlordId}
         onSuccess={showConfirmationToast}
+        toastTime={toastTime}
       />
       <PhotoCarousel
         photos={landlordData.photos}
@@ -158,6 +160,7 @@ const LandlordPage = (): ReactElement => {
                   isOpen={showConfirmation}
                   severity="success"
                   message="Review successfully submitted!"
+                  time={toastTime}
                 />
               )}
               <Grid container item spacing={3}>

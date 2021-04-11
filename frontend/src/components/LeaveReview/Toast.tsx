@@ -20,9 +20,10 @@ type Props = {
   isOpen: boolean;
   severity: AlertProps['color'];
   message: string;
+  time: number;
 };
 
-const Toast = ({ isOpen, severity, message }: Props) => {
+const Toast = ({ isOpen, severity, message, time }: Props) => {
   const classes = useStyles();
   const [open, setOpen] = useState(isOpen);
 
@@ -34,7 +35,7 @@ const Toast = ({ isOpen, severity, message }: Props) => {
 
   return (
     <div className={classes.root}>
-      <Snackbar open={open} autoHideDuration={3500} onClose={handleClose}>
+      <Snackbar open={open} autoHideDuration={time} onClose={handleClose}>
         <Alert onClose={handleClose} severity={severity}>
           {message}
         </Alert>

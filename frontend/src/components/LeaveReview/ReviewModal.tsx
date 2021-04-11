@@ -16,6 +16,7 @@ import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import Toast from './Toast';
+import styles from './ReviewModal.module.scss';
 
 interface Props {
   open: boolean;
@@ -23,9 +24,11 @@ interface Props {
   setOpen: Dispatch<SetStateAction<boolean>>;
   landlordId: string;
   onSuccess: () => void;
+  toastTime: number;
 }
 
 interface FormData {
+  overallRating: number;
   address: string;
   ratings: DetailedRating;
   localPhotos: File[];
@@ -33,6 +36,7 @@ interface FormData {
 }
 
 const defaultReview: FormData = {
+  overallRating: 0,
   address: '',
   ratings: {
     location: 0,
@@ -47,6 +51,7 @@ const defaultReview: FormData = {
 };
 
 type Action =
+  | { type: 'updateOverall'; rating: number }
   | { type: 'updateAddress'; address: string }
   | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
   | { type: 'updatePhotos'; photos: FileList | null }
@@ -55,6 +60,8 @@ type Action =
 
 const reducer = (state: FormData, action: Action): FormData => {
   switch (action.type) {
+    case 'updateOverall':
+      return { ...state, overallRating: action.rating };
     case 'updateAddress':
       return { ...state, address: action.address };
     case 'updateRating':
@@ -70,9 +77,16 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) => {
+const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
+
+  const updateOverall = () => {
+    return (_: React.ChangeEvent<{}>, value: number | null) => {
+      const rating = value || 0;
+      dispatch({ type: 'updateOverall', rating });
+    };
+  };
 
   const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'updateAddress', address: event.target.value });
@@ -93,14 +107,19 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) =
     dispatch({ type: 'updateBody', body: event.target.value });
   };
 
-  const formDataToReview = async ({ ratings, body, localPhotos }: FormData): Promise<Review> => {
+  const formDataToReview = async ({
+    overallRating,
+    ratings,
+    body,
+    localPhotos,
+  }: FormData): Promise<Review> => {
     const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
       aptId: null,
       date: new Date(),
       detailedRatings: ratings,
       landlordId: landlordId,
-      overallRating: 5,
+      overallRating,
       photos,
       reviewText: body,
     };
@@ -152,9 +171,19 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) =
               isOpen={true}
               severity="error"
               message="Error submitting review. Please try again."
+              time={toastTime}
             />
           )}
+
           <Grid container direction="column" justify="space-evenly" spacing={4}>
+            <Grid container item>
+              <ReviewRating
+                name="overall"
+                label="Overall Experience"
+                onChange={updateOverall}
+              ></ReviewRating>
+            </Grid>
+            <div className={styles.div}></div>
             <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -198,6 +227,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) =
                 ></ReviewRating>
               </Grid>
             </Grid>
+            <div className={styles.div}></div>
             <Grid container item justify="space-between" spacing={3}>
               <Grid item>
                 <FormLabel>Upload Pictures: </FormLabel>
@@ -220,6 +250,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess }: Props) =
                 </Grid>
               </Grid>
             </Grid>
+            <div className={styles.div}></div>
             <Grid container item>
               <TextField
                 fullWidth
