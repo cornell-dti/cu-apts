@@ -6,9 +6,9 @@ import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
-import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 import get from '../utils/get';
+import styles from './LandlordPage.module.scss';
 import { Review } from '../../../common/types/db-types';
 
 type LandlordData = {
@@ -17,18 +17,6 @@ type LandlordData = {
   phone: string;
   address: string;
 };
-
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
-};
-
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/landlord/1',
-};
-
-const headersData = [faq, review];
 
 export type RatingInfo = {
   feature: string;
@@ -83,7 +71,7 @@ const LandlordPage = (): ReactElement => {
 
   const Modals = (
     <>
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} landlordId={landlordId} />
       <PhotoCarousel
         photos={landlordData.photos}
         open={carouselOpen}
@@ -131,24 +119,21 @@ const LandlordPage = (): ReactElement => {
 
   return (
     <>
-      <Container>
-        <AppBar headersData={headersData} />
-        <Container>
-          <Grid container spacing={5} justify="center">
-            <Grid container spacing={3} item xs={12} sm={8}>
-              {Header}
-              <Hidden smUp>{InfoSection}</Hidden>
-              <Grid container item spacing={3}>
-                {reviewData.map((review, index) => (
-                  <Grid item xs={12} key={index}>
-                    <ReviewComponent review={review} />
-                  </Grid>
-                ))}
-              </Grid>
+      <Container className={styles.OuterContainer}>
+        <Grid container spacing={5} justify="center">
+          <Grid container spacing={3} item xs={12} sm={8}>
+            {Header}
+            <Hidden smUp>{InfoSection}</Hidden>
+            <Grid container item spacing={3}>
+              {reviewData.map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <ReviewComponent review={review} />
+                </Grid>
+              ))}
             </Grid>
-            <Hidden xsDown>{InfoSection}</Hidden>
           </Grid>
-        </Container>
+          <Hidden xsDown>{InfoSection}</Hidden>
+        </Grid>
       </Container>
       {Modals}
     </>
