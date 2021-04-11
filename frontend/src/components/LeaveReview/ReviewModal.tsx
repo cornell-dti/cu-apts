@@ -9,40 +9,35 @@ import {
   Switch,
   TextField,
 } from '@material-ui/core';
+import axios from 'axios';
 import React, { useReducer } from 'react';
+import { DetailedRating, Review } from '../../../../common/types/db-types';
+import { createAuthHeaders, getUser } from '../../utils/auth';
 import ReviewRating from './ReviewRating';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  landlordId?: string;
 }
 
-interface Ratings {
-  management: number;
-  maintenance: number;
-  amenities: number;
-  condition: number;
-  neighborhood: number;
-  transportation: number;
-}
-
-interface Review {
+interface FormData {
   name: string;
   isAnonymous: boolean;
-  ratings: Ratings;
+  ratings: DetailedRating;
   body: string;
 }
 
-const defaultReview: Review = {
+const defaultReview: FormData = {
   name: '',
   isAnonymous: false,
   ratings: {
-    amenities: 0,
-    condition: 0,
+    location: 0,
+    safety: 0,
+    value: 0,
     maintenance: 0,
-    management: 0,
-    neighborhood: 0,
-    transportation: 0,
+    communication: 0,
+    conditions: 0,
   },
   body: '',
 };
@@ -50,11 +45,11 @@ const defaultReview: Review = {
 type Action =
   | { type: 'updateName'; name: string }
   | { type: 'updateAnonymous'; isAnonymous: boolean }
-  | { type: 'updateRating'; category: keyof Ratings; rating: number }
+  | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
   | { type: 'updateBody'; body: string }
   | { type: 'reset' };
 
-const reducer = (state: Review, action: Action) => {
+const reducer = (state: FormData, action: Action) => {
   switch (action.type) {
     case 'updateName':
       return { ...state, name: action.name };
@@ -71,7 +66,7 @@ const reducer = (state: Review, action: Action) => {
   }
 };
 
-const ReviewModal = ({ open, onClose }: Props) => {
+const ReviewModal = ({ open, onClose, landlordId }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
 
   const updateName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +77,7 @@ const ReviewModal = ({ open, onClose }: Props) => {
     dispatch({ type: 'updateAnonymous', isAnonymous: event.target.checked });
   };
 
-  const updateRating = (category: keyof Ratings) => {
+  const updateRating = (category: keyof DetailedRating) => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
       const rating = value || 0;
       dispatch({ type: 'updateRating', category, rating });
@@ -93,8 +88,35 @@ const ReviewModal = ({ open, onClose }: Props) => {
     dispatch({ type: 'updateBody', body: event.target.value });
   };
 
-  const onSubmit = () => {
-    console.log(review);
+  const formDataToReview = ({ ratings, body }: FormData): Review => {
+    return {
+      aptId: null,
+      landlordId: landlordId || '',
+      overallRating: 5,
+      detailedRatings: ratings,
+      reviewText: body,
+      date: new Date(),
+    };
+  };
+
+  const onSubmit = async () => {
+    try {
+      const user = await getUser();
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken(true);
+      const res = await axios.post(
+        '/new-review',
+        formDataToReview(review),
+        createAuthHeaders(token)
+      );
+      if (res.status !== 201) {
+        throw new Error('Failed to submit review');
+      }
+    } catch (_) {
+      console.log('Failed to submit form');
+    }
   };
 
   return (
@@ -126,34 +148,34 @@ const ReviewModal = ({ open, onClose }: Props) => {
             <Grid container item>
               <Grid container spacing={1} justify="center">
                 <ReviewRating
-                  name="management"
-                  label="Management/Landlord"
-                  onChange={updateRating('management')}
+                  name="location"
+                  label="Location"
+                  onChange={updateRating('location')}
+                ></ReviewRating>
+                <ReviewRating
+                  name="safety"
+                  label="Safety"
+                  onChange={updateRating('safety')}
+                ></ReviewRating>
+                <ReviewRating
+                  name="value"
+                  label="Value"
+                  onChange={updateRating('value')}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
-                  label="Building Maintenance"
+                  label="Maintenance"
                   onChange={updateRating('maintenance')}
                 ></ReviewRating>
                 <ReviewRating
-                  name="amenities"
-                  label="Building Amenities"
-                  onChange={updateRating('amenities')}
+                  name="communication"
+                  label="Communication"
+                  onChange={updateRating('communication')}
                 ></ReviewRating>
                 <ReviewRating
-                  name="condition"
-                  label="Building Condition"
-                  onChange={updateRating('condition')}
-                ></ReviewRating>
-                <ReviewRating
-                  name="neighborhood"
-                  label="Neighborhood & Neighbors"
-                  onChange={updateRating('neighborhood')}
-                ></ReviewRating>
-                <ReviewRating
-                  name="transportation"
-                  label="Transportation and Parking"
-                  onChange={updateRating('transportation')}
+                  name="conditions"
+                  label="Conditions"
+                  onChange={updateRating('conditions')}
                 ></ReviewRating>
               </Grid>
             </Grid>

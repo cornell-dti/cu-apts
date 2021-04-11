@@ -83,7 +83,7 @@ const LandlordPage = (): ReactElement => {
 
   const Modals = (
     <>
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} landlordId={landlordId} />
       <PhotoCarousel
         photos={landlordData.photos}
         open={carouselOpen}
