@@ -15,6 +15,9 @@ const theme = createMuiTheme({
       main: '#cccccc',
     },
   },
+  typography: {
+    fontFamily: ['-apple-system', 'BlinkMacSystemFont', '"Work Sans"'].join(','),
+  },
 });
 
 const App = (): ReactElement => {
