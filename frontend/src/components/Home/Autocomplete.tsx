@@ -4,30 +4,22 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import get from '../../utils/get';
 import { Landlord, Apartment } from '../../../../common/types/db-types';
+// import SearchIcon from '@material-ui/icons/Search';
 
 export default function Asynchronous() {
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(Landlord)[]>([]);
-  const loading = open && options.length === 0;
-  const [query, setQuery] = useState("");
+  const [options, setOptions] = useState<(Landlord | Apartment)[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-
-    if (!loading) {
-      return undefined;
-    }
-
-    (async () => {
-      if (active) {
-        await get<Landlord>(`/reviews?q=${query}`, setOptions);
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [loading, query]);
+  const handleOnChange = async (query:string) => {
+    setLoading(true);
+    await get<Landlord | Apartment>(`/reviews?q=${query}`, setOptions);
+    setLoading(false);
+    console.log(options);
+    if (options.length !== 0) {
+    console.log(options[0].name)}
+    
+  }
 
   useEffect(() => {
     if (!open) {
@@ -37,6 +29,7 @@ export default function Asynchronous() {
 
   return (
     <Autocomplete
+      style={{backgroundColor: "white"}}
       open={open}
       onOpen={() => {
         setOpen(true);
@@ -51,10 +44,14 @@ export default function Asynchronous() {
       renderInput={(params) => (
         <TextField
           {...params}
-          label="Search"
           placeholder="Search by renting company or building address"
           variant="outlined"
-          onChange={(event) => {setQuery(event.target.value)}}
+          onChange={event => { 
+            const value = event.target.value;
+            if (value !== "" || value !== null) {
+              handleOnChange(value);
+            }
+          }}
           InputProps={{
             ...params.InputProps,
             endAdornment: (
