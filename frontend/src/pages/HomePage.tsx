@@ -1,25 +1,11 @@
 import React, { ReactElement } from 'react';
 import SearchBar from 'material-ui-search-bar';
 import ApartmentCard from '../components/Home/ApartmentCard';
-import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { Box, Container, Grid, Typography } from '@material-ui/core';
-
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
-};
-
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/landlord/1',
-};
-
-const headersData = [faq, review];
 
 const HomePage = (): ReactElement => {
   return (
     <Box bgcolor="grey.100">
-      <AppBar headersData={headersData} />
       <Container maxWidth="sm">
         <Box py={6}>
           <Typography variant="h5">
