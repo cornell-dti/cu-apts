@@ -16,6 +16,8 @@ import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 
+const CHARACTER_LIMIT = 500;
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -210,7 +212,11 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 label="Review"
                 multiline
                 rows={6}
+                inputProps={{
+                  maxlength: CHARACTER_LIMIT,
+                }}
                 placeholder="Write your review here"
+                helperText={`${review.body.length}/${CHARACTER_LIMIT}`}
                 onChange={updateBody}
               />
             </Grid>
