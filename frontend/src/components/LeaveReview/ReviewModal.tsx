@@ -14,6 +14,7 @@ import React, { useReducer } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { createAuthHeaders, getUser } from '../../utils/auth';
 import ReviewRating from './ReviewRating';
+import styles from './ReviewModal.module.scss';
 
 interface Props {
   open: boolean;
@@ -123,8 +124,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent>
-        {/* This div padding prevents the scrollbar from displaying unnecessarily */}
-        <div style={{ padding: 8 }}>
+        <div className={styles.DialogContentDiv}>
           <Grid container direction="column" justify="space-evenly" spacing={4}>
             <Grid container item alignContent="center">
               <Grid container item justify="space-between" xs={12} sm={6}>

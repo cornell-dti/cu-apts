@@ -1,5 +1,4 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import NavBar, { NavbarButton } from '../components/utils/NavBar';
 import Faqs from '../components/FAQ';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
 import styles from './FAQPage.module.scss';
@@ -17,13 +16,6 @@ export type FAQData = {
   faqs: FAQ[];
 };
 
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/reviews',
-};
-
-const headersData = [review];
-
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState<FAQData[]>([]);
 
@@ -34,7 +26,6 @@ const FAQPage = (): ReactElement => {
   }, []);
   return (
     <div className={styles.faqPage}>
-      <NavBar headersData={headersData} />
       <div className={styles.faqHeaderTitle}>
         <Typography variant="h5">Frequently Asked Questions</Typography>
       </div>

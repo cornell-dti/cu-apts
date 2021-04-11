@@ -20,42 +20,40 @@ const ApartmentCard = ({
   price,
 }: Props): ReactElement => {
   return (
-    <Grid item xs={9} md={4}>
-      <Card>
-        <CardMedia image={ApartmentImg} component="img" title="Apartment Image" />
-        <CardContent>
-          <Grid container spacing={1}>
-            <Grid container item justify="space-between" alignItems="center">
-              <Grid item>
+    <Card>
+      <CardMedia image={ApartmentImg} component="img" title="Apartment Image" />
+      <CardContent>
+        <Grid container spacing={1}>
+          <Grid container item justify="space-between" alignItems="center">
+            <Grid item>
+              <Grid container alignItems="center">
                 <Typography variant="h6">
-                  <Grid container alignItems="center">
-                    <RoomOutlinedIcon /> {address}
-                  </Grid>
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body1">
-                  <Grid container alignItems="center">
-                    <LocalOfferOutlinedIcon /> {price || '$$'}
-                  </Grid>
+                  <RoomOutlinedIcon /> {address}
                 </Typography>
               </Grid>
             </Grid>
             <Grid item>
-              <Typography variant="subtitle1">{company}</Typography>
-            </Grid>
-            <Grid container item justify="space-between">
-              <Grid item>
-                <Typography variant="subtitle2">{bedsAndBaths}</Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body2">{numReviews}</Typography>
+              <Grid container alignItems="center">
+                <Typography variant="body1">
+                  <LocalOfferOutlinedIcon /> {price || '$$'}
+                </Typography>
               </Grid>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
-    </Grid>
+          <Grid item>
+            <Typography variant="subtitle1">{company}</Typography>
+          </Grid>
+          <Grid container item justify="space-between">
+            <Grid item>
+              <Typography variant="subtitle2">{bedsAndBaths}</Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="body2">{numReviews}</Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
   );
 };
 
