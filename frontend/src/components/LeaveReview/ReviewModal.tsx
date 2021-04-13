@@ -15,6 +15,7 @@ import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
+import styles from './ReviewModal.module.scss';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 5;
@@ -143,8 +144,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent>
-        {/* This div padding prevents the scrollbar from displaying unnecessarily */}
-        <div style={{ padding: 8 }}>
+        <div className={styles.DialogContentDiv}>
           <Grid container direction="column" justify="space-evenly" spacing={4}>
             <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
