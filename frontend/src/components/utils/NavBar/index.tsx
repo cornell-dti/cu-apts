@@ -37,6 +37,7 @@ const useStyles = makeStyles(() => ({
     paddingTop: '1em',
     paddingLeft: '5em',
     paddingRight: '5em',
+    paddingBottom: '1em',
     '@media only screen and (max-width: 414px) ': {
       paddingLeft: '1em',
       paddingRight: '1em',
@@ -54,6 +55,7 @@ const useStyles = makeStyles(() => ({
   },
   menuButton: {
     fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 700,
     size: '18px',
     color: 'black',
     fontSize: '1.2rem',
@@ -121,7 +123,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             className: menuButton,
           }}
         >
-          {label}
+          {label.toUpperCase()}
         </Button>
       );
     });
@@ -130,7 +132,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const homeLogo: ReactElement = (
     <Typography variant="h4" component="h1" className={logo}>
       <Link color="textPrimary" underline="none" href="/">
-        CU Housing
+        CUAPTS
       </Link>
     </Typography>
   );

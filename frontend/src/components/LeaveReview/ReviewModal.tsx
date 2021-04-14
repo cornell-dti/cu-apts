@@ -18,6 +18,9 @@ import ReviewRating from './ReviewRating';
 import Toast from './Toast';
 import styles from './ReviewModal.module.scss';
 
+const REVIEW_CHARACTER_LIMIT = 2000;
+const REVIEW_PHOTOS_LIMIT = 5;
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -100,7 +103,12 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   };
 
   const updatePhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updatePhotos', photos: event.target.files });
+    const { files } = event.target;
+    if (files && files.length <= REVIEW_PHOTOS_LIMIT) {
+      dispatch({ type: 'updatePhotos', photos: files });
+    } else {
+      console.log(`Max file limit of ${REVIEW_PHOTOS_LIMIT} exceeded`);
+    }
   };
 
   const updateBody = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +157,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       setShowError(true);
       setTimeout(() => {
         setShowError(false);
-      }, 3500);
+      }, toastTime);
     }
   };
 
@@ -165,7 +173,8 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent>
         {/* This div padding prevents the scrollbar from displaying unnecessarily */}
-        <div style={{ padding: 8 }}>
+
+        <div className={styles.DialogContentDiv}>
           {showError && (
             <Toast
               isOpen={true}
@@ -174,13 +183,12 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
               time={toastTime}
             />
           )}
-
           <Grid container direction="column" justify="space-evenly" spacing={4}>
             <Grid container item>
               <ReviewRating
                 name="overall"
                 label="Overall Experience"
-                onChange={updateOverall}
+                onChange={updateOverall()}
               ></ReviewRating>
             </Grid>
             <div className={styles.div}></div>
@@ -258,7 +266,11 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                 label="Review"
                 multiline
                 rows={6}
+                inputProps={{
+                  maxlength: REVIEW_CHARACTER_LIMIT,
+                }}
                 placeholder="Write your review here"
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}`}
                 onChange={updateBody}
               />
             </Grid>

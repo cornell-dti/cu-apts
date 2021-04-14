@@ -1,0 +1,3 @@
+export const REVIEW_CHARACTER_LIMIT = 2000;
+
+export const REVIEW_PHOTOS_LIMIT = 2000;
