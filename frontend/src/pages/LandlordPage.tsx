@@ -6,10 +6,10 @@ import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
-import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
+import styles from './LandlordPage.module.scss';
 import { Review } from '../../../common/types/db-types';
 
 type LandlordData = {
@@ -21,18 +21,6 @@ type LandlordData = {
   overallRating: number;
   numReviews: number;
 };
-
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
-};
-
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/landlord/1',
-};
-
-const headersData = [faq, review];
 
 export type RatingInfo = {
   feature: string;
@@ -90,7 +78,7 @@ const LandlordPage = (): ReactElement => {
 
   const Modals = (
     <>
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} landlordId={landlordId} />
       <PhotoCarousel
         photos={landlordData.photos}
         open={carouselOpen}
@@ -138,7 +126,7 @@ const LandlordPage = (): ReactElement => {
           numReviews={landlordData.numReviews}
           handleClick={() => setCarouselOpen(true)}
         />
-        <Container>
+        <Container className={styles.OuterContainer}>
           <Grid container spacing={5} justify="center">
             <Grid container spacing={3} item xs={12} sm={8}>
               {Header}
@@ -151,10 +139,10 @@ const LandlordPage = (): ReactElement => {
                 ))}
               </Grid>
             </Grid>
-            <Hidden xsDown>{InfoSection}</Hidden>
           </Grid>
+          <Hidden xsDown>{InfoSection}</Hidden>
         </Container>
-      </Container>
+      </Container>     
       {Modals}
     </>
   );
