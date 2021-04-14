@@ -11,6 +11,7 @@ import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
 import { Review } from '../../../common/types/db-types';
+import AppBar, { NavbarButton } from '../components/utils/NavBar';
 
 type LandlordData = {
   properties: string[];
@@ -21,6 +22,17 @@ type LandlordData = {
   overallRating: number;
   numReviews: number;
 };
+
+const faq: NavbarButton = {
+  label: 'FAQ',
+  href: '/faq',
+};
+const review: NavbarButton = {
+  label: 'Reviews',
+  href: '/landlord/1',
+};
+
+const headersData = [faq, review];
 
 export type RatingInfo = {
   feature: string;
@@ -142,7 +154,7 @@ const LandlordPage = (): ReactElement => {
           </Grid>
           <Hidden xsDown>{InfoSection}</Hidden>
         </Container>
-      </Container>     
+      </Container>
       {Modals}
     </>
   );
