@@ -7,22 +7,38 @@ import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
+import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
 import { Review } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
+import AppBar, { NavbarButton } from '../components/utils/NavBar';
 
 type LandlordData = {
   properties: string[];
   photos: string[];
   phone: string;
   address: string;
+  name: string;
+  overallRating: number;
+  numReviews: number;
 };
 
 export type RatingInfo = {
   feature: string;
   rating: number;
 };
+
+const faq: NavbarButton = {
+  label: 'FAQ',
+  href: '/faq',
+};
+const review: NavbarButton = {
+  label: 'Reviews',
+  href: '/landlord/1',
+};
+
+const headersData = [faq, review];
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
@@ -32,6 +48,9 @@ const dummyData: LandlordData = {
   ],
   phone: '555-555-5555',
   address: '119 S Cayuga St, Ithaca, NY 14850',
+  name: 'Ithaca Live More',
+  overallRating: 4,
+  numReviews: 12,
 };
 
 const dummyRatingInfo: RatingInfo[] = [
@@ -136,6 +155,15 @@ const LandlordPage = (): ReactElement => {
 
   return (
     <>
+      <Container>
+        <AppBar headersData={headersData} />
+        <LandlordHeader
+          name={landlordData.name}
+          overallRating={landlordData.overallRating}
+          numReviews={landlordData.numReviews}
+          handleClick={() => setCarouselOpen(true)}
+        />
+      </Container>
       <Container className={styles.OuterContainer}>
         <Grid container spacing={5} justify="center">
           <Grid container spacing={3} item xs={12} sm={8}>
