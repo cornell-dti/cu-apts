@@ -1,15 +1,22 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
-import { db } from './firebase-config';
+import rateLimit from 'express-rate-limit';
+import { db, increment } from './firebase-config';
 import { Section } from './firebase-config/types';
-import { Review, Landlord, Apartment } from '../../common/types/db-types';
+import { Review, Landlord, Apartment, ReviewWithId } from '../../common/types/db-types';
 import authenticate from './auth';
 
-const app: Express = express();
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const aptCollection = db.collection('buildings');
+
+const app: Express = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+});
 
 app.use(express.json());
 app.use(
@@ -38,9 +45,10 @@ app.post('/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
     const review = req.body as Review;
-    doc.set({ ...review, date: new Date(review.date) });
+    doc.set({ ...review, date: new Date(review.date), likes: 0 });
     res.status(201).send(doc.id);
   } catch (err) {
+    console.error(err);
     res.status(401).send('Error');
   }
 });
@@ -49,9 +57,9 @@ app.get('/reviews/:idType/:id', async (req, res) => {
   const { idType, id } = req.params;
   const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
-    let data = doc.data();
-    data = { ...data, date: data.date.toDate() };
-    return data as Review;
+    const data = doc.data();
+    const review = { ...data, date: data.date.toDate() } as Review;
+    return { ...review, id: doc.id } as ReviewWithId;
   });
   res.status(200).send(JSON.stringify(reviews));
 });
@@ -63,7 +71,8 @@ app.post('/landlords', async (req, res) => {
     doc.set(landlord);
     res.status(201).send(doc.id);
   } catch (err) {
-    res.status(400).send(err);
+    console.error(err);
+    res.status(400).send('Error');
   }
 });
 
@@ -83,7 +92,20 @@ app.get('/reviews', async (req, res) => {
     const results = fuse.search(query);
     res.status(200).send(JSON.stringify(results));
   } catch (err) {
-    res.status(400).send(err);
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+app.post('/like-review', limiter, async (req, res) => {
+  try {
+    const { reviewId } = req.body;
+    const reviewRef = reviewCollection.doc(reviewId);
+    reviewRef.update({ likes: increment(1) });
+    res.status(200).send(JSON.stringify({ result: 'Success' }));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
   }
 });
 

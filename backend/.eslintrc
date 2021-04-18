@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "../.eslintrc",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier",
+    "prettier/react"
+  ],
+  "env": { "node": true },
+  "rules": {
+    "import/extensions": "off",
+    "no-console": "off"
+  }
+}

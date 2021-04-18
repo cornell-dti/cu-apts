@@ -10,8 +10,9 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
-import { Review } from '../../../common/types/db-types';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
+import { ReviewWithId } from '../../../common/types/db-types';
+import axios from 'axios';
 
 type LandlordData = {
   properties: string[];
@@ -79,14 +80,26 @@ const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string | undefined>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const [reviewData, setReviewData] = useState<Review[]>([]);
+  const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
-    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData);
+    get<ReviewWithId>(`/reviews/landlordId/${landlordId}`, setReviewData);
   }, [landlordId]);
+
+  const submitHelpful = async (reviewId: string) => {
+    try {
+      await axios.post('/like-review', { reviewId });
+    } finally {
+      setReviewData((reviews) =>
+        reviews.map((review) =>
+          review.id === reviewId ? { ...review, likes: (review.likes || 0) + 1 } : review
+        )
+      );
+    }
+  };
 
   const Modals = (
     <>
@@ -146,7 +159,7 @@ const LandlordPage = (): ReactElement => {
               <Grid container item spacing={3}>
                 {reviewData.map((review, index) => (
                   <Grid item xs={12} key={index}>
-                    <ReviewComponent review={review} />
+                    <ReviewComponent review={review} submitHelpful={submitHelpful} />
                   </Grid>
                 ))}
               </Grid>

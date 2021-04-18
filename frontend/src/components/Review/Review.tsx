@@ -17,10 +17,11 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
 import ApartmentImg from '../../assets/apartment-sample.png';
-import { Review } from '../../../../common/types/db-types';
+import { ReviewWithId } from '../../../../common/types/db-types';
 
 type Props = {
-  readonly review: Review;
+  readonly review: ReviewWithId;
+  readonly submitHelpful: (reviewId: string) => Promise<void>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -43,8 +44,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ReviewComponent = ({ review }: Props): ReactElement => {
-  const { detailedRatings, overallRating, date, reviewText } = review;
+const ReviewComponent = ({ review, submitHelpful }: Props): ReactElement => {
+  const { id, detailedRatings, overallRating, date, reviewText, likes } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
@@ -101,8 +102,8 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
-              <Button className={button} size="small">
-                Helpful
+              <Button onClick={() => submitHelpful(id)} className={button} size="small">
+                Helpful {`(${likes || 0})`}
               </Button>
             </Grid>
             <Grid item>

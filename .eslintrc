@@ -1,32 +1,25 @@
 {
-  "extends": [
-    "airbnb",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended",
-    "prettier",
-    "prettier/react"
-  ],
+  "extends": [],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "env": { "browser": true, "node": true },
-  "rules": {
-    "import/extensions": "off"
-  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [".mjs", ".js", ".json", ".ts", ".tsx"],
-        "paths": ["frontend/src", "backend"]
+        "extensions": [
+          ".mjs",
+          ".js",
+          ".json",
+          ".ts",
+          ".tsx"
+        ],
+        "paths": [
+          "common",
+          "frontend/src",
+          "backend/src"
+        ]
       }
     }
-  },
-  "overrides": [
-    {
-      "files": ["*.js", "*.jsx"],
-      "rules": {
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/no-var-requires": "off"
-      }
-    }
-  ]
+  }
 }

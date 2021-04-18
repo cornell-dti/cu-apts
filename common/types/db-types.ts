@@ -13,6 +13,7 @@ export type DetailedRating = {
 
 export type Review = {
   readonly aptId: string | null;
+  readonly likes?: number;
   readonly landlordId: string;
   readonly overallRating: number;
   readonly detailedRatings: DetailedRating;
