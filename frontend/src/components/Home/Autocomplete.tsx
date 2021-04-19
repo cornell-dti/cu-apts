@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   TextField,
   ClickAwayListener,
@@ -16,7 +16,8 @@ const useStyles = makeStyles({
   menuList: {
     position: 'absolute',
     backgroundColor: 'white',
-    width: '550px',
+    maxHeight: 200,
+    overflow: 'auto',
   },
   text: { backgroundColor: 'white' },
 });
@@ -27,10 +28,11 @@ export default function Autocomplete() {
   const [loading, setLoading] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
   const [query, setQuery] = useState('');
-  // eslint-disable-next-line
   const [selected, setSelected] = useState<Landlord | Apartment | null>(null);
   const [focus, setFocus] = useState(false);
   const { menuList, text } = useStyles();
+  const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const [width, setWidth] = useState(inputRef.current.offsetWidth);
 
   const handleClose = (event: React.MouseEvent<EventTarget>) => {
     if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
@@ -44,7 +46,6 @@ export default function Autocomplete() {
     setQuery(element.innerText);
     setSelected(option);
     setOpen(false);
-    console.log(option);
   };
 
   function handleListKeyDown(event: React.KeyboardEvent) {
@@ -74,9 +75,14 @@ export default function Autocomplete() {
         <ClickAwayListener onClickAway={handleClose}>
           <div>
             {open ? (
-              <MenuList className={menuList} autoFocusItem={focus} onKeyDown={handleListKeyDown}>
-                {options === null ? (
-                  <MenuItem disabled>No Options</MenuItem>
+              <MenuList
+                style={{ width: `${width}px` }}
+                className={menuList}
+                autoFocusItem={focus}
+                onKeyDown={handleListKeyDown}
+              >
+                {options.length === 0 ? (
+                  <MenuItem disabled>No landlords or apartments match this search</MenuItem>
                 ) : (
                   options.map((option, index) => {
                     return (
@@ -94,22 +100,40 @@ export default function Autocomplete() {
     );
   };
 
-  // useEffect(() => {
-  //   if (query === '') {
-  //     setOpen(false);
-  //   } else {
-  //     setOpen(true);
-  //   }
-  // }, [query]);
+  useEffect(() => {
+    if (query === '') {
+      setOpen(false);
+    } else if (selected === null) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [query, selected]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(inputRef.current.offsetWidth);
+      console.log(width);
+    };
+    // the width is initially 0 because the inputRef is initialized as an empty div
+    // need to call handleResize when the inputRef is set to the TextField
+    handleResize();
+    // need to call handleResize for any subsequent changes in width
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [inputRef, width]);
 
   return (
     <div>
       <TextField
         fullWidth
+        ref={inputRef}
         value={query}
         placeholder="Search by renting company or building address"
         className={text}
-        onClick={() => setOpen(true)}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
         onChange={(event) => {
