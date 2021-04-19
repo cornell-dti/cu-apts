@@ -23,25 +23,17 @@ const useStyles = makeStyles({
 });
 
 export default function Autocomplete() {
+  const { menuList, text } = useStyles();
+  const [focus, setFocus] = useState(false);
+  const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<(Landlord | Apartment)[]>([]);
-  const [loading, setLoading] = useState(false);
-  const anchorRef = useRef<HTMLButtonElement>(null);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Landlord | Apartment | null>(null);
-  const [focus, setFocus] = useState(false);
-  const { menuList, text } = useStyles();
-  const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
 
-  const handleClose = (event: React.MouseEvent<EventTarget>) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
-      return;
-    }
-    setOpen(false);
-  };
-
-  const handleMenuClose = (event: React.MouseEvent<EventTarget>, option: Apartment | Landlord) => {
+  const handleClose = (event: React.MouseEvent<EventTarget>, option: Apartment | Landlord) => {
     var element = event.currentTarget as HTMLInputElement;
     setQuery(element.innerText);
     setSelected(option);
@@ -72,7 +64,11 @@ export default function Autocomplete() {
   const Menu = () => {
     return (
       <div>
-        <ClickAwayListener onClickAway={handleClose}>
+        <ClickAwayListener
+          onClickAway={() => {
+            setOpen(false);
+          }}
+        >
           <div>
             {open ? (
               <MenuList
@@ -86,7 +82,7 @@ export default function Autocomplete() {
                 ) : (
                   options.map((option, index) => {
                     return (
-                      <MenuItem key={index} onClick={(event) => handleMenuClose(event, option)}>
+                      <MenuItem key={index} onClick={(event) => handleClose(event, option)}>
                         {option.name}
                       </MenuItem>
                     );
@@ -145,7 +141,7 @@ export default function Autocomplete() {
           endAdornment: (
             <React.Fragment>
               {loading ? <CircularProgress color="inherit" size={20} /> : null}
-              <IconButton disabled={options === []} onClick={handleSubmit}>
+              <IconButton disabled={options.length === 0} onClick={handleSubmit}>
                 <SearchIcon />
               </IconButton>
             </React.Fragment>
