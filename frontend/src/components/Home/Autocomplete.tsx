@@ -113,7 +113,6 @@ export default function Autocomplete() {
   useEffect(() => {
     const handleResize = () => {
       setWidth(inputRef.current.offsetWidth);
-      console.log(width);
     };
     // the width is initially 0 because the inputRef is initialized as an empty div
     // need to call handleResize when the inputRef is set to the TextField
