@@ -34,7 +34,7 @@ export default function Autocomplete() {
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
 
   const handleClose = (event: React.MouseEvent<EventTarget>, option: Apartment | Landlord) => {
-    var element = event.currentTarget as HTMLInputElement;
+    const element = event.currentTarget as HTMLInputElement;
     setQuery(element.innerText);
     setSelected(option);
     setOpen(false);
@@ -47,12 +47,10 @@ export default function Autocomplete() {
     }
   }
 
-  const handleOnChange = async (query: string) => {
+  const handleOnChange = (query: string) => {
     setLoading(true);
     setQuery(query);
     setSelected(null);
-    await get<Landlord | Apartment>(`/reviews?q=${query}`, setOptions);
-    setLoading(false);
   };
 
   const handleSubmit = () => {
@@ -121,6 +119,12 @@ export default function Autocomplete() {
     };
   }, [inputRef, width]);
 
+  useEffect(() => {
+    if (loading) {
+      get<Landlord | Apartment>(`/reviews?q=${query}`, setOptions, setLoading);
+    }
+  }, [loading, query]);
+
   return (
     <div>
       <TextField
@@ -139,12 +143,12 @@ export default function Autocomplete() {
         }}
         InputProps={{
           endAdornment: (
-            <React.Fragment>
+            <>
               {loading ? <CircularProgress color="inherit" size={20} /> : null}
               <IconButton disabled={options.length === 0} onClick={handleSubmit}>
                 <SearchIcon />
               </IconButton>
-            </React.Fragment>
+            </>
           ),
         }}
       />

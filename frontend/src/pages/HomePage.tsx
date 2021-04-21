@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Box, Container, Grid, Typography } from '@material-ui/core';
-import Asynchronous from '../components/Home/Autocomplete';
+import Autocomplete from '../components/Home/Autocomplete';
 
 const HomePage = (): ReactElement => {
   return (
@@ -16,7 +16,7 @@ const HomePage = (): ReactElement => {
           <Typography variant="h4">Browse Renting Companies</Typography>
         </Box>
         <Box pb={5} mx={0}>
-          <Asynchronous />
+          <Autocomplete />
         </Box>
       </Container>
       <Container maxWidth="lg">
