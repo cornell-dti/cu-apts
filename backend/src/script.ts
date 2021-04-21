@@ -1,17 +1,8 @@
-import express, { Express } from 'express';
-import cors from 'cors';
 import { db } from './firebase-config';
 import reviewData from './landlord_reviews.json';
 import { Review } from '../../common/types/db-types';
 
 const reviewCollection = db.collection('reviews');
-
-const app: Express = express();
-app.use(
-  cors({
-    origin: 'http://localhost:8080',
-  })
-);
 
 const makeReview = async (review: Review) => {
   try {
@@ -40,15 +31,4 @@ const formatReview = (data: any): Review => ({
   date: data.date,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const modifyData = async (data: any[]) => {
-  const reviews = data.map((review) => formatReview(review));
-  reviews.map((review) => makeReview(review));
-};
-
-modifyData(reviewData);
-
-const port = process.env.PORT || 8080;
-
-// eslint-disable-next-line
-app.listen(port, () => console.log(`Server running on port: ${port}`));
+reviewData.map((review) => makeReview(formatReview(review)));
