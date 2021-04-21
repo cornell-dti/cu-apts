@@ -83,7 +83,7 @@ app.get('/reviews', async (req, res) => {
     };
     const fuse = new Fuse(aptsLandlords, options);
     const results = fuse.search(query);
-    res.status(200).send(JSON.stringify(results));
+    res.status(200).send(JSON.stringify(results.map((result) => result.item)));
   } catch (err) {
     res.status(400).send(err);
   }
