@@ -6,7 +6,8 @@
   "scripts": {
     "tsc": "tsc",
     "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
-    "start": "ts-node src/server.ts"
+    "start": "ts-node src/server.ts",
+    "script": "ts-node src/script.ts"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "@types/cors": "^2.8.8",
     "@types/express": "^4.17.8",
     "@types/supertest": "^2.0.10",
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
