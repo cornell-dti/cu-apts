@@ -18,7 +18,7 @@ import ReviewRating from './ReviewRating';
 import styles from './ReviewModal.module.scss';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
-const REVIEW_PHOTOS_LIMIT = 5;
+const REVIEW_PHOTOS_LIMIT = 3;
 
 interface Props {
   open: boolean;
@@ -206,7 +206,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                       type="file"
                       inputProps={{ multiple: true, accept: 'image/*' }}
                       onChange={updatePhotos}
-                    ></Input>
+                    />
                   </Button>
                 </Grid>
               </Grid>
