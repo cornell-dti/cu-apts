@@ -10,7 +10,7 @@ import {
   FormLabel,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { useReducer } from 'react';
+import React, { useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
@@ -19,6 +19,7 @@ import styles from './ReviewModal.module.scss';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
+const REVIEW_PHOTO_MAX_SIZE = 10 * 1024 * 1024;
 
 interface Props {
   open: boolean;
@@ -50,7 +51,7 @@ const defaultReview: FormData = {
 type Action =
   | { type: 'updateAddress'; address: string }
   | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
-  | { type: 'updatePhotos'; photos: FileList | null }
+  | { type: 'updatePhotos'; photos: File[] }
   | { type: 'updateBody'; body: string }
   | { type: 'reset' };
 
@@ -73,6 +74,7 @@ const reducer = (state: FormData, action: Action): FormData => {
 
 const ReviewModal = ({ open, onClose, landlordId }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [sending, setSending] = useState(false);
 
   const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'updateAddress', address: event.target.value });
@@ -87,11 +89,17 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
 
   const updatePhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
-    if (files && files.length <= REVIEW_PHOTOS_LIMIT) {
-      dispatch({ type: 'updatePhotos', photos: files });
-    } else {
+    if (!files || files.length > REVIEW_PHOTOS_LIMIT) {
       console.log(`Max file limit of ${REVIEW_PHOTOS_LIMIT} exceeded`);
+      return;
     }
+    const photos = [...files];
+    const bigPhoto = photos.find((photo) => photo.size > REVIEW_PHOTO_MAX_SIZE);
+    if (bigPhoto) {
+      console.log(`File ${bigPhoto.name} exceeds max size of ${REVIEW_PHOTO_MAX_SIZE}`);
+      return;
+    }
+    dispatch({ type: 'updatePhotos', photos });
   };
 
   const updateBody = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +121,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
 
   const onSubmit = async () => {
     try {
+      setSending(true);
       const user = await getUser();
       if (!user) {
         throw new Error('Failed to login');
@@ -130,6 +139,8 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     } catch (err) {
       console.log(err);
       console.log('Failed to submit form');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -230,7 +241,9 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Button onClick={onSubmit} disabled={sending}>
+          Submit
+        </Button>
       </DialogActions>
     </Dialog>
   );
