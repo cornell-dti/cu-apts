@@ -19,7 +19,7 @@ import styles from './ReviewModal.module.scss';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
-const REVIEW_PHOTO_MAX_SIZE = 10 * 1024 * 1024;
+const REVIEW_PHOTO_MAX_MB = 10;
 
 interface Props {
   open: boolean;
@@ -94,9 +94,9 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
       return;
     }
     const photos = [...files];
-    const bigPhoto = photos.find((photo) => photo.size > REVIEW_PHOTO_MAX_SIZE);
+    const bigPhoto = photos.find((photo) => photo.size > REVIEW_PHOTO_MAX_MB * Math.pow(1024, 2));
     if (bigPhoto) {
-      console.log(`File ${bigPhoto.name} exceeds max size of ${REVIEW_PHOTO_MAX_SIZE}`);
+      console.log(`File ${bigPhoto.name} exceeds max size of ${REVIEW_PHOTO_MAX_MB}`);
       return;
     }
     dispatch({ type: 'updatePhotos', photos });
@@ -200,7 +200,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 ></ReviewRating>
               </Grid>
             </Grid>
-            <Grid container item justify="space-between" spacing={3}>
+            <Grid item container justify="space-between" spacing={3}>
               <Grid item>
                 <FormLabel>Upload Pictures: </FormLabel>
               </Grid>
@@ -219,6 +219,11 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                       onChange={updatePhotos}
                     />
                   </Button>
+                </Grid>
+              </Grid>
+              <Grid item container justify="flex-end" xs={12}>
+                <Grid item>
+                  <FormLabel color="secondary">{`Reviewers may upload up to ${REVIEW_PHOTOS_LIMIT} photos. Max photo size of ${REVIEW_PHOTO_MAX_MB}MB`}</FormLabel>
                 </Grid>
               </Grid>
             </Grid>
