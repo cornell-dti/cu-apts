@@ -124,13 +124,7 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
                   bottom: '20px',
                 }}
               >
-                <Grid
-                  container
-                  xs={12}
-                  direction="row"
-                  style={{ height: '200px' }}
-                  alignItems="flex-end"
-                >
+                <Grid container direction="row" style={{ height: '200px' }} alignItems="flex-end">
                   <Grid item xs={12} md={mobileView ? 12 : 3}>
                     <Avatar
                       src={Logo}

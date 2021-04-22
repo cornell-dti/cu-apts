@@ -11,8 +11,9 @@ import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
-import { ReviewWithId } from '../../../common/types/db-types';
+import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
+import { createAuthHeaders, subscribeLikes, getUser } from '../utils/auth';
 
 type LandlordData = {
   properties: string[];
@@ -81,23 +82,55 @@ const LandlordPage = (): ReactElement => {
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
+  const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
 
   useTitle(`Reviews for ${landlordId}`);
+
   useEffect(() => {
-    get<ReviewWithId>(`/reviews/landlordId/${landlordId}`, setReviewData);
+    get<ReviewWithId[]>(`/reviews/landlordId/${landlordId}`, setReviewData);
   }, [landlordId]);
 
-  const submitHelpful = async (reviewId: string) => {
+  useEffect(() => {
+    return subscribeLikes(setLikedReviews);
+  }, []);
+
+  const addLike = async (reviewId: string) => {
     try {
-      await axios.post('/like-review', { reviewId });
-    } finally {
+      const user = await getUser(true);
+      if (!user) {
+        throw new Error('Failed to login');
+      }
       setReviewData((reviews) =>
         reviews.map((review) =>
           review.id === reviewId ? { ...review, likes: (review.likes || 0) + 1 } : review
         )
       );
+      const token = await user.getIdToken(true);
+      setLikedReviews((reviews) => ({ ...reviews, [reviewId]: true }));
+      axios.post('/add-like', { reviewId }, createAuthHeaders(token));
+    } catch (err) {
+      console.log('error with liking review');
+    }
+  };
+
+  const removeLike = async (reviewId: string) => {
+    try {
+      const user = await getUser();
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      setReviewData((reviews) =>
+        reviews.map((review) =>
+          review.id === reviewId ? { ...review, likes: (review.likes || 1) - 1 } : review
+        )
+      );
+      const token = await user.getIdToken(true);
+      setLikedReviews((reviews) => ({ ...reviews, [reviewId]: false }));
+      axios.post('/remove-like', { reviewId }, createAuthHeaders(token));
+    } catch (err) {
+      console.log('error with liking review');
     }
   };
 
@@ -159,7 +192,12 @@ const LandlordPage = (): ReactElement => {
               <Grid container item spacing={3}>
                 {reviewData.map((review, index) => (
                   <Grid item xs={12} key={index}>
-                    <ReviewComponent review={review} submitHelpful={submitHelpful} />
+                    <ReviewComponent
+                      review={review}
+                      liked={likedReviews[review.id]}
+                      addLike={addLike}
+                      removeLike={removeLike}
+                    />
                   </Grid>
                 ))}
               </Grid>

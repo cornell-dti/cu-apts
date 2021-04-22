@@ -21,7 +21,9 @@ import { ReviewWithId } from '../../../../common/types/db-types';
 
 type Props = {
   readonly review: ReviewWithId;
-  readonly submitHelpful: (reviewId: string) => Promise<void>;
+  readonly liked: boolean;
+  readonly addLike: (reviewId: string) => Promise<void>;
+  readonly removeLike: (reviewId: string) => Promise<void>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -41,10 +43,13 @@ const useStyles = makeStyles(() => ({
   },
   button: {
     textTransform: 'none',
+    '&.Mui-disabled': {
+      color: '#EB5757',
+    },
   },
 }));
 
-const ReviewComponent = ({ review, submitHelpful }: Props): ReactElement => {
+const ReviewComponent = ({ review, liked, addLike, removeLike }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
@@ -102,7 +107,12 @@ const ReviewComponent = ({ review, submitHelpful }: Props): ReactElement => {
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
-              <Button onClick={() => submitHelpful(id)} className={button} size="small">
+              <Button
+                color={liked ? 'primary' : 'default'}
+                onClick={() => (liked ? removeLike : addLike)(id)}
+                className={button}
+                size="small"
+              >
                 Helpful {`(${likes || 0})`}
               </Button>
             </Grid>

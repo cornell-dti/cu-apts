@@ -2,6 +2,8 @@ type Id = {
   readonly id: string;
 };
 
+type StringSet = Record<string, boolean>;
+
 export type DetailedRating = {
   readonly location: number;
   readonly safety: number;
@@ -22,6 +24,8 @@ export type Review = {
 };
 
 export type ReviewWithId = Review & Id;
+
+export type ReviewInternal = Review & {};
 
 export type Landlord = {
   readonly name: string;
@@ -45,3 +49,5 @@ export type Apartment = {
 };
 
 export type ApartmentWithId = Apartment & Id;
+
+export type Likes = StringSet;

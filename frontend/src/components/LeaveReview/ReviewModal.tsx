@@ -102,7 +102,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
 
   const onSubmit = async () => {
     try {
-      const user = await getUser();
+      const user = await getUser(true);
       if (!user) {
         throw new Error('Failed to login');
       }
