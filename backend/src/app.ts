@@ -4,7 +4,7 @@ import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
-import { Review, Landlord, Apartment } from '../../common/types/db-types';
+import { Review, Landlord, Building } from '../../common/types/db-types';
 import authenticate from './auth';
 
 const app: Express = express();
@@ -75,8 +75,8 @@ app.get('/reviews', async (req, res) => {
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
     const aptDocs = (await aptCollection.get()).docs;
-    const apts: Apartment[] = aptDocs.map((apt) => apt.data() as Apartment);
-    const aptsLandlords: (Landlord | Apartment)[] = [...landlords, ...apts];
+    const apts: Building[] = aptDocs.map((apt) => apt.data() as Building);
+    const aptsLandlords: (Landlord | Building)[] = [...landlords, ...apts];
 
     const options = {
       keys: ['name', 'address'],

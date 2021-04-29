@@ -8,7 +8,7 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 import get from '../../utils/get';
-import { Landlord, Apartment } from '../../../../common/types/db-types';
+import { Landlord, Building } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -28,12 +28,12 @@ export default function Autocomplete() {
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(Landlord | Apartment)[]>([]);
+  const [options, setOptions] = useState<(Landlord | Building)[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<Landlord | Apartment | null>(null);
+  const [selected, setSelected] = useState<Landlord | Building | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
 
-  const handleClose = (event: React.MouseEvent<EventTarget>, option: Apartment | Landlord) => {
+  const handleClose = (event: React.MouseEvent<EventTarget>, option: Building | Landlord) => {
     const element = event.currentTarget as HTMLInputElement;
     setQuery(element.innerText);
     setSelected(option);
@@ -121,7 +121,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading) {
-      get<Landlord | Apartment>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<Landlord | Building>(`/reviews?q=${query}`, setOptions, setLoading);
     }
   }, [loading, query]);
 

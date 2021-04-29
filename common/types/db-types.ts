@@ -33,7 +33,7 @@ export type Landlord = {
 
 export type LandlordWithId = Landlord & Id;
 
-export type Apartment = {
+export type Building = {
   readonly name: string;
   readonly address: string; // may change to placeID for Google Maps integration
   readonly landlordId: string | null;
@@ -43,4 +43,4 @@ export type Apartment = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
 };
 
-export type ApartmentWithId = Apartment & Id;
+export type BuildingWithId = Building & Id;
