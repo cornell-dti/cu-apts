@@ -4,34 +4,38 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Grid,
-  Switch,
   TextField,
+  Input,
+  FormLabel,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { useReducer } from 'react';
+import React, { useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
-import { createAuthHeaders, getUser } from '../../utils/auth';
+import { splitArr } from '../../utils';
+import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import styles from './ReviewModal.module.scss';
+
+const REVIEW_CHARACTER_LIMIT = 2000;
+const REVIEW_PHOTOS_LIMIT = 3;
+const REVIEW_PHOTO_MAX_MB = 10;
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  landlordId?: string;
+  landlordId: string;
 }
 
 interface FormData {
-  name: string;
-  isAnonymous: boolean;
+  address: string;
   ratings: DetailedRating;
+  localPhotos: File[];
   body: string;
 }
 
 const defaultReview: FormData = {
-  name: '',
-  isAnonymous: false,
+  address: '',
   ratings: {
     location: 0,
     safety: 0,
@@ -40,24 +44,25 @@ const defaultReview: FormData = {
     communication: 0,
     conditions: 0,
   },
+  localPhotos: [],
   body: '',
 };
 
 type Action =
-  | { type: 'updateName'; name: string }
-  | { type: 'updateAnonymous'; isAnonymous: boolean }
+  | { type: 'updateAddress'; address: string }
   | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
+  | { type: 'updatePhotos'; photos: File[] }
   | { type: 'updateBody'; body: string }
   | { type: 'reset' };
 
-const reducer = (state: FormData, action: Action) => {
+const reducer = (state: FormData, action: Action): FormData => {
   switch (action.type) {
-    case 'updateName':
-      return { ...state, name: action.name };
-    case 'updateAnonymous':
-      return { ...state, isAnonymous: action.isAnonymous };
+    case 'updateAddress':
+      return { ...state, address: action.address };
     case 'updateRating':
       return { ...state, ratings: { ...state.ratings, [action.category]: action.rating } };
+    case 'updatePhotos':
+      return { ...state, localPhotos: action.photos ? [...action.photos] : [] };
     case 'updateBody':
       return { ...state, body: action.body };
     case 'reset':
@@ -69,13 +74,10 @@ const reducer = (state: FormData, action: Action) => {
 
 const ReviewModal = ({ open, onClose, landlordId }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [sending, setSending] = useState(false);
 
-  const updateName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updateName', name: event.target.value });
-  };
-
-  const updateAnonymous = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updateAnonymous', isAnonymous: event.target.checked });
+  const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: 'updateAddress', address: event.target.value });
   };
 
   const updateRating = (category: keyof DetailedRating) => {
@@ -85,23 +87,41 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     };
   };
 
+  const updatePhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
+    if (!files || files.length > REVIEW_PHOTOS_LIMIT) {
+      console.log(`Max file limit of ${REVIEW_PHOTOS_LIMIT} exceeded`);
+      return;
+    }
+    const photos = [...files];
+    const bigPhoto = photos.find((photo) => photo.size > REVIEW_PHOTO_MAX_MB * Math.pow(1024, 2));
+    if (bigPhoto) {
+      console.log(`File ${bigPhoto.name} exceeds max size of ${REVIEW_PHOTO_MAX_MB}`);
+      return;
+    }
+    dispatch({ type: 'updatePhotos', photos });
+  };
+
   const updateBody = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'updateBody', body: event.target.value });
   };
 
-  const formDataToReview = ({ ratings, body }: FormData): Review => {
+  const formDataToReview = async ({ ratings, body, localPhotos }: FormData): Promise<Review> => {
+    const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
       aptId: null,
-      landlordId: landlordId || '',
-      overallRating: 5,
-      detailedRatings: ratings,
-      reviewText: body,
       date: new Date(),
+      detailedRatings: ratings,
+      landlordId: landlordId,
+      overallRating: 5,
+      photos,
+      reviewText: body,
     };
   };
 
   const onSubmit = async () => {
     try {
+      setSending(true);
       const user = await getUser();
       if (!user) {
         throw new Error('Failed to login');
@@ -109,15 +129,26 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
       const token = await user.getIdToken(true);
       const res = await axios.post(
         '/new-review',
-        formDataToReview(review),
+        await formDataToReview(review),
         createAuthHeaders(token)
       );
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
-    } catch (_) {
+      console.log(review);
+    } catch (err) {
+      console.log(err);
       console.log('Failed to submit form');
+    } finally {
+      setSending(false);
     }
+  };
+
+  const generateFileStatus = (): string => {
+    if (!review.localPhotos) return 'No photos uploaded';
+    const [first, rest] = splitArr([...review.localPhotos], 2);
+    const fileNames = first.map((file) => file.name).join(', ');
+    return fileNames + (rest.length ? `, and ${rest.length} more` : '');
   };
 
   return (
@@ -126,24 +157,14 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
       <DialogContent>
         <div className={styles.DialogContentDiv}>
           <Grid container direction="column" justify="space-evenly" spacing={4}>
-            <Grid container item alignContent="center">
-              <Grid container item justify="space-between" xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  autoFocus
-                  label="Name"
-                  value={review.name}
-                  onChange={updateName}
-                />
-              </Grid>
-              <Grid container justify="center" item xs={12} sm={6}>
-                <Grid item>
-                  <FormControlLabel
-                    control={<Switch onChange={updateAnonymous} />}
-                    label="Review anonymously"
-                  />
-                </Grid>
-              </Grid>
+            <Grid container item justify="space-between" xs={12} sm={6}>
+              <TextField
+                fullWidth
+                autoFocus
+                label="Property Address (optional)"
+                value={review.address}
+                onChange={updateAddress}
+              />
             </Grid>
             <Grid container item>
               <Grid container spacing={1} justify="center">
@@ -179,14 +200,45 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 ></ReviewRating>
               </Grid>
             </Grid>
+            <Grid item container justify="space-between" spacing={3}>
+              <Grid item>
+                <FormLabel>Upload Pictures: </FormLabel>
+              </Grid>
+              <Grid item container direction="row" xs={9} justify="flex-end" spacing={3}>
+                <Grid item>
+                  <FormLabel>{generateFileStatus()}</FormLabel>
+                </Grid>
+                <Grid item>
+                  <Button variant="contained" component="label">
+                    Choose File(s)
+                    <Input
+                      style={{ display: 'none' }}
+                      id="upload"
+                      type="file"
+                      inputProps={{ multiple: true, accept: 'image/*' }}
+                      onChange={updatePhotos}
+                    />
+                  </Button>
+                </Grid>
+              </Grid>
+              <Grid item container justify="flex-end" xs={12}>
+                <Grid item>
+                  <FormLabel color="secondary">{`Reviewers may upload up to ${REVIEW_PHOTOS_LIMIT} photos. Max photo size of ${REVIEW_PHOTO_MAX_MB}MB`}</FormLabel>
+                </Grid>
+              </Grid>
+            </Grid>
             <Grid container item>
               <TextField
                 fullWidth
-                id="standard-multiline-static"
+                id="body"
                 label="Review"
                 multiline
                 rows={6}
+                inputProps={{
+                  maxlength: REVIEW_CHARACTER_LIMIT,
+                }}
                 placeholder="Write your review here"
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}`}
                 onChange={updateBody}
               />
             </Grid>
@@ -194,7 +246,9 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onSubmit}>Submit</Button>
+        <Button onClick={onSubmit} disabled={sending}>
+          Submit
+        </Button>
       </DialogActions>
     </Dialog>
   );

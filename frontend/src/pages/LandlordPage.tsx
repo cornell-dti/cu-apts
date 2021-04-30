@@ -76,7 +76,7 @@ const dummyRatingInfo: RatingInfo[] = [
 ];
 
 const LandlordPage = (): ReactElement => {
-  const { landlordId } = useParams<Record<string, string | undefined>>();
+  const { landlordId } = useParams<Record<string, string>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<Review[]>([]);

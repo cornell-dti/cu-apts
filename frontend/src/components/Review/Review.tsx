@@ -16,7 +16,6 @@ import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
-import ApartmentImg from '../../assets/apartment-sample.png';
 import { Review } from '../../../../common/types/db-types';
 
 type Props = {
@@ -44,7 +43,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ReviewComponent = ({ review }: Props): ReactElement => {
-  const { detailedRatings, overallRating, date, reviewText } = review;
+  const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
@@ -91,11 +90,13 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
             <Grid item container alignContent="center">
               <Typography>{reviewText}</Typography>
             </Grid>
-            <Grid container alignItems="center" justify="center">
-              <Grid item xs={12} sm={6}>
-                <CardMedia component="img" alt="Apt image" image={ApartmentImg} title="Apt image" />
+            {photos.length > 0 && (
+              <Grid container alignItems="center" justify="center">
+                <Grid item xs={12} sm={6}>
+                  <CardMedia component="img" alt="Apt image" image={photos[0]} title="Apt image" />
+                </Grid>
               </Grid>
-            </Grid>
+            )}
           </Grid>
         </CardContent>
         <CardActions>

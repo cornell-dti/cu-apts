@@ -43,7 +43,7 @@ app.post('/new-review', authenticate, async (req, res) => {
     doc.set({ ...review, date: new Date(review.date) });
     res.status(201).send(doc.id);
   } catch (err) {
-    res.status(401).send('Error');
+    res.status(400).send('Error');
   }
 });
 
@@ -51,9 +51,8 @@ app.get('/reviews/:idType/:id', async (req, res) => {
   const { idType, id } = req.params;
   const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
-    let data = doc.data();
-    data = { ...data, date: data.date.toDate() };
-    return data as Review;
+    const { date, ...data } = doc.data();
+    return { date: date.toDate(), ...data } as Review;
   });
   res.status(200).send(JSON.stringify(reviews));
 });

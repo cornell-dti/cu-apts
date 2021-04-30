@@ -13,11 +13,12 @@ export type DetailedRating = {
 
 export type Review = {
   readonly aptId: string | null;
+  readonly date: Date;
+  readonly detailedRatings: DetailedRating;
   readonly landlordId: string;
   readonly overallRating: number;
-  readonly detailedRatings: DetailedRating;
+  readonly photos: readonly string[];
   readonly reviewText: string;
-  readonly date: Date;
 };
 
 export type ReviewWithId = Review & Id;
