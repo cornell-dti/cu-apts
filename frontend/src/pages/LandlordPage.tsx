@@ -11,6 +11,7 @@ import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
 import { Review } from '../../../common/types/db-types';
+import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 
 type LandlordData = {
@@ -23,6 +24,11 @@ type LandlordData = {
   numReviews: number;
 };
 
+export type RatingInfo = {
+  feature: string;
+  rating: number;
+};
+
 const faq: NavbarButton = {
   label: 'FAQ',
   href: '/faq',
@@ -33,11 +39,6 @@ const review: NavbarButton = {
 };
 
 const headersData = [faq, review];
-
-export type RatingInfo = {
-  feature: string;
-  rating: number;
-};
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
@@ -76,21 +77,37 @@ const dummyRatingInfo: RatingInfo[] = [
 ];
 
 const LandlordPage = (): ReactElement => {
-  const { landlordId } = useParams<Record<string, string | undefined>>();
+  const { landlordId } = useParams<Record<string, string>>();
   const [landlordData] = useState(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const toastTime = 3500;
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
     get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData, undefined);
-  }, [landlordId]);
+  }, [landlordId, showConfirmation]);
+
+  const showConfirmationToast = () => {
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+    }, toastTime);
+  };
 
   const Modals = (
     <>
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} landlordId={landlordId} />
+      <ReviewModal
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        setOpen={setReviewOpen}
+        landlordId={landlordId}
+        onSuccess={showConfirmationToast}
+        toastTime={toastTime}
+      />
       <PhotoCarousel
         photos={landlordData.photos}
         open={carouselOpen}
@@ -105,6 +122,14 @@ const LandlordPage = (): ReactElement => {
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
         </Grid>
+        <Button
+          color="secondary"
+          variant="contained"
+          disableElevation
+          onClick={() => setCarouselOpen(true)}
+        >
+          Show all photos
+        </Button>
         <Grid item>
           <Button
             color="primary"
@@ -138,22 +163,30 @@ const LandlordPage = (): ReactElement => {
           numReviews={landlordData.numReviews}
           handleClick={() => setCarouselOpen(true)}
         />
-        <Container className={styles.OuterContainer}>
-          <Grid container spacing={5} justify="center">
-            <Grid container spacing={3} item xs={12} sm={8}>
-              {Header}
-              <Hidden smUp>{InfoSection}</Hidden>
-              <Grid container item spacing={3}>
-                {reviewData.map((review, index) => (
-                  <Grid item xs={12} key={index}>
-                    <ReviewComponent review={review} />
-                  </Grid>
-                ))}
-              </Grid>
+      </Container>
+      <Container className={styles.OuterContainer}>
+        <Grid container spacing={5} justify="center">
+          <Grid container spacing={3} item xs={12} sm={8}>
+            {Header}
+            <Hidden smUp>{InfoSection}</Hidden>
+            {showConfirmation && (
+              <Toast
+                isOpen={showConfirmation}
+                severity="success"
+                message="Review successfully submitted!"
+                time={toastTime}
+              />
+            )}
+            <Grid container item spacing={3}>
+              {reviewData.map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <ReviewComponent review={review} />
+                </Grid>
+              ))}
             </Grid>
           </Grid>
           <Hidden xsDown>{InfoSection}</Hidden>
-        </Container>
+        </Grid>
       </Container>
       {Modals}
     </>
