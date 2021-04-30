@@ -4,7 +4,14 @@ import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
-import { Review, Landlord, Apartment } from '../../common/types/db-types';
+import {
+  Review,
+  Landlord,
+  LandlordWithId,
+  LandlordWithType,
+  ApartmentWithType,
+  ApartmentWithId,
+} from '../../common/types/db-types';
 import authenticate from './auth';
 
 const app: Express = express();
@@ -58,6 +65,17 @@ app.get('/reviews/:idType/:id', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
+app.get('/apts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const snapshot = await aptCollection.doc(id).get();
+    const aptDoc = { id, ...snapshot.data() } as ApartmentWithId;
+    res.status(200).send(JSON.stringify(aptDoc));
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 app.post('/landlords', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
@@ -69,21 +87,39 @@ app.post('/landlords', async (req, res) => {
   }
 });
 
+const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => {
+  const keys = Object.keys(obj);
+  return keys.includes('contact');
+};
+
 app.get('/reviews', async (req, res) => {
   try {
     const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
-    const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
+    // eslint-disable-next-line
+    const landlords: LandlordWithId[] = landlordDocs.map((landlord) => {
+      return { id: landlord.id, ...landlord.data() } as LandlordWithId;
+    });
     const aptDocs = (await aptCollection.get()).docs;
-    const apts: Apartment[] = aptDocs.map((apt) => apt.data() as Apartment);
-    const aptsLandlords: (Landlord | Apartment)[] = [...landlords, ...apts];
+    // eslint-disable-next-line
+    const apts: ApartmentWithId[] = aptDocs.map((apt) => {
+      return { id: apt.id, ...apt.data() } as ApartmentWithId;
+    });
+    const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
       keys: ['name', 'address'],
     };
     const fuse = new Fuse(aptsLandlords, options);
     const results = fuse.search(query);
-    res.status(200).send(JSON.stringify(results.map((result) => result.item)));
+    const resultItems = results.map((result) => result.item);
+
+    const resultsWithType: (LandlordWithType | ApartmentWithType)[] = resultItems.map((result) =>
+      isLandlord(result)
+        ? ({ type: 'LANDLORD', ...result } as LandlordWithType)
+        : ({ type: 'APARTMENT', ...result } as ApartmentWithType)
+    );
+    res.status(200).send(JSON.stringify(resultsWithType));
   } catch (err) {
     res.status(400).send(err);
   }

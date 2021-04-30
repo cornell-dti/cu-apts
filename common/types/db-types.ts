@@ -2,6 +2,10 @@ type Id = {
   readonly id: string;
 };
 
+type Type = {
+  readonly type: 'LANDLORD' | 'APARTMENT';
+};
+
 export type DetailedRating = {
   readonly location: number;
   readonly safety: number;
@@ -32,6 +36,7 @@ export type Landlord = {
 };
 
 export type LandlordWithId = Landlord & Id;
+export type LandlordWithType = LandlordWithId & Type;
 
 export type Apartment = {
   readonly name: string;
@@ -44,3 +49,4 @@ export type Apartment = {
 };
 
 export type ApartmentWithId = Apartment & Id;
+export type ApartmentWithType = ApartmentWithId & Type;

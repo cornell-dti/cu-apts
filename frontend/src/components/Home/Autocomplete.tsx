@@ -41,7 +41,7 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordWithType | ApartmentWithType | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState('');
 
   // const handleClose = (
   //   event: React.MouseEvent<EventTarget>,
@@ -73,16 +73,18 @@ export default function Autocomplete() {
 
   const getLandlordIdFromAptId = (aptId: string) => {
     axios
-        .get(`${backendUrl}/apts/${aptId}`)
-        .then((response) => {
-          const apt: ApartmentWithId = response.data;
-          const landlordId = apt.landlordId;
-          if (landlordId !== null) {setSelectedId(landlordId)}
-        })
-        .catch((error) => {
-          console.log('error', error);
-        });
-  }
+      .get(`${backendUrl}/apts/${aptId}`)
+      .then((response) => {
+        const apt: ApartmentWithId = response.data;
+        const landlordId = apt.landlordId;
+        if (landlordId !== null) {
+          setSelectedId(landlordId);
+        }
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  };
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
@@ -92,7 +94,7 @@ export default function Autocomplete() {
     if (option.type === 'LANDLORD') {
       setSelectedId(option.id);
     } else if (option.type === 'APARTMENT') {
-      getLandlordIdFromAptId(option.id)
+      getLandlordIdFromAptId(option.id);
     }
   };
 
@@ -173,8 +175,9 @@ export default function Autocomplete() {
     }
   }, [loading, query]);
 
-  return (
-    selectedId !== "" ? <Redirect to={`/landlord/${selectedId}`} /> :
+  return selectedId !== '' ? (
+    <Redirect to={`/landlord/${selectedId}`} />
+  ) : (
     <div>
       <TextField
         fullWidth
