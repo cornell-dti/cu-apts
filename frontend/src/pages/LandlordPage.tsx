@@ -88,7 +88,7 @@ const LandlordPage = (): ReactElement => {
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
-    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData);
+    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData, undefined);
   }, [landlordId, showConfirmation]);
 
   const showConfirmationToast = () => {

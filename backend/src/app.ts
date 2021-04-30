@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
+import morgan from 'morgan';
 import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
 import { Review, Landlord, Apartment } from '../../common/types/db-types';
@@ -17,8 +18,9 @@ app.use(
     origin: 'http://localhost:3000',
   })
 );
+app.use(morgan('combined'));
 
-app.get('/', async (req, res) => {
+app.get('/', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
   const faqs: Section[] = [];
@@ -80,7 +82,7 @@ app.get('/reviews', async (req, res) => {
     };
     const fuse = new Fuse(aptsLandlords, options);
     const results = fuse.search(query);
-    res.status(200).send(JSON.stringify(results));
+    res.status(200).send(JSON.stringify(results.map((result) => result.item)));
   } catch (err) {
     res.status(400).send(err);
   }
