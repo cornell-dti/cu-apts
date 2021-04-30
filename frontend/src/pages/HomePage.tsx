@@ -82,6 +82,7 @@ const dummyDataReviews: Review[] = [
     },
     reviewText: 'Not bad',
     date: new Date(),
+    photos: [],
   },
   {
     aptId: null,
@@ -97,6 +98,7 @@ const dummyDataReviews: Review[] = [
     },
     reviewText: 'Pretty good',
     date: new Date(),
+    photos: [],
   },
 ];
 
