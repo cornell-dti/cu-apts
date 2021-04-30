@@ -10,11 +10,12 @@ import {
   FormLabel,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { useReducer, useState } from 'react';
+import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
+import Toast from './Toast';
 import styles from './ReviewModal.module.scss';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
@@ -24,10 +25,14 @@ const REVIEW_PHOTO_MAX_MB = 10;
 interface Props {
   open: boolean;
   onClose: () => void;
+  setOpen: Dispatch<SetStateAction<boolean>>;
   landlordId: string;
+  onSuccess: () => void;
+  toastTime: number;
 }
 
 interface FormData {
+  overallRating: number;
   address: string;
   ratings: DetailedRating;
   localPhotos: File[];
@@ -35,6 +40,7 @@ interface FormData {
 }
 
 const defaultReview: FormData = {
+  overallRating: 0,
   address: '',
   ratings: {
     location: 0,
@@ -49,6 +55,7 @@ const defaultReview: FormData = {
 };
 
 type Action =
+  | { type: 'updateOverall'; rating: number }
   | { type: 'updateAddress'; address: string }
   | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
   | { type: 'updatePhotos'; photos: File[] }
@@ -57,6 +64,8 @@ type Action =
 
 const reducer = (state: FormData, action: Action): FormData => {
   switch (action.type) {
+    case 'updateOverall':
+      return { ...state, overallRating: action.rating };
     case 'updateAddress':
       return { ...state, address: action.address };
     case 'updateRating':
@@ -72,8 +81,16 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-const ReviewModal = ({ open, onClose, landlordId }: Props) => {
+const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [showError, setShowError] = useState(false);
+
+  const updateOverall = () => {
+    return (_: React.ChangeEvent<{}>, value: number | null) => {
+      const rating = value || 0;
+      dispatch({ type: 'updateOverall', rating });
+    };
+  };
   const [sending, setSending] = useState(false);
 
   const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,14 +123,19 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     dispatch({ type: 'updateBody', body: event.target.value });
   };
 
-  const formDataToReview = async ({ ratings, body, localPhotos }: FormData): Promise<Review> => {
+  const formDataToReview = async ({
+    overallRating,
+    ratings,
+    body,
+    localPhotos,
+  }: FormData): Promise<Review> => {
     const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
       aptId: null,
       date: new Date(),
       detailedRatings: ratings,
       landlordId: landlordId,
-      overallRating: 5,
+      overallRating,
       photos,
       reviewText: body,
     };
@@ -136,9 +158,15 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
         throw new Error('Failed to submit review');
       }
       console.log(review);
+      setOpen(false);
+      onSuccess();
     } catch (err) {
       console.log(err);
       console.log('Failed to submit form');
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, toastTime);
     } finally {
       setSending(false);
     }
@@ -155,8 +183,26 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Leave a Review</DialogTitle>
       <DialogContent>
+        {/* This div padding prevents the scrollbar from displaying unnecessarily */}
+
         <div className={styles.DialogContentDiv}>
+          {showError && (
+            <Toast
+              isOpen={true}
+              severity="error"
+              message="Error submitting review. Please try again."
+              time={toastTime}
+            />
+          )}
           <Grid container direction="column" justify="space-evenly" spacing={4}>
+            <Grid container item>
+              <ReviewRating
+                name="overall"
+                label="Overall Experience"
+                onChange={updateOverall()}
+              ></ReviewRating>
+            </Grid>
+            <div className={styles.div}></div>
             <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -200,7 +246,8 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 ></ReviewRating>
               </Grid>
             </Grid>
-            <Grid item container justify="space-between" spacing={3}>
+            <div className={styles.div}></div>
+            <Grid container item justify="space-between" spacing={3}>
               <Grid item>
                 <FormLabel>Upload Pictures: </FormLabel>
               </Grid>
@@ -227,6 +274,7 @@ const ReviewModal = ({ open, onClose, landlordId }: Props) => {
                 </Grid>
               </Grid>
             </Grid>
+            <div className={styles.div}></div>
             <Grid container item>
               <TextField
                 fullWidth

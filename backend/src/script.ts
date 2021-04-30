@@ -29,6 +29,7 @@ const formatReview = (data: any): Review => ({
     conditions: data['detailedRatings.condition'],
   },
   date: data.date,
+  photos: data.photos,
 });
 
 reviewData.map((review) => makeReview(formatReview(review)));
