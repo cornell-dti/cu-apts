@@ -1,16 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Redirect } from 'react-router-dom';
 import {
-  TextField,
+  Chip,
+  CircularProgress,
   ClickAwayListener,
+  Grid,
+  IconButton,
   MenuItem,
   MenuList,
-  IconButton,
-  CircularProgress,
+  TextField,
+  Typography,
 } from '@material-ui/core';
-import get from '../../utils/get';
-import { Landlord, Apartment } from '../../../../common/types/db-types';
+import get, { backendUrl } from '../../utils/get';
+import {
+  ApartmentWithId,
+  ApartmentWithType,
+  LandlordWithType,
+} from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
+import axios from 'axios';
 
 const useStyles = makeStyles({
   menuList: {
@@ -28,17 +37,20 @@ export default function Autocomplete() {
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(Landlord | Apartment)[]>([]);
+  const [options, setOptions] = useState<(LandlordWithType | ApartmentWithType)[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<Landlord | Apartment | null>(null);
+  const [selected, setSelected] = useState<LandlordWithType | ApartmentWithType | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
+  const [selectedId, setSelectedId] = useState("");
 
-  const handleClose = (event: React.MouseEvent<EventTarget>, option: Apartment | Landlord) => {
-    const element = event.currentTarget as HTMLInputElement;
-    setQuery(element.innerText);
-    setSelected(option);
-    setOpen(false);
-  };
+  // const handleClose = (
+  //   event: React.MouseEvent<EventTarget>,
+  //   option: ApartmentWithType | LandlordWithType
+  // ) => {
+  //   setQuery(option.name);
+  //   setSelected(option);
+  //   setOpen(false);
+  // };
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'Tab') {
@@ -57,6 +69,31 @@ export default function Autocomplete() {
     // TODO: get id of item selected selected.id, if its a landlord redirect to landlords/id,
     // else get the landlordId of the apartment and redirect to that
     console.log('clicked');
+  };
+
+  const getLandlordIdFromAptId = (aptId: string) => {
+    axios
+        .get(`${backendUrl}/apts/${aptId}`)
+        .then((response) => {
+          const apt: ApartmentWithId = response.data;
+          const landlordId = apt.landlordId;
+          if (landlordId !== null) {setSelectedId(landlordId)}
+        })
+        .catch((error) => {
+          console.log('error', error);
+        });
+  }
+
+  const handleClickMenu = (
+    event: React.MouseEvent<EventTarget>,
+    option: LandlordWithType | ApartmentWithType
+  ) => {
+    setSelected(option);
+    if (option.type === 'LANDLORD') {
+      setSelectedId(option.id);
+    } else if (option.type === 'APARTMENT') {
+      getLandlordIdFromAptId(option.id)
+    }
   };
 
   const Menu = () => {
@@ -80,8 +117,19 @@ export default function Autocomplete() {
                 ) : (
                   options.map((option, index) => {
                     return (
-                      <MenuItem key={index} onClick={(event) => handleClose(event, option)}>
-                        {option.name}
+                      <MenuItem
+                        button={true}
+                        key={index}
+                        onClick={(event) => handleClickMenu(event, option)}
+                      >
+                        <Grid container justify="space-between">
+                          <Grid item xl={8}>
+                            <Typography>{option.name}</Typography>
+                          </Grid>
+                          <Grid item xl={4}>
+                            <Chip color="primary" label={option.type.toLowerCase()} />
+                          </Grid>
+                        </Grid>
                       </MenuItem>
                     );
                   })
@@ -121,11 +169,12 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading) {
-      get<Landlord | Apartment>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<LandlordWithType | ApartmentWithType>(`/reviews?q=${query}`, setOptions, setLoading);
     }
   }, [loading, query]);
 
   return (
+    selectedId !== "" ? <Redirect to={`/landlord/${selectedId}`} /> :
     <div>
       <TextField
         fullWidth
