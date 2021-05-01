@@ -8,8 +8,8 @@ import {
   Review,
   Landlord,
   LandlordWithId,
-  LandlordWithType,
-  ApartmentWithType,
+  LandlordWithLabel,
+  ApartmentWithLabel,
   ApartmentWithId,
 } from '../../common/types/db-types';
 import authenticate from './auth';
@@ -96,15 +96,13 @@ app.get('/reviews', async (req, res) => {
   try {
     const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
-    // eslint-disable-next-line
-    const landlords: LandlordWithId[] = landlordDocs.map((landlord) => {
-      return { id: landlord.id, ...landlord.data() } as LandlordWithId;
-    });
+    const landlords: LandlordWithId[] = landlordDocs.map(
+      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
+    );
     const aptDocs = (await aptCollection.get()).docs;
-    // eslint-disable-next-line
-    const apts: ApartmentWithId[] = aptDocs.map((apt) => {
-      return { id: apt.id, ...apt.data() } as ApartmentWithId;
-    });
+    const apts: ApartmentWithId[] = aptDocs.map(
+      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
+    );
     const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
@@ -114,10 +112,10 @@ app.get('/reviews', async (req, res) => {
     const results = fuse.search(query);
     const resultItems = results.map((result) => result.item);
 
-    const resultsWithType: (LandlordWithType | ApartmentWithType)[] = resultItems.map((result) =>
+    const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
       isLandlord(result)
-        ? ({ type: 'LANDLORD', ...result } as LandlordWithType)
-        : ({ type: 'APARTMENT', ...result } as ApartmentWithType)
+        ? ({ label: 'LANDLORD', ...result } as LandlordWithLabel)
+        : ({ label: 'APARTMENT', ...result } as ApartmentWithLabel)
     );
     res.status(200).send(JSON.stringify(resultsWithType));
   } catch (err) {

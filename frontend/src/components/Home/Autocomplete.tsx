@@ -14,8 +14,8 @@ import {
 import get, { backendUrl } from '../../utils/get';
 import {
   ApartmentWithId,
-  ApartmentWithType,
-  LandlordWithType,
+  ApartmentWithLabel,
+  LandlordWithLabel,
 } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
@@ -37,20 +37,11 @@ export default function Autocomplete() {
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(LandlordWithType | ApartmentWithType)[]>([]);
+  const [options, setOptions] = useState<(LandlordWithLabel | ApartmentWithLabel)[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<LandlordWithType | ApartmentWithType | null>(null);
+  const [selected, setSelected] = useState<LandlordWithLabel | ApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
   const [selectedId, setSelectedId] = useState('');
-
-  // const handleClose = (
-  //   event: React.MouseEvent<EventTarget>,
-  //   option: ApartmentWithType | LandlordWithType
-  // ) => {
-  //   setQuery(option.name);
-  //   setSelected(option);
-  //   setOpen(false);
-  // };
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'Tab') {
@@ -88,12 +79,12 @@ export default function Autocomplete() {
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
-    option: LandlordWithType | ApartmentWithType
+    option: LandlordWithLabel | ApartmentWithLabel
   ) => {
     setSelected(option);
-    if (option.type === 'LANDLORD') {
+    if (option.label === 'LANDLORD') {
       setSelectedId(option.id);
-    } else if (option.type === 'APARTMENT') {
+    } else if (option.label === 'APARTMENT') {
       getLandlordIdFromAptId(option.id);
     }
   };
@@ -129,7 +120,7 @@ export default function Autocomplete() {
                             <Typography>{option.name}</Typography>
                           </Grid>
                           <Grid item xl={4}>
-                            <Chip color="primary" label={option.type.toLowerCase()} />
+                            <Chip color="primary" label={option.label.toLowerCase()} />
                           </Grid>
                         </Grid>
                       </MenuItem>
@@ -171,7 +162,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading) {
-      get<LandlordWithType | ApartmentWithType>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
     }
   }, [loading, query]);
 
@@ -183,7 +174,7 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        placeholder="Search by renting company or building address"
+        label="Search by renting company or building address"
         className={text}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
