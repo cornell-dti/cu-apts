@@ -87,10 +87,7 @@ app.post('/landlords', async (req, res) => {
   }
 });
 
-const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => {
-  const keys = Object.keys(obj);
-  return keys.includes('contact');
-};
+const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
 
 app.get('/reviews', async (req, res) => {
   try {
