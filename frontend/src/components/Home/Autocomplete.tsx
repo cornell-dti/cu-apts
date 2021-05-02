@@ -11,11 +11,10 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import get, { backendUrl } from '../../utils/get';
-import { ApartmentWithId, LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
+import get from '../../utils/get';
+import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
-import axios from 'axios';
 
 const useStyles = makeStyles({
   menuList: {
@@ -37,7 +36,7 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
-  const [selectedId, setSelectedId] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>('');
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'Tab') {
@@ -58,31 +57,22 @@ export default function Autocomplete() {
     console.log('clicked');
   };
 
-  const getLandlordIdFromAptId = (aptId: string) => {
-    axios
-      .get(`${backendUrl}/apts/${aptId}`)
-      .then((response) => {
-        const apt: ApartmentWithId = response.data;
-        const landlordId = apt.landlordId;
-        if (landlordId !== null) {
-          setSelectedId(landlordId);
-        }
-      })
-      .catch((error) => {
-        console.log('error', error);
-      });
+  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
+    switch (option.label) {
+      case 'LANDLORD':
+        return option.id;
+      case 'APARTMENT':
+        return option.landlordId;
+      default:
+        return null;
+    }
   };
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
     option: LandlordOrApartmentWithLabel
   ) => {
-    setSelected(option);
-    if (option.label === 'LANDLORD') {
-      setSelectedId(option.id);
-    } else if (option.label === 'APARTMENT') {
-      getLandlordIdFromAptId(option.id);
-    }
+    setSelectedId(getLandlordId(option));
   };
 
   const Menu = () => {
