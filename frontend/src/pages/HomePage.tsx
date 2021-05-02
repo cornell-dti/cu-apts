@@ -6,68 +6,6 @@ import { Building, LandlordWithId, Review } from '../../../common/types/db-types
 import { Link as RouterLink } from 'react-router-dom';
 import get from '../utils/get';
 
-// const dummyDataBuilding: Building[] = [
-//   {
-//     name: 'Collegetown Terrace',
-//     address: '112 Valentine Pl.',
-//     landlordId: '1',
-//     numBaths: 2,
-//     numBeds: 2,
-//     photos: [],
-//     area: 'COLLEGETOWN',
-//   },
-//   {
-//     name: 'Eddygate',
-//     address: '110 Dryden Rd',
-//     landlordId: '24',
-//     numBaths: 1,
-//     numBeds: 2,
-//     photos: [
-//       'https://firebasestorage.googleapis.com/v0/b/cuapts-68201.appspot.com/o/889f082e-cd51-44bb-8618-128e1d762cab?alt=media&token=2a73b9ac-9845-4712-a525-568935fecabf',
-//     ],
-//     area: 'COLLEGETOWN',
-//   },
-//   {
-//     name: 'Collegetown Court',
-//     address: '208 Dryden Rd',
-//     landlordId: '10',
-//     numBaths: 2,
-//     numBeds: 4,
-//     photos: [],
-//     area: 'COLLEGETOWN',
-//   },
-// ];
-
-// const dummyDataLandlord: LandlordWithId[] = [
-//   {
-//     id: '1',
-//     name: 'Collegetown Terrace',
-//     contact: '5551234567',
-//     avgRating: 4,
-//     photos: [],
-//     reviews: [],
-//     properties: [],
-//   },
-//   {
-//     id: '24',
-//     name: 'Travis Hyde',
-//     contact: '555678910',
-//     avgRating: 2,
-//     photos: [],
-//     reviews: [],
-//     properties: [],
-//   },
-//   {
-//     id: '10',
-//     name: 'Ithaca Renting Company',
-//     contact: '555678910',
-//     avgRating: 2,
-//     photos: [],
-//     reviews: [],
-//     properties: [],
-//   },
-// ];
-
 const HomePage = (): ReactElement => {
   const [homeData, setHomedata] = useState<any>([]);
   const [buildingData, setBuildingData] = useState<Building[]>([]);
@@ -80,7 +18,7 @@ const HomePage = (): ReactElement => {
 
   useEffect(() => {
     get<any>(`/homepageData`, setHomedata, undefined);
-  }, [homeData]);
+  }, []);
 
   useEffect(() => {
     setBuildingData(homeData.buildings);
