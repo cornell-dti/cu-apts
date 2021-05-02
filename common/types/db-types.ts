@@ -33,6 +33,7 @@ export type Landlord = {
 };
 
 export type LandlordWithId = Landlord & Id;
+export type LandlordWithLabel = LandlordWithId & { readonly label: 'LANDLORD' };
 
 export type Apartment = {
   readonly name: string;
@@ -45,3 +46,4 @@ export type Apartment = {
 };
 
 export type ApartmentWithId = Apartment & Id;
+export type ApartmentWithLabel = ApartmentWithId & { readonly label: 'APARTMENT' };
