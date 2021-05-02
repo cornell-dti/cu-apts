@@ -4,13 +4,13 @@ import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
-import { Review, Landlord, Building } from '../../common/types/db-types';
+import { Review, Landlord, Building, LandlordWithId } from '../../common/types/db-types';
 import authenticate from './auth';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
-const aptCollection = db.collection('buildings');
+const buildingCollection = db.collection('buildings');
 
 app.use(express.json());
 app.use(
@@ -73,19 +73,42 @@ app.get('/reviews', async (req, res) => {
     const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
-    const aptDocs = (await aptCollection.get()).docs;
-    const apts: Building[] = aptDocs.map((apt) => apt.data() as Building);
-    const aptsLandlords: (Landlord | Building)[] = [...landlords, ...apts];
+    const buildingDocs = (await buildingCollection.get()).docs;
+    const buildings: Building[] = buildingDocs.map((building) => building.data() as Building);
+    const buildingsLandlords: (Landlord | Building)[] = [...landlords, ...buildings];
 
     const options = {
       keys: ['name', 'address'],
     };
-    const fuse = new Fuse(aptsLandlords, options);
+    const fuse = new Fuse(buildingsLandlords, options);
     const results = fuse.search(query);
     res.status(200).send(JSON.stringify(results.map((result) => result.item)));
   } catch (err) {
     res.status(400).send(err);
   }
+});
+
+app.get('/homepageData', async (req, res) => {
+  const buildingDocs = (await buildingCollection.limit(3).get()).docs;
+  const buildings: Building[] = buildingDocs.map((doc) => doc.data() as Building);
+  // eslint-disable-next-line consistent-return
+  const landlords: (LandlordWithId | undefined)[] = await Promise.all(
+    // eslint-disable-next-line consistent-return
+    buildings.map(async ({ landlordId }) => {
+      if (landlordId) {
+        // eslint-disable-next-line no-return-await
+        const doc = await landlordCollection.doc(landlordId).get();
+        const data = doc.data() as Landlord;
+        return {
+          id: landlordId,
+          ...data,
+        } as LandlordWithId;
+      }
+    })
+  );
+
+  const data = { buildings, landlords };
+  res.status(200).send(JSON.stringify(data));
 });
 
 export default app;
