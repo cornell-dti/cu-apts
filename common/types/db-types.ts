@@ -16,11 +16,12 @@ export type DetailedRating = {
 export type Review = {
   readonly aptId: string | null;
   readonly likes?: number;
+  readonly date: Date;
+  readonly detailedRatings: DetailedRating;
   readonly landlordId: string;
   readonly overallRating: number;
-  readonly detailedRatings: DetailedRating;
+  readonly photos: readonly string[];
   readonly reviewText: string;
-  readonly date: Date;
 };
 
 export type ReviewWithId = Review & Id;
@@ -37,6 +38,7 @@ export type Landlord = {
 };
 
 export type LandlordWithId = Landlord & Id;
+export type LandlordWithLabel = LandlordWithId & { readonly label: 'LANDLORD' };
 
 export type Apartment = {
   readonly name: string;
@@ -49,5 +51,8 @@ export type Apartment = {
 };
 
 export type ApartmentWithId = Apartment & Id;
+export type ApartmentWithLabel = ApartmentWithId & { readonly label: 'APARTMENT' };
+
+export type LandlordOrApartmentWithLabel = LandlordWithLabel | ApartmentWithLabel;
 
 export type Likes = StringSet;

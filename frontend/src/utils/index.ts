@@ -16,3 +16,5 @@ export const useTitle = (titleOrFn: string | (() => string), ...deps: any[]) => 
     [...deps]
   );
 };
+
+export const splitArr = (arr: any[], n: number) => [arr.slice(0, n), arr.slice(n)];

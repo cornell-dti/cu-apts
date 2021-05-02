@@ -19,6 +19,16 @@ const theme = createMuiTheme({
   typography: {
     fontFamily: ['-apple-system', 'BlinkMacSystemFont', '"Work Sans"'].join(','),
   },
+  overrides: {
+    MuiFormLabel: {
+      root: {
+        color: '#000000',
+      },
+      colorSecondary: {
+        color: '#929292',
+      },
+    },
+  },
 });
 
 const faq: NavbarButton = {
