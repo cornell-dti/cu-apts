@@ -2,13 +2,13 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Box, Container, Grid, Typography, Link } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { Building, LandlordWithId, Review } from '../../../common/types/db-types';
+import { Apartment, LandlordWithId, Review } from '../../../common/types/db-types';
 import { Link as RouterLink } from 'react-router-dom';
 import get from '../utils/get';
 
 const HomePage = (): ReactElement => {
   const [homeData, setHomedata] = useState<any>([]);
-  const [buildingData, setBuildingData] = useState<Building[]>([]);
+  const [buildingData, setBuildingData] = useState<Apartment[]>([]);
   const [landlordData, setLandlordData] = useState<LandlordWithId[]>([]);
   const [reviewsBuilding1, setReviewsBuilding1] = useState<Review[]>([]);
   const [reviewsBuilding2, setReviewsBuilding2] = useState<Review[]>([]);

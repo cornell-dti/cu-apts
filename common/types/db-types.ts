@@ -33,8 +33,9 @@ export type Landlord = {
 };
 
 export type LandlordWithId = Landlord & Id;
+export type LandlordWithLabel = LandlordWithId & { readonly label: 'LANDLORD' };
 
-export type Building = {
+export type Apartment = {
   readonly name: string;
   readonly address: string; // may change to placeID for Google Maps integration
   readonly landlordId: string | null;
@@ -44,4 +45,5 @@ export type Building = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
 };
 
-export type BuildingWithId = Building & Id;
+export type ApartmentWithId = Apartment & Id;
+export type ApartmentWithLabel = ApartmentWithId & { readonly label: 'APARTMENT' };

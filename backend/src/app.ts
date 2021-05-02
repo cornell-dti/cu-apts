@@ -4,13 +4,21 @@ import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
-import { Review, Landlord, Building, LandlordWithId } from '../../common/types/db-types';
+import {
+  Review,
+  Landlord,
+  Apartment,
+  LandlordWithId,
+  LandlordWithLabel,
+  ApartmentWithLabel,
+  ApartmentWithId,
+} from '../../common/types/db-types';
 import authenticate from './auth';
 
 const app: Express = express();
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
-const buildingCollection = db.collection('buildings');
+const aptCollection = db.collection('buildings');
 
 app.use(express.json());
 app.use(
@@ -57,6 +65,17 @@ app.get('/reviews/:idType/:id', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
+app.get('/apts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const snapshot = await aptCollection.doc(id).get();
+    const aptDoc = { id, ...snapshot.data() } as ApartmentWithId;
+    res.status(200).send(JSON.stringify(aptDoc));
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 app.post('/landlords', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
@@ -68,29 +87,42 @@ app.post('/landlords', async (req, res) => {
   }
 });
 
+const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
+
 app.get('/reviews', async (req, res) => {
   try {
     const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
-    const landlords: Landlord[] = landlordDocs.map((landlord) => landlord.data() as Landlord);
-    const buildingDocs = (await buildingCollection.get()).docs;
-    const buildings: Building[] = buildingDocs.map((building) => building.data() as Building);
-    const buildingsLandlords: (Landlord | Building)[] = [...landlords, ...buildings];
+    const landlords: LandlordWithId[] = landlordDocs.map(
+      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
+    );
+    const aptDocs = (await aptCollection.get()).docs;
+    const apts: ApartmentWithId[] = aptDocs.map(
+      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
+    );
+    const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
       keys: ['name', 'address'],
     };
-    const fuse = new Fuse(buildingsLandlords, options);
+    const fuse = new Fuse(aptsLandlords, options);
     const results = fuse.search(query);
-    res.status(200).send(JSON.stringify(results.map((result) => result.item)));
+    const resultItems = results.map((result) => result.item);
+
+    const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
+      isLandlord(result)
+        ? ({ label: 'LANDLORD', ...result } as LandlordWithLabel)
+        : ({ label: 'APARTMENT', ...result } as ApartmentWithLabel)
+    );
+    res.status(200).send(JSON.stringify(resultsWithType));
   } catch (err) {
     res.status(400).send(err);
   }
 });
 
 app.get('/homepageData', async (req, res) => {
-  const buildingDocs = (await buildingCollection.limit(3).get()).docs;
-  const buildings: Building[] = buildingDocs.map((doc) => doc.data() as Building);
+  const buildingDocs = (await aptCollection.limit(3).get()).docs;
+  const buildings: Apartment[] = buildingDocs.map((doc) => doc.data() as Apartment);
   // eslint-disable-next-line consistent-return
   const landlords: (LandlordWithId | undefined)[] = await Promise.all(
     // eslint-disable-next-line consistent-return
