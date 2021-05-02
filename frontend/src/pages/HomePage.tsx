@@ -1,9 +1,10 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Box, Container, Grid, Typography, Link } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
 import { Building, LandlordWithId, Review } from '../../../common/types/db-types';
 import { Link as RouterLink } from 'react-router-dom';
+import get from '../utils/get';
 
 const dummyDataBuilding: Building[] = [
   {
@@ -67,45 +68,48 @@ const dummyDataLandlord: LandlordWithId[] = [
   },
 ];
 
-const dummyDataReviews: Review[] = [
-  {
-    aptId: null,
-    landlordId: '10',
-    overallRating: 3,
-    detailedRatings: {
-      location: 4,
-      safety: 5,
-      value: 4,
-      maintenance: 2,
-      communication: 3,
-      conditions: 3,
-    },
-    reviewText: 'Not bad',
-    date: new Date(),
-    photos: [],
-  },
-  {
-    aptId: null,
-    landlordId: '10',
-    overallRating: 4,
-    detailedRatings: {
-      location: 2,
-      safety: 4,
-      value: 4,
-      maintenance: 2,
-      communication: 5,
-      conditions: 3,
-    },
-    reviewText: 'Pretty good',
-    date: new Date(),
-    photos: [],
-  },
-];
-
 const HomePage = (): ReactElement => {
   const [buildingData] = useState(dummyDataBuilding);
   const [landlordData] = useState(dummyDataLandlord);
-  const [reviews] = useState(dummyDataReviews);
+  const [reviewsBuilding1, setReviewsBuilding1] = useState<Review[]>([]);
+  const [reviewsBuilding2, setReviewsBuilding2] = useState<Review[]>([]);
+  const [reviewsBuilding3, setReviewsBuilding3] = useState<Review[]>([]);
+  const [allReviews, setAllReviews] = useState<Review[][]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    get<Review>(
+      `/reviews/landlordId/${buildingData[0].landlordId}`,
+      setReviewsBuilding1,
+      undefined
+    );
+  }, [buildingData]);
+
+  useEffect(() => {
+    get<Review>(
+      `/reviews/landlordId/${buildingData[1].landlordId}`,
+      setReviewsBuilding2,
+      undefined
+    );
+  }, [buildingData]);
+
+  useEffect(() => {
+    get<Review>(
+      `/reviews/landlordId/${buildingData[2].landlordId}`,
+      setReviewsBuilding3,
+      undefined
+    );
+  }, [buildingData]);
+
+  useEffect(() => {
+    setAllReviews([reviewsBuilding1, reviewsBuilding2, reviewsBuilding3]);
+  }, [reviewsBuilding1, reviewsBuilding2, reviewsBuilding3]);
+
+  useEffect(() => {
+    if (allReviews) {
+      setLoaded(true);
+    }
+  }, [allReviews]);
 
   let idToLandlord: { [id: string]: { company: string; reviews: readonly string[] } } = {};
   // eslint-disable-next-line array-callback-return
@@ -114,14 +118,6 @@ const HomePage = (): ReactElement => {
       idToLandlord[id] = { company: name, reviews };
     }
   });
-
-  let idToNumReviews: { [id: string]: number } = {};
-  // eslint-disable-next-line array-callback-return
-  reviews.map(({ landlordId }) => {
-    idToNumReviews[landlordId] = landlordId in idToNumReviews ? idToNumReviews[landlordId] + 1 : 1;
-  });
-
-  console.log(JSON.stringify(idToNumReviews));
 
   return (
     <Box bgcolor="grey.100">
@@ -140,38 +136,37 @@ const HomePage = (): ReactElement => {
       </Container>
       <Container maxWidth="lg">
         <Grid container spacing={3}>
-          {buildingData.map(({ name, address, landlordId, numBaths, numBeds, photos }, index) => {
-            let company = '';
-            let numReviews = 0;
-            if (landlordId) {
-              company = idToLandlord[landlordId].company;
-              if (idToNumReviews[landlordId]) {
-                numReviews = idToNumReviews[landlordId];
+          {loaded &&
+            buildingData.map(({ name, address, landlordId, numBaths, numBeds, photos }, index) => {
+              let company = '';
+              let numReviews = 0;
+              if (landlordId) {
+                company = idToLandlord[landlordId].company;
+                numReviews = allReviews[index].length;
               }
-            }
-            return (
-              <Grid item xs={12} md={4}>
-                <Link
-                  {...{
-                    to: `/landlord/${landlordId}`,
-                    style: { textDecoration: 'none' },
-                    component: RouterLink,
-                  }}
-                >
-                  <ApartmentCard
-                    key={index}
-                    name={name}
-                    address={address}
-                    company={company}
-                    numBaths={numBaths}
-                    numBeds={numBeds}
-                    numReviews={numReviews}
-                    photos={photos}
-                  />
-                </Link>
-              </Grid>
-            );
-          })}
+              return (
+                <Grid item xs={12} md={4}>
+                  <Link
+                    {...{
+                      to: `/landlord/${landlordId}`,
+                      style: { textDecoration: 'none' },
+                      component: RouterLink,
+                    }}
+                  >
+                    <ApartmentCard
+                      key={index}
+                      name={name}
+                      address={address}
+                      company={company}
+                      numBaths={numBaths}
+                      numBeds={numBeds}
+                      numReviews={numReviews}
+                      photos={photos}
+                    />
+                  </Link>
+                </Grid>
+              );
+            })}
         </Grid>
       </Container>
     </Box>

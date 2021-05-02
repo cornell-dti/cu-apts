@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import ApartmentImg from '../../assets/apartment-sample.png';
-import { Card, CardContent, CardMedia, Grid, Typography } from '@material-ui/core';
+import { Card, CardContent, CardMedia, Grid, makeStyles, Typography } from '@material-ui/core';
 import RoomOutlinedIcon from '@material-ui/icons/RoomOutlined';
 
 type Props = {
@@ -12,6 +12,13 @@ type Props = {
   numReviews: number;
   photos: readonly string[];
 };
+
+const useStyles = makeStyles({
+  img: {
+    height: 200,
+    width: '100%',
+  },
+});
 
 const ApartmentCard = ({
   name,
@@ -25,9 +32,11 @@ const ApartmentCard = ({
   const bedsAndBaths = numBeds && numBaths ? `${numBeds}Br | ${numBaths}B` : '';
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
 
+  const classes = useStyles();
+
   return (
     <Card>
-      <CardMedia image={img} component="img" title={name} />
+      <CardMedia className={classes.img} image={img} component="img" title={name} />
       <CardContent>
         <Grid container spacing={1}>
           <Grid container item justify="space-between" alignItems="center">
