@@ -1,5 +1,6 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState } from 'react';
 import {
+  Box,
   Card,
   CardActions,
   CardContent,
@@ -46,7 +47,8 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [expandedText, setExpandedText] = useState(false);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -55,50 +57,72 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
   return (
     <Grid item>
       <Card className={root} variant="outlined">
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid item container justify="space-between">
-              <Grid container xs={10} spacing={2}>
+        <Box minHeight="200px">
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item container justify="space-between">
+                {overallRating !== null ? (
+                  <Grid container xs={10} spacing={2}>
+                    <Grid item>
+                      <HeartRating value={overallRating} readOnly />
+                    </Grid>
+                    <Grid item>
+                      <IconButton
+                        className={clsx(expand, {
+                          [expandOpen]: expanded,
+                        })}
+                        onClick={handleExpandClick}
+                        aria-expanded={expanded}
+                        aria-label="show more"
+                        size="small"
+                      >
+                        <ExpandMoreIcon />
+                      </IconButton>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Grid item>
+                    <Typography>This review was collected by the Ithaca Tenants Union</Typography>
+                  </Grid>
+                )}
                 <Grid item>
-                  <HeartRating value={overallRating} readOnly />
+                  <Typography className={dateText}>{formattedDate}</Typography>
                 </Grid>
+              </Grid>
+              {overallRating !== null && (
                 <Grid item>
-                  <IconButton
-                    className={clsx(expand, {
-                      [expandOpen]: expanded,
-                    })}
-                    onClick={handleExpandClick}
-                    aria-expanded={expanded}
-                    aria-label="show more"
-                    size="small"
-                  >
-                    <ExpandMoreIcon />
-                  </IconButton>
+                  <Collapse in={expanded} timeout="auto" unmountOnExit>
+                    <CardContent>
+                      <DetailedRatings ratings={detailedRatings} />
+                    </CardContent>
+                  </Collapse>
                 </Grid>
+              )}
+              <Grid item container alignContent="center">
+                <Typography>
+                  {expandedText ? reviewText : `${reviewText.substring(0, 500)}...`}
+                  {reviewText.length > 500 ? (
+                    <Button className={button} onClick={() => setExpandedText(!expandedText)}>
+                      {expandedText ? 'Read Less' : 'Read More'}
+                    </Button>
+                  ) : null}
+                </Typography>
               </Grid>
-              <Grid item>
-                <Typography className={dateText}>{formattedDate}</Typography>
-              </Grid>
-            </Grid>
-            <Grid item>
-              <Collapse in={expanded} timeout="auto" unmountOnExit>
-                <CardContent>
-                  <DetailedRatings ratings={detailedRatings} />
-                </CardContent>
-              </Collapse>
-            </Grid>
-            <Grid item container alignContent="center">
-              <Typography>{reviewText}</Typography>
-            </Grid>
-            {photos.length > 0 && (
-              <Grid container alignItems="center" justify="center">
-                <Grid item xs={12} sm={6}>
-                  <CardMedia component="img" alt="Apt image" image={photos[0]} title="Apt image" />
+              {photos.length > 0 && (
+                <Grid container alignItems="center" justify="center">
+                  <Grid item xs={12} sm={6}>
+                    <CardMedia
+                      component="img"
+                      alt="Apt image"
+                      image={photos[0]}
+                      title="Apt image"
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            )}
-          </Grid>
-        </CardContent>
+              )}
+            </Grid>
+          </CardContent>
+        </Box>
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
