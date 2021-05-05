@@ -5,7 +5,6 @@ import {
   CircularProgress,
   ClickAwayListener,
   Grid,
-  IconButton,
   MenuItem,
   MenuList,
   TextField,
@@ -51,11 +50,6 @@ export default function Autocomplete() {
     setSelected(null);
   };
 
-  const handleSubmit = () => {
-    // TODO: get id of item selected selected.id, if its a landlord redirect to landlords/id,
-    // else get the landlordId of the apartment and redirect to that
-    console.log('clicked');
-  };
 
   const getLandlordId = (option: LandlordWithLabel | ApartmentWithLabel) => {
     switch (option.label) {
@@ -174,11 +168,9 @@ export default function Autocomplete() {
           endAdornment: (
             <>
               {loading ? <CircularProgress color="inherit" size={20} /> : null}
-              <IconButton disabled={options.length === 0} onClick={handleSubmit}>
-                <SearchIcon />
-              </IconButton>
             </>
           ),
+          startAdornment:  <SearchIcon />
         }}
       />
       <Menu />
