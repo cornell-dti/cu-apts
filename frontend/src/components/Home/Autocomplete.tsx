@@ -38,8 +38,8 @@ export default function Autocomplete() {
   const [selectedId, setSelectedId] = useState<string | null>('');
 
   function handleListKeyDown(event: React.KeyboardEvent) {
+    event.preventDefault();
     if (event.key === 'Tab') {
-      event.preventDefault();
       setOpen(false);
     }
   }
@@ -140,7 +140,7 @@ export default function Autocomplete() {
   }, [inputRef, width]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading && query.trim() !== '') {
       get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
     }
   }, [loading, query]);
