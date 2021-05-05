@@ -50,7 +50,6 @@ export default function Autocomplete() {
     setSelected(null);
   };
 
-
   const getLandlordId = (option: LandlordWithLabel | ApartmentWithLabel) => {
     switch (option.label) {
       case 'LANDLORD':
@@ -154,7 +153,7 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        label="Search by renting company or building address"
+        placeholder="Search by renting company or building address"
         className={text}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
@@ -165,12 +164,8 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          endAdornment: (
-            <>
-              {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            </>
-          ),
-          startAdornment:  <SearchIcon />
+          endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
+          startAdornment: <SearchIcon />,
         }}
       />
       <Menu />

@@ -101,7 +101,7 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
               <Grid item container alignContent="center">
                 <Typography>
                   {expandedText ? reviewText : reviewText.substring(0, 500)}
-                  {!expandedText && reviewText.length > 500 && "..."}
+                  {!expandedText && reviewText.length > 500 && '...'}
                   {reviewText.length > 500 ? (
                     <Button className={button} onClick={() => setExpandedText(!expandedText)}>
                       {expandedText ? 'Read Less' : 'Read More'}
