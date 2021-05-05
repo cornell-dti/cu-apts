@@ -55,14 +55,23 @@ app.post('/new-review', authenticate, async (req, res) => {
   }
 });
 
-app.get('/reviews/:idType/:id', async (req, res) => {
-  const { idType, id } = req.params;
-  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
-  const reviews: Review[] = reviewDocs.map((doc) => {
-    const { date, ...data } = doc.data();
-    return { date: date.toDate(), ...data } as Review;
-  });
-  res.status(200).send(JSON.stringify(reviews));
+app.get('/reviews/:idType/:ids', async (req, res) => {
+  const { idType, ids } = req.params;
+  const idsList = ids.split(',');
+  const reviewsArr = await Promise.all(
+    idsList.map(async (id) => {
+      const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+      const reviews: Review[] = reviewDocs.map((doc) => {
+        const { date, ...data } = doc.data();
+        return { date: date.toDate(), ...data } as Review;
+      });
+      return reviews;
+    })
+  );
+
+  const allReviews = reviewsArr.length > 1 ? reviewsArr : reviewsArr[0];
+
+  res.status(200).send(JSON.stringify(allReviews));
 });
 
 app.get('/apts/:id', async (req, res) => {
@@ -123,7 +132,7 @@ app.get('/reviews', async (req, res) => {
 app.get('/homepageData', async (req, res) => {
   const buildingDocs = (await aptCollection.limit(3).get()).docs;
   const buildings: Apartment[] = buildingDocs.map((doc) => doc.data() as Apartment);
-  // eslint-disable-next-line consistent-return
+
   const landlords: (LandlordWithId | undefined)[] = await Promise.all(
     // eslint-disable-next-line consistent-return
     buildings.map(async ({ landlordId }) => {

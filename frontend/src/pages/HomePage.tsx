@@ -10,9 +10,6 @@ const HomePage = (): ReactElement => {
   const [homeData, setHomedata] = useState<any>([]);
   const [buildingData, setBuildingData] = useState<Apartment[]>([]);
   const [landlordData, setLandlordData] = useState<LandlordWithId[]>([]);
-  const [reviewsBuilding1, setReviewsBuilding1] = useState<Review[]>([]);
-  const [reviewsBuilding2, setReviewsBuilding2] = useState<Review[]>([]);
-  const [reviewsBuilding3, setReviewsBuilding3] = useState<Review[]>([]);
   const [allReviews, setAllReviews] = useState<Review[][]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -29,41 +26,17 @@ const HomePage = (): ReactElement => {
   }, [homeData]);
 
   useEffect(() => {
-    if (buildingData && buildingData.length > 0) {
-      get<Review>(
-        `/reviews/landlordId/${buildingData[0].landlordId}`,
-        setReviewsBuilding1,
-        undefined
-      );
-    }
-  }, [buildingData]);
-
-  useEffect(() => {
-    if (buildingData && buildingData.length > 1) {
-      get<Review>(
-        `/reviews/landlordId/${buildingData[1].landlordId}`,
-        setReviewsBuilding2,
-        undefined
-      );
-    }
-  }, [buildingData]);
-
-  useEffect(() => {
     if (buildingData && buildingData.length > 2) {
-      get<Review>(
-        `/reviews/landlordId/${buildingData[2].landlordId}`,
-        setReviewsBuilding3,
+      get<Review[]>(
+        `/reviews/landlordId/${buildingData[0].landlordId},${buildingData[1].landlordId},${buildingData[2].landlordId}`,
+        setAllReviews,
         undefined
       );
     }
   }, [buildingData]);
 
   useEffect(() => {
-    setAllReviews([reviewsBuilding1, reviewsBuilding2, reviewsBuilding3]);
-  }, [reviewsBuilding1, reviewsBuilding2, reviewsBuilding3]);
-
-  useEffect(() => {
-    if (buildingData && buildingData.length > 0 && allReviews) {
+    if (buildingData && buildingData.length > 0 && allReviews && allReviews.length > 2) {
       setLoaded(true);
     }
   }, [buildingData, allReviews]);
@@ -71,12 +44,12 @@ const HomePage = (): ReactElement => {
   let idToLandlord: { [id: string]: { company: string; reviews: readonly string[] } } = {};
 
   landlordData &&
-    // eslint-disable-next-line array-callback-return
-    landlordData.map(({ id, name, reviews }) => {
-      if (!(id in idToLandlord)) {
-        idToLandlord[id] = { company: name, reviews };
+    landlordData.reduce((acc, { id, name, reviews }) => {
+      if (!(id in acc)) {
+        acc[id] = { company: name, reviews };
       }
-    });
+      return acc;
+    }, idToLandlord);
 
   return (
     <Box bgcolor="grey.100">
@@ -97,12 +70,9 @@ const HomePage = (): ReactElement => {
         <Grid container spacing={3}>
           {loaded &&
             buildingData.map(({ name, address, landlordId, numBaths, numBeds, photos }, index) => {
-              let company = '';
-              let numReviews = 0;
-              if (landlordId) {
-                company = idToLandlord[landlordId].company;
-                numReviews = allReviews[index].length;
-              }
+              const company = landlordId ? idToLandlord[landlordId].company : '';
+              const numReviews = landlordId ? allReviews[index].length : 0;
+
               return (
                 <Grid item xs={12} md={4}>
                   <Link
