@@ -6,6 +6,7 @@ import FAQPage from './pages/FAQPage';
 import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
+import NotFoundPage from './pages/NotFoundPage';
 
 const theme = createMuiTheme({
   palette: {
@@ -52,6 +53,7 @@ const App = (): ReactElement => {
           <Route exact path="/" component={HomePage} />
           <Route exact path="/faq" component={FAQPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
+          <Route component={NotFoundPage} />
         </Switch>
       </Router>
     </ThemeProvider>
