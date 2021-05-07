@@ -2,8 +2,8 @@ import { Box, List, ListItem, ListItemText, Typography } from '@material-ui/core
 import React, { ReactElement } from 'react';
 
 type Props = {
-  readonly phone: string;
-  readonly address: string;
+  readonly contact: string | null;
+  readonly address: string | null;
 };
 
 const InfoItem = ({ text }: { text: string }) => (
@@ -12,13 +12,13 @@ const InfoItem = ({ text }: { text: string }) => (
   </ListItem>
 );
 
-export default function Info({ phone, address }: Props): ReactElement {
+export default function Info({ contact, address }: Props): ReactElement {
   return (
     <Box mt={1}>
       <Typography variant="h5">Info</Typography>
       <List dense>
-        <InfoItem text={phone} />
-        <InfoItem text={address} />
+        {contact && <InfoItem text={contact} />}
+        {address && <InfoItem text={address} />}
       </List>
     </Box>
   );

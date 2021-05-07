@@ -74,12 +74,17 @@ app.get('/reviews/:idType/:ids', async (req, res) => {
   res.status(200).send(JSON.stringify(allReviews));
 });
 
-app.get('/apts/:id', async (req, res) => {
+app.get('/apts/:ids', async (req, res) => {
   try {
-    const { id } = req.params;
-    const snapshot = await aptCollection.doc(id).get();
-    const aptDoc = { id, ...snapshot.data() } as ApartmentWithId;
-    res.status(200).send(JSON.stringify(aptDoc));
+    const { ids } = req.params;
+    const idsList = ids.split(',');
+    const aptsArr = await Promise.all(
+      idsList.map(async (id) => {
+        const snapshot = await aptCollection.doc(id).get();
+        return { id, ...snapshot.data() } as ApartmentWithId;
+      })
+    );
+    res.status(200).send(JSON.stringify(aptsArr));
   } catch (err) {
     res.status(400).send(err);
   }

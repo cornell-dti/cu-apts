@@ -3,7 +3,7 @@ import { Modal, Box, styled, Container, CardMedia } from '@material-ui/core';
 import Carousel from 'react-material-ui-carousel';
 
 interface Props {
-  photos: string[];
+  photos: readonly string[];
   open: boolean;
   onClose?: () => void;
 }
