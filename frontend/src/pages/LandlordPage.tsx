@@ -13,6 +13,7 @@ import styles from './LandlordPage.module.scss';
 import { Review, Landlord, ApartmentWithId } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
+import Spinner from '../components/utils/ProgressSpinner';
 
 export type RatingInfo = {
   feature: string;
@@ -68,7 +69,7 @@ const dummyData: Landlord = {
 
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
-  const [landlordData] = useState(dummyData);
+  const [landlordData] = useState<Landlord>(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -76,6 +77,7 @@ const LandlordPage = (): ReactElement => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<ApartmentWithId[]>([]);
   const [properties, setProperties] = useState<string[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const toastTime = 3500;
 
   useTitle(`Reviews for ${landlordId}`);
@@ -95,6 +97,12 @@ const LandlordPage = (): ReactElement => {
       setProperties(buildings.map((building) => building.name));
     }
   }, [buildings]);
+
+  useEffect(() => {
+    if (landlordData && properties && reviewData) {
+      setLoaded(true);
+    }
+  }, [landlordData, properties, reviewData]);
 
   const showConfirmationToast = () => {
     setShowConfirmation(true);
@@ -158,7 +166,9 @@ const LandlordPage = (): ReactElement => {
     </Grid>
   );
 
-  return (
+  return !loaded ? (
+    <Spinner />
+  ) : (
     <>
       <Container>
         <AppBar headersData={headersData} />
