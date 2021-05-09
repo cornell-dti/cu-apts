@@ -44,7 +44,7 @@ const useStyles = makeStyles(() => ({
     paddingLeft: '5em',
     paddingRight: '5em',
     paddingBottom: '1em',
-    '@media only screen and (max-width: 700px) ': {
+    '@media only screen and (max-width: 992px) ': {
       paddingLeft: '1em',
       paddingRight: '1em',
     },
@@ -73,6 +73,9 @@ const useStyles = makeStyles(() => ({
     fontStyle: 'normal',
     fontWeight: 'normal',
     fontSize: '17.4658px',
+    '@media only screen and (max-width: 425px) ': {
+      fontSize: '10px',
+    },
     lineHeight: '20px',
     paddingTop: '10px',
   },
@@ -183,7 +186,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Grid container xs={7} direction="column">
+    <Grid container xs={11} md={7} direction="column">
       <Grid item>
         <Grid container alignItems="center">
           <Grid item>
