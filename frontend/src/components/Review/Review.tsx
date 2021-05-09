@@ -16,10 +16,13 @@ import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
-import { Review } from '../../../../common/types/db-types';
+import { ReviewWithId } from '../../../../common/types/db-types';
 
 type Props = {
-  readonly review: Review;
+  readonly review: ReviewWithId;
+  readonly liked: boolean;
+  readonly addLike: (reviewId: string) => Promise<void>;
+  readonly removeLike: (reviewId: string) => Promise<void>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -39,11 +42,14 @@ const useStyles = makeStyles(() => ({
   },
   button: {
     textTransform: 'none',
+    '&.Mui-disabled': {
+      color: '#EB5757',
+    },
   },
 }));
 
-const ReviewComponent = ({ review }: Props): ReactElement => {
-  const { detailedRatings, overallRating, date, reviewText, photos } = review;
+const ReviewComponent = ({ review, liked, addLike, removeLike }: Props): ReactElement => {
+  const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
   const [expanded, setExpanded] = React.useState(false);
@@ -102,8 +108,13 @@ const ReviewComponent = ({ review }: Props): ReactElement => {
         <CardActions>
           <Grid item container justify="space-between">
             <Grid item>
-              <Button className={button} size="small">
-                Helpful
+              <Button
+                color={liked ? 'primary' : 'default'}
+                onClick={() => (liked ? removeLike : addLike)(id)}
+                className={button}
+                size="small"
+              >
+                Helpful {`(${likes || 0})`}
               </Button>
             </Grid>
             <Grid item>

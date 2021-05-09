@@ -111,7 +111,7 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
   }, []);
   const { media, logo, photoButton, landlordName, landlordReviews, landlordRating } = useStyles();
   return (
-    <Grid container spacing={0}>
+    <Grid container spacing={0} alignItems="flex-end">
       <React.Fragment>
         <GlobalCss />
         <Grid item xs={12} md={mobileView ? 12 : 6}>

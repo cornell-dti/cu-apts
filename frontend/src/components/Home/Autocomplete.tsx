@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import get from '../../utils/get';
-import { ApartmentWithLabel, LandlordWithLabel } from '../../../../common/types/db-types';
+import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { isMobile } from '../../utils/isMobile';
@@ -34,9 +34,9 @@ export default function Autocomplete() {
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(LandlordWithLabel | ApartmentWithLabel)[]>([]);
+  const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<LandlordWithLabel | ApartmentWithLabel | null>(null);
+  const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
   const [selectedId, setSelectedId] = useState<string | null>('');
 
@@ -63,7 +63,7 @@ export default function Autocomplete() {
     console.log('clicked');
   };
 
-  const getLandlordId = (option: LandlordWithLabel | ApartmentWithLabel) => {
+  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
     switch (option.label) {
       case 'LANDLORD':
         return option.id;
@@ -76,7 +76,7 @@ export default function Autocomplete() {
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
-    option: LandlordWithLabel | ApartmentWithLabel
+    option: LandlordOrApartmentWithLabel
   ) => {
     setSelectedId(getLandlordId(option));
   };
@@ -154,7 +154,12 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading && query.trim() !== '') {
-      get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
+        callback: (data) => {
+          setOptions(data);
+          setLoading(false);
+        },
+      });
     }
   }, [loading, query]);
 
