@@ -12,11 +12,13 @@ import {
   Icon,
   Grid,
   createMuiTheme,
+  ThemeProvider,
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import { isMobile } from '../../../utils/isMobile';
 import LogoIcon from '../../../assets/navbar-logo.svg';
+import { useLocation } from 'react-router-dom';
 
 export type NavbarButton = {
   label: string;
@@ -42,7 +44,7 @@ const useStyles = makeStyles(() => ({
     paddingLeft: '5em',
     paddingRight: '5em',
     paddingBottom: '1em',
-    '@media only screen and (max-width: 414px) ': {
+    '@media only screen and (max-width: 700px) ': {
       paddingLeft: '1em',
       paddingRight: '1em',
     },
@@ -53,13 +55,16 @@ const useStyles = makeStyles(() => ({
   },
   logo: {
     fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 500,
+    fontWeight: 600,
     '@media only screen and (max-width: 320px) ': {
       fontSize: '1.7em',
     },
     color: 'black',
     textAlign: 'left',
-    paddingTop: '60px',
+    paddingTop: '25px',
+    marginLeft: '10px',
+    fontSize: '20.1176px',
+    lineHeight: '24px',
   },
   description: {
     fontFamily: 'Work Sans, sans-serif',
@@ -69,13 +74,15 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'normal',
     fontSize: '17.4658px',
     lineHeight: '20px',
+    paddingTop: '10px',
   },
   menuButton: {
     fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 700,
-    size: '18px',
-    color: 'black',
-    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    size: '19px',
+    fontSize: '16px',
+    lineHeight: '19px',
+    letterSpacing: '0.08em',
     textTransform: 'none',
     marginLeft: '38px',
   },
@@ -99,7 +106,8 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   });
   const { mobileView, drawerOpen } = state;
   const { grow, header, logo, description, menuButton, toolbar, drawerContainer, menuDrawer, icon } = useStyles();
-  const muiTheme = createMuiTheme({ palette: { primary: { main: '#000' }, secondary: { main: '#B94630' }, }, })
+  const muiTheme = createMuiTheme({ palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' }, }, })
+  const location = useLocation();
   useEffect(() => {
     const setResponsiveness = () => {
       return isMobile()
@@ -113,17 +121,20 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const getDrawerChoices = (): ReactElement[] => {
     return headersData.map(({ label, href }) => {
       return (
-        <Link
-          {...{
-            component: RouterLink,
-            to: href,
-            color: 'inherit',
-            style: { textDecoration: 'none' },
-            key: label,
-          }}
-        >
-          <MenuItem>{label}</MenuItem>
-        </Link>
+        <ThemeProvider theme={muiTheme}>
+          <Link
+            {...{
+              component: RouterLink,
+              to: href,
+              color: ((location.pathname === "/" && label.includes("Home")) || (((location.pathname.includes("landlord") || location.pathname.includes("reviews")) && label.includes("Reviews")))) ? 'secondary' : 'primary',
+              style: { textDecoration: 'none' },
+              key: label,
+            }
+            }
+          >
+            <MenuItem>{label}</MenuItem>
+          </Link >
+        </ThemeProvider >
       );
     });
   };
@@ -131,17 +142,19 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const getMenuButtons = (): ReactElement[] => {
     return headersData.map(({ label, href }) => {
       return (
-        <Button
-          {...{
-            key: label,
-            color: 'inherit',
-            to: href,
-            component: RouterLink,
-            className: menuButton,
-          }}
-        >
-          {label.toUpperCase()}
-        </Button>
+        <ThemeProvider theme={muiTheme}>
+          <Button
+            {...{
+              key: label,
+              color: ((location.pathname === "/" && label.includes("Home")) || (((location.pathname.includes("landlord") || location.pathname.includes("reviews")) && label.includes("Reviews")))) ? 'secondary' : 'primary',
+              to: href,
+              component: RouterLink,
+              className: menuButton,
+            }}
+          >
+            {label.toUpperCase()}
+          </Button>
+        </ThemeProvider>
       );
     });
   };
@@ -151,9 +164,11 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       <Grid item>
         <Grid container alignItems="center">
           <Grid item>
-            <Icon className={icon}>
-              <img src={LogoIcon} alt="CU Apts Logo" height={109} width={52.68} />
-            </Icon>
+            <Link color="textPrimary" underline="none" href="/">
+              <Icon className={icon}>
+                <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
+              </Icon>
+            </Link>
           </Grid>
           <Grid item>
             <Typography variant="h4" component="h1" className={logo}>
