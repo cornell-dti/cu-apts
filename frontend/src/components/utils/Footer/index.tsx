@@ -23,10 +23,13 @@ const Footer = (): ReactElement => {
     <footer>
       <Grid container alignItems="center" justify="center" className={footer}>
         <Typography>
-          Got a question that isn’t answered? <Link className={link} underline="none" href="/">Contact us!</Link>
+          Got a question that isn’t answered?{' '}
+          <Link className={link} underline="none" href="/">
+            Contact us!
+          </Link>
         </Typography>
       </Grid>
     </footer>
   );
-}
+};
 export default Footer;

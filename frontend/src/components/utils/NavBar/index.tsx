@@ -105,8 +105,20 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerOpen: false,
   });
   const { mobileView, drawerOpen } = state;
-  const { grow, header, logo, description, menuButton, toolbar, drawerContainer, menuDrawer, icon } = useStyles();
-  const muiTheme = createMuiTheme({ palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' }, }, })
+  const {
+    grow,
+    header,
+    logo,
+    description,
+    menuButton,
+    toolbar,
+    drawerContainer,
+    menuDrawer,
+    icon,
+  } = useStyles();
+  const muiTheme = createMuiTheme({
+    palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
+  });
   const location = useLocation();
   useEffect(() => {
     const setResponsiveness = () => {
@@ -126,15 +138,20 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             {...{
               component: RouterLink,
               to: href,
-              color: ((location.pathname === "/" && label.includes("Home")) || (((location.pathname.includes("landlord") || location.pathname.includes("reviews")) && label.includes("Reviews")))) ? 'secondary' : 'primary',
+              color:
+                (location.pathname === '/' && label.includes('Home')) ||
+                ((location.pathname.includes('landlord') ||
+                  location.pathname.includes('reviews')) &&
+                  label.includes('Reviews'))
+                  ? 'secondary'
+                  : 'primary',
               style: { textDecoration: 'none' },
               key: label,
-            }
-            }
+            }}
           >
             <MenuItem>{label}</MenuItem>
-          </Link >
-        </ThemeProvider >
+          </Link>
+        </ThemeProvider>
       );
     });
   };
@@ -146,7 +163,13 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           <Button
             {...{
               key: label,
-              color: ((location.pathname === "/" && label.includes("Home")) || (((location.pathname.includes("landlord") || location.pathname.includes("reviews")) && label.includes("Reviews")))) ? 'secondary' : 'primary',
+              color:
+                (location.pathname === '/' && label.includes('Home')) ||
+                ((location.pathname.includes('landlord') ||
+                  location.pathname.includes('reviews')) &&
+                  label.includes('Reviews'))
+                  ? 'secondary'
+                  : 'primary',
               to: href,
               component: RouterLink,
               className: menuButton,
@@ -160,7 +183,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Grid container xs={7} direction='column'>
+    <Grid container xs={7} direction="column">
       <Grid item>
         <Grid container alignItems="center">
           <Grid item>
@@ -178,7 +201,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid >
+      </Grid>
       <Grid item>
         <Typography variant="h4" component="h1" className={description}>
           <Link color="textPrimary" underline="none" href="/">
@@ -186,8 +209,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           </Link>
         </Typography>
       </Grid>
-    </Grid >
-
+    </Grid>
   );
 
   const displayDesktop = (): ReactElement => {
