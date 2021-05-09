@@ -13,7 +13,7 @@ import styles from './LandlordPage.module.scss';
 import { Review, Landlord, ApartmentWithId } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
-import Spinner from '../components/utils/ProgressSpinner';
+import LinearProgress from '../components/utils/LinearProgress';
 
 export type RatingInfo = {
   feature: string;
@@ -54,19 +54,9 @@ const dummyRatingInfo: RatingInfo[] = [
   },
 ];
 
-const dummyData: Landlord = {
-  properties: [],
-  photos: [],
-  contact: '',
-  address: '',
-  name: '',
-  avgRating: 4,
-  reviews: [],
-};
-
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
-  const [landlordData, setLandlordData] = useState<Landlord>(dummyData);
+  const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -87,8 +77,12 @@ const LandlordPage = (): ReactElement => {
   }, [landlordId]);
 
   useEffect(() => {
-    const propertyIds = landlordData.properties.join();
-    get<ApartmentWithId[]>(`/apts/${propertyIds}`, setBuildings, undefined);
+    if (landlordData) {
+      const propertyIds = landlordData.properties.join();
+      if (propertyIds.length > 0) {
+        get<ApartmentWithId[]>(`/apts/${propertyIds}`, setBuildings, undefined);
+      }
+    }
   }, [landlordData]);
 
   useEffect(() => {
@@ -110,7 +104,7 @@ const LandlordPage = (): ReactElement => {
     }, toastTime);
   };
 
-  const Modals = (
+  const Modals = landlordData && (
     <>
       <ReviewModal
         open={reviewOpen}
@@ -159,23 +153,25 @@ const LandlordPage = (): ReactElement => {
     </>
   );
 
-  const InfoSection = (
+  const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
       <InfoFeatures {...landlordData} buildings={properties} />
     </Grid>
   );
 
   return !loaded ? (
-    <Spinner />
+    <LinearProgress />
   ) : (
     <>
       <Container>
         <AppBar headersData={headersData} />
-        <LandlordHeader
-          landlord={landlordData}
-          numReviews={reviewData.length}
-          handleClick={() => setCarouselOpen(true)}
-        />
+        {landlordData && (
+          <LandlordHeader
+            landlord={landlordData}
+            numReviews={reviewData.length}
+            handleClick={() => setCarouselOpen(true)}
+          />
+        )}
       </Container>
       <Container className={styles.OuterContainer}>
         <Grid container spacing={5} justify="center">

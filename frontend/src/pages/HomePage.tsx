@@ -35,7 +35,7 @@ const HomePage = (): ReactElement => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    get<any>(`/homepageData`, setHomedata, undefined);
+    get<any>(`/homepage-data`, setHomedata, undefined);
   }, []);
 
   useEffect(() => {

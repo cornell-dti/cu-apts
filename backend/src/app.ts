@@ -149,22 +149,21 @@ app.get('/reviews', async (req, res) => {
   }
 });
 
-app.get('/homepageData', async (req, res) => {
+app.get('/homepage-data', async (_, res) => {
   const buildingDocs = (await aptCollection.limit(3).get()).docs;
-  const buildings: Apartment[] = buildingDocs.map((doc) => doc.data() as Apartment);
+  const buildings: Apartment[] = buildingDocs
+    .map((doc) => doc.data() as Apartment)
+    .filter(({ landlordId }) => landlordId !== null);
+  const ids: string[] = buildings.map(({ landlordId }) => landlordId as string);
 
-  const landlords: (LandlordWithId | undefined)[] = await Promise.all(
-    // eslint-disable-next-line consistent-return
-    buildings.map(async ({ landlordId }) => {
-      if (landlordId) {
-        // eslint-disable-next-line no-return-await
-        const doc = await landlordCollection.doc(landlordId).get();
-        const data = doc.data() as Landlord;
-        return {
-          id: landlordId,
-          ...data,
-        } as LandlordWithId;
-      }
+  const landlords: LandlordWithId[] = await Promise.all(
+    ids.map(async (id) => {
+      const doc = await landlordCollection.doc(id).get();
+      const data = doc.data() as Landlord;
+      return {
+        id,
+        ...data,
+      } as LandlordWithId;
     })
   );
 
