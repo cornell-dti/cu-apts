@@ -9,10 +9,14 @@ import {
   Drawer,
   Link,
   MenuItem,
+  Icon,
+  Grid,
+  createMuiTheme,
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import { isMobile } from '../../../utils/isMobile';
+import LogoIcon from '../../../assets/navbar-logo.svg';
 
 export type NavbarButton = {
   label: string;
@@ -44,6 +48,9 @@ const useStyles = makeStyles(() => ({
     },
     boxShadow: 'none',
   },
+  icon: {
+    fontSize: 0,
+  },
   logo: {
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 500,
@@ -52,6 +59,16 @@ const useStyles = makeStyles(() => ({
     },
     color: 'black',
     textAlign: 'left',
+    paddingTop: '60px',
+  },
+  description: {
+    fontFamily: 'Work Sans, sans-serif',
+    color: 'black',
+    textAlign: 'left',
+    fontStyle: 'normal',
+    fontWeight: 'normal',
+    fontSize: '17.4658px',
+    lineHeight: '20px',
   },
   menuButton: {
     fontFamily: 'Work Sans, sans-serif',
@@ -81,8 +98,8 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerOpen: false,
   });
   const { mobileView, drawerOpen } = state;
-  const { grow, header, logo, menuButton, toolbar, drawerContainer, menuDrawer } = useStyles();
-
+  const { grow, header, logo, description, menuButton, toolbar, drawerContainer, menuDrawer, icon } = useStyles();
+  const muiTheme = createMuiTheme({ palette: { primary: { main: '#000' }, secondary: { main: '#B94630' }, }, })
   useEffect(() => {
     const setResponsiveness = () => {
       return isMobile()
@@ -130,11 +147,32 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Typography variant="h4" component="h1" className={logo}>
-      <Link color="textPrimary" underline="none" href="/">
-        CUAPTS
-      </Link>
-    </Typography>
+    <Grid container xs={7} direction='column'>
+      <Grid item>
+        <Grid container alignItems="center">
+          <Grid item>
+            <Icon className={icon}>
+              <img src={LogoIcon} alt="CU Apts Logo" height={109} width={52.68} />
+            </Icon>
+          </Grid>
+          <Grid item>
+            <Typography variant="h4" component="h1" className={logo}>
+              <Link color="textPrimary" underline="none" href="/">
+                CUAPTS
+              </Link>
+            </Typography>
+          </Grid>
+        </Grid>
+      </Grid >
+      <Grid item>
+        <Typography variant="h4" component="h1" className={description}>
+          <Link color="textPrimary" underline="none" href="/">
+            Search for off-campus housing, review apartments, and share feedback!
+          </Link>
+        </Typography>
+      </Grid>
+    </Grid >
+
   );
 
   const displayDesktop = (): ReactElement => {
