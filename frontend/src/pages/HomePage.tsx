@@ -48,7 +48,7 @@ const HomePage = (): ReactElement => {
 
   useEffect(() => {
     if (buildingData && buildingData.length > 2) {
-      get<Review[]>(
+      get<Review[][]>(
         `/reviews/landlordId/${buildingData[0].landlordId},${buildingData[1].landlordId},${buildingData[2].landlordId}`,
         setAllReviews,
         undefined

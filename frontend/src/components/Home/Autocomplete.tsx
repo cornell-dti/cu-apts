@@ -154,7 +154,11 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading && query.trim() !== '') {
-      get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<LandlordWithLabel[] | ApartmentWithLabel[]>(
+        `/reviews?q=${query}`,
+        setOptions,
+        setLoading
+      );
     }
   }, [loading, query]);
 

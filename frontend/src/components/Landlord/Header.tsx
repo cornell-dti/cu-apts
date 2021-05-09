@@ -1,8 +1,5 @@
 import React, { ReactElement, useState } from 'react';
 import HeartRating from '../utils/HeartRating';
-import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
-import ApartmentPhoto2 from '../../assets/apartment_interior.png';
-import Logo from '../../assets/company_logo.png';
 import {
   CardHeader,
   CardMedia,
@@ -15,13 +12,17 @@ import {
 import { isMobile } from '../../utils/isMobile';
 import { useEffect } from 'react';
 import styles from './Header.module.scss';
+import { Landlord } from '../../../../common/types/db-types';
+
+const defaultPhotoLink =
+  'https://apartments.naproperties.com/nap-cincinnati/wp-content/uploads/2016/06/random.jpg';
 
 type View = {
   mobileView: boolean;
 };
+
 type Props = {
-  readonly name: string;
-  readonly overallRating: number;
+  readonly landlord: Landlord;
   readonly numReviews: number;
   handleClick: () => void;
 };
@@ -44,6 +45,7 @@ const useStyles = makeStyles({
   logo: {
     height: '86px',
     width: '86px',
+    fontSize: '3rem',
   },
   photoButton: {
     marginRight: '25px',
@@ -95,7 +97,9 @@ const useStyles = makeStyles({
   },
 });
 
-const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props): ReactElement => {
+const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElement => {
+  const { name, avgRating, profilePhoto, photos } = landlord;
+  const photoLink = photos.length ? photos[0] : defaultPhotoLink;
   const [state, setState] = useState<View>({
     mobileView: false,
   });
@@ -114,50 +118,64 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
     <Grid container spacing={0}>
       <React.Fragment>
         <GlobalCss />
-        <Grid item xs={12} md={mobileView ? 12 : 6}>
-          <CardMedia className={media} image={ApartmentPhoto1}>
+        <Grid item xs={12}>
+          <CardMedia className={media} image={photoLink}>
             <Grid item xs={12}>
               <div className={styles.HeaderDiv}>
-                <Grid container direction="row" className={styles.HeaderRow} alignItems="flex-end">
-                  <Grid item xs={12} md={mobileView ? 12 : 3}>
-                    <Avatar
-                      src={Logo}
-                      alt="Landlord Logo"
-                      className={logo}
-                      style={
-                        mobileView
-                          ? { marginLeft: '5px', marginBottom: '10px' }
-                          : { marginLeft: '5%', marginBottom: '20px' }
-                      }
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    md={mobileView ? 12 : 8}
-                    style={mobileView ? { marginLeft: '10px' } : {}}
-                  >
-                    <CardHeader title={name} className={landlordName} disableTypography={true} />
-                    <Grid container style={{ paddingTop: '10px' }}>
-                      <Grid
-                        item
-                        className={landlordRating}
-                        xs={12}
-                        md={mobileView ? 12 : 3}
-                        style={{ paddingTop: '5px', marginRight: '45px' }}
-                      >
-                        <HeartRating value={overallRating} readOnly />
-                      </Grid>
-                      <Grid item xs={12} md={mobileView ? 12 : 6}>
-                        <CardHeader
-                          title={numReviews + ' Reviews'}
-                          className={landlordReviews}
-                          disableTypography={true}
-                          style={mobileView ? { marginLeft: '0px' } : {}}
-                        />
+                <Grid
+                  container
+                  className={styles.HeaderRow}
+                  justify="space-between"
+                  alignItems="flex-end"
+                >
+                  <Grid container item xs={9} justify="flex-start">
+                    <Grid item md={mobileView ? 12 : 2}>
+                      <Avatar
+                        src={profilePhoto}
+                        alt={name}
+                        className={logo}
+                        style={
+                          mobileView
+                            ? { marginLeft: '5px', marginBottom: '10px' }
+                            : { marginLeft: '5%', marginBottom: '20px' }
+                        }
+                      />
+                    </Grid>
+                    <Grid item style={mobileView ? { marginLeft: '10px' } : {}}>
+                      <CardHeader title={name} className={landlordName} disableTypography={true} />
+                      <Grid container style={{ paddingTop: '10px' }}>
+                        <Grid
+                          item
+                          className={landlordRating}
+                          xs={12}
+                          md={mobileView ? 12 : 3}
+                          style={{ paddingTop: '5px', marginRight: '45px' }}
+                        >
+                          <HeartRating value={avgRating} readOnly />
+                        </Grid>
+                        <Grid item xs={12} md={mobileView ? 12 : 6}>
+                          <CardHeader
+                            title={numReviews + ' Reviews'}
+                            className={landlordReviews}
+                            disableTypography={true}
+                            style={mobileView ? { marginLeft: '0px' } : {}}
+                          />
+                        </Grid>
                       </Grid>
                     </Grid>
                   </Grid>
+                  {!mobileView && (
+                    <Grid item>
+                      <Button
+                        disableFocusRipple
+                        variant="outlined"
+                        className={photoButton}
+                        onClick={handleClick}
+                      >
+                        Show all photos
+                      </Button>
+                    </Grid>
+                  )}
                 </Grid>
               </div>
             </Grid>
@@ -176,22 +194,6 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
             )}
           </CardMedia>
         </Grid>
-        {!mobileView && (
-          <Grid item xs={12} md={6}>
-            <CardMedia image={ApartmentPhoto2} className={media}>
-              <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
-                <Button
-                  disableFocusRipple
-                  variant="outlined"
-                  className={photoButton}
-                  onClick={handleClick}
-                >
-                  Show all photos
-                </Button>
-              </Grid>
-            </CardMedia>
-          </Grid>
-        )}
       </React.Fragment>
     </Grid>
   );

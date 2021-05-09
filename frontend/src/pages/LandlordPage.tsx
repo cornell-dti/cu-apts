@@ -55,21 +55,18 @@ const dummyRatingInfo: RatingInfo[] = [
 ];
 
 const dummyData: Landlord = {
-  properties: ['1', '2', '3'],
-  photos: [
-    'https://lifestylepropertiesithaca.com/gridmedia/img/slide1.jpg',
-    'https://images1.apartments.com/i2/F7HtEfdZCVtvQ_DcqGjQuoQ2IcmcMb2nP1PJuOwOdFw/102/carriage-house-apartments-ithaca-ny-primary-photo.jpg',
-  ],
-  contact: '555-555-5555',
-  address: '119 S Cayuga St, Ithaca, NY 14850',
-  name: 'Ithaca Live More',
+  properties: [],
+  photos: [],
+  contact: '',
+  address: '',
+  name: '',
   avgRating: 4,
   reviews: [],
 };
 
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
-  const [landlordData] = useState<Landlord>(dummyData);
+  const [landlordData, setLandlordData] = useState<Landlord>(dummyData);
   const [aveRatingInfo] = useState(dummyRatingInfo);
   const [reviewData, setReviewData] = useState<Review[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -82,14 +79,16 @@ const LandlordPage = (): ReactElement => {
 
   useTitle(`Reviews for ${landlordId}`);
   useEffect(() => {
-    get<Review>(`/reviews/landlordId/${landlordId}`, setReviewData, undefined);
+    get<Review[]>(`/reviews/landlordId/${landlordId}`, setReviewData, undefined);
   }, [landlordId, showConfirmation]);
 
   useEffect(() => {
-    if (landlordData) {
-      const propertyIds = landlordData.properties.join();
-      get<ApartmentWithId>(`/apts/${propertyIds}`, setBuildings, undefined);
-    }
+    get<Landlord>(`/landlord/${landlordId}`, setLandlordData, undefined);
+  }, [landlordId]);
+
+  useEffect(() => {
+    const propertyIds = landlordData.properties.join();
+    get<ApartmentWithId[]>(`/apts/${propertyIds}`, setBuildings, undefined);
   }, [landlordData]);
 
   useEffect(() => {
@@ -173,8 +172,7 @@ const LandlordPage = (): ReactElement => {
       <Container>
         <AppBar headersData={headersData} />
         <LandlordHeader
-          name={landlordData.name}
-          overallRating={landlordData.avgRating}
+          landlord={landlordData}
           numReviews={reviewData.length}
           handleClick={() => setCarouselOpen(true)}
         />

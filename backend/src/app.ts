@@ -90,6 +90,21 @@ app.get('/apts/:ids', async (req, res) => {
   }
 });
 
+app.get('/landlord/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ref = landlordCollection.doc(id);
+    const doc = await ref.get();
+    if (!doc.exists) {
+      throw new Error('Invalid id');
+    }
+    const data = doc.data() as Landlord;
+    res.status(201).send(data);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
 app.post('/landlords', async (req, res) => {
   try {
     const doc = landlordCollection.doc();

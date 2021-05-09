@@ -1,5 +1,5 @@
 export function isMobile() {
-  return window.innerWidth < 992;
+  return window.innerWidth < 960;
 }
 
 export function getWidth() {
