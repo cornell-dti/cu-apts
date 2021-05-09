@@ -24,7 +24,7 @@ const Footer = (): ReactElement => {
       <Grid container alignItems="center" justify="center" className={footer}>
         <Typography>
           Got a question that isn’t answered?{' '}
-          <Link className={link} underline="none" href="/">
+          <Link className={link} underline="none" href="mailto:hello@cornelldti.org">
             Contact us!
           </Link>
         </Typography>
