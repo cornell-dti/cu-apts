@@ -14,6 +14,8 @@ import {
 } from '@material-ui/core';
 import { isMobile } from '../../utils/isMobile';
 import { useEffect } from 'react';
+import styles from './Header.module.scss';
+
 type View = {
   mobileView: boolean;
 };
@@ -115,15 +117,8 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
         <Grid item xs={12} md={mobileView ? 12 : 6}>
           <CardMedia className={media} image={ApartmentPhoto1}>
             <Grid item xs={12}>
-              <div
-                style={{
-                  width: '100%',
-                  position: 'absolute',
-                  left: '10px',
-                  bottom: '20px',
-                }}
-              >
-                <Grid container direction="row" alignItems="flex-end">
+              <div className={styles.HeaderDiv}>
+                <Grid container direction="row" className={styles.HeaderRow} alignItems="flex-end">
                   <Grid item xs={12} md={mobileView ? 12 : 3}>
                     <Avatar
                       src={Logo}

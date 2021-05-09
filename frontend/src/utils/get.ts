@@ -1,17 +1,19 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
-export default function get<T>(
-  route: string,
-  setState: (data: T) => void,
-  setLoading: ((loading: boolean) => void) | undefined = undefined
-) {
+export type GetOptions<T> = {
+  callback?: (data: T) => void;
+  body?: any;
+};
+
+export default function get<T>(route: string, options: GetOptions<T> = {}) {
+  const { callback, body } = options;
+  const config: AxiosRequestConfig = body && {
+    params: body,
+  };
   axios
-    .get<T>(`${route}`)
+    .get<T>(`${route}`, config)
     .then((response) => {
-      setState(response.data);
-      if (setLoading !== undefined) {
-        setLoading(false);
-      }
+      callback && callback(response.data);
     })
     .catch((error) => {
       console.log('error', error);

@@ -9,6 +9,7 @@ import {
   Landlord,
   ReviewWithId,
   ReviewInternal,
+  Apartment,
   LandlordWithId,
   LandlordWithLabel,
   ApartmentWithLabel,
@@ -59,7 +60,7 @@ app.post('/new-review', authenticate, async (req, res) => {
   }
 });
 
-app.get('/reviews/:idType/:id', async (req, res) => {
+app.get('/review/:idType/:id', async (req, res) => {
   const { idType, id } = req.params;
   const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
@@ -68,6 +69,25 @@ app.get('/reviews/:idType/:id', async (req, res) => {
     return { ...review, id: doc.id } as ReviewWithId;
   });
   res.status(200).send(JSON.stringify(reviews));
+});
+
+app.get('/reviews/', async (req, res) => {
+  type ReqBody = { idType: string; ids: string[] };
+  const { idType, ids } = req.body as ReqBody;
+  const reviewsArr = await Promise.all(
+    ids.map(async (id) => {
+      const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+      const reviews: Review[] = reviewDocs.map((doc) => {
+        const { date, ...data } = doc.data();
+        return { date: date.toDate(), ...data } as Review;
+      });
+      return reviews;
+    })
+  );
+
+  const allReviews = reviewsArr.length > 1 ? reviewsArr : reviewsArr[0];
+
+  res.status(200).send(JSON.stringify(allReviews));
 });
 
 app.get('/apts/:id', async (req, res) => {
@@ -81,7 +101,7 @@ app.get('/apts/:id', async (req, res) => {
   }
 });
 
-app.post('/landlords', async (req, res) => {
+app.post('/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
     const landlord: Landlord = req.body as Landlord;
@@ -95,7 +115,7 @@ app.post('/landlords', async (req, res) => {
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
 
-app.get('/reviews', async (req, res) => {
+app.get('/search', async (req, res) => {
   try {
     const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
@@ -155,5 +175,28 @@ const likeHandler = (dislike = false): RequestHandler => async (req, res) => {
 app.post('/add-like', authenticate, likeHandler(false));
 
 app.post('/remove-like', authenticate, likeHandler(true));
+
+app.get('/homepageData', async (req, res) => {
+  const buildingDocs = (await aptCollection.limit(3).get()).docs;
+  const buildings: Apartment[] = buildingDocs.map((doc) => doc.data() as Apartment);
+
+  const landlords: (LandlordWithId | undefined)[] = await Promise.all(
+    // eslint-disable-next-line consistent-return
+    buildings.map(async ({ landlordId }) => {
+      if (landlordId) {
+        // eslint-disable-next-line no-return-await
+        const doc = await landlordCollection.doc(landlordId).get();
+        const data = doc.data() as Landlord;
+        return {
+          id: landlordId,
+          ...data,
+        } as LandlordWithId;
+      }
+    })
+  );
+
+  const data = { buildings, landlords };
+  res.status(200).send(JSON.stringify(data));
+});
 
 export default app;

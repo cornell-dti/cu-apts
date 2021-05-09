@@ -64,7 +64,7 @@ const ReviewComponent = ({ review, liked, addLike, removeLike }: Props): ReactEl
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justify="space-between">
-              <Grid container xs={10} spacing={2}>
+              <Grid container spacing={2}>
                 <Grid item>
                   <HeartRating value={overallRating} readOnly />
                 </Grid>

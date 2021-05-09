@@ -15,6 +15,7 @@ import get from '../../utils/get';
 import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
+import { isMobile } from '../../utils/isMobile';
 
 const useStyles = makeStyles({
   menuList: {
@@ -23,11 +24,12 @@ const useStyles = makeStyles({
     maxHeight: 200,
     overflow: 'auto',
   },
-  text: { backgroundColor: 'white' },
+  text: { backgroundColor: 'white', borderRadius: '10px' },
+  desktop: { width: '70%' },
 });
 
 export default function Autocomplete() {
-  const { menuList, text } = useStyles();
+  const { menuList, text, desktop } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -39,16 +41,20 @@ export default function Autocomplete() {
   const [selectedId, setSelectedId] = useState<string | null>('');
 
   function handleListKeyDown(event: React.KeyboardEvent) {
+    event.preventDefault();
     if (event.key === 'Tab') {
-      event.preventDefault();
       setOpen(false);
     }
   }
 
   const handleOnChange = (query: string) => {
-    setLoading(true);
     setQuery(query);
     setSelected(null);
+    if (query !== '') {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -92,7 +98,7 @@ export default function Autocomplete() {
                 onKeyDown={handleListKeyDown}
               >
                 {options.length === 0 ? (
-                  <MenuItem disabled>No landlords or apartments match this search</MenuItem>
+                  <MenuItem disabled>No search results.</MenuItem>
                 ) : (
                   options.map((option, index) => {
                     return (
@@ -147,8 +153,13 @@ export default function Autocomplete() {
   }, [inputRef, width]);
 
   useEffect(() => {
-    if (loading) {
-      get<LandlordOrApartmentWithLabel[]>(`/reviews?q=${query}`, setOptions, setLoading);
+    if (loading && query.trim() !== '') {
+      get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
+        callback: (data) => {
+          setOptions(data);
+          setLoading(false);
+        },
+      });
     }
   }, [loading, query]);
 
@@ -160,8 +171,8 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        label="Search by renting company or building address"
-        className={text}
+        placeholder="Search by landlord or building address"
+        className={isMobile() ? text : `${text} ${desktop}`}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
         onChange={(event) => {

@@ -92,7 +92,9 @@ const LandlordPage = (): ReactElement => {
   useTitle(`Reviews for ${landlordId}`);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/reviews/landlordId/${landlordId}`, setReviewData);
+    get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
+      callback: setReviewData,
+    });
   }, [landlordId, showConfirmation]);
 
   const showConfirmationToast = () => {
