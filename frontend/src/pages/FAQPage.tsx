@@ -22,7 +22,9 @@ const FAQPage = (): ReactElement => {
   useTitle('FAQ');
 
   useEffect(() => {
-    get<FAQData>('/', setData, undefined);
+    get<FAQData[]>('/', {
+      callback: setData,
+    });
   }, []);
   return (
     <div className={styles.faqPage}>

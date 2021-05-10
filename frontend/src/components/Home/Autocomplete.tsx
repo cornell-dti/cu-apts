@@ -11,9 +11,10 @@ import {
   Typography,
 } from '@material-ui/core';
 import get from '../../utils/get';
-import { ApartmentWithLabel, LandlordWithLabel } from '../../../../common/types/db-types';
+import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
+import { isMobile } from '../../utils/isMobile';
 
 const useStyles = makeStyles({
   menuList: {
@@ -23,18 +24,19 @@ const useStyles = makeStyles({
     overflow: 'auto',
   },
   text: { backgroundColor: 'white' },
+  desktop: { width: '70%' },
   searchIcon: { paddingRight: '10px' },
 });
 
 export default function Autocomplete() {
-  const { menuList, text, searchIcon } = useStyles();
+  const { menuList, text, desktop, searchIcon } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(LandlordWithLabel | ApartmentWithLabel)[]>([]);
+  const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<LandlordWithLabel | ApartmentWithLabel | null>(null);
+  const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
   const [selectedId, setSelectedId] = useState<string | null>('');
 
@@ -46,12 +48,16 @@ export default function Autocomplete() {
   }
 
   const handleOnChange = (query: string) => {
-    setLoading(true);
     setQuery(query);
     setSelected(null);
+    if (query !== '') {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
   };
 
-  const getLandlordId = (option: LandlordWithLabel | ApartmentWithLabel) => {
+  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
     switch (option.label) {
       case 'LANDLORD':
         return option.id;
@@ -64,7 +70,7 @@ export default function Autocomplete() {
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
-    option: LandlordWithLabel | ApartmentWithLabel
+    option: LandlordOrApartmentWithLabel
   ) => {
     setSelectedId(getLandlordId(option));
   };
@@ -86,7 +92,7 @@ export default function Autocomplete() {
                 onKeyDown={handleListKeyDown}
               >
                 {options.length === 0 ? (
-                  <MenuItem disabled>No landlords or apartments match this search</MenuItem>
+                  <MenuItem disabled>No search results.</MenuItem>
                 ) : (
                   options.map((option, index) => {
                     return (
@@ -142,7 +148,12 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading && query.trim() !== '') {
-      get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
+      get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
+        callback: (data) => {
+          setOptions(data);
+          setLoading(false);
+        },
+      });
     }
   }, [loading, query]);
 
@@ -154,8 +165,8 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        placeholder="Search by renting company or building address"
-        className={text}
+        placeholder="Search by landlord or building address"
+        className={isMobile() ? text : `${text} ${desktop}`}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
         onChange={(event) => {
