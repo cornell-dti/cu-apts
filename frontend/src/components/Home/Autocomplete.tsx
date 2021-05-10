@@ -23,10 +23,11 @@ const useStyles = makeStyles({
     overflow: 'auto',
   },
   text: { backgroundColor: 'white' },
+  searchIcon: { paddingRight: '10px' },
 });
 
 export default function Autocomplete() {
-  const { menuList, text } = useStyles();
+  const { menuList, text, searchIcon } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -165,7 +166,7 @@ export default function Autocomplete() {
         }}
         InputProps={{
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
-          startAdornment: <SearchIcon />,
+          startAdornment: <SearchIcon className={searchIcon} />,
         }}
       />
       <Menu />
