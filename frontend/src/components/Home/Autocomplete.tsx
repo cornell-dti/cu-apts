@@ -5,7 +5,6 @@ import {
   CircularProgress,
   ClickAwayListener,
   Grid,
-  IconButton,
   MenuItem,
   MenuList,
   TextField,
@@ -24,12 +23,13 @@ const useStyles = makeStyles({
     maxHeight: 200,
     overflow: 'auto',
   },
-  text: { backgroundColor: 'white', borderRadius: '10px' },
+  text: { backgroundColor: 'white' },
   desktop: { width: '70%' },
+  searchIcon: { paddingRight: '10px' },
 });
 
 export default function Autocomplete() {
-  const { menuList, text, desktop } = useStyles();
+  const { menuList, text, desktop, searchIcon } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -55,12 +55,6 @@ export default function Autocomplete() {
     } else {
       setLoading(false);
     }
-  };
-
-  const handleSubmit = () => {
-    // TODO: get id of item selected selected.id, if its a landlord redirect to landlords/id,
-    // else get the landlordId of the apartment and redirect to that
-    console.log('clicked');
   };
 
   const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
@@ -182,14 +176,8 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          endAdornment: (
-            <>
-              {loading ? <CircularProgress color="inherit" size={20} /> : null}
-              <IconButton disabled={options.length === 0} onClick={handleSubmit}>
-                <SearchIcon />
-              </IconButton>
-            </>
-          ),
+          endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
+          startAdornment: <SearchIcon className={searchIcon} />,
         }}
       />
       <Menu />
