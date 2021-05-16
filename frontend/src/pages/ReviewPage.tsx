@@ -28,7 +28,7 @@ const ReviewPage = (): ReactElement => {
     <Container maxWidth="lg">
       <Box pb={3} textAlign="left" className={classes.rentingBox}>
         <Typography variant="h4" className={classes.rentingText}>
-          Browse Renting Companies
+          Reviews By Renting Company
         </Typography>
       </Box>
       <ApartmentCards data={buildingData} />
