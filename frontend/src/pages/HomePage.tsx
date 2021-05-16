@@ -28,14 +28,16 @@ const useStyles = makeStyles({
 
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomedata] = useState<any>([]);
+  const [homeData, setHomeData] = useState<any>([]);
   const [buildingData, setBuildingData] = useState<Apartment[]>([]);
   const [landlordData, setLandlordData] = useState<LandlordWithId[]>([]);
   const [allReviews, setAllReviews] = useState<Review[][]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    get<any>(`/homepage-data`, setHomedata, undefined);
+    get<any>(`/homepageData`, {
+      callback: setHomeData,
+    });
   }, []);
 
   useEffect(() => {
@@ -48,11 +50,14 @@ const HomePage = (): ReactElement => {
 
   useEffect(() => {
     if (buildingData && buildingData.length > 2) {
-      get<Review[][]>(
-        `/reviews/landlordId/${buildingData[0].landlordId},${buildingData[1].landlordId},${buildingData[2].landlordId}`,
-        setAllReviews,
-        undefined
-      );
+      const body = {
+        idType: 'landlordId',
+        ids: buildingData.splice(0, 3).map((data) => data.landlordId),
+      };
+      get<Review[][]>(`/reviews`, {
+        body: body,
+        callback: setAllReviews,
+      });
     }
   }, [buildingData]);
 

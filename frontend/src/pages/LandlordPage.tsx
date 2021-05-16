@@ -14,6 +14,9 @@ import { Review, Landlord, ApartmentWithId } from '../../../common/types/db-type
 import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import LinearProgress from '../components/utils/LinearProgress';
+import { Likes, ReviewWithId } from '../../../common/types/db-types';
+import axios from 'axios';
+import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 
 export type RatingInfo = {
   feature: string;
@@ -58,7 +61,8 @@ const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo] = useState(dummyRatingInfo);
-  const [reviewData, setReviewData] = useState<Review[]>([]);
+  const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
+  const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -68,25 +72,32 @@ const LandlordPage = (): ReactElement => {
   const toastTime = 3500;
 
   useTitle(`Reviews for ${landlordId}`);
+
   useEffect(() => {
-    get<Review[]>(`/reviews/landlordId/${landlordId}`, setReviewData, undefined);
+    get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
+      callback: setReviewData,
+    });
   }, [landlordId, showConfirmation]);
 
   useEffect(() => {
-    get<Landlord>(`/landlord/${landlordId}`, setLandlordData, undefined);
+    get<Landlord>(`/landlord/${landlordId}`, {
+      callback: setLandlordData,
+    });
   }, [landlordId]);
 
   useEffect(() => {
     if (landlordData) {
       const propertyIds = landlordData.properties.join();
-      if (propertyIds.length > 0) {
-        get<ApartmentWithId[]>(`/apts/${propertyIds}`, setBuildings, undefined);
+      if (propertyIds.length) {
+        get<ApartmentWithId[]>(`/apts/${propertyIds}`, {
+          callback: setBuildings,
+        });
       }
     }
   }, [landlordData]);
 
   useEffect(() => {
-    if (buildings && buildings.length > 0) {
+    if (buildings?.length) {
       setProperties(buildings.map((building) => building.name));
     }
   }, [buildings]);
@@ -97,11 +108,53 @@ const LandlordPage = (): ReactElement => {
     }
   }, [landlordData, properties, reviewData]);
 
+  useEffect(() => {
+    return subscribeLikes(setLikedReviews);
+  }, []);
+
   const showConfirmationToast = () => {
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
     }, toastTime);
+  };
+
+  const addLike = async (reviewId: string) => {
+    try {
+      const user = await getUser(true);
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      setReviewData((reviews) =>
+        reviews.map((review) =>
+          review.id === reviewId ? { ...review, likes: (review.likes || 0) + 1 } : review
+        )
+      );
+      const token = await user.getIdToken(true);
+      setLikedReviews((reviews) => ({ ...reviews, [reviewId]: true }));
+      axios.post('/add-like', { reviewId }, createAuthHeaders(token));
+    } catch (err) {
+      console.log('error with liking review');
+    }
+  };
+
+  const removeLike = async (reviewId: string) => {
+    try {
+      const user = await getUser();
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      setReviewData((reviews) =>
+        reviews.map((review) =>
+          review.id === reviewId ? { ...review, likes: (review.likes || 1) - 1 } : review
+        )
+      );
+      const token = await user.getIdToken(true);
+      setLikedReviews((reviews) => ({ ...reviews, [reviewId]: false }));
+      axios.post('/remove-like', { reviewId }, createAuthHeaders(token));
+    } catch (err) {
+      console.log('error with liking review');
+    }
   };
 
   const Modals = landlordData && (
@@ -189,7 +242,12 @@ const LandlordPage = (): ReactElement => {
             <Grid container item spacing={3}>
               {reviewData.map((review, index) => (
                 <Grid item xs={12} key={index}>
-                  <ReviewComponent review={review} />
+                  <ReviewComponent
+                    review={review}
+                    liked={likedReviews[review.id]}
+                    addLike={addLike}
+                    removeLike={removeLike}
+                  />
                 </Grid>
               ))}
             </Grid>

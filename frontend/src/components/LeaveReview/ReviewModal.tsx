@@ -144,7 +144,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   const onSubmit = async () => {
     try {
       setSending(true);
-      const user = await getUser();
+      const user = await getUser(true);
       if (!user) {
         throw new Error('Failed to login');
       }
