@@ -11,7 +11,6 @@ import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
 import Toast from '../components/LeaveReview/Toast';
-import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
@@ -30,17 +29,6 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
-
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
-};
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/landlord/1',
-};
-
-const headersData = [faq, review];
 
 const dummyData: LandlordData = {
   properties: ['111 Dryden Rd', '151 Dryden Rd', '418 Eddy St'],
@@ -204,7 +192,6 @@ const LandlordPage = (): ReactElement => {
   return (
     <>
       <Container>
-        <AppBar headersData={headersData} />
         <LandlordHeader
           name={landlordData.name}
           overallRating={landlordData.overallRating}
