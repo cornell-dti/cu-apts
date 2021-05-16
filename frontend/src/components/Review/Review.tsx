@@ -22,6 +22,7 @@ import { ReviewWithId } from '../../../../common/types/db-types';
 type Props = {
   readonly review: ReviewWithId;
   readonly liked: boolean;
+  readonly likeLoading: boolean;
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
 };
@@ -44,12 +45,18 @@ const useStyles = makeStyles(() => ({
   button: {
     textTransform: 'none',
     '&.Mui-disabled': {
-      color: '#EB5757',
+      color: 'inherit',
     },
   },
 }));
 
-const ReviewComponent = ({ review, liked, addLike, removeLike }: Props): ReactElement => {
+const ReviewComponent = ({
+  review,
+  liked,
+  likeLoading,
+  addLike,
+  removeLike,
+}: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
@@ -138,6 +145,7 @@ const ReviewComponent = ({ review, liked, addLike, removeLike }: Props): ReactEl
                 onClick={() => (liked ? removeLike : addLike)(id)}
                 className={button}
                 size="small"
+                disabled={likeLoading}
               >
                 Helpful {`(${likes || 0})`}
               </Button>
