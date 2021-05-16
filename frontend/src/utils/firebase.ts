@@ -41,13 +41,14 @@ const createAuthHeaders = (token: string): AxiosRequestConfig => {
   };
 };
 
-const subscribeLikes = (setState: (data: Likes) => void) => {
+const subscribeLikes = (callback: (data: Likes) => void) => {
   return auth.onAuthStateChanged(async (user) => {
     if (!user) return;
     const doc = await firestore.collection('likes').doc(user.uid).get();
     const data = doc.data();
+    console.log(data);
     if (!data) return;
-    setState(data);
+    callback(data);
   });
 };
 
