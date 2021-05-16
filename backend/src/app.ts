@@ -52,6 +52,9 @@ app.post('/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
     const review = req.body as Review;
+    if (review.overallRating === 0 || review.reviewText === '') {
+      res.status(401).send('Error: missing fields');
+    }
     doc.set({ ...review, date: new Date(review.date), likes: 0 });
     res.status(201).send(doc.id);
   } catch (err) {
