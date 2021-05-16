@@ -29,7 +29,7 @@ const faq: NavbarButton = {
 };
 const review: NavbarButton = {
   label: 'Reviews',
-  href: '/landlord/1',
+  href: '/reviews',
 };
 
 const headersData = [faq, review];
