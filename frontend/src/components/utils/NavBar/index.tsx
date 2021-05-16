@@ -252,7 +252,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   return (
     <header>
-      <AppBar position="fixed" className={header}>
+      <AppBar position="static" className={header}>
         <Container maxWidth="lg">{mobileView ? displayMobile() : displayDesktop()}</Container>
       </AppBar>
     </header>
