@@ -57,8 +57,6 @@ const makeLandlord = async (landlordWithId: LandlordWithId) => {
   try {
     const doc = landlordCollection.doc(landlordWithId.id);
     const landlord = landlordWithId as Landlord;
-
-    console.log(`landlord = ${JSON.stringify({ ...landlord })}`);
     doc.set({ ...landlord });
   } catch (err) {
     // eslint-disable-next-line no-console
