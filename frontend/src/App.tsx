@@ -6,6 +6,7 @@ import FAQPage from './pages/FAQPage';
 import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
+import Footer from './components/utils/Footer';
 
 const theme = createMuiTheme({
   palette: {
@@ -31,9 +32,9 @@ const theme = createMuiTheme({
   },
 });
 
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
+const home: NavbarButton = {
+  label: 'Home',
+  href: '/',
 };
 
 const review: NavbarButton = {
@@ -41,7 +42,7 @@ const review: NavbarButton = {
   href: '/landlord/1',
 };
 
-const headersData = [faq, review];
+const headersData = [home, review];
 
 const App = (): ReactElement => {
   return (
@@ -53,6 +54,7 @@ const App = (): ReactElement => {
           <Route exact path="/faq" component={FAQPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
         </Switch>
+        <Footer />
       </Router>
     </ThemeProvider>
   );
