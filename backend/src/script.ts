@@ -55,8 +55,9 @@ any): LandlordWithId => ({
 
 const makeLandlord = async (landlordWithId: LandlordWithId) => {
   try {
-    const doc = landlordCollection.doc(landlordWithId.id);
-    const landlord = landlordWithId as Landlord;
+    const { id, ...rest } = landlordWithId;
+    const doc = landlordCollection.doc(id);
+    const landlord = rest as Landlord;
     doc.set({ ...landlord });
   } catch (err) {
     // eslint-disable-next-line no-console
