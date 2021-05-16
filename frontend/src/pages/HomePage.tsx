@@ -2,7 +2,7 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import ApartmentCard from '../components/Home/ApartmentCard';
 import { Box, Container, Grid, Typography, Link, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { Apartment, LandlordWithId, Review } from '../../../common/types/db-types';
+import { Apartment } from '../../../common/types/db-types';
 import { Link as RouterLink } from 'react-router-dom';
 import get from '../utils/get';
 import styles from './HomePage.module.scss';
@@ -26,56 +26,21 @@ const useStyles = makeStyles({
   },
 });
 
+type HomeCardData = {
+  buildingData: Apartment;
+  numReviews: number;
+  company?: string;
+};
+
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomeData] = useState<any>([]);
-  const [buildingData, setBuildingData] = useState<Apartment[]>([]);
-  const [landlordData, setLandlordData] = useState<LandlordWithId[]>([]);
-  const [allReviews, setAllReviews] = useState<Review[][]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [homeData, setHomeData] = useState<HomeCardData[]>([]);
 
   useEffect(() => {
     get<any>(`/homepageData`, {
       callback: setHomeData,
     });
   }, []);
-
-  useEffect(() => {
-    setBuildingData(homeData.buildings);
-  }, [homeData]);
-
-  useEffect(() => {
-    setLandlordData(homeData.landlords);
-  }, [homeData]);
-
-  useEffect(() => {
-    if (buildingData && buildingData.length > 2) {
-      const body = {
-        idType: 'landlordId',
-        ids: buildingData.splice(0, 3).map((data) => data.landlordId),
-      };
-      get<Review[][]>(`/reviews`, {
-        body: body,
-        callback: setAllReviews,
-      });
-    }
-  }, [buildingData]);
-
-  useEffect(() => {
-    if (buildingData && buildingData.length > 0 && allReviews && allReviews.length > 2) {
-      setLoaded(true);
-    }
-  }, [buildingData, allReviews]);
-
-  let idToLandlord: { [id: string]: { company: string; reviews: readonly string[] } } = {};
-
-  landlordData &&
-    landlordData.reduce((acc, { id, name, reviews }) => {
-      if (!(id in acc)) {
-        acc[id] = { company: name, reviews };
-      }
-      return acc;
-    }, idToLandlord);
 
   return (
     <>
@@ -103,10 +68,9 @@ const HomePage = (): ReactElement => {
           </Box>
 
           <Grid container spacing={8}>
-            {loaded &&
-              buildingData.map(({ name, landlordId, photos }, index) => {
-                const company = landlordId ? idToLandlord[landlordId].company : '';
-                const numReviews = landlordId ? allReviews[index].length : 0;
+            {homeData &&
+              homeData.map(({ buildingData, numReviews, company }, index) => {
+                const { landlordId } = buildingData;
                 return (
                   <Grid item xs={12} md={4}>
                     <Link
@@ -118,10 +82,9 @@ const HomePage = (): ReactElement => {
                     >
                       <ApartmentCard
                         key={index}
-                        name={name}
-                        company={company}
                         numReviews={numReviews}
-                        photos={photos}
+                        buildingData={buildingData}
+                        company={company}
                       />
                     </Link>
                   </Grid>

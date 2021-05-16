@@ -10,7 +10,7 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
-import { Review, Landlord, ApartmentWithId } from '../../../common/types/db-types';
+import { Landlord, ApartmentWithId } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import LinearProgress from '../components/utils/LinearProgress';

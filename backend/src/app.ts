@@ -71,25 +71,6 @@ app.get('/review/:idType/:id', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
-app.get('/reviews/', async (req, res) => {
-  type ReqBody = { idType: string; ids: string[] };
-  const { idType, ids } = req.body as ReqBody;
-  const reviewsArr = await Promise.all(
-    ids.map(async (id) => {
-      const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
-      const reviews: Review[] = reviewDocs.map((doc) => {
-        const { date, ...data } = doc.data();
-        return { date: date.toDate(), ...data } as Review;
-      });
-      return reviews;
-    })
-  );
-
-  const allReviews = reviewsArr.length > 1 ? reviewsArr : reviewsArr[0];
-
-  res.status(200).send(JSON.stringify(allReviews));
-});
-
 app.get('/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
@@ -172,21 +153,27 @@ app.get('/homepageData', async (req, res) => {
   const buildings: Apartment[] = buildingDocs
     .map((doc) => doc.data() as Apartment)
     .filter(({ landlordId }) => landlordId !== null);
-  const ids: string[] = buildings.map(({ landlordId }) => landlordId as string);
 
-  const landlords: LandlordWithId[] = await Promise.all(
-    ids.map(async (id) => {
-      const doc = await landlordCollection.doc(id).get();
-      const data = doc.data() as Landlord;
+  const homeData = await Promise.all(
+    buildings.map(async (buildingData) => {
+      const { landlordId } = buildingData;
+      if (landlordId === null) {
+        throw new Error('Invalid landlordId');
+      }
+
+      const reviewList = await reviewCollection.where(`landlordId`, '==', landlordId).get();
+      const landlordDoc = await landlordCollection.doc(landlordId).get();
+
+      const numReviews = reviewList.docs.length;
+      const company = landlordDoc.data()?.name;
       return {
-        id,
-        ...data,
-      } as LandlordWithId;
+        buildingData,
+        numReviews,
+        company,
+      };
     })
   );
-
-  const data = { buildings, landlords };
-  res.status(200).send(JSON.stringify(data));
+  res.status(200).send(JSON.stringify(homeData));
 });
 
 const likeHandler = (dislike = false): RequestHandler => async (req, res) => {

@@ -1,12 +1,12 @@
 import React, { ReactElement } from 'react';
 import ApartmentImg from '../../assets/apartment-sample.png';
 import { Card, CardContent, CardMedia, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Apartment } from '../../../../common/types/db-types';
 
 type Props = {
-  name: string;
-  company: string;
+  buildingData: Apartment;
   numReviews: number;
-  photos: readonly string[];
+  company?: string;
 };
 
 const useStyles = makeStyles({
@@ -22,7 +22,8 @@ const useStyles = makeStyles({
   },
 });
 
-const ApartmentCard = ({ name, company, numReviews, photos }: Props): ReactElement => {
+const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
+  const { name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
 
   const classes = useStyles();
@@ -41,11 +42,13 @@ const ApartmentCard = ({ name, company, numReviews, photos }: Props): ReactEleme
               </Grid>
             </Grid>
           </Grid>
-          <Grid container item justify="space-between">
-            <Grid>
-              <Typography variant="subtitle1">{company}</Typography>
+          {company && (
+            <Grid container item justify="space-between">
+              <Grid>
+                <Typography variant="subtitle1">{company}</Typography>
+              </Grid>
             </Grid>
-          </Grid>
+          )}
           <Grid container item justify="space-between">
             <Grid item>
               <Typography variant="body2">{`${numReviews} Reviews`}</Typography>

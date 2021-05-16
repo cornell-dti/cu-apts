@@ -8,7 +8,7 @@ export type GetOptions<T> = {
 export default function get<T>(route: string, options: GetOptions<T> = {}) {
   const { callback, body } = options;
   const config: AxiosRequestConfig = body && {
-    params: body,
+    data: body,
   };
   axios
     .get<T>(`${route}`, config)
