@@ -30,7 +30,7 @@ const HomePage = (): ReactElement => {
   const [homeData, setHomeData] = useState<CardData[]>([]);
 
   useEffect(() => {
-    get<any>(`/pageData/home`, {
+    get<any>(`/page-data/home`, {
       callback: setHomeData,
     });
   }, []);

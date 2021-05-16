@@ -19,7 +19,7 @@ const ReviewPage = (): ReactElement => {
   const [buildingData, setBuildingData] = useState<CardData[]>([]);
 
   useEffect(() => {
-    get<any>(`/pageData/reviews`, {
+    get<any>(`/page-data/reviews`, {
       callback: setBuildingData,
     });
   }, []);

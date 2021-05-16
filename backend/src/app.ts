@@ -114,16 +114,6 @@ app.get('/buildings/:landlordId', async (req, res) => {
   }
 });
 
-app.get('/buildings', async (req, res) => {
-  try {
-    const buildingRefs = await buildingsCollection.get();
-    const buildings = buildingRefs.docs.map((doc) => doc.data() as Apartment);
-    res.status(201).send(buildings);
-  } catch (err) {
-    res.status(400).send(err);
-  }
-});
-
 app.post('/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
@@ -170,7 +160,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-app.get('/pageData/:page', async (req, res) => {
+app.get('/page-data/:page', async (req, res) => {
   const { page } = req.params;
   const buildingDocs =
     page === 'home'
