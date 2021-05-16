@@ -3,9 +3,11 @@ import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
+import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
+import { Apartment } from '../../common/types/db-types';
 
 const theme = createMuiTheme({
   palette: {
@@ -38,7 +40,13 @@ const faq: NavbarButton = {
 
 const review: NavbarButton = {
   label: 'Reviews',
-  href: '/landlord/1',
+  href: '/reviews',
+};
+
+export type CardData = {
+  buildingData: Apartment;
+  numReviews: number;
+  company?: string;
 };
 
 const headersData = [faq, review];
@@ -51,6 +59,7 @@ const App = (): ReactElement => {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route exact path="/faq" component={FAQPage} />
+          <Route exact path="/reviews" component={ReviewPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
         </Switch>
       </Router>
