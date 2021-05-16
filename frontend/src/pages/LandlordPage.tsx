@@ -10,7 +10,7 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import get from '../utils/get';
 import styles from './LandlordPage.module.scss';
-import { Landlord, ApartmentWithId } from '../../../common/types/db-types';
+import { Landlord, Apartment } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import LinearProgress from '../components/utils/LinearProgress';
@@ -34,40 +34,16 @@ const review: NavbarButton = {
 
 const headersData = [faq, review];
 
-const dummyRatingInfo: RatingInfo[] = [
-  {
-    feature: 'Parking',
-    rating: 4.9,
-  },
-  {
-    feature: 'Heating',
-    rating: 4.0,
-  },
-  {
-    feature: 'Trash Removal',
-    rating: 4.4,
-  },
-  {
-    feature: 'Snow Plowing',
-    rating: 3.2,
-  },
-  {
-    feature: 'Maintenance',
-    rating: 2.7,
-  },
-];
-
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
-  const [aveRatingInfo] = useState(dummyRatingInfo);
+  const [aveRatingInfo] = useState<RatingInfo[]>([]);
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [buildings, setBuildings] = useState<ApartmentWithId[]>([]);
-  const [properties, setProperties] = useState<string[]>([]);
+  const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const toastTime = 3500;
 
@@ -86,27 +62,16 @@ const LandlordPage = (): ReactElement => {
   }, [landlordId]);
 
   useEffect(() => {
-    if (landlordData) {
-      const propertyIds = landlordData.properties.join();
-      if (propertyIds.length) {
-        get<ApartmentWithId[]>(`/apts/${propertyIds}`, {
-          callback: setBuildings,
-        });
-      }
-    }
-  }, [landlordData]);
+    get<Apartment[]>(`/buildings/${landlordId}`, {
+      callback: setBuildings,
+    });
+  }, [landlordId]);
 
   useEffect(() => {
-    if (buildings?.length) {
-      setProperties(buildings.map((building) => building.name));
-    }
-  }, [buildings]);
-
-  useEffect(() => {
-    if (landlordData && properties && reviewData) {
+    if (landlordData && buildings && reviewData) {
       setLoaded(true);
     }
-  }, [landlordData, properties, reviewData]);
+  }, [landlordData, buildings, reviewData]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
@@ -208,7 +173,7 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={properties} />
+      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
     </Grid>
   );
 

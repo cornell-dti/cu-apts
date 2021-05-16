@@ -148,7 +148,7 @@ const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElem
                           item
                           className={landlordRating}
                           xs={12}
-                          md={mobileView ? 12 : 3}
+                          md={mobileView ? 12 : 4}
                           style={{ paddingTop: '5px', marginRight: '45px' }}
                         >
                           <HeartRating value={avgRating} readOnly />

@@ -19,7 +19,7 @@ import authenticate from './auth';
 
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
-const aptCollection = db.collection('buildings');
+const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 
 const app: Express = express();
@@ -77,10 +77,11 @@ app.get('/apts/:ids', async (req, res) => {
     const idsList = ids.split(',');
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
-        const snapshot = await aptCollection.doc(id).get();
+        const snapshot = await buildingsCollection.doc(id).get();
         return { id, ...snapshot.data() } as ApartmentWithId;
       })
     );
+    console.log(aptsArr);
     res.status(200).send(JSON.stringify(aptsArr));
   } catch (err) {
     res.status(400).send(err);
@@ -97,6 +98,17 @@ app.get('/landlord/:id', async (req, res) => {
     }
     const data = doc.data() as Landlord;
     res.status(201).send(data);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+app.get('/buildings/:landlordId', async (req, res) => {
+  try {
+    const { landlordId } = req.params;
+    const buildingRefs = await buildingsCollection.where('landlordId', '==', landlordId).get();
+    const buildings = buildingRefs.docs.map((doc) => doc.data() as Apartment);
+    res.status(201).send(buildings);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -123,7 +135,7 @@ app.get('/search', async (req, res) => {
     const landlords: LandlordWithId[] = landlordDocs.map(
       (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
     );
-    const aptDocs = (await aptCollection.get()).docs;
+    const aptDocs = (await buildingsCollection.get()).docs;
     const apts: ApartmentWithId[] = aptDocs.map(
       (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
     );
@@ -149,7 +161,7 @@ app.get('/search', async (req, res) => {
 });
 
 app.get('/homepageData', async (req, res) => {
-  const buildingDocs = (await aptCollection.limit(3).get()).docs;
+  const buildingDocs = (await buildingsCollection.limit(3).get()).docs;
   const buildings: Apartment[] = buildingDocs
     .map((doc) => doc.data() as Apartment)
     .filter(({ landlordId }) => landlordId !== null);
