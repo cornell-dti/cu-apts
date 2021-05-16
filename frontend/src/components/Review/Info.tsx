@@ -17,7 +17,7 @@ export default function Info({ contact, address }: Props): ReactElement {
     <Box mt={1}>
       <Typography variant="h5">Info</Typography>
       <List dense>
-        {contact && <InfoItem text={`Phone: ${contact}`} />}
+        {contact && <InfoItem text={`Contact: ${contact}`} />}
         {address && <InfoItem text={`Address: ${address}`} />}
       </List>
     </Box>

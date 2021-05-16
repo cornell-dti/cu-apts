@@ -8,7 +8,7 @@ import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
-import get from '../utils/get';
+import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
 import { Landlord, Apartment } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';

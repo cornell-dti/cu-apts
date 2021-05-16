@@ -35,14 +35,13 @@ app.use(morgan('combined'));
 app.get('/', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
-  const faqs: Section[] = [];
-  snapshot.forEach((doc) => {
+  const faqs: Section[] = snapshot.docs.map((doc) => {
     const data = doc.data();
     const section: Section = {
       headerName: data.headerName,
       faqs: data.faqs,
     };
-    faqs.push(section);
+    return section;
   });
 
   res.status(200).send(JSON.stringify(faqs));
@@ -81,7 +80,6 @@ app.get('/apts/:ids', async (req, res) => {
         return { id, ...snapshot.data() } as ApartmentWithId;
       })
     );
-    console.log(aptsArr);
     res.status(200).send(JSON.stringify(aptsArr));
   } catch (err) {
     res.status(400).send(err);

@@ -4,7 +4,7 @@ import { Box, Container, Grid, Typography, Link, makeStyles } from '@material-ui
 import Autocomplete from '../components/Home/Autocomplete';
 import { Apartment } from '../../../common/types/db-types';
 import { Link as RouterLink } from 'react-router-dom';
-import get from '../utils/get';
+import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
 
 const useStyles = makeStyles({

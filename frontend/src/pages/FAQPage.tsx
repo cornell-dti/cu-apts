@@ -4,7 +4,7 @@ import ProgressSpinner from '../components/utils/ProgressSpinner';
 import styles from './FAQPage.module.scss';
 import { useTitle } from '../utils';
 import { Typography } from '@material-ui/core';
-import get from '../utils/get';
+import { get } from '../utils/call';
 
 export type FAQ = {
   question: string;
