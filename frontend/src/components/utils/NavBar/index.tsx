@@ -13,6 +13,7 @@ import {
   Grid,
   createMuiTheme,
   ThemeProvider,
+  Container,
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
@@ -41,13 +42,8 @@ const useStyles = makeStyles(() => ({
   header: {
     backgroundColor: 'white',
     paddingTop: '1em',
-    paddingLeft: '5em',
-    paddingRight: '5em',
-    paddingBottom: '1em',
-    '@media only screen and (max-width: 992px) ': {
-      paddingLeft: '1em',
-      paddingRight: '1em',
-    },
+    paddingBottom: '0.75em',
+    margin: '0.5em 0 0.5em 0',
     boxShadow: 'none',
   },
   icon: {
@@ -59,12 +55,13 @@ const useStyles = makeStyles(() => ({
     '@media only screen and (max-width: 320px) ': {
       fontSize: '1.7em',
     },
+    fontStyle: 'normal',
     color: 'black',
     textAlign: 'left',
     paddingTop: '25px',
     marginLeft: '10px',
-    fontSize: '20.1176px',
-    lineHeight: '24px',
+    fontSize: '27px',
+    lineHeight: '32px',
   },
   description: {
     fontFamily: 'Work Sans, sans-serif',
@@ -92,6 +89,8 @@ const useStyles = makeStyles(() => ({
   toolbar: {
     display: 'flex',
     justifyContent: 'space-between',
+    paddingLeft: 0,
+    paddingRight: 0,
   },
   drawerContainer: {
     padding: '20px 30px',
@@ -101,7 +100,14 @@ const useStyles = makeStyles(() => ({
     marginBottom: '8px',
   },
 }));
-
+function GetButtonColor(lab: string) {
+  const location = useLocation();
+  return (location.pathname === '/' && lab.includes('Home')) ||
+    ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
+      lab.includes('Reviews'))
+    ? 'secondary'
+    : 'primary';
+}
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [state, setState] = useState<View>({
     mobileView: false,
@@ -122,7 +128,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const muiTheme = createMuiTheme({
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
   });
-  const location = useLocation();
   useEffect(() => {
     const setResponsiveness = () => {
       return isMobile()
@@ -141,13 +146,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             {...{
               component: RouterLink,
               to: href,
-              color:
-                (location.pathname === '/' && label.includes('Home')) ||
-                ((location.pathname.includes('landlord') ||
-                  location.pathname.includes('reviews')) &&
-                  label.includes('Reviews'))
-                  ? 'secondary'
-                  : 'primary',
+              color: GetButtonColor(label),
               style: { textDecoration: 'none' },
               key: label,
             }}
@@ -166,13 +165,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           <Button
             {...{
               key: label,
-              color:
-                (location.pathname === '/' && label.includes('Home')) ||
-                ((location.pathname.includes('landlord') ||
-                  location.pathname.includes('reviews')) &&
-                  label.includes('Reviews'))
-                  ? 'secondary'
-                  : 'primary',
+              color: GetButtonColor(label),
               to: href,
               component: RouterLink,
               className: menuButton,
@@ -197,7 +190,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             </Link>
           </Grid>
           <Grid item>
-            <Typography variant="h4" component="h1" className={logo}>
+            <Typography className={logo}>
               <Link color="textPrimary" underline="none" href="/">
                 CUAPTS
               </Link>
@@ -206,7 +199,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
         </Grid>
       </Grid>
       <Grid item>
-        <Typography variant="h4" component="h1" className={description}>
+        <Typography className={description}>
           <Link color="textPrimary" underline="none" href="/">
             Search for off-campus housing, review apartments, and share feedback!
           </Link>
@@ -229,7 +222,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     const handleDrawerClose = () => setState((prevState) => ({ ...prevState, drawerOpen: false }));
 
     return (
-      <Toolbar>
+      <Toolbar className={toolbar}>
         <div>{homeLogo}</div>
         <div className={grow} />
         <IconButton
@@ -260,7 +253,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   return (
     <header>
       <AppBar position="fixed" className={header}>
-        {mobileView ? displayMobile() : displayDesktop()}
+        <Container maxWidth="lg">{mobileView ? displayMobile() : displayDesktop()}</Container>
       </AppBar>
     </header>
   );
