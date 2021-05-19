@@ -6,12 +6,21 @@ import { Landlord, LandlordWithId, Review } from '../../common/types/db-types';
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 
+type LandlordData = {
+  id: number;
+  name: string;
+  contact: string | null;
+  avgRating: string;
+  photos: string;
+  reviews: string;
+  properties: string;
+};
+
 const makeReview = async (review: Review) => {
   try {
     const doc = reviewCollection.doc();
     doc.set({ ...review, date: new Date(review.date) });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.log(err);
   }
 };
@@ -42,15 +51,14 @@ const formatLandlord = ({
   photos,
   reviews,
   properties,
-}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-any): LandlordWithId => ({
+}: LandlordData): LandlordWithId => ({
   id: id.toString(),
   name,
   contact,
-  avgRating: avgRating.length > 0 ? Number.parseFloat(avgRating) : 0,
-  photos: photos.length > 0 ? photos : [],
-  reviews: reviews.length > 0 ? reviews : [],
-  properties: properties.length > 0 ? properties : [],
+  avgRating: Number.parseFloat(avgRating || '0'),
+  photos: photos.split(',').filter((e) => e),
+  reviews: reviews.split(',').filter((e) => e),
+  properties: properties.split(',').filter((e) => e),
 });
 
 const makeLandlord = async (landlordWithId: LandlordWithId) => {
@@ -58,9 +66,8 @@ const makeLandlord = async (landlordWithId: LandlordWithId) => {
     const { id, ...rest } = landlordWithId;
     const doc = landlordCollection.doc(id);
     const landlord = rest as Landlord;
-    doc.set({ ...landlord });
+    doc.set({ landlord });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.log(err);
   }
 };
