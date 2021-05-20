@@ -8,6 +8,7 @@ import {
   TextField,
   Input,
   FormLabel,
+  Typography,
 } from '@material-ui/core';
 import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
@@ -84,6 +85,8 @@ const reducer = (state: FormData, action: Action): FormData => {
 const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
+  const [emptyTextError, setEmptyTextError] = useState(false);
+  const [ratingError, setRatingError] = useState(false);
 
   const updateOverall = () => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
@@ -149,11 +152,13 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
         throw new Error('Failed to login');
       }
       const token = await user.getIdToken(true);
-      const res = await axios.post(
-        '/new-review',
-        await formDataToReview(review),
-        createAuthHeaders(token)
-      );
+      const data = await formDataToReview(review);
+      if (data.reviewText === '' || data.overallRating === 0) {
+        data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
+        data.reviewText === '' ? setEmptyTextError(true) : setEmptyTextError(false);
+        return;
+      }
+      const res = await axios.post('/new-review', data, createAuthHeaders(token));
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
@@ -201,6 +206,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                 label="Overall Experience"
                 onChange={updateOverall()}
               ></ReviewRating>
+              {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
             <div className={styles.div}></div>
             <Grid container item justify="space-between" xs={12} sm={6}>
@@ -277,6 +283,8 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
             <div className={styles.div}></div>
             <Grid container item>
               <TextField
+                required={true}
+                error={emptyTextError}
                 fullWidth
                 id="body"
                 label="Review"
@@ -286,7 +294,9 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                   maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}`}
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
+                  emptyTextError ? ' This field is required' : ''
+                }`}
                 onChange={updateBody}
               />
             </Grid>
