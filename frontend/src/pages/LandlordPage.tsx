@@ -12,7 +12,6 @@ import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
 import { Landlord, Apartment } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
-import AppBar, { NavbarButton } from '../components/utils/NavBar';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
@@ -22,17 +21,6 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
-
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
-};
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/landlord/1',
-};
-
-const headersData = [faq, review];
 
 const LandlordPage = (): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
@@ -149,6 +137,7 @@ const LandlordPage = (): ReactElement => {
         >
           Show all photos
         </Button>
+
         <Grid item>
           <Button
             color="primary"
@@ -176,16 +165,16 @@ const LandlordPage = (): ReactElement => {
     <LinearProgress />
   ) : (
     <>
-      <Container>
-        <AppBar headersData={headersData} />
-        {landlordData && (
+      {landlordData && (
+        <Container>
           <LandlordHeader
             landlord={landlordData}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}
           />
-        )}
-      </Container>
+        </Container>
+      )}
+
       <Container className={styles.OuterContainer}>
         <Grid container spacing={5} justify="center">
           <Grid container spacing={3} item xs={12} sm={8}>

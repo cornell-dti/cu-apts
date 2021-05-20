@@ -6,7 +6,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 3,
@@ -15,7 +16,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 4,
@@ -24,7 +26,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 5,
@@ -33,7 +36,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 6,
@@ -42,7 +46,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 7,
@@ -51,7 +56,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 8,
@@ -60,7 +66,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 9,
@@ -69,7 +76,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 10,
@@ -78,7 +86,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 11,
@@ -87,7 +96,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 12,
@@ -96,7 +106,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 13,
@@ -105,7 +116,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 14,
@@ -114,7 +126,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 15,
@@ -123,7 +136,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 16,
@@ -132,7 +146,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 17,
@@ -141,7 +156,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 18,
@@ -150,7 +166,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 19,
@@ -159,7 +176,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 20,
@@ -168,7 +186,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 21,
@@ -177,7 +196,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 22,
@@ -186,7 +206,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 23,
@@ -195,7 +216,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 24,
@@ -204,7 +226,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 25,
@@ -213,7 +236,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 26,
@@ -222,7 +246,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 27,
@@ -231,7 +256,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 28,
@@ -240,7 +266,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 29,
@@ -249,7 +276,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 30,
@@ -258,7 +286,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 31,
@@ -267,7 +296,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 32,
@@ -276,7 +306,8 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   },
   {
     "id": 33,
@@ -285,6 +316,7 @@
     "avgRating": "",
     "photos": "",
     "reviews": "",
-    "properties": ""
+    "properties": "",
+    "address": null
   }
 ]
