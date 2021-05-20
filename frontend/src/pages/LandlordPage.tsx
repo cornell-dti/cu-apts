@@ -129,14 +129,16 @@ const LandlordPage = (): ReactElement => {
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
         </Grid>
-        <Button
-          color="secondary"
-          variant="contained"
-          disableElevation
-          onClick={() => setCarouselOpen(true)}
-        >
-          Show all photos
-        </Button>
+        {landlordData && landlordData.photos.length > 0 && (
+          <Button
+            color="secondary"
+            variant="contained"
+            disableElevation
+            onClick={() => setCarouselOpen(true)}
+          >
+            Show all photos
+          </Button>
+        )}
 
         <Grid item>
           <Button

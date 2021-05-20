@@ -11,9 +11,8 @@ import {
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
-
-const defaultPhotoLink =
-  'https://apartments.naproperties.com/nap-cincinnati/wp-content/uploads/2016/06/random.jpg';
+import defaultHeader from '../../assets/default_header.png';
+import defaultIcon from '../../assets/default_icon.png';
 
 type Props = {
   readonly landlord: Landlord;
@@ -32,7 +31,6 @@ const GlobalCss = withStyles({
 const useStyles = makeStyles((theme) => ({
   media: {
     height: '400px',
-    backgroundColor: 'rgba(0,0,0,0.6)',
     backgroundBlendMode: 'darken',
     position: 'relative',
   },
@@ -119,7 +117,8 @@ const useStyles = makeStyles((theme) => ({
 
 const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElement => {
   const { name, avgRating, profilePhoto, photos } = landlord;
-  const photoLink = photos.length ? photos[0] : defaultPhotoLink;
+  const icon = profilePhoto ? profilePhoto : defaultIcon;
+  const photoLink = photos.length ? photos[0] : defaultHeader;
   const {
     media,
     logo,
@@ -147,7 +146,7 @@ const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElem
                 >
                   <Grid container item xs={9} justify="flex-start">
                     <Grid item xs={12} md={2}>
-                      <Avatar src={profilePhoto} alt={name} className={logo} />
+                      <Avatar src={icon} alt={name} className={logo} />
                     </Grid>
                     <Grid item className={headerSection}>
                       <CardHeader title={name} className={landlordName} disableTypography={true} />
@@ -168,16 +167,18 @@ const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElem
                 </Grid>
               </div>
             </Grid>
-            <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
-              <Button
-                disableFocusRipple
-                variant="outlined"
-                className={photoButton}
-                onClick={handleClick}
-              >
-                Show all photos
-              </Button>
-            </Grid>
+            {photos.length > 0 && (
+              <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
+                <Button
+                  disableFocusRipple
+                  variant="outlined"
+                  className={photoButton}
+                  onClick={handleClick}
+                >
+                  Show all photos
+                </Button>
+              </Grid>
+            )}
           </CardMedia>
         </Grid>
       </React.Fragment>
