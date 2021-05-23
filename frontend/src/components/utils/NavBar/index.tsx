@@ -121,19 +121,19 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   });
 
   const getDrawerChoices = (): ReactElement[] => {
-    return headersData.map(({ label, href }) => {
+    return headersData.map(({ label, href }, index) => {
       return (
-        <ThemeProvider theme={muiTheme}>
+        <ThemeProvider theme={muiTheme} key={index}>
           <Link
             {...{
               component: RouterLink,
               to: href,
               color: GetButtonColor(label),
               style: { textDecoration: 'none' },
-              key: label,
+              key: index,
             }}
           >
-            <MenuItem>{label}</MenuItem>
+            <MenuItem key={index}>{label}</MenuItem>
           </Link>
         </ThemeProvider>
       );
@@ -141,12 +141,12 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const getMenuButtons = (): ReactElement[] => {
-    return headersData.map(({ label, href }) => {
+    return headersData.map(({ label, href }, index) => {
       return (
-        <ThemeProvider theme={muiTheme}>
+        <ThemeProvider theme={muiTheme} key={index}>
           <Button
             {...{
-              key: label,
+              key: index,
               color: GetButtonColor(label),
               to: href,
               component: RouterLink,
@@ -161,8 +161,8 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Grid container xs={11} md={7} direction="column">
-      <Grid item>
+    <Grid container item xs={11} md={7} direction="column">
+      <Grid>
         <Grid container alignItems="center">
           <Grid item>
             <Link color="textPrimary" underline="none" href="/">

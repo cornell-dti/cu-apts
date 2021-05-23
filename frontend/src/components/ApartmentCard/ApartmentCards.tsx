@@ -15,7 +15,7 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
         data.map(({ buildingData, numReviews, company }, index) => {
           const { landlordId } = buildingData;
           return (
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={4} key={index}>
               <Link
                 {...{
                   to: `/landlord/${landlordId}`,
