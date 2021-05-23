@@ -39,7 +39,7 @@ const home: NavbarButton = {
 
 const review: NavbarButton = {
   label: 'Reviews',
-  href: '/landlord/1',
+  href: '/landlord/24',
 };
 
 const headersData = [home, review];

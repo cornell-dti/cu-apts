@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -9,6 +9,7 @@ import {
   Drawer,
   Link,
   MenuItem,
+  Hidden,
   Icon,
   Grid,
   createMuiTheme,
@@ -17,18 +18,12 @@ import {
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
-import { isMobile } from '../../../utils/isMobile';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 
 export type NavbarButton = {
   label: string;
   href: string;
-};
-
-type View = {
-  mobileView: boolean;
-  drawerOpen: boolean;
 };
 
 type Props = {
@@ -109,11 +104,7 @@ function GetButtonColor(lab: string) {
     : 'primary';
 }
 const NavBar = ({ headersData }: Props): ReactElement => {
-  const [state, setState] = useState<View>({
-    mobileView: false,
-    drawerOpen: false,
-  });
-  const { mobileView, drawerOpen } = state;
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     grow,
     header,
@@ -128,15 +119,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const muiTheme = createMuiTheme({
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
   });
-  useEffect(() => {
-    const setResponsiveness = () => {
-      return isMobile()
-        ? setState((prevState) => ({ ...prevState, mobileView: true }))
-        : setState((prevState) => ({ ...prevState, mobileView: false }));
-    };
-    setResponsiveness();
-    window.addEventListener('resize', () => setResponsiveness());
-  }, []);
 
   const getDrawerChoices = (): ReactElement[] => {
     return headersData.map(({ label, href }) => {
@@ -218,9 +200,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const displayMobile = (): ReactElement => {
-    const handleDrawerOpen = () => setState((prevState) => ({ ...prevState, drawerOpen: true }));
-    const handleDrawerClose = () => setState((prevState) => ({ ...prevState, drawerOpen: false }));
-
     return (
       <Toolbar className={toolbar}>
         <div>{homeLogo}</div>
@@ -232,7 +211,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             color: 'default',
             'aria-label': 'menu',
             'aria-haspopup': 'true',
-            onClick: handleDrawerOpen,
+            onClick: () => setDrawerOpen(true),
           }}
         >
           <MenuIcon fontSize="large" />
@@ -241,7 +220,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           {...{
             anchor: 'right',
             open: drawerOpen,
-            onClose: handleDrawerClose,
+            onClose: () => setDrawerOpen(false),
           }}
         >
           <div className={drawerContainer}>{getDrawerChoices()}</div>
@@ -253,7 +232,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   return (
     <header>
       <AppBar position="static" className={header}>
-        <Container maxWidth="lg">{mobileView ? displayMobile() : displayDesktop()}</Container>
+        <Container maxWidth="lg">
+          <Hidden mdUp>{displayMobile()}</Hidden>
+          <Hidden smDown>{displayDesktop()}</Hidden>
+        </Container>
       </AppBar>
     </header>
   );

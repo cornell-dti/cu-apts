@@ -4,18 +4,18 @@ import PropertyInfo from './PropertyInfo';
 import { Card, CardContent, Divider } from '@material-ui/core';
 
 type Props = {
-  readonly properties: string[];
-  readonly phone: string;
-  readonly address: string;
+  readonly buildings: readonly string[];
+  readonly contact: string | null;
+  readonly address: string | null;
 };
 
-export default function InfoFeatures({ properties, phone, address }: Props): ReactElement {
+export default function InfoFeatures({ buildings, contact, address }: Props): ReactElement {
   return (
     <Card variant="outlined">
       <CardContent>
-        <Info phone={phone} address={address} />
+        <Info contact={contact} address={address} />
         <Divider />
-        <PropertyInfo title="Properties Owned" info={properties} />
+        <PropertyInfo title="Properties Owned" info={buildings} />
       </CardContent>
     </Card>
   );

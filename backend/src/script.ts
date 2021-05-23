@@ -14,6 +14,7 @@ type LandlordData = {
   photos: string;
   reviews: string;
   properties: string;
+  address: string | null;
 };
 
 const makeReview = async (review: Review) => {
@@ -51,6 +52,7 @@ const formatLandlord = ({
   photos,
   reviews,
   properties,
+  address,
 }: LandlordData): LandlordWithId => ({
   id: id.toString(),
   name,
@@ -59,6 +61,7 @@ const formatLandlord = ({
   photos: photos.split(',').filter((e) => e),
   reviews: reviews.split(',').filter((e) => e),
   properties: properties.split(',').filter((e) => e),
+  address,
 });
 
 const makeLandlord = async (landlordWithId: LandlordWithId) => {
