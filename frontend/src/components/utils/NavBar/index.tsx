@@ -120,44 +120,48 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
   });
 
-  const getDrawerChoices = (): ReactElement[] => {
-    return headersData.map(({ label, href }, index) => {
-      return (
-        <ThemeProvider theme={muiTheme} key={index}>
-          <Link
-            {...{
-              component: RouterLink,
-              to: href,
-              color: GetButtonColor(label),
-              style: { textDecoration: 'none' },
-              key: index,
-            }}
-          >
-            <MenuItem key={index}>{label}</MenuItem>
-          </Link>
-        </ThemeProvider>
-      );
-    });
+  const getDrawerChoices = () => {
+    return (
+      <ThemeProvider theme={muiTheme}>
+        {headersData.map(({ label, href }, index) => {
+          return (
+            <Link
+              {...{
+                component: RouterLink,
+                to: href,
+                color: GetButtonColor(label),
+                style: { textDecoration: 'none' },
+                key: index,
+              }}
+            >
+              <MenuItem key={index}>{label}</MenuItem>
+            </Link>
+          );
+        })}
+      </ThemeProvider>
+    );
   };
 
-  const getMenuButtons = (): ReactElement[] => {
-    return headersData.map(({ label, href }, index) => {
-      return (
-        <ThemeProvider theme={muiTheme} key={index}>
-          <Button
-            {...{
-              key: index,
-              color: GetButtonColor(label),
-              to: href,
-              component: RouterLink,
-              className: menuButton,
-            }}
-          >
-            {label.toUpperCase()}
-          </Button>
-        </ThemeProvider>
-      );
-    });
+  const getMenuButtons = () => {
+    return (
+      <ThemeProvider theme={muiTheme}>
+        {headersData.map(({ label, href }, index) => {
+          return (
+            <Button
+              {...{
+                key: index,
+                color: GetButtonColor(label),
+                to: href,
+                component: RouterLink,
+                className: menuButton,
+              }}
+            >
+              {label.toUpperCase()}
+            </Button>
+          );
+        })}
+      </ThemeProvider>
+    );
   };
 
   const homeLogo: ReactElement = (

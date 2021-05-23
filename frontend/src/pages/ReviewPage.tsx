@@ -16,11 +16,11 @@ const ReviewPage = (): ReactElement => {
   });
 
   const classes = useStyles();
-  const [buildingData, setBuildingData] = useState<CardData[]>([]);
+  const [aptData, setAptData] = useState<CardData[]>([]);
 
   useEffect(() => {
-    get<any>(`/page-data/reviews`, {
-      callback: setBuildingData,
+    get<CardData[]>(`/page-data/reviews`, {
+      callback: setAptData,
     });
   }, []);
 
@@ -31,7 +31,7 @@ const ReviewPage = (): ReactElement => {
           Reviews By Renting Company
         </Typography>
       </Box>
-      <ApartmentCards data={buildingData} />
+      <ApartmentCards data={aptData} />
     </Container>
   );
 };
