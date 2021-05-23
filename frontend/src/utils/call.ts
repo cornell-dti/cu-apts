@@ -5,17 +5,19 @@ export type GetOptions<T> = {
   body?: any;
 };
 
-export default function get<T>(route: string, options: GetOptions<T> = {}) {
+const get = <T>(route: string, options: GetOptions<T> = {}) => {
   const { callback, body } = options;
   const config: AxiosRequestConfig = body && {
     data: body,
   };
   axios
-    .get<T>(`${route}`, config)
+    .get<T>(route, config)
     .then((response) => {
       callback && callback(response.data);
     })
     .catch((error) => {
       console.log('error', error);
     });
-}
+};
+
+export { get };

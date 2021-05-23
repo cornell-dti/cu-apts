@@ -8,6 +8,7 @@ import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
 import { Apartment } from '../../common/types/db-types';
+import Footer from './components/utils/Footer';
 
 const theme = createMuiTheme({
   palette: {
@@ -33,9 +34,9 @@ const theme = createMuiTheme({
   },
 });
 
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
+const home: NavbarButton = {
+  label: 'Home',
+  href: '/',
 };
 
 const review: NavbarButton = {
@@ -49,7 +50,7 @@ export type CardData = {
   company?: string;
 };
 
-const headersData = [faq, review];
+const headersData = [home, review];
 
 const App = (): ReactElement => {
   return (
@@ -62,6 +63,7 @@ const App = (): ReactElement => {
           <Route exact path="/reviews" component={ReviewPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
         </Switch>
+        <Footer />
       </Router>
     </ThemeProvider>
   );

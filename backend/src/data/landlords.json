@@ -1,0 +1,322 @@
+[
+  {
+    "id": 2,
+    "name": "Lifestyle Properties",
+    "contact": "lifestylepropertiesithaca.com",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 3,
+    "name": "Mazza & Amici",
+    "contact": "http://ithaca-apts.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 4,
+    "name": "Novarr-Mackesey / Ithaca Student Apartments",
+    "contact": "http://www.ithacastudentapartments.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 5,
+    "name": "Certified Properties",
+    "contact": "https://www.certifiedpropertiesinc.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 6,
+    "name": "Fontana Apartments",
+    "contact": "https://www.fontanas.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 7,
+    "name": "PPM Homes",
+    "contact": "http://www.ppmhomes.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 8,
+    "name": "Urban Ithaca Real Estate",
+    "contact": "https://new-www.urbanithaca.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 9,
+    "name": "Stavropoulos Family",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 10,
+    "name": "Ithaca Renting Company",
+    "contact": "http://ithacarenting.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 11,
+    "name": "Iacovelli Properties",
+    "contact": "https://www.liveithaca.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 12,
+    "name": "Avramis Real Esate",
+    "contact": "http://avramisrealestate.com/rentals/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 13,
+    "name": "CSP Management",
+    "contact": "https://cspmanagement.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 14,
+    "name": "301 College Ave",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 15,
+    "name": "312 College Ave",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 16,
+    "name": "Auden Ithaca",
+    "contact": "https://www.audenithaca.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 17,
+    "name": "Kimball Real Estate",
+    "contact": "http://www.kimballrentals.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 18,
+    "name": "Lambrou",
+    "contact": "http://www.lambrourealestate.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 19,
+    "name": "LiveMoreIthaca",
+    "contact": "https://www.livemoreithaca.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 20,
+    "name": "Moll Properties",
+    "contact": "http://www.mollprop.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 21,
+    "name": "PJ Apartments",
+    "contact": "https://pjapts.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 22,
+    "name": "Rabco Highland House",
+    "contact": "",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 23,
+    "name": "Student Rentals",
+    "contact": "https://studentrentalsithaca.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 24,
+    "name": "Travis Hyde",
+    "contact": "https://www.travishyde.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 25,
+    "name": "West Shore Apartments",
+    "contact": "https://www.westshoreapts.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 26,
+    "name": "David Filiberto",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 27,
+    "name": "Helen Ann",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 28,
+    "name": "Marika Nell",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 29,
+    "name": "HAAG Properties",
+    "contact": null,
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 30,
+    "name": "Melissa Shames",
+    "contact": "https://www.howardhanna.com/Agent/Detail/Melissa-Shames/10807701",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 31,
+    "name": "Ithaca Living Solutions",
+    "contact": "https://www.ithacalivingsolutions.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 32,
+    "name": "CP Student Properties",
+    "contact": "http://cpstudentproperties.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  },
+  {
+    "id": 33,
+    "name": "Dryden Realty",
+    "contact": "https://tompkinsliving.com/",
+    "avgRating": "",
+    "photos": "",
+    "reviews": "",
+    "properties": "",
+    "address": null
+  }
+]

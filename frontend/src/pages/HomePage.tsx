@@ -1,7 +1,7 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import get from '../utils/get';
+import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';

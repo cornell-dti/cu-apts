@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
-import get from '../utils/get';
+import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
 

@@ -10,26 +10,29 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
-import get from '../../utils/get';
+import { get } from '../../utils/call';
 import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
-import { isMobile } from '../../utils/isMobile';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   menuList: {
     position: 'absolute',
     backgroundColor: 'white',
     maxHeight: 200,
     overflow: 'auto',
   },
-  text: { backgroundColor: 'white' },
-  desktop: { width: '70%' },
+  text: {
+    backgroundColor: 'white',
+    [theme.breakpoints.up('md')]: {
+      width: '70%',
+    },
+  },
   searchIcon: { paddingRight: '10px' },
-});
+}));
 
 export default function Autocomplete() {
-  const { menuList, text, desktop, searchIcon } = useStyles();
+  const { menuList, text, searchIcon } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -166,7 +169,7 @@ export default function Autocomplete() {
         ref={inputRef}
         value={query}
         placeholder="Search by landlord or building address"
-        className={isMobile() ? text : `${text} ${desktop}`}
+        className={text}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
         onChange={(event) => {
