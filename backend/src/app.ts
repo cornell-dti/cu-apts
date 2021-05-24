@@ -163,10 +163,8 @@ app.get('/search', async (req, res) => {
 
 app.get('/page-data/:page', async (req, res) => {
   const { page } = req.params;
-  const buildingDocs =
-    page === 'home'
-      ? (await buildingsCollection.limit(3).get()).docs
-      : (await buildingsCollection.get()).docs;
+  const collection = page === 'home' ? buildingsCollection.limit(3) : buildingsCollection;
+  const buildingDocs = (await collection.get()).docs;
   const buildings: Apartment[] = buildingDocs
     .map((doc) => doc.data() as Apartment)
     .filter(({ landlordId }) => landlordId !== null);
