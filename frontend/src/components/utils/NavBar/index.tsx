@@ -120,49 +120,53 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
   });
 
-  const getDrawerChoices = (): ReactElement[] => {
-    return headersData.map(({ label, href }) => {
-      return (
-        <ThemeProvider theme={muiTheme}>
-          <Link
-            {...{
-              component: RouterLink,
-              to: href,
-              color: GetButtonColor(label),
-              style: { textDecoration: 'none' },
-              key: label,
-            }}
-          >
-            <MenuItem>{label}</MenuItem>
-          </Link>
-        </ThemeProvider>
-      );
-    });
+  const getDrawerChoices = () => {
+    return (
+      <ThemeProvider theme={muiTheme}>
+        {headersData.map(({ label, href }, index) => {
+          return (
+            <Link
+              {...{
+                component: RouterLink,
+                to: href,
+                color: GetButtonColor(label),
+                style: { textDecoration: 'none' },
+                key: index,
+              }}
+            >
+              <MenuItem key={index}>{label}</MenuItem>
+            </Link>
+          );
+        })}
+      </ThemeProvider>
+    );
   };
 
-  const getMenuButtons = (): ReactElement[] => {
-    return headersData.map(({ label, href }) => {
-      return (
-        <ThemeProvider theme={muiTheme}>
-          <Button
-            {...{
-              key: label,
-              color: GetButtonColor(label),
-              to: href,
-              component: RouterLink,
-              className: menuButton,
-            }}
-          >
-            {label.toUpperCase()}
-          </Button>
-        </ThemeProvider>
-      );
-    });
+  const getMenuButtons = () => {
+    return (
+      <ThemeProvider theme={muiTheme}>
+        {headersData.map(({ label, href }, index) => {
+          return (
+            <Button
+              {...{
+                key: index,
+                color: GetButtonColor(label),
+                to: href,
+                component: RouterLink,
+                className: menuButton,
+              }}
+            >
+              {label.toUpperCase()}
+            </Button>
+          );
+        })}
+      </ThemeProvider>
+    );
   };
 
   const homeLogo: ReactElement = (
-    <Grid container xs={11} md={7} direction="column">
-      <Grid item>
+    <Grid container item xs={11} md={7} direction="column">
+      <Grid>
         <Grid container alignItems="center">
           <Grid item>
             <Link color="textPrimary" underline="none" href="/">

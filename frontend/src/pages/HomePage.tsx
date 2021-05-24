@@ -1,11 +1,10 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import ApartmentCard from '../components/Home/ApartmentCard';
-import { Box, Container, Grid, Typography, Link, makeStyles } from '@material-ui/core';
+import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { Apartment } from '../../../common/types/db-types';
-import { Link as RouterLink } from 'react-router-dom';
 import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import { CardData } from '../App';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -26,18 +25,12 @@ const useStyles = makeStyles({
   },
 });
 
-type HomeCardData = {
-  buildingData: Apartment;
-  numReviews: number;
-  company?: string;
-};
-
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomeData] = useState<HomeCardData[]>([]);
+  const [homeData, setHomeData] = useState<CardData[]>([]);
 
   useEffect(() => {
-    get<any>(`/homepageData`, {
+    get<CardData[]>(`/page-data/home`, {
       callback: setHomeData,
     });
   }, []);
@@ -67,30 +60,7 @@ const HomePage = (): ReactElement => {
             </Typography>
           </Box>
 
-          <Grid container spacing={8}>
-            {homeData &&
-              homeData.map(({ buildingData, numReviews, company }, index) => {
-                const { landlordId } = buildingData;
-                return (
-                  <Grid item xs={12} md={4}>
-                    <Link
-                      {...{
-                        to: `/landlord/${landlordId}`,
-                        style: { textDecoration: 'none' },
-                        component: RouterLink,
-                      }}
-                    >
-                      <ApartmentCard
-                        key={index}
-                        numReviews={numReviews}
-                        buildingData={buildingData}
-                        company={company}
-                      />
-                    </Link>
-                  </Grid>
-                );
-              })}
-          </Grid>
+          <ApartmentCards data={homeData} />
         </Container>
       </Box>
     </>
