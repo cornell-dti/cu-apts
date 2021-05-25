@@ -58,3 +58,7 @@ body {
   height: 27px;
   color: white;
 }
+
+.root {
+  min-height: calc(100vh - 120px);
+}

@@ -13,6 +13,7 @@ export default function PropertyInfo({ info, title }: Props): ReactElement {
       <Typography variant="h6">{title}</Typography>
       <List dense component="ul">
         <Grid container spacing={0} direction="row">
+          {info.length === 0 && <Typography>No information available.</Typography>}
           {info.map((feature, index) => (
             <Grid item xs={6} sm={12} md={6} key={index}>
               <ListItem>

@@ -57,12 +57,14 @@ const App = (): ReactElement => {
     <ThemeProvider theme={theme}>
       <Router>
         <NavBar headersData={headersData} />
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/faq" component={FAQPage} />
-          <Route exact path="/reviews" component={ReviewPage} />
-          <Route path="/landlord/:landlordId" component={LandlordPage} />
-        </Switch>
+        <div className="root">
+          <Switch>
+            <Route exact path="/" component={HomePage} />
+            <Route exact path="/faq" component={FAQPage} />
+            <Route exact path="/reviews" component={ReviewPage} />
+            <Route path="/landlord/:landlordId" component={LandlordPage} />
+          </Switch>
+        </div>
         <Footer />
       </Router>
     </ThemeProvider>
