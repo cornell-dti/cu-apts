@@ -7,6 +7,7 @@ import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
+import NotFoundPage from './pages/NotFoundPage';
 import { Apartment } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 
@@ -62,6 +63,7 @@ const App = (): ReactElement => {
           <Route exact path="/faq" component={FAQPage} />
           <Route exact path="/reviews" component={ReviewPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
+          <Route component={NotFoundPage} />
         </Switch>
         <Footer />
       </Router>
