@@ -5,59 +5,62 @@ import {
   CircularProgress,
   ClickAwayListener,
   Grid,
-  IconButton,
   MenuItem,
   MenuList,
   TextField,
   Typography,
 } from '@material-ui/core';
-import get from '../../utils/get';
-import { ApartmentWithLabel, LandlordWithLabel } from '../../../../common/types/db-types';
+import { get } from '../../utils/call';
+import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   menuList: {
     position: 'absolute',
     backgroundColor: 'white',
     maxHeight: 200,
     overflow: 'auto',
   },
-  text: { backgroundColor: 'white' },
-});
+  text: {
+    backgroundColor: 'white',
+    [theme.breakpoints.up('md')]: {
+      width: '70%',
+    },
+  },
+  searchIcon: { paddingRight: '10px' },
+}));
 
 export default function Autocomplete() {
-  const { menuList, text } = useStyles();
+  const { menuList, text, searchIcon } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<(LandlordWithLabel | ApartmentWithLabel)[]>([]);
+  const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<LandlordWithLabel | ApartmentWithLabel | null>(null);
+  const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
   const [selectedId, setSelectedId] = useState<string | null>('');
 
   function handleListKeyDown(event: React.KeyboardEvent) {
+    event.preventDefault();
     if (event.key === 'Tab') {
-      event.preventDefault();
       setOpen(false);
     }
   }
 
   const handleOnChange = (query: string) => {
-    setLoading(true);
     setQuery(query);
     setSelected(null);
+    if (query !== '') {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
-    // TODO: get id of item selected selected.id, if its a landlord redirect to landlords/id,
-    // else get the landlordId of the apartment and redirect to that
-    console.log('clicked');
-  };
-
-  const getLandlordId = (option: LandlordWithLabel | ApartmentWithLabel) => {
+  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
     switch (option.label) {
       case 'LANDLORD':
         return option.id;
@@ -70,7 +73,7 @@ export default function Autocomplete() {
 
   const handleClickMenu = (
     event: React.MouseEvent<EventTarget>,
-    option: LandlordWithLabel | ApartmentWithLabel
+    option: LandlordOrApartmentWithLabel
   ) => {
     setSelectedId(getLandlordId(option));
   };
@@ -92,7 +95,7 @@ export default function Autocomplete() {
                 onKeyDown={handleListKeyDown}
               >
                 {options.length === 0 ? (
-                  <MenuItem disabled>No landlords or apartments match this search</MenuItem>
+                  <MenuItem disabled>No search results.</MenuItem>
                 ) : (
                   options.map((option, index) => {
                     return (
@@ -147,8 +150,13 @@ export default function Autocomplete() {
   }, [inputRef, width]);
 
   useEffect(() => {
-    if (loading) {
-      get<LandlordWithLabel | ApartmentWithLabel>(`/reviews?q=${query}`, setOptions, setLoading);
+    if (loading && query.trim() !== '') {
+      get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
+        callback: (data) => {
+          setOptions(data);
+          setLoading(false);
+        },
+      });
     }
   }, [loading, query]);
 
@@ -160,7 +168,7 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        label="Search by renting company or building address"
+        placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
         onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
@@ -171,14 +179,8 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          endAdornment: (
-            <>
-              {loading ? <CircularProgress color="inherit" size={20} /> : null}
-              <IconButton disabled={options.length === 0} onClick={handleSubmit}>
-                <SearchIcon />
-              </IconButton>
-            </>
-          ),
+          endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
+          startAdornment: <SearchIcon className={searchIcon} />,
         }}
       />
       <Menu />

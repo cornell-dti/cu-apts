@@ -2,6 +2,8 @@ type Id = {
   readonly id: string;
 };
 
+type StringSet = Record<string, boolean>;
+
 export type DetailedRating = {
   readonly location: number;
   readonly safety: number;
@@ -13,6 +15,7 @@ export type DetailedRating = {
 
 export type Review = {
   readonly aptId: string | null;
+  readonly likes?: number;
   readonly date: Date;
   readonly detailedRatings: DetailedRating;
   readonly landlordId: string;
@@ -23,13 +26,17 @@ export type Review = {
 
 export type ReviewWithId = Review & Id;
 
+export type ReviewInternal = Review & {};
+
 export type Landlord = {
   readonly name: string;
   readonly contact: string | null;
   readonly avgRating: number;
+  readonly profilePhoto?: string;
   readonly photos: readonly string[]; // can be empty
   readonly reviews: readonly string[]; // array of Review IDs in reviews collection
   readonly properties: readonly string[]; // array of Apartment IDs in apartments collection
+  readonly address: string | null;
 };
 
 export type LandlordWithId = Landlord & Id;
@@ -47,3 +54,7 @@ export type Apartment = {
 
 export type ApartmentWithId = Apartment & Id;
 export type ApartmentWithLabel = ApartmentWithId & { readonly label: 'APARTMENT' };
+
+export type LandlordOrApartmentWithLabel = LandlordWithLabel | ApartmentWithLabel;
+
+export type Likes = StringSet;

@@ -1,8 +1,5 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement } from 'react';
 import HeartRating from '../utils/HeartRating';
-import ApartmentPhoto1 from '../../assets/apartment_exterior.png';
-import ApartmentPhoto2 from '../../assets/apartment_interior.png';
-import Logo from '../../assets/company_logo.png';
 import {
   CardHeader,
   CardMedia,
@@ -12,14 +9,13 @@ import {
   makeStyles,
   Avatar,
 } from '@material-ui/core';
-import { isMobile } from '../../utils/isMobile';
-import { useEffect } from 'react';
-type View = {
-  mobileView: boolean;
-};
+import styles from './Header.module.scss';
+import { Landlord } from '../../../../common/types/db-types';
+import defaultHeader from '../../assets/default_header.png';
+import defaultIcon from '../../assets/default_icon.png';
+
 type Props = {
-  readonly name: string;
-  readonly overallRating: number;
+  readonly landlord: Landlord;
   readonly numReviews: number;
   handleClick: () => void;
 };
@@ -32,19 +28,25 @@ const GlobalCss = withStyles({
   },
 })(() => null);
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   media: {
     height: '400px',
-    backgroundColor: 'rgba(0,0,0,0.6)',
     backgroundBlendMode: 'darken',
     position: 'relative',
   },
   logo: {
     height: '86px',
     width: '86px',
+    fontSize: '3rem',
+    marginLeft: '5px',
+    marginBottom: '10px',
+    [theme.breakpoints.up('md')]: {
+      marginLeft: '5%',
+      marginBottom: '20px',
+    },
   },
   photoButton: {
-    marginRight: '25px',
+    marginRight: '5px',
     height: '45px',
     width: '133px',
     fontStyle: 'normal',
@@ -65,6 +67,9 @@ const useStyles = makeStyles({
     '&:focus': {
       borderColor: 'black !important',
     },
+    [theme.breakpoints.up('md')]: {
+      marginRight: '25px',
+    },
   },
   landlordName: {
     color: 'white',
@@ -84,102 +89,90 @@ const useStyles = makeStyles({
     lineHeight: '31px',
     position: 'relative',
     marginBottom: '20px',
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: '0px',
+    },
   },
   landlordRating: {
+    paddingTop: '5px',
+    marginRight: '45px',
     '& div': {
       display: 'inline-block',
       marginTop: '2px',
     },
   },
-});
+  headerSection: {
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: '10px',
+    },
+  },
+  ratingSection: { paddingTop: '10px' },
+  btnSection: {
+    height: '94%',
+    [theme.breakpoints.down('sm')]: {
+      height: '97%',
+    },
+  },
+}));
 
-const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props): ReactElement => {
-  const [state, setState] = useState<View>({
-    mobileView: false,
-  });
-  const { mobileView } = state;
-  useEffect(() => {
-    const setResponsiveness = () => {
-      return isMobile()
-        ? setState((prevState) => ({ ...prevState, mobileView: true }))
-        : setState((prevState) => ({ ...prevState, mobileView: false }));
-    };
-    setResponsiveness();
-    window.addEventListener('resize', () => setResponsiveness());
-  }, []);
-  const { media, logo, photoButton, landlordName, landlordReviews, landlordRating } = useStyles();
+const LandlordHeader = ({ landlord, numReviews, handleClick }: Props): ReactElement => {
+  const { name, avgRating, profilePhoto, photos } = landlord;
+  const icon = profilePhoto ? profilePhoto : defaultIcon;
+  const photoLink = photos.length ? photos[0] : defaultHeader;
+  const {
+    media,
+    logo,
+    photoButton,
+    landlordName,
+    landlordReviews,
+    landlordRating,
+    headerSection,
+    ratingSection,
+    btnSection,
+  } = useStyles();
   return (
-    <Grid container spacing={0}>
+    <Grid container spacing={0} alignItems="flex-end">
       <React.Fragment>
         <GlobalCss />
-        <Grid item xs={12} md={mobileView ? 12 : 6}>
-          <CardMedia className={media} image={ApartmentPhoto1}>
+        <Grid item xs={12}>
+          <CardMedia className={media} image={photoLink}>
             <Grid item xs={12}>
-              <div
-                style={{
-                  height: '200px',
-                  width: '100%',
-                  position: 'absolute',
-                  left: '10px',
-                  bottom: '20px',
-                }}
-              >
+              <div className={styles.HeaderDiv}>
                 <Grid
                   container
-                  xs={12}
-                  direction="row"
-                  style={{ height: '200px' }}
+                  className={styles.HeaderRow}
+                  justify="space-between"
                   alignItems="flex-end"
                 >
-                  <Grid item xs={12} md={mobileView ? 12 : 3}>
-                    <Avatar
-                      src={Logo}
-                      alt="Landlord Logo"
-                      className={logo}
-                      style={
-                        mobileView
-                          ? { marginLeft: '5px', marginBottom: '10px' }
-                          : { marginLeft: '5%', marginBottom: '20px' }
-                      }
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    md={mobileView ? 12 : 8}
-                    style={mobileView ? { marginLeft: '10px' } : {}}
-                  >
-                    <CardHeader title={name} className={landlordName} disableTypography={true} />
-                    <Grid container style={{ paddingTop: '10px' }}>
-                      <Grid
-                        item
-                        className={landlordRating}
-                        xs={12}
-                        md={mobileView ? 12 : 3}
-                        style={{ paddingTop: '5px', marginRight: '45px' }}
-                      >
-                        <HeartRating value={overallRating} readOnly />
-                      </Grid>
-                      <Grid item xs={12} md={mobileView ? 12 : 6}>
-                        <CardHeader
-                          title={numReviews + ' Reviews'}
-                          className={landlordReviews}
-                          disableTypography={true}
-                          style={mobileView ? { marginLeft: '0px' } : {}}
-                        />
+                  <Grid container item xs={9} justify="flex-start">
+                    <Grid item xs={12} md={2}>
+                      <Avatar src={icon} alt={name} className={logo} />
+                    </Grid>
+                    <Grid item className={headerSection}>
+                      <CardHeader title={name} className={landlordName} disableTypography={true} />
+                      <Grid container className={ratingSection}>
+                        <Grid item className={landlordRating} xs={12} md={4}>
+                          <HeartRating value={avgRating} readOnly />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <CardHeader
+                            title={numReviews + ' Reviews'}
+                            className={landlordReviews}
+                            disableTypography={true}
+                          />
+                        </Grid>
                       </Grid>
                     </Grid>
                   </Grid>
                 </Grid>
               </div>
             </Grid>
-            {mobileView && (
-              <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
+            {photos.length > 0 && (
+              <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
                 <Button
                   disableFocusRipple
                   variant="outlined"
                   className={photoButton}
-                  style={{ marginRight: '5px' }}
                   onClick={handleClick}
                 >
                   Show all photos
@@ -188,22 +181,6 @@ const LandlordHeader = ({ name, overallRating, numReviews, handleClick }: Props)
             )}
           </CardMedia>
         </Grid>
-        {!mobileView && (
-          <Grid item xs={12} md={6}>
-            <CardMedia image={ApartmentPhoto2} className={media}>
-              <Grid container alignItems="flex-end" style={{ height: '97%' }} justify="flex-end">
-                <Button
-                  disableFocusRipple
-                  variant="outlined"
-                  className={photoButton}
-                  onClick={handleClick}
-                >
-                  Show all photos
-                </Button>
-              </Grid>
-            </CardMedia>
-          </Grid>
-        )}
       </React.Fragment>
     </Grid>
   );

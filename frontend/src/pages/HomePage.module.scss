@@ -4,7 +4,7 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-color: #f6f6f6;
+  background-color: 'white';
 }
 
 .search {
@@ -14,4 +14,12 @@
 .homepageDescription {
   padding-left: 2vw;
   padding-top: 1vh;
+}
+
+.JumboTron {
+  background: url(../assets/cover.png) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }

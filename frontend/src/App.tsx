@@ -3,10 +3,13 @@ import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
+import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
+import { Apartment } from '../../common/types/db-types';
+import Footer from './components/utils/Footer';
 
 const theme = createMuiTheme({
   palette: {
@@ -32,17 +35,23 @@ const theme = createMuiTheme({
   },
 });
 
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
+const home: NavbarButton = {
+  label: 'Home',
+  href: '/',
 };
 
 const review: NavbarButton = {
   label: 'Reviews',
-  href: '/landlord/1',
+  href: '/reviews',
 };
 
-const headersData = [faq, review];
+export type CardData = {
+  buildingData: Apartment;
+  numReviews: number;
+  company?: string;
+};
+
+const headersData = [home, review];
 
 const App = (): ReactElement => {
   return (
@@ -52,9 +61,11 @@ const App = (): ReactElement => {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route exact path="/faq" component={FAQPage} />
+          <Route exact path="/reviews" component={ReviewPage} />
           <Route path="/landlord/:landlordId" component={LandlordPage} />
           <Route component={NotFoundPage} />
         </Switch>
+        <Footer />
       </Router>
     </ThemeProvider>
   );

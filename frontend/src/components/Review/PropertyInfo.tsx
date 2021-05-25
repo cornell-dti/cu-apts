@@ -3,7 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import { Box, Typography, List, ListItem, ListItemText } from '@material-ui/core';
 
 type Props = {
-  readonly info: string[];
+  readonly info: readonly string[];
   readonly title: string;
 };
 
@@ -11,7 +11,7 @@ export default function PropertyInfo({ info, title }: Props): ReactElement {
   return (
     <Box mt={2} mb={-1}>
       <Typography variant="h6">{title}</Typography>
-      <List dense>
+      <List dense component="ul">
         <Grid container spacing={0} direction="row">
           {info.map((feature, index) => (
             <Grid item xs={6} sm={12} md={6} key={index}>
