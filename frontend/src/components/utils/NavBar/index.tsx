@@ -94,6 +94,9 @@ const useStyles = makeStyles(() => ({
     alignSelf: 'right',
     marginBottom: '8px',
   },
+  drawerButton: {
+    fontFamily: 'Work Sans, sans-serif',
+  },
 }));
 function GetButtonColor(lab: string) {
   const location = useLocation();
@@ -115,6 +118,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerContainer,
     menuDrawer,
     icon,
+    drawerButton,
   } = useStyles();
   const muiTheme = createMuiTheme({
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
@@ -125,16 +129,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       <ThemeProvider theme={muiTheme}>
         {headersData.map(({ label, href }, index) => {
           return (
-            <Link
-              {...{
-                component: RouterLink,
-                to: href,
-                color: GetButtonColor(label),
-                style: { textDecoration: 'none' },
-                key: index,
-              }}
-            >
-              <MenuItem key={index}>{label}</MenuItem>
+            <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
+              <MenuItem key={index} className={drawerButton}>
+                {label}
+              </MenuItem>
             </Link>
           );
         })}
