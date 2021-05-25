@@ -141,41 +141,32 @@ const LandlordHeader = ({
     logoGrid,
   } = useStyles();
   return (
-    <Grid container spacing={0} alignItems="flex-end">
+    <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
         <GlobalCss />
         <Grid item xs={12}>
           <CardMedia className={media} image={photoLink}>
             <Grid item xs={12}>
-              <div className={styles.HeaderDiv}>
-                <Grid
-                  container
-                  className={styles.HeaderRow}
-                  justify="space-between"
-                  alignItems="flex-end"
-                >
-                  <Grid container justify="flex-start">
-                    <Grid item xs={12} md={1} className={logoGrid}>
-                      <Avatar src={icon} alt={name} className={logo} />
+              <Grid container className={styles.HeaderRow}>
+                <Grid item xs={12} md={1} className={logoGrid}>
+                  <Avatar src={icon} alt={name} className={logo} />
+                </Grid>
+                <Grid className={headerSection}>
+                  <CardHeader title={name} className={landlordName} disableTypography={true} />
+                  <Grid container className={ratingSection}>
+                    <Grid item className={landlordRating} xs={12}>
+                      <HeartRating value={averageRating} precision={0.5} readOnly />
                     </Grid>
-                    <Grid className={headerSection}>
-                      <CardHeader title={name} className={landlordName} disableTypography={true} />
-                      <Grid container className={ratingSection}>
-                        <Grid item className={landlordRating} xs={12} md={4}>
-                          <HeartRating value={averageRating} precision={0.5} readOnly />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <CardHeader
-                            title={numReviews + ' Reviews'}
-                            className={landlordReviews}
-                            disableTypography={true}
-                          />
-                        </Grid>
-                      </Grid>
+                    <Grid item xs={12}>
+                      <CardHeader
+                        title={numReviews + ' Reviews'}
+                        className={landlordReviews}
+                        disableTypography={true}
+                      />
                     </Grid>
                   </Grid>
                 </Grid>
-              </div>
+              </Grid>
             </Grid>
             {photos.length > 0 && (
               <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
