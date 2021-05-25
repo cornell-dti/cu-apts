@@ -36,7 +36,10 @@ const LandlordPage = (): ReactElement => {
   const [loaded, setLoaded] = useState(false);
   const toastTime = 3500;
 
-  useTitle(`Reviews for ${landlordId}`);
+  useTitle(
+    () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
+    [loaded, landlordData]
+  );
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
@@ -73,6 +76,12 @@ const LandlordPage = (): ReactElement => {
     }, toastTime);
   };
 
+  const getAverageRating = (reviewData: ReviewWithId[]) =>
+    reviewData.reduce(
+      (currSum, { overallRating }) => (overallRating > 0 ? currSum + overallRating : currSum),
+      0
+    ) / reviewData.length;
+
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -95,7 +104,7 @@ const LandlordPage = (): ReactElement => {
           )
         );
       } catch (err) {
-        console.log('error with liking review');
+        throw new Error('Error with liking review');
       }
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: false }));
     };
@@ -128,6 +137,9 @@ const LandlordPage = (): ReactElement => {
       <Grid container item spacing={3} justify="space-between" alignItems="center">
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
+          {reviewData.length === 0 && (
+            <Typography>No reviews available. Be the first to leave one!</Typography>
+          )}
         </Grid>
         {landlordData && landlordData.photos.length > 0 && (
           <Button
@@ -170,6 +182,7 @@ const LandlordPage = (): ReactElement => {
       {landlordData && (
         <Container>
           <LandlordHeader
+            averageRating={getAverageRating(reviewData)}
             landlord={landlordData}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}

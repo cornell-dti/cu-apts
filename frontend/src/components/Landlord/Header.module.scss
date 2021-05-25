@@ -1,11 +1,9 @@
 .HeaderDiv {
-  height: 200px;
-  width: 100%;
-  position: absolute;
-  left: 10px;
-  bottom: 20px;
+  position: relative;
 }
 
 .HeaderRow {
-  height: 200px;
+  position: absolute;
+  bottom: 0;
+  left: 16px;
 }

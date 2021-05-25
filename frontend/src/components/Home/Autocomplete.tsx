@@ -29,10 +29,19 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   searchIcon: { paddingRight: '10px' },
+  resultChip: { cursor: 'pointer' },
+  field: {
+    '&.Mui-focused': {
+      border: 'none',
+      '& .MuiOutlinedInput-notchedOutline': {
+        border: 'none',
+      },
+    },
+  },
 }));
 
 export default function Autocomplete() {
-  const { menuList, text, searchIcon } = useStyles();
+  const { menuList, text, searchIcon, resultChip, field } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -107,9 +116,18 @@ export default function Autocomplete() {
                         <Grid container justify="space-between">
                           <Grid item xl={8}>
                             <Typography>{option.name}</Typography>
+                            <Typography>
+                              {'address' in option &&
+                                option.address !== option.name &&
+                                option.address}
+                            </Typography>
                           </Grid>
                           <Grid item xl={4}>
-                            <Chip color="primary" label={option.label.toLowerCase()} />
+                            <Chip
+                              color="primary"
+                              label={option.label.toLowerCase()}
+                              className={resultChip}
+                            />
                           </Grid>
                         </Grid>
                       </MenuItem>
@@ -181,6 +199,7 @@ export default function Autocomplete() {
         InputProps={{
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
           startAdornment: <SearchIcon className={searchIcon} />,
+          className: field,
         }}
       />
       <Menu />
