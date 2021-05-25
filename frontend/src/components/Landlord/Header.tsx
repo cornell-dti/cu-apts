@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme) => ({
       height: '97%',
     },
   },
+  logoGrid: {
+    marginRight: '1em',
+  },
 }));
 
 const LandlordHeader = ({
@@ -135,6 +138,7 @@ const LandlordHeader = ({
     headerSection,
     ratingSection,
     btnSection,
+    logoGrid,
   } = useStyles();
   return (
     <Grid container spacing={0} alignItems="flex-end">
@@ -151,7 +155,7 @@ const LandlordHeader = ({
                   alignItems="flex-end"
                 >
                   <Grid container justify="flex-start">
-                    <Grid item xs={12} md={2}>
+                    <Grid item xs={12} md={1} className={logoGrid}>
                       <Avatar src={icon} alt={name} className={logo} />
                     </Grid>
                     <Grid className={headerSection}>

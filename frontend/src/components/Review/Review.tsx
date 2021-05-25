@@ -75,7 +75,7 @@ const ReviewComponent = ({
             <Grid container spacing={2}>
               <Grid item container justify="space-between">
                 {overallRating !== null ? (
-                  <Grid container xs={10} spacing={2}>
+                  <Grid container item xs={10} spacing={2}>
                     <Grid item>
                       <HeartRating value={overallRating} readOnly />
                     </Grid>
