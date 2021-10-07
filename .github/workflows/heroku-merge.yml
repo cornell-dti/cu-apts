@@ -1,0 +1,17 @@
+name: Deploy to Heroku prod on merge
+on:
+  push:
+jobs:
+  prod-check:
+    if: ${{ github.ref == 'refs/heads/release' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    steps:
+      - run: echo 'Deploying to production server on branch $GITHUB_REF'
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.CUAPTS_HEROKU_SERVICE_KEY_PROD}}
+          heroku_app_name: 'cuapts-backend-prod'
+          heroku_email: 'kjj32@cornell.edu'
