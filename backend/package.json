@@ -5,6 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "build": "tsc",
+    "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
     "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
     "dev": "ts-node src/server.ts",
