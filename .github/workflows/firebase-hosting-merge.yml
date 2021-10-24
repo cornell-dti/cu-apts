@@ -12,6 +12,11 @@ jobs:
     environment: prod
     steps:
       - uses: actions/checkout@v2
+      - run: yarn install
+      - name: Build Frontend
+        run: yarn workspace frontend build
+        env:
+          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -20,4 +25,3 @@ jobs:
           projectId: cuapts-prod
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
-          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'

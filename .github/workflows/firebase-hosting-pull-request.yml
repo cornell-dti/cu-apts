@@ -9,11 +9,15 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v2
+      - run: yarn install
+      - name: Build Frontend
+        run: yarn workspace frontend build
+        env:
+          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CU_APTS_STAGING }}'
           projectId: cu-apts-staging
         env:
-          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'
           FIREBASE_CLI_PREVIEWS: hostingchannels
