@@ -25,11 +25,7 @@ const likesCollection = db.collection('likes');
 const app: Express = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-  })
-);
+app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
 app.get('/', async (_, res) => {

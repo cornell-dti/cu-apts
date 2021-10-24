@@ -55,8 +55,11 @@
     "**/*.{ts,js,tsx,jsx,scss,css,html}": [
       "prettier --write"
     ],
-    "**/*.{ts,js,tsx,jsx}": [
-      "yarn lint:fix"
+    "./frontend/**/*.{ts,js,tsx,jsx}": [
+      "yarn workspace frontend lint:fix"
+    ],
+    "./backend/**/*.{ts,js,tsx,jsx}": [
+      "yarn workspace backend lint:fix"
     ]
   },
   "engines": {
