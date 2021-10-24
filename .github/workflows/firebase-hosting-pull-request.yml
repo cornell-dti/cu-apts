@@ -6,6 +6,7 @@ on: pull_request
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - uses: actions/checkout@v2
       - run: yarn install && yarn workspace frontend build

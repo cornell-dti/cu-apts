@@ -9,6 +9,7 @@ name: Deploy to Prod Firebase Hosting on merge
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@v2
       - run: yarn install && yarn workspace frontend build
