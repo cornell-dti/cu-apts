@@ -9,7 +9,10 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v2
-      - run: yarn install && yarn workspace frontend build
+      - name: Build Frontend
+        run: yarn install && yarn workspace frontend build
+        env:
+          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
