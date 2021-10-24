@@ -3,7 +3,7 @@
   "scripts": {
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
-    "backend-dev": "yarn workspace backend start",
+    "backend-dev": "yarn workspace backend dev",
     "lint": "eslint . --ext .ts --ext .tsx",
     "lint:fix": "yarn lint --fix",
     "format": "prettier --write **/*.{ts,js,tsx,jsx,scss,css,html}",

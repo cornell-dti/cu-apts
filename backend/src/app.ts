@@ -2,8 +2,6 @@ import express, { Express, RequestHandler } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
-import { db, FieldValue } from './firebase-config';
-import { Section } from './firebase-config/types';
 import {
   Review,
   Landlord,
@@ -14,7 +12,9 @@ import {
   LandlordWithLabel,
   ApartmentWithLabel,
   ApartmentWithId,
-} from '../../common/types/db-types';
+} from '@common/types/db-types';
+import { db, FieldValue } from './firebase-config';
+import { Section } from './firebase-config/types';
 import authenticate from './auth';
 
 const reviewCollection = db.collection('reviews');

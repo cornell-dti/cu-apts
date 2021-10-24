@@ -1,12 +1,22 @@
 {
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
+  },
   "extends": [
     "../.eslintrc",
     "airbnb",
     "plugin:@typescript-eslint/recommended",
     "plugin:react-hooks/recommended",
     "prettier",
-    "prettier/react"
+    "prettier/react",
+    "plugin:import/typescript"
   ],
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "./"
+  },
   "env": { "node": true },
   "rules": {
     "import/extensions": "off",
