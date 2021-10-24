@@ -5,7 +5,7 @@
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
     "backend-dev": "yarn workspace backend dev",
-    "lint": "eslint . --ext .ts --ext .tsx",
+    "lint": "yarn workspaces run lint",
     "lint:fix": "yarn lint --fix",
     "format": "prettier --write **/*.{ts,js,tsx,jsx,scss,css,html}",
     "format:check": "prettier --check **/*.{ts,js,tsx,jsx,scss,css,html}",

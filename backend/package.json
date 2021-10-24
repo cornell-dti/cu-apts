@@ -9,6 +9,8 @@
     "start": "node dist/backend/src/server.js",
     "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
     "dev": "ts-node src/server.ts",
+    "lint": "eslint . --ext .ts --ext .tsx",
+    "lint:fix": "yarn lint --fix",
     "script": "ts-node src/script.ts"
   },
   "author": "",
