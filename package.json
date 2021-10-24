@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "tsc": "yarn workspaces run tsc",
+    "build": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
     "backend-dev": "yarn workspace backend dev",
     "lint": "eslint . --ext .ts --ext .tsx",
@@ -53,6 +53,9 @@
   "lint-staged": {
     "**/*.{ts,js,tsx,jsx,scss,css,html}": [
       "prettier --write"
+    ],
+    "**/*.{ts,js,tsx,jsx}": [
+      "tsc --noEmit"
     ]
   }
 }
