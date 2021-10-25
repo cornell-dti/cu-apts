@@ -9,14 +9,16 @@ name: Deploy to Prod Firebase Hosting on merge
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - uses: actions/checkout@v2
-      - run: yarn install && yarn workspace frontend build
+      - run: yarn install
+      - run: yarn workspace frontend build
+        env:
+          REACT_APP_BASE_URL: '${{ secrets.REACT_APP_BASE_URL }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CUAPTS_PROD }}'
           channelId: live
           projectId: cuapts-prod
-        env:
-          FIREBASE_CLI_PREVIEWS: hostingchannels
