@@ -69,6 +69,18 @@ const LandlordPage = (): ReactElement => {
     return subscribeLikes(setLikedReviews);
   }, []);
 
+  useEffect(() => {}, [reviewData]);
+
+  type Fields = keyof typeof reviewData[0];
+
+  const sortReviews = (arr: ReviewWithId[], property: Fields) => {
+    let unsorted = arr;
+    return unsorted.sort((r1, r2) => {
+      // @ts-ignore: Object possibly null or undefined
+      return r1?.[property] < r2?.[property] ? 1 : -1;
+    });
+  };
+
   const showConfirmationToast = () => {
     setShowConfirmation(true);
     setTimeout(() => {
