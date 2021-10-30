@@ -16,6 +16,7 @@ import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
+import DropDown from '../components/utils/DropDown';
 
 export type RatingInfo = {
   feature: string;
@@ -173,6 +174,23 @@ const LandlordPage = (): ReactElement => {
           >
             Leave a Review
           </Button>
+          <DropDown
+            label="sort reviews by"
+            menuItems={[
+              {
+                item: 'Most recent',
+                callback: () => {
+                  setReviewData([...sortReviews(reviewData, 'date')]);
+                },
+              },
+              {
+                item: 'Most helpful',
+                callback: () => {
+                  setReviewData([...sortReviews(reviewData, 'likes')]);
+                },
+              },
+            ]}
+          />
         </Grid>
       </Grid>
       <Grid item xs={12}>
