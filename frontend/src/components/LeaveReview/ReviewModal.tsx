@@ -155,10 +155,16 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       }
       const token = await user.getIdToken(true);
       const data = await formDataToReview(review);
-      if (data.reviewText === '' || data.overallRating === 0 || includesProfanity(data.reviewText)) {
+      if (
+        data.reviewText === '' ||
+        data.overallRating === 0 ||
+        includesProfanity(data.reviewText)
+      ) {
         data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
         data.reviewText === '' ? setEmptyTextError(true) : setEmptyTextError(false);
-        includesProfanity(data.reviewText) ? setIncludesProfanityError(true) : setIncludesProfanityError(false);
+        includesProfanity(data.reviewText)
+          ? setIncludesProfanityError(true)
+          : setIncludesProfanityError(false);
         return;
       }
       const res = await axios.post('/new-review', data, createAuthHeaders(token));
@@ -298,8 +304,13 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                   maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${emptyTextError ? ' This field is required' : ''
-                  }${includesProfanityError ? ' This review contains profanity. Please edit it and try again.' : ''}`}
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
+                  emptyTextError ? ' This field is required' : ''
+                }${
+                  includesProfanityError
+                    ? ' This review contains profanity. Please edit it and try again.'
+                    : ''
+                }`}
                 onChange={updateBody}
               />
             </Grid>
