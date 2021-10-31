@@ -167,6 +167,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       }
       console.log(review);
       setOpen(false);
+      dispatch({ type: 'reset' });
       onSuccess();
     } catch (err) {
       console.log(err);
