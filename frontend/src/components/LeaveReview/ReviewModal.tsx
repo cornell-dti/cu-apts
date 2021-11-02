@@ -16,6 +16,7 @@ import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
+import { includesProfanity } from '../../utils/profanity';
 import Toast from './Toast';
 import styles from './ReviewModal.module.scss';
 
@@ -87,6 +88,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
+  const [includesProfanityError, setIncludesProfanityError] = useState(false);
 
   const updateOverall = () => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
@@ -153,9 +155,16 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       }
       const token = await user.getIdToken(true);
       const data = await formDataToReview(review);
-      if (data.reviewText === '' || data.overallRating === 0) {
+      if (
+        data.reviewText === '' ||
+        data.overallRating === 0 ||
+        includesProfanity(data.reviewText)
+      ) {
         data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
         data.reviewText === '' ? setEmptyTextError(true) : setEmptyTextError(false);
+        includesProfanity(data.reviewText)
+          ? setIncludesProfanityError(true)
+          : setIncludesProfanityError(false);
         return;
       }
       const res = await axios.post('/new-review', data, createAuthHeaders(token));
@@ -164,6 +173,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
       }
       console.log(review);
       setOpen(false);
+      dispatch({ type: 'reset' });
       onSuccess();
     } catch (err) {
       console.log(err);
@@ -284,7 +294,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
             <Grid container item>
               <TextField
                 required={true}
-                error={emptyTextError}
+                error={emptyTextError || includesProfanityError}
                 fullWidth
                 id="body"
                 label="Review"
@@ -294,9 +304,11 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                   maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
-                  emptyTextError ? ' This field is required' : ''
-                }`}
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${emptyTextError ? ' This field is required' : ''
+                  }${includesProfanityError
+                    ? ' This review contains profanity. Please edit it and try again.'
+                    : ''
+                  }`}
                 onChange={updateBody}
               />
             </Grid>
