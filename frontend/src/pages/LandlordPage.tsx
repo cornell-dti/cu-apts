@@ -77,8 +77,10 @@ const LandlordPage = (): ReactElement => {
   const sortReviews = (arr: ReviewWithId[], property: Fields) => {
     let unsorted = arr;
     return unsorted.sort((r1, r2) => {
+      const first = r1?.[property] === undefined ? 0 : r1?.[property];
+      const second = r2?.[property] === undefined ? 0 : r2?.[property];
       // @ts-ignore: Object possibly null or undefined
-      return r1?.[property] < r2?.[property] ? 1 : -1;
+      return first < second ? 1 : -1;
     });
   };
 
