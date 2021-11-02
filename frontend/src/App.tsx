@@ -10,6 +10,8 @@ import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
 import { Apartment } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
+import { hotjar } from 'react-hotjar';
+import { HJID, HJSV } from './constants/hotjar';
 
 const theme = createMuiTheme({
   palette: {
@@ -52,6 +54,8 @@ export type CardData = {
 };
 
 const headersData = [home, review];
+
+hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   return (
