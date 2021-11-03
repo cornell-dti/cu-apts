@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
     fontSize: '1.125em',
     marginBottom: '0.4em',
     '@media only screen and (max-width: 425px) ': {
-      fontSize: '0.75em',
+      fontSize: '0.938em',
     },
   },
   body: {
@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'normal',
     fontSize: '0.938em',
     '@media only screen and (max-width: 425px) ': {
-      fontSize: '0.625em',
+      fontSize: '0.75em',
     },
     lineHeight: '20px',
     marginBottom: '1em',
