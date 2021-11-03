@@ -12,6 +12,7 @@ import { Apartment } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
+import Policies from './pages/Policies';
 
 const theme = createMuiTheme({
   palette: {
@@ -67,6 +68,7 @@ const App = (): ReactElement => {
             <Route exact path="/" component={HomePage} />
             <Route exact path="/faq" component={FAQPage} />
             <Route exact path="/reviews" component={ReviewPage} />
+            <Route exact path="/policies" component={Policies} />
             <Route path="/landlord/:landlordId" component={LandlordPage} />
             <Route component={NotFoundPage} />
           </Switch>
