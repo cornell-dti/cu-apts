@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
 
 type MenuElement = {
   item: string;
@@ -7,12 +8,20 @@ type MenuElement = {
 };
 
 type Props = {
-  label: string;
   menuItems: MenuElement[];
 };
 
-export default function BasicMenu({ label, menuItems }: Props) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+const useStyles = makeStyles({
+  button: {
+    minWidth: '64px',
+    border: '1px solid black',
+  },
+});
+
+export default function BasicMenu({ menuItems }: Props) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selected, setSelected] = useState<string>('most recent');
+  const { button } = useStyles();
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -29,8 +38,9 @@ export default function BasicMenu({ label, menuItems }: Props) {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
+        className={button}
       >
-        {label}
+        {selected}
       </Button>
       <Menu
         id="basic-menu"
@@ -46,6 +56,7 @@ export default function BasicMenu({ label, menuItems }: Props) {
           return (
             <MenuItem
               onClick={() => {
+                setSelected(item);
                 handleClose();
                 callback();
               }}
