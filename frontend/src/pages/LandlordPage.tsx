@@ -169,7 +169,7 @@ const LandlordPage = (): ReactElement => {
           </Button>
         )}
         <Grid item sm={4} md={8}>
-          <Grid container spacing={1} justify="flex-end">
+          <Grid container spacing={1} justify="flex-end" alignItems="center">
             <Grid item>
               <Typography>Sort reviews by:</Typography>
             </Grid>
