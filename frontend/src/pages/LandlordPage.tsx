@@ -1,5 +1,5 @@
 import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
@@ -16,6 +16,7 @@ import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
+import DropDown from '../components/utils/DropDown';
 
 export type RatingInfo = {
   feature: string;
@@ -68,6 +69,22 @@ const LandlordPage = (): ReactElement => {
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
+
+  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
+    let unsorted = arr;
+    return unsorted.sort((r1, r2) => {
+      const first = r1?.[property] === undefined ? 0 : r1?.[property];
+      const second = r2?.[property] === undefined ? 0 : r2?.[property];
+      // @ts-ignore: Object possibly null or undefined
+      return first < second ? 1 : -1;
+    });
+  }, []);
+
+  useEffect(() => {
+    setReviewData(sortReviews(reviewData, 'date'));
+  }, [reviewData, sortReviews]);
+
+  type Fields = keyof typeof reviewData[0];
 
   const showConfirmationToast = () => {
     setShowConfirmation(true);
@@ -151,16 +168,40 @@ const LandlordPage = (): ReactElement => {
             Show all photos
           </Button>
         )}
-
-        <Grid item>
-          <Button
-            color="primary"
-            variant="contained"
-            disableElevation
-            onClick={() => setReviewOpen(true)}
-          >
-            Leave a Review
-          </Button>
+        <Grid item sm={4} md={8}>
+          <Grid container spacing={1} justify="flex-end" alignItems="center">
+            <Grid item>
+              <Typography>Sort reviews by:</Typography>
+            </Grid>
+            <Grid item>
+              <DropDown
+                menuItems={[
+                  {
+                    item: 'Most recent',
+                    callback: () => {
+                      setReviewData([...sortReviews(reviewData, 'date')]);
+                    },
+                  },
+                  {
+                    item: 'Most helpful',
+                    callback: () => {
+                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                    },
+                  },
+                ]}
+              />
+            </Grid>
+            <Grid item>
+              <Button
+                color="primary"
+                variant="contained"
+                disableElevation
+                onClick={() => setReviewOpen(true)}
+              >
+                Leave a Review
+              </Button>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
       <Grid item xs={12}>
