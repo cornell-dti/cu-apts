@@ -14,8 +14,9 @@ const useStyles = makeStyles(() => ({
     letterSpacing: '0.02em',
     color: '#000000',
     '@media only screen and (max-width: 992px) ': {
-      paddingLeft: '1em',
-      paddingRight: '1em',
+      paddingLeft: '4%',
+      paddingRight: '4%',
+      margin: '0 auto',
     },
   },
   contact: {
@@ -23,20 +24,24 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     textAlign: 'center',
     marginLeft: '4px',
+    justifyContent: 'center',
+  },
+  text: {
+    textAlign: 'center',
   },
 }));
 const Footer = (): ReactElement => {
-  const { footer, contact } = useStyles();
+  const { footer, contact, text } = useStyles();
   return (
     <footer>
-      <Grid container alignItems="center" justify="center" className={footer} direction="column">
-        <Grid item>
+      <Grid container className={footer} alignItems="center" justify="center" direction="column">
+        <Grid item xl={12}>
           <Grid container alignItems="center" justify="center">
             <Grid item>
-              <Typography>Got a question that isn’t answered? </Typography>
+              <Typography className={text}>Got a question that isn’t answered? </Typography>
             </Grid>
             <Grid item>
-              <Typography>
+              <Typography className={text}>
                 <Link className={contact} href="mailto:hello@cornelldti.org">
                   Contact us!
                 </Link>
@@ -44,7 +49,7 @@ const Footer = (): ReactElement => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item>
+        <Grid item xl={12}>
           <Link
             {...{
               to: `/policies`,
