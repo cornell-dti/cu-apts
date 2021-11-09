@@ -1,11 +1,12 @@
 {
   "private": true,
   "scripts": {
+    "build": "yarn workspaces run tsc",
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
-    "backend-dev": "yarn workspace backend start",
-    "lint": "eslint . --ext .ts --ext .tsx",
-    "lint:fix": "yarn lint --fix",
+    "backend-dev": "yarn workspace backend dev",
+    "lint": "yarn workspaces run lint",
+    "lint:fix": "yarn workspaces run lint:fix",
     "format": "prettier --write **/*.{ts,js,tsx,jsx,scss,css,html}",
     "format:check": "prettier --check **/*.{ts,js,tsx,jsx,scss,css,html}",
     "start": "run-p frontend-dev backend-dev",
@@ -53,6 +54,18 @@
   "lint-staged": {
     "**/*.{ts,js,tsx,jsx,scss,css,html}": [
       "prettier --write"
+    ],
+    "./frontend/**/*.{ts,js,tsx,jsx}": [
+      "yarn workspace frontend lint:fix"
+    ],
+    "./backend/**/*.{ts,js,tsx,jsx}": [
+      "yarn workspace backend lint:fix"
     ]
+  },
+  "engines": {
+    "node": "14.x"
+  },
+  "dependencies": {
+    "bad-words": "^3.0.4"
   }
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Redirect } from 'react-router-dom';
 import {
   Chip,
   CircularProgress,
@@ -9,11 +8,13 @@ import {
   MenuList,
   TextField,
   Typography,
+  Link,
 } from '@material-ui/core';
 import { get } from '../../utils/call';
 import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
+import { Link as RouterLink } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
@@ -21,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
     maxHeight: 200,
     overflow: 'auto',
+    boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
   },
   text: {
     backgroundColor: 'white',
@@ -28,11 +30,17 @@ const useStyles = makeStyles((theme) => ({
       width: '70%',
     },
   },
+  addressText: {
+    color: '#868686',
+  },
+  buildingText: {
+    color: 'black',
+  },
   searchIcon: { paddingRight: '10px' },
   resultChip: { cursor: 'pointer' },
   field: {
     '&.Mui-focused': {
-      border: 'none',
+      border: '20px black',
       '& .MuiOutlinedInput-notchedOutline': {
         border: 'none',
       },
@@ -41,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Autocomplete() {
-  const { menuList, text, searchIcon, resultChip, field } = useStyles();
+  const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -50,7 +58,6 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
-  const [selectedId, setSelectedId] = useState<string | null>('');
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
@@ -80,13 +87,6 @@ export default function Autocomplete() {
     }
   };
 
-  const handleClickMenu = (
-    event: React.MouseEvent<EventTarget>,
-    option: LandlordOrApartmentWithLabel
-  ) => {
-    setSelectedId(getLandlordId(option));
-  };
-
   const Menu = () => {
     return (
       <div>
@@ -108,29 +108,34 @@ export default function Autocomplete() {
                 ) : (
                   options.map((option, index) => {
                     return (
-                      <MenuItem
-                        button={true}
-                        key={index}
-                        onClick={(event) => handleClickMenu(event, option)}
+                      <Link
+                        {...{
+                          to: `/landlord/${getLandlordId(option)}`,
+                          style: { textDecoration: 'none' },
+                          component: RouterLink,
+                        }}
                       >
-                        <Grid container justify="space-between">
-                          <Grid item xl={8}>
-                            <Typography>{option.name}</Typography>
-                            <Typography>
-                              {'address' in option &&
-                                option.address !== option.name &&
-                                option.address}
-                            </Typography>
+                        <MenuItem button={true} key={index}>
+                          <Grid container justify="space-between">
+                            <Grid item xl={8}>
+                              <Typography className={buildingText}>{option.name}</Typography>
+
+                              <Typography className={addressText}>
+                                {'address' in option &&
+                                  option.address !== option.name &&
+                                  option.address}
+                              </Typography>
+                            </Grid>
+                            <Grid item xl={4}>
+                              <Chip
+                                color="primary"
+                                label={option.label.toLowerCase()}
+                                className={resultChip}
+                              />
+                            </Grid>
                           </Grid>
-                          <Grid item xl={4}>
-                            <Chip
-                              color="primary"
-                              label={option.label.toLowerCase()}
-                              className={resultChip}
-                            />
-                          </Grid>
-                        </Grid>
-                      </MenuItem>
+                        </MenuItem>
+                      </Link>
                     );
                   })
                 )}
@@ -178,9 +183,7 @@ export default function Autocomplete() {
     }
   }, [loading, query]);
 
-  return selectedId !== '' ? (
-    <Redirect to={`/landlord/${selectedId}`} />
-  ) : (
+  return (
     <div>
       <TextField
         fullWidth

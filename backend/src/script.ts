@@ -1,7 +1,7 @@
+import { Landlord, LandlordWithId, Review } from '@common/types/db-types';
 import { db } from './firebase-config';
 import reviewData from './data/landlord_reviews.json';
 import landlordData from './data/landlords.json';
-import { Landlord, LandlordWithId, Review } from '../../common/types/db-types';
 
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');

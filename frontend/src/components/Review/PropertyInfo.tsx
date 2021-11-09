@@ -16,7 +16,7 @@ export default function PropertyInfo({ info, title }: Props): ReactElement {
           {info.length === 0 && <Typography>No information available.</Typography>}
           {info.map((feature, index) => (
             <Grid item xs={6} sm={12} md={6} key={index}>
-              <ListItem>
+              <ListItem disableGutters>
                 <ListItemText primary={feature} />
               </ListItem>
             </Grid>

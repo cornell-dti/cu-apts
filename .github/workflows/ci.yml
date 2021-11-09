@@ -7,7 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Set up Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - name: Use Yarn Cache
         uses: actions/cache@v1
         with:
@@ -20,3 +22,5 @@ jobs:
         run: yarn format:check
       - name: Run Linter
         run: yarn lint
+      - name: Run TypeScript Compiler
+        run: yarn tsc --noEmit
