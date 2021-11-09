@@ -185,7 +185,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       <Grid item>
         <Typography className={description}>
           <Link color="textPrimary" underline="none" href="/">
-            Search for off-campus housing, review apartments, and share feedback!
+            Easy browsing for off-campus housing
           </Link>
         </Typography>
       </Grid>
