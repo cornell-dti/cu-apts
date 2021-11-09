@@ -64,9 +64,9 @@ const useStyles = makeStyles(() => ({
     textAlign: 'left',
     fontStyle: 'normal',
     fontWeight: 'normal',
-    fontSize: '17.4658px',
+    fontSize: '1.125em',
     '@media only screen and (max-width: 425px) ': {
-      fontSize: '10px',
+      fontSize: '0.75em',
     },
     lineHeight: '20px',
     paddingTop: '10px',
