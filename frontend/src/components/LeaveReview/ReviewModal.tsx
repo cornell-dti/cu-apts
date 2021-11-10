@@ -14,7 +14,7 @@ import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
-import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
+import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
 import Toast from './Toast';
@@ -31,6 +31,7 @@ interface Props {
   landlordId: string;
   onSuccess: () => void;
   toastTime: number;
+  user: firebase.User | null;
 }
 
 interface FormData {
@@ -83,7 +84,7 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime }: Props) => {
+const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime, user }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
@@ -149,7 +150,6 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   const onSubmit = async () => {
     try {
       setSending(true);
-      const user = await getUser(true);
       if (!user) {
         throw new Error('Failed to login');
       }

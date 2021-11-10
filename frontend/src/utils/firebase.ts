@@ -20,6 +20,9 @@ const firestore = firebase.firestore();
 const storage = firebase.storage();
 
 const provider = new firebase.auth.GoogleAuthProvider();
+provider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 const getUser = async (promptSignIn = false) => {
   if (!auth.currentUser && promptSignIn) {
