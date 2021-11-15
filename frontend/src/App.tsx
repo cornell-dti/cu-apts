@@ -13,6 +13,7 @@ import Footer from './components/utils/Footer';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
+import ApartmentPage from './pages/ApartmentPage';
 
 const theme = createMuiTheme({
   palette: {
@@ -70,6 +71,7 @@ const App = (): ReactElement => {
             <Route exact path="/reviews" component={ReviewPage} />
             <Route exact path="/policies" component={Policies} />
             <Route path="/landlord/:landlordId" component={LandlordPage} />
+            <Route path="/apartment/:aptId" component={ApartmentPage} />
             <Route component={NotFoundPage} />
           </Switch>
         </div>
