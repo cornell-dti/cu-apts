@@ -1,4 +1,4 @@
-import express, { Express, RequestHandler } from 'express';
+import express, { Express, json, RequestHandler } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
@@ -165,25 +165,39 @@ app.get('/page-data/:page', async (req, res) => {
     .map((doc) => doc.data() as Apartment)
     .filter(({ landlordId }) => landlordId !== null);
 
-  const homeData = await Promise.all(
+  const buildingCompany = await Promise.all(
     buildings.map(async (buildingData) => {
       const { landlordId } = buildingData;
       if (landlordId === null) {
         throw new Error('Invalid landlordId');
       }
 
-      const reviewList = await reviewCollection.where(`landlordId`, '==', landlordId).get();
       const landlordDoc = await landlordCollection.doc(landlordId).get();
-
-      const numReviews = reviewList.docs.length;
       const company = landlordDoc.data()?.name;
       return {
         buildingData,
-        numReviews,
         company,
       };
     })
   );
+
+  const ids = buildingCompany.map((obj) => obj.buildingData.landlordId as string);
+  const dict: { [id: string]: number } = {};
+  ids.forEach((id) => {
+    dict[id] = 0;
+  });
+
+  (await reviewCollection.where('landlordId', 'in', ids).get()).docs.forEach((doc) => {
+    const { landlordId } = doc.data() as Review;
+    if (landlordId in dict) {
+      dict[landlordId] += 1;
+    }
+  });
+
+  const homeData = buildingCompany.map((obj) => ({
+    ...obj,
+    numReviews: dict[obj.buildingData.landlordId!],
+  }));
   res.status(200).send(JSON.stringify(homeData));
 });
 
