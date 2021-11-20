@@ -35,6 +35,7 @@ const LandlordPage = (): ReactElement => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
 
   useTitle(
@@ -80,9 +81,15 @@ const LandlordPage = (): ReactElement => {
     });
   }, []);
 
+  // re-renders when the data changes
   useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
+    setReviewData(sortReviews(reviewData, sortBy));
   }, [reviewData, sortReviews]);
+
+  // re-renders when the sorting category changes
+  useEffect(() => {
+    setReviewData([...sortReviews(reviewData, sortBy)]);
+  }, [sortBy]);
 
   type Fields = keyof typeof reviewData[0];
 
@@ -179,13 +186,13 @@ const LandlordPage = (): ReactElement => {
                   {
                     item: 'Most recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
                     item: 'Most helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
