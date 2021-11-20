@@ -84,11 +84,13 @@ const LandlordPage = (): ReactElement => {
   // re-renders when the data changes
   useEffect(() => {
     setReviewData(sortReviews(reviewData, sortBy));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewData, sortReviews]);
 
   // re-renders when the sorting category changes
   useEffect(() => {
     setReviewData([...sortReviews(reviewData, sortBy)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
   type Fields = keyof typeof reviewData[0];
