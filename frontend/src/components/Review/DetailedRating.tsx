@@ -29,12 +29,12 @@ const DetailedRatings = ({ ratings }: Props): ReactElement => {
   return (
     <Grid container spacing={1}>
       <Grid container item xs={12} spacing={2}>
-        <Item aspect="Building Value" rating={value} />
-        <Item aspect="Building Condition" rating={conditions} />
-        <Item aspect="Building Maintenance" rating={maintenance} />
-        <Item aspect="Mangement/ Landlord" rating={communication} />
-        <Item aspect="Neighborhood/ Location" rating={location} />
-        <Item aspect="Building Safety" rating={safety} />
+        <Item aspect="Location" rating={location} />
+        <Item aspect="Safety" rating={safety} />
+        <Item aspect="Value" rating={value} />
+        <Item aspect="Maintenance" rating={maintenance} />
+        <Item aspect="Communication" rating={communication} />
+        <Item aspect="Conditions" rating={conditions} />
       </Grid>
     </Grid>
   );
