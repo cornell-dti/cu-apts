@@ -1,0 +1,22 @@
+[
+  {
+    "id": 5,
+    "name": "Eddygate",
+    "address": "110 Dryden Road",
+    "landlordId": "24",
+    "numBaths": 1,
+    "numBeds": 2,
+    "photos": "",
+    "area": "COLLEGETOWN"
+  },
+  {
+    "id": 6,
+    "name": "Eddygate",
+    "address": "110 Dryden Road",
+    "landlordId": "24",
+    "numBaths": 1,
+    "numBeds": 2,
+    "photos": "",
+    "area": "COLLEGETOWN"
+  }
+]
