@@ -4,14 +4,16 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
+    "add_buildings": "ts-node scripts/add_buildings.ts",
+    "add_landlords": "ts-node scripts/add_landlords.ts",
+    "add_reviews": "ts-node scripts/add_reviews.ts",
     "build": "tsc",
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
     "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
     "dev": "ts-node src/server.ts",
     "lint": "eslint . --ext .ts --ext .tsx",
-    "lint:fix": "yarn lint --fix",
-    "script": "ts-node src/script.ts"
+    "lint:fix": "yarn lint --fix"
   },
   "author": "",
   "license": "ISC",
