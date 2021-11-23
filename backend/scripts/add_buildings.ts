@@ -7,12 +7,12 @@ const buildingCollection = db.collection('buildings');
 type BuildingData = {
   id: number;
   name: string;
+  landlordId: number;
   address: string;
-  landlordId: string | null;
-  numBaths: number;
-  numBeds: number;
-  photos: string;
   area: string;
+  photos: string[];
+  numBeds: number;
+  numBaths: number;
 };
 
 const getAreaType = (areaName: string): 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' => {
@@ -33,17 +33,17 @@ const getAreaType = (areaName: string): 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWN
 const formatBuilding = ({
   id,
   name,
-  address,
   landlordId,
-  numBaths,
-  numBeds,
-  photos,
+  address,
   area,
+  photos,
+  numBeds,
+  numBaths,
 }: BuildingData): ApartmentWithId => ({
   id: id.toString(),
   name,
   address,
-  landlordId,
+  landlordId: landlordId.toString(),
   numBaths: 0,
   numBeds: 0,
   photos: [],
