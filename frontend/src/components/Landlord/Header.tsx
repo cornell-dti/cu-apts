@@ -159,7 +159,7 @@ const LandlordHeader = ({
                     </Grid>
                     <Grid item xs={12}>
                       <CardHeader
-                        title={numReviews + ' Reviews'}
+                        title={numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
                         className={landlordReviews}
                         disableTypography={true}
                       />
