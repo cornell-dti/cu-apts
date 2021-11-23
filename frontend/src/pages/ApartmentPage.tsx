@@ -143,15 +143,17 @@ const ApartmentPage = (): ReactElement => {
 
   const removeLike = likeHelper(true);
 
-  const Modals = landlordData && (
+  const Modals = landlordData && apt && (
     <>
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         setOpen={setReviewOpen}
-        landlordId={apt!.landlordId!}
+        landlordId={apt.landlordId!}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        aptId={apt.id}
+        aptName={apt.name}
       />
       <PhotoCarousel
         photos={landlordData.photos}
