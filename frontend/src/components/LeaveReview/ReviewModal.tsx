@@ -150,10 +150,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime,
   const onSubmit = async () => {
     try {
       setSending(true);
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
+      const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
       if (
         data.reviewText === '' ||

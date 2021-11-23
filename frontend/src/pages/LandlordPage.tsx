@@ -37,7 +37,7 @@ const LandlordPage = (): ReactElement => {
   const [loaded, setLoaded] = useState(false);
   const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
-  const toastTime = 4500;
+  const toastTime = 4750;
 
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
