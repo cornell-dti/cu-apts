@@ -55,7 +55,7 @@ const makeBuilding = async (apartmentWithId: ApartmentWithId) => {
     const { id, ...rest } = apartmentWithId;
     const doc = buildingCollection.doc(id);
     const building = rest as Apartment;
-    doc.set({ building });
+    doc.set({ ...building });
   } catch (err) {
     console.log(err);
   }
