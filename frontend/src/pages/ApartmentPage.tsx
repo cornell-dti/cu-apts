@@ -6,7 +6,7 @@ import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
-import LandlordHeader from '../components/Landlord/Header';
+import ApartmentHeader from '../components/Apartment/Header';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
 import { Landlord, Apartment, ApartmentWithId } from '../../../common/types/db-types';
@@ -234,9 +234,9 @@ const ApartmentPage = (): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader
+          <ApartmentHeader
             averageRating={getAverageRating(reviewData)}
-            landlord={landlordData}
+            apartment={apt!}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}
           />
