@@ -8,7 +8,7 @@ import LandlordPage from './pages/LandlordPage';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
-import { Apartment, ApartmentWithId } from '../../common/types/db-types';
+import { ApartmentWithId } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
