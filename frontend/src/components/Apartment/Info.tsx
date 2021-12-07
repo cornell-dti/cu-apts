@@ -19,7 +19,11 @@ export default function Info({ landlord, contact, address }: Props): ReactElemen
       <Typography variant="h5">Info</Typography>
       <List dense>
         {landlord && <InfoItem text={`Landlord/Renting Company: ${landlord}`} />}
-        {contact && <InfoItem text={`Contact: ${contact}`} />}
+        {contact && (
+          <a href={contact}>
+            <InfoItem text={`Contact: ${contact}`} />
+          </a>
+        )}
         {address && <InfoItem text={`Address: ${address}`} />}
       </List>
     </Box>
