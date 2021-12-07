@@ -17,6 +17,7 @@ import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
+import NotFoundPage from './NotFoundPage';
 
 export type RatingInfo = {
   feature: string;
@@ -36,8 +37,12 @@ const LandlordPage = (): ReactElement => {
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
+  const [notFound, setNotFound] = useState(false);
   const toastTime = 3500;
-
+  const handlePageNotFound = () => {
+    console.log('Page not found');
+    setNotFound(true);
+  };
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
     [loaded, landlordData]
@@ -46,18 +51,21 @@ const LandlordPage = (): ReactElement => {
   useEffect(() => {
     get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
       callback: setReviewData,
+      errorHandler: handlePageNotFound,
     });
   }, [landlordId, showConfirmation]);
 
   useEffect(() => {
     get<Landlord>(`/landlord/${landlordId}`, {
       callback: setLandlordData,
+      errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 
   useEffect(() => {
     get<Apartment[]>(`/buildings/${landlordId}`, {
       callback: setBuildings,
+      errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 
@@ -213,7 +221,9 @@ const LandlordPage = (): ReactElement => {
     </Grid>
   );
 
-  return !loaded ? (
+  return notFound ? (
+    <NotFoundPage />
+  ) : !loaded ? (
     <LinearProgress />
   ) : (
     <>
