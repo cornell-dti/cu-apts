@@ -46,7 +46,10 @@ const LandlordPage = (): ReactElement => {
     console.log('Page not found');
     setNotFound(true);
   };
+<<<<<<< HEAD
 
+=======
+>>>>>>> Made some css fixes and fixed a bug to redirect the user properly to the 404 page
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
     [loaded, landlordData]
