@@ -42,6 +42,7 @@ const ApartmentPage = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
+  const [notFound, setNotFound] = useState(false);
   const toastTime = 3500;
   const handlePageNotFound = () => {
     console.log('Page not found');
