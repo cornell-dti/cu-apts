@@ -39,6 +39,8 @@ const ApartmentPage = (): ReactElement => {
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [user, setUser] = useState<firebase.User | null>(null);
+  const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const handlePageNotFound = () => {
@@ -104,11 +106,19 @@ const ApartmentPage = (): ReactElement => {
 
   type Fields = keyof typeof reviewData[0];
 
-  const showConfirmationToast = () => {
-    setShowConfirmation(true);
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
     setTimeout(() => {
-      setShowConfirmation(false);
+      setState(false);
     }, toastTime);
+  };
+
+  const showConfirmationToast = () => {
+    showToast(setShowConfirmation);
+  };
+
+  const showSignInErrorToast = () => {
+    showToast(setShowSignInError);
   };
 
   const getAverageRating = (reviewData: ReviewWithId[]) =>
@@ -149,6 +159,18 @@ const ApartmentPage = (): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const openReviewModal = async () => {
+    if (!user) {
+      let user = await getUser(true);
+      setUser(user);
+      if (!user) {
+        showSignInErrorToast();
+        return;
+      }
+    }
+    setReviewOpen(true);
+  };
+
   const Modals = landlordData && (
     <>
       <ReviewModal
@@ -158,6 +180,7 @@ const ApartmentPage = (): ReactElement => {
         landlordId={apt!.landlordId!}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        user={user}
       />
       <PhotoCarousel
         photos={landlordData.photos}
@@ -214,7 +237,7 @@ const ApartmentPage = (): ReactElement => {
                 color="primary"
                 variant="contained"
                 disableElevation
-                onClick={() => setReviewOpen(true)}
+                onClick={openReviewModal}
               >
                 Leave a Review
               </Button>
@@ -261,6 +284,14 @@ const ApartmentPage = (): ReactElement => {
                 isOpen={showConfirmation}
                 severity="success"
                 message="Review successfully submitted!"
+                time={toastTime}
+              />
+            )}
+            {showSignInError && (
+              <Toast
+                isOpen={showSignInError}
+                severity="error"
+                message="Error: Please sign in with a Cornell email."
                 time={toastTime}
               />
             )}
