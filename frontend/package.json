@@ -19,7 +19,6 @@
     "date-fns": "^2.19.0",
     "font-awesome": "^4.7.0",
     "material-ui-search-bar": "^1.0.0",
-    "node-sass": "^7.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-hotjar": "^4.0.0",
