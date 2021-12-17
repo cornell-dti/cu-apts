@@ -14,7 +14,7 @@ import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
-import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
+import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
 import Toast from './Toast';
@@ -33,6 +33,7 @@ interface Props {
   toastTime: number;
   aptId: string;
   aptName: string;
+  user: firebase.User | null;
 }
 
 interface FormData {
@@ -94,6 +95,7 @@ const ReviewModal = ({
   toastTime,
   aptId,
   aptName,
+  user,
 }: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
@@ -156,11 +158,7 @@ const ReviewModal = ({
   const onSubmit = async () => {
     try {
       setSending(true);
-      const user = await getUser(true);
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
+      const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
       if (
         data.reviewText === '' ||

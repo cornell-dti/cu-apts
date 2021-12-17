@@ -1,0 +1,2442 @@
+[
+  {
+    "id": 1,
+    "name": "Sanctuary Drive",
+    "landlordId": 2,
+    "address": "1 Sanctuary Dr",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 2,
+    "name": "Village Solars",
+    "landlordId": 2,
+    "address": "1067 Warren Rd",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 3,
+    "name": "Village Apartments",
+    "landlordId": 2,
+    "address": "117 Village Cir",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 4,
+    "name": "Observatory Circle",
+    "landlordId": 2,
+    "address": "Observatory Circle",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 5,
+    "name": "Eastgate Apartments",
+    "landlordId": 2,
+    "address": "847 Dryden Rd",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 6,
+    "name": "142 Burleigh Dr",
+    "landlordId": 3,
+    "address": "142 Burleigh Dr",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 7,
+    "name": "807 Triphammer Rd",
+    "landlordId": 3,
+    "address": "807 Triphammer Rd",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 8,
+    "name": "702 N. Aurora St",
+    "landlordId": 3,
+    "address": "702 N. Aurora St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 9,
+    "name": "118 Ferris Place",
+    "landlordId": 3,
+    "address": "118 Ferris Place",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 10,
+    "name": "117 Prospect St.",
+    "landlordId": 3,
+    "address": "117 Prospect St.",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 11,
+    "name": "218 Delaware Ave",
+    "landlordId": 3,
+    "address": "218 Delaware Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 12,
+    "name": "506 S. Cayuga St",
+    "landlordId": 3,
+    "address": "506 S. Cayuga St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 13,
+    "name": "116 Ferris Place",
+    "landlordId": 3,
+    "address": "116 Ferris Place",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 14,
+    "name": "Collegetown Terrace",
+    "landlordId": 4,
+    "address": "106 Valentine Place",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 15,
+    "name": "313 Wait Ave",
+    "landlordId": 5,
+    "address": "313 Wait Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 16,
+    "name": "210 Stewart Ave",
+    "landlordId": 5,
+    "address": "210 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 17,
+    "name": "546 Warren Rd",
+    "landlordId": 5,
+    "address": "546 Warren Rd",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 18,
+    "name": "705 Giles St",
+    "landlordId": 5,
+    "address": "705 Giles St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 19,
+    "name": "132A E. Spencer St",
+    "landlordId": 5,
+    "address": "132A E. Spencer St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 20,
+    "name": "401 S. Aurora St",
+    "landlordId": 5,
+    "address": "401 S. Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 21,
+    "name": "110 Cook St",
+    "landlordId": 5,
+    "address": "110 Cook St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 22,
+    "name": "478 Etna Rd",
+    "landlordId": 5,
+    "address": "478 Etna Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 23,
+    "name": "310 Turner Pl",
+    "landlordId": 5,
+    "address": "310 Turner Pl",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 24,
+    "name": "204 Miller St",
+    "landlordId": 5,
+    "address": "204 Miller St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 25,
+    "name": "312 Pleasant St",
+    "landlordId": 5,
+    "address": "312 Pleasant St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 26,
+    "name": "616 East State St",
+    "landlordId": 5,
+    "address": "616 East State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 27,
+    "name": "37 Dove Drive",
+    "landlordId": 5,
+    "address": "37 Dove Drive",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 28,
+    "name": "308 University Ave",
+    "landlordId": 5,
+    "address": "308 University Ave",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 29,
+    "name": "708 Stewart Ave",
+    "landlordId": 5,
+    "address": "708 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 30,
+    "name": "111 Osmun Place",
+    "landlordId": 5,
+    "address": "111 Osmun Place",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 31,
+    "name": "314 University Ave",
+    "landlordId": 5,
+    "address": "314 University Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 32,
+    "name": "616 E. State St",
+    "landlordId": 5,
+    "address": "616 E. State St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 33,
+    "name": "1453 Trumansburg Rd",
+    "landlordId": 5,
+    "address": "1453 Trumansburg Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 34,
+    "name": "410 E Yates St",
+    "landlordId": 5,
+    "address": "410 E Yates St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 35,
+    "name": "705 N Aurora St",
+    "landlordId": 5,
+    "address": "705 N Aurora St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 36,
+    "name": "305 Pleasant St",
+    "landlordId": 5,
+    "address": "305 Pleasant St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 37,
+    "name": "114 Eddy St",
+    "landlordId": 5,
+    "address": "114 Eddy St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 38,
+    "name": "401 Dryden Rd",
+    "landlordId": 5,
+    "address": "401 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 39,
+    "name": "509 S. Cayuga St",
+    "landlordId": 5,
+    "address": "509 S. Cayuga St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 40,
+    "name": "310 Pleasant St",
+    "landlordId": 5,
+    "address": "310 Pleasant St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 41,
+    "name": "402 Eddy St",
+    "landlordId": 5,
+    "address": "402 Eddy St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 42,
+    "name": "401 Eddy St",
+    "landlordId": 6,
+    "address": "401 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 43,
+    "name": "327 Eddy St",
+    "landlordId": 6,
+    "address": "327 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 44,
+    "name": "109 Dryden Rd",
+    "landlordId": 6,
+    "address": "109 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 45,
+    "name": "311 Eddy St",
+    "landlordId": 6,
+    "address": "311 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 46,
+    "name": "105 Hudson St",
+    "landlordId": 7,
+    "address": "105 Hudson St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 47,
+    "name": "107 Hudson St",
+    "landlordId": 7,
+    "address": "107 Hudson St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 48,
+    "name": "109 Hudson St",
+    "landlordId": 7,
+    "address": "109 Hudson St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 49,
+    "name": "114 Hudson St",
+    "landlordId": 7,
+    "address": "114 Hudson St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 50,
+    "name": "117 Hudson St",
+    "landlordId": 7,
+    "address": "117 Hudson St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 51,
+    "name": "119 Prospect St",
+    "landlordId": 7,
+    "address": "119 Prospect St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 52,
+    "name": "123 Prospect St",
+    "landlordId": 7,
+    "address": "123 Prospect St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 53,
+    "name": "139 Coddington St",
+    "landlordId": 7,
+    "address": "139 Coddington St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 54,
+    "name": "309 S Aurora St",
+    "landlordId": 7,
+    "address": "309 S Aurora St",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 55,
+    "name": "311 S Aurora St",
+    "landlordId": 7,
+    "address": "311 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 56,
+    "name": "313 S Aurora St",
+    "landlordId": 7,
+    "address": "313 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 57,
+    "name": "320 Hillview Pl",
+    "landlordId": 7,
+    "address": "320 Hillview Pl",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 58,
+    "name": "407 S Aurora St",
+    "landlordId": 7,
+    "address": "407 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 59,
+    "name": "409 S Aurora St",
+    "landlordId": 7,
+    "address": "409 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 60,
+    "name": "410 S Aurora St",
+    "landlordId": 7,
+    "address": "410 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 61,
+    "name": "506 S Aurora St",
+    "landlordId": 7,
+    "address": "506 S Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 62,
+    "name": "514 S Aurora St ",
+    "landlordId": 7,
+    "address": "514 S Aurora St ",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 63,
+    "name": "520 Etna Rd",
+    "landlordId": 7,
+    "address": "520 Etna Rd",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 64,
+    "name": "Collegetown Crossing",
+    "landlordId": 8,
+    "address": "307 College Ave",
+    "area": "OTHER",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 65,
+    "name": "216 Dryden Rd",
+    "landlordId": 8,
+    "address": "216 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 66,
+    "name": "222 Dryden Rd",
+    "landlordId": 8,
+    "address": "222 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 67,
+    "name": "226 Linden Ave",
+    "landlordId": 8,
+    "address": "226 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 68,
+    "name": "310 Bryant Ave",
+    "landlordId": 8,
+    "address": "310 Bryant Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 69,
+    "name": "315 Dryden Rd",
+    "landlordId": 8,
+    "address": "315 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 70,
+    "name": "319 Dryden Rd",
+    "landlordId": 8,
+    "address": "319 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 71,
+    "name": "205 College Ave",
+    "landlordId": 8,
+    "address": "205 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 72,
+    "name": "302 Bryant Ave",
+    "landlordId": 8,
+    "address": "302 Bryant Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 73,
+    "name": "308 Bryant Ave",
+    "landlordId": 8,
+    "address": "308 Bryant Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 74,
+    "name": "108 Cook St",
+    "landlordId": 8,
+    "address": "108 Cook St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 75,
+    "name": "234 Linden Ave",
+    "landlordId": 8,
+    "address": "234 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 76,
+    "name": "241 Linden Ave",
+    "landlordId": 8,
+    "address": "241 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 77,
+    "name": "317 Dryden Rd",
+    "landlordId": 8,
+    "address": "317 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 78,
+    "name": "318 Elmwood Ave",
+    "landlordId": 8,
+    "address": "318 Elmwood Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 79,
+    "name": "135 Cook St",
+    "landlordId": 8,
+    "address": "135 Cook St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 80,
+    "name": "301 Bryant Ave",
+    "landlordId": 8,
+    "address": "301 Bryant Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 81,
+    "name": "310 Bryant Ave",
+    "landlordId": 8,
+    "address": "310 Bryant Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 82,
+    "name": "130 College Ave",
+    "landlordId": 8,
+    "address": "130 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 83,
+    "name": "407 Elmwood Ave",
+    "landlordId": 8,
+    "address": "407 Elmwood Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 84,
+    "name": "Collegetown Plaza",
+    "landlordId": 10,
+    "address": "111 Dryden Rd.",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 85,
+    "name": "105 Dryden Court",
+    "landlordId": 10,
+    "address": "105 Dryden Court",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 86,
+    "name": "Collegetown Court",
+    "landlordId": 10,
+    "address": "208 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 87,
+    "name": "Collegetown Center",
+    "landlordId": 10,
+    "address": "151 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 88,
+    "name": "213 Williams St",
+    "landlordId": 10,
+    "address": "213 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 89,
+    "name": "210 Dryden Rd",
+    "landlordId": 10,
+    "address": "210 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 90,
+    "name": "214 Dryden Rd",
+    "landlordId": 10,
+    "address": "214 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 91,
+    "name": "202 Dryden Rd",
+    "landlordId": 10,
+    "address": "202 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 92,
+    "name": "105 Dryden Court",
+    "landlordId": 10,
+    "address": "105 Dryden Court",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 93,
+    "name": "705 East Buffalo St",
+    "landlordId": 10,
+    "address": "705 East Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 94,
+    "name": "Aces Apartments",
+    "landlordId": 10,
+    "address": "418 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 95,
+    "name": "Cityview Apartments",
+    "landlordId": 10,
+    "address": "118 E. Prospect St.",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 96,
+    "name": "Commons West Apartments",
+    "landlordId": 10,
+    "address": "101 E State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 97,
+    "name": "Old Cigar Factory",
+    "landlordId": 10,
+    "address": "108 E State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 98,
+    "name": "Ivy Building",
+    "landlordId": 10,
+    "address": "111 S. Cayuga St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 99,
+    "name": "154 Commons",
+    "landlordId": 10,
+    "address": "154 E. State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 100,
+    "name": "156 Commons",
+    "landlordId": 10,
+    "address": "156 E. State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 101,
+    "name": "Commons Studios",
+    "landlordId": 10,
+    "address": "212 E. State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 102,
+    "name": "Whiton Hall",
+    "landlordId": 10,
+    "address": "222 S. Aurora St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 103,
+    "name": "319 College Ave",
+    "landlordId": 12,
+    "address": "319 College Ave",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 104,
+    "name": "408 College Ave",
+    "landlordId": 12,
+    "address": "408 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 105,
+    "name": "109 College Ave",
+    "landlordId": 12,
+    "address": "109 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 106,
+    "name": "227 Linden Ave",
+    "landlordId": 12,
+    "address": "227 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 107,
+    "name": "117 Eddy St",
+    "landlordId": 12,
+    "address": "117 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 108,
+    "name": "118 Eddy St",
+    "landlordId": 12,
+    "address": "118 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 109,
+    "name": "119 Eddy St",
+    "landlordId": 12,
+    "address": "119 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 110,
+    "name": "400 Stewart Ave",
+    "landlordId": 13,
+    "address": "400 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 111,
+    "name": "401 Stewart Ave",
+    "landlordId": 13,
+    "address": "401 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 112,
+    "name": "402 Stewart Ave",
+    "landlordId": 13,
+    "address": "402 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 113,
+    "name": "403 Stewart Ave",
+    "landlordId": 13,
+    "address": "403 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 114,
+    "name": "404 Stewart Ave",
+    "landlordId": 13,
+    "address": "404 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 115,
+    "name": "507 E. Buffalo St",
+    "landlordId": 13,
+    "address": "507 E. Buffalo St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 116,
+    "name": "140 Seneca Way",
+    "landlordId": 13,
+    "address": "140 Seneca Way",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 117,
+    "name": "408 Stewart Ave",
+    "landlordId": 13,
+    "address": "408 Stewart Ave",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 118,
+    "name": "201 Highgate Rd",
+    "landlordId": 13,
+    "address": "201 Highgate Rd",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 119,
+    "name": "513 Elm St",
+    "landlordId": 13,
+    "address": "513 Elm St",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 120,
+    "name": "116 Osmun Pl",
+    "landlordId": 13,
+    "address": "116 Osmun Pl",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 121,
+    "name": "204 N. Cayuga St",
+    "landlordId": 13,
+    "address": "204 N. Cayuga St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 122,
+    "name": "321 E. Falls St",
+    "landlordId": 13,
+    "address": "321 E. Falls St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 123,
+    "name": "406 Stewart Ave",
+    "landlordId": 13,
+    "address": "406 Stewart Ave",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 124,
+    "name": "408 University Ave",
+    "landlordId": 13,
+    "address": "408 University Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 125,
+    "name": "108 W. Buffalo St",
+    "landlordId": 13,
+    "address": "108 W. Buffalo St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 126,
+    "name": "411 N. Cayuga St",
+    "landlordId": 13,
+    "address": "411 N. Cayuga St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 127,
+    "name": "909 N. Cayuga St",
+    "landlordId": 13,
+    "address": "909 N. Cayuga St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 128,
+    "name": "507 E. Buffalo St",
+    "landlordId": 13,
+    "address": "507 E. Buffalo St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 129,
+    "name": "Auden Ithaca",
+    "landlordId": 16,
+    "address": "210 Lake St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 130,
+    "name": "Campus Hill Apartments",
+    "landlordId": 17,
+    "address": "709 Stewart Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 131,
+    "name": "Westbourne Apartments",
+    "landlordId": 17,
+    "address": "120-126 Westbourne Lane ",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 132,
+    "name": "110 Heights Court",
+    "landlordId": 17,
+    "address": "110 Heights Court",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 133,
+    "name": "114 Catherine St",
+    "landlordId": 18,
+    "address": "114 Catherine St",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 134,
+    "name": "116 Catherine St",
+    "landlordId": 18,
+    "address": "116 Catherine St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 135,
+    "name": "118 Catherine St",
+    "landlordId": 18,
+    "address": "118 Catherine St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 136,
+    "name": "301 Eddy St",
+    "landlordId": 18,
+    "address": "301 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 137,
+    "name": "303 Eddy St",
+    "landlordId": 18,
+    "address": "303 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 138,
+    "name": "305 Eddy St",
+    "landlordId": 18,
+    "address": "305 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 139,
+    "name": "307 Eddy St",
+    "landlordId": 18,
+    "address": "307 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 140,
+    "name": "309 Eddy St",
+    "landlordId": 18,
+    "address": "309 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 141,
+    "name": "320 Dryden Rd",
+    "landlordId": 18,
+    "address": "320 Dryden Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 142,
+    "name": "407 Eddy St",
+    "landlordId": 18,
+    "address": "407 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 143,
+    "name": "414 Eddy St",
+    "landlordId": 18,
+    "address": "414 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 144,
+    "name": "125 1/2 Eddy St",
+    "landlordId": 18,
+    "address": "125 1/2 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 145,
+    "name": "103 Eddy St",
+    "landlordId": 18,
+    "address": "103 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 146,
+    "name": "106 Highland Pl",
+    "landlordId": 18,
+    "address": "106 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 147,
+    "name": "125 Eddy St",
+    "landlordId": 18,
+    "address": "125 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 148,
+    "name": "131 N. Quarry St",
+    "landlordId": 18,
+    "address": "131 N. Quarry St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 149,
+    "name": "113 Cook St",
+    "landlordId": 18,
+    "address": "113 Cook St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 150,
+    "name": "121 Catherine St",
+    "landlordId": 18,
+    "address": "121 Catherine St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 151,
+    "name": "133 Blair St",
+    "landlordId": 18,
+    "address": "133 Blair St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 152,
+    "name": "801 E. Seneca St",
+    "landlordId": 18,
+    "address": "801 E. Seneca St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 153,
+    "name": "133 N. Quarry St",
+    "landlordId": 18,
+    "address": "133 N. Quarry St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 154,
+    "name": "202 Eddy St",
+    "landlordId": 18,
+    "address": "202 Eddy St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 155,
+    "name": "410 Elmwood St",
+    "landlordId": 18,
+    "address": "410 Elmwood St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 156,
+    "name": "305 Oak Ave",
+    "landlordId": 18,
+    "address": "305 Oak Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 157,
+    "name": "The Lux",
+    "landlordId": 19,
+    "address": "114 Summit St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 158,
+    "name": "201 College Ave",
+    "landlordId": 19,
+    "address": "201 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 159,
+    "name": "126 College Ave",
+    "landlordId": 19,
+    "address": "126 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 160,
+    "name": "648 Hudson St",
+    "landlordId": 19,
+    "address": "648 Hudson St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 161,
+    "name": "702 Hudson St",
+    "landlordId": 19,
+    "address": "702 Hudson St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 162,
+    "name": "108 Ferris Pl",
+    "landlordId": 19,
+    "address": "108 Ferris Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 163,
+    "name": "710 Stewart Ave",
+    "landlordId": 20,
+    "address": "710 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 164,
+    "name": "111 Blair St",
+    "landlordId": 20,
+    "address": "111 Blair St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 165,
+    "name": "105 N Quarry St",
+    "landlordId": 20,
+    "address": "105 N Quarry St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 166,
+    "name": "711 E Seneca St",
+    "landlordId": 20,
+    "address": "711 E Seneca St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 167,
+    "name": "515 E State St",
+    "landlordId": 20,
+    "address": "515 E State St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 168,
+    "name": "527 E Buffalo St",
+    "landlordId": 20,
+    "address": "527 E Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 169,
+    "name": "523 E Buffalo St",
+    "landlordId": 20,
+    "address": "523 E Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 170,
+    "name": "519 E Buffalo St",
+    "landlordId": 20,
+    "address": "519 E Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 171,
+    "name": "201 Williams St",
+    "landlordId": 21,
+    "address": "201 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 172,
+    "name": "202 Williams St",
+    "landlordId": 21,
+    "address": "202 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 173,
+    "name": "203 Williams St",
+    "landlordId": 21,
+    "address": "203 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 174,
+    "name": "205 Williams St",
+    "landlordId": 21,
+    "address": "205 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 175,
+    "name": "207 Williams St",
+    "landlordId": 21,
+    "address": "207 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 176,
+    "name": "208 Williams St",
+    "landlordId": 21,
+    "address": "208 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 177,
+    "name": "209 Williams St",
+    "landlordId": 21,
+    "address": "209 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 178,
+    "name": "210 Williams St",
+    "landlordId": 21,
+    "address": "210 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 179,
+    "name": "211 Williams St",
+    "landlordId": 21,
+    "address": "211 Williams St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 180,
+    "name": "105 Dewitt Pl",
+    "landlordId": 21,
+    "address": "105 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 181,
+    "name": "109 Dewitt Pl",
+    "landlordId": 21,
+    "address": "109 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 182,
+    "name": "111 Dewitt Pl",
+    "landlordId": 21,
+    "address": "111 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 183,
+    "name": "113 Dewitt Pl",
+    "landlordId": 21,
+    "address": "113 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 184,
+    "name": "115 Dewitt Pl",
+    "landlordId": 21,
+    "address": "115 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 185,
+    "name": "117 Dewitt Pl",
+    "landlordId": 21,
+    "address": "117 Dewitt Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 186,
+    "name": "514 E. Buffalo St",
+    "landlordId": 21,
+    "address": "514 E. Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 187,
+    "name": "516 E. Buffalo St",
+    "landlordId": 21,
+    "address": "516 E. Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 188,
+    "name": "614 E. Buffalo St",
+    "landlordId": 21,
+    "address": "614 E. Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 189,
+    "name": "715 E. Buffalo St",
+    "landlordId": 21,
+    "address": "715 E. Buffalo St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 190,
+    "name": "102 Highland Pl",
+    "landlordId": 21,
+    "address": "102 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 191,
+    "name": "103 Highland Pl",
+    "landlordId": 21,
+    "address": "103 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 192,
+    "name": "110 Highland Pl",
+    "landlordId": 21,
+    "address": "110 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 193,
+    "name": "112 Highland Pl",
+    "landlordId": 21,
+    "address": "112 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 194,
+    "name": "114 Highland Pl",
+    "landlordId": 21,
+    "address": "114 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 195,
+    "name": "123 Highland Pl",
+    "landlordId": 21,
+    "address": "123 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 196,
+    "name": "125 Highland Pl",
+    "landlordId": 21,
+    "address": "125 Highland Pl",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 197,
+    "name": "Rabco Highland House",
+    "landlordId": 22,
+    "address": "312 Thurston Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 198,
+    "name": "105 Highland Pl",
+    "landlordId": 23,
+    "address": "105 Highland Pl",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 199,
+    "name": "134 College Ave",
+    "landlordId": 23,
+    "address": "134 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 200,
+    "name": "208 Delaware Ave",
+    "landlordId": 23,
+    "address": "208 Delaware Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 201,
+    "name": "211 Linden Ave",
+    "landlordId": 23,
+    "address": "211 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 202,
+    "name": "308 Stewart Ave",
+    "landlordId": 23,
+    "address": "308 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 203,
+    "name": "400 College Ave",
+    "landlordId": 23,
+    "address": "400 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 204,
+    "name": "401 College Ave",
+    "landlordId": 23,
+    "address": "401 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 205,
+    "name": "403 College Ave",
+    "landlordId": 23,
+    "address": "403 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 206,
+    "name": "306 N. Cayuga St",
+    "landlordId": 24,
+    "address": "306 N. Cayuga St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 207,
+    "name": "407 College Ave",
+    "landlordId": 24,
+    "address": "407 College Ave",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 208,
+    "name": "Carey Building",
+    "landlordId": 24,
+    "address": "314-320 E. State St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 209,
+    "name": "Cayuga Apartments",
+    "landlordId": 24,
+    "address": "100 W. Buffalo St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 210,
+    "name": "Center Ithaca",
+    "landlordId": 24,
+    "address": "171 E. State St",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 211,
+    "name": "Eddygate Apartments",
+    "landlordId": 24,
+    "address": "110 Dryden Rd",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 212,
+    "name": "Edgecliff Apartments",
+    "landlordId": 24,
+    "address": "934 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 213,
+    "name": "Lake Street Apartments",
+    "landlordId": 24,
+    "address": "106-112 Lake St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 214,
+    "name": "Lakeland Apartments",
+    "landlordId": 24,
+    "address": "319 Highland Rd",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 215,
+    "name": "Ravenwood Apartments",
+    "landlordId": 24,
+    "address": "516 University Ave",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 216,
+    "name": "Westview Apartments",
+    "landlordId": 24,
+    "address": "400 Triphammer Rd",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 217,
+    "name": "Westminster Hall",
+    "landlordId": 24,
+    "address": "321 N. Tioga St",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 218,
+    "name": "The Cottage",
+    "landlordId": 24,
+    "address": "150 Highland Ave",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 219,
+    "name": "101-103 N. Quarry St",
+    "landlordId": 25,
+    "address": "101-103 N. Quarry St",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 220,
+    "name": "702-704 E. State St",
+    "landlordId": 25,
+    "address": "702-704 E. State St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 221,
+    "name": "104 Harvard Pl",
+    "landlordId": 25,
+    "address": "104 Harvard Pl",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 222,
+    "name": "105 Worth St",
+    "landlordId": 25,
+    "address": "105 Worth St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 223,
+    "name": "107 Elmwood Ave",
+    "landlordId": 25,
+    "address": "107 Elmwood Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 224,
+    "name": "108 Stewart Ave",
+    "landlordId": 25,
+    "address": "108 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 225,
+    "name": "127 College Ave",
+    "landlordId": 25,
+    "address": "127 College Ave",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 226,
+    "name": "200 Highland Ave",
+    "landlordId": 25,
+    "address": "200 Highland Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 227,
+    "name": "202 Prospect St",
+    "landlordId": 25,
+    "address": "202 Prospect St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 228,
+    "name": "206 Prospect St",
+    "landlordId": 25,
+    "address": "206 Prospect St",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 229,
+    "name": "398 Triphammer Rd",
+    "landlordId": 25,
+    "address": "398 Triphammer Rd",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 230,
+    "name": "504 Stewart Avenue",
+    "landlordId": 25,
+    "address": "504 Stewart Avenue",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 231,
+    "name": "710 E. State St",
+    "landlordId": 25,
+    "address": "710 E. State St",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 232,
+    "name": "835 Taughannock Blvd",
+    "landlordId": 25,
+    "address": "835 Taughannock Blvd",
+    "area": "DOWNTOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 233,
+    "name": "893 Taughannock Blvd",
+    "landlordId": 25,
+    "address": "893 Taughannock Blvd",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 234,
+    "name": "921 Taughannock Blvd",
+    "landlordId": 25,
+    "address": "921 Taughannock Blvd",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 235,
+    "name": "506 Dryden Rd",
+    "landlordId": 32,
+    "address": "506 Dryden Rd",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 236,
+    "name": "304 Bryant Ave",
+    "landlordId": 8,
+    "address": "304 Bryant Ave",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 237,
+    "name": "301 College Ave",
+    "landlordId": 14,
+    "address": "301 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 238,
+    "name": "312 College Ave",
+    "landlordId": 15,
+    "address": "312 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 239,
+    "name": "626 Stewart Ave",
+    "landlordId": 34,
+    "address": "626 Stewart Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 240,
+    "name": "219 Eddy Street",
+    "landlordId": 35,
+    "address": "219 Eddy Street",
+    "area": "WEST",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 241,
+    "name": "419 Wyckoff Ave",
+    "landlordId": 36,
+    "address": "419 Wyckoff Ave",
+    "area": "NORTH",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 242,
+    "name": "226 Bryant Avenue",
+    "landlordId": 37,
+    "address": "226 Bryant Avenue",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 243,
+    "name": "238 Linden Avenue",
+    "landlordId": 38,
+    "address": "238 Linden Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  },
+  {
+    "id": 244,
+    "name": "The Student Agencies Building",
+    "landlordId": 39,
+    "address": "409 College Ave",
+    "area": "COLLEGETOWN",
+    "photos": [],
+    "numBeds": 0,
+    "numBaths": 0
+  }
+]
