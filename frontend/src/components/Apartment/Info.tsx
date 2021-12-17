@@ -20,7 +20,7 @@ export default function Info({ landlord, contact, address }: Props): ReactElemen
       <List dense>
         {landlord && <InfoItem text={`Landlord/Renting Company: ${landlord}`} />}
         {contact && (
-          <a href={contact}>
+          <a href={contact} target="_blank" rel="noreferrer">
             <InfoItem text={`Contact: ${contact}`} />
           </a>
         )}
