@@ -309,13 +309,11 @@ const ReviewModal = ({
                   maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
-                  emptyTextError ? ' This field is required' : ''
-                }${
-                  includesProfanityError
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${emptyTextError ? ' This field is required' : ''
+                  }${includesProfanityError
                     ? ' This review contains profanity. Please edit it and try again.'
                     : ''
-                }`}
+                  }`}
                 onChange={updateBody}
               />
             </Grid>
