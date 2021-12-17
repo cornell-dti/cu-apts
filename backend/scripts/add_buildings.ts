@@ -10,9 +10,6 @@ type BuildingData = {
   landlordId: number;
   address: string;
   area: string;
-  photos: string[];
-  numBeds: number;
-  numBaths: number;
 };
 
 const getAreaType = (areaName: string): 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' => {
@@ -36,9 +33,6 @@ const formatBuilding = ({
   landlordId,
   address,
   area,
-  photos,
-  numBeds,
-  numBaths,
 }: BuildingData): ApartmentWithId => ({
   id: id.toString(),
   name,
