@@ -52,6 +52,7 @@ const LandlordPage = (): ReactElement => {
     console.log('Page not found');
     setNotFound(true);
   };
+
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
     [loaded, landlordData]
