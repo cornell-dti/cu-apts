@@ -37,6 +37,7 @@ const ApartmentPage = (): ReactElement => {
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
+  const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
 
   useTitle(
@@ -91,10 +92,6 @@ const ApartmentPage = (): ReactElement => {
       return first < second ? 1 : -1;
     });
   }, []);
-
-  useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
-  }, [reviewData, sortReviews]);
 
   type Fields = keyof typeof reviewData[0];
 
@@ -191,13 +188,13 @@ const ApartmentPage = (): ReactElement => {
                   {
                     item: 'Most recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
                     item: 'Most helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
@@ -257,7 +254,7 @@ const ApartmentPage = (): ReactElement => {
               />
             )}
             <Grid container item spacing={3}>
-              {reviewData.map((review, index) => (
+              {sortReviews(reviewData, sortBy).map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <ReviewComponent
                     review={review}
