@@ -42,11 +42,11 @@ const LandlordPage = (): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
 
   const [notFound, setNotFound] = useState(false);
-  const toastTime = 3500;
   const handlePageNotFound = () => {
     console.log('Page not found');
     setNotFound(true);
   };
+
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
     [loaded, landlordData]
