@@ -2,11 +2,11 @@ import React, { ReactElement, useState, useEffect, useCallback } from 'react';
 import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
-import LandlordHeader from '../components/Landlord/Header';
+import ApartmentHeader from '../components/Apartment/Header';
+import AptInfo from '../components/Apartment/AptInfo';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
 import { Landlord, Apartment, ApartmentWithId } from '../../../common/types/db-types';
@@ -37,6 +37,9 @@ const ApartmentPage = (): ReactElement => {
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
+  const [user, setUser] = useState<firebase.User | null>(null);
+  const [showSignInError, setShowSignInError] = useState(false);
+  const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
 
   useTitle(
@@ -92,17 +95,21 @@ const ApartmentPage = (): ReactElement => {
     });
   }, []);
 
-  useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
-  }, [reviewData, sortReviews]);
-
   type Fields = keyof typeof reviewData[0];
 
-  const showConfirmationToast = () => {
-    setShowConfirmation(true);
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
     setTimeout(() => {
-      setShowConfirmation(false);
+      setState(false);
     }, toastTime);
+  };
+
+  const showConfirmationToast = () => {
+    showToast(setShowConfirmation);
+  };
+
+  const showSignInErrorToast = () => {
+    showToast(setShowSignInError);
   };
 
   const getAverageRating = (reviewData: ReviewWithId[]) =>
@@ -143,6 +150,18 @@ const ApartmentPage = (): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const openReviewModal = async () => {
+    if (!user) {
+      let user = await getUser(true);
+      setUser(user);
+      if (!user) {
+        showSignInErrorToast();
+        return;
+      }
+    }
+    setReviewOpen(true);
+  };
+
   const Modals = landlordData && (
     <>
       <ReviewModal
@@ -152,6 +171,7 @@ const ApartmentPage = (): ReactElement => {
         landlordId={apt!.landlordId!}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        user={user}
       />
       <PhotoCarousel
         photos={landlordData.photos}
@@ -191,13 +211,13 @@ const ApartmentPage = (): ReactElement => {
                   {
                     item: 'Most recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
                     item: 'Most helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
@@ -208,7 +228,7 @@ const ApartmentPage = (): ReactElement => {
                 color="primary"
                 variant="contained"
                 disableElevation
-                onClick={() => setReviewOpen(true)}
+                onClick={openReviewModal}
               >
                 Leave a Review
               </Button>
@@ -224,7 +244,7 @@ const ApartmentPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
+      <AptInfo landlord={landlordData.name} contact={landlordData.contact} address={apt!.address} />
     </Grid>
   );
 
@@ -234,9 +254,9 @@ const ApartmentPage = (): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader
+          <ApartmentHeader
             averageRating={getAverageRating(reviewData)}
-            landlord={landlordData}
+            apartment={apt!}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}
           />
@@ -256,8 +276,16 @@ const ApartmentPage = (): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showSignInError && (
+              <Toast
+                isOpen={showSignInError}
+                severity="error"
+                message="Error: Please sign in with a Cornell email."
+                time={toastTime}
+              />
+            )}
             <Grid container item spacing={3}>
-              {reviewData.map((review, index) => (
+              {sortReviews(reviewData, sortBy).map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <ReviewComponent
                     review={review}

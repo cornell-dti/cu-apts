@@ -35,7 +35,15 @@ const Toast = ({ isOpen, severity, message, time }: Props) => {
 
   return (
     <div className={classes.root}>
-      <Snackbar open={open} autoHideDuration={time} onClose={handleClose}>
+      <Snackbar
+        open={open}
+        autoHideDuration={time}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
         <Alert onClose={handleClose} severity={severity}>
           {message}
         </Alert>
