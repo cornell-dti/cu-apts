@@ -38,6 +38,7 @@ const LandlordPage = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
   const toastTime = 4750;
+  const [sortBy, setSortBy] = useState<Fields>('date');
 
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
@@ -81,10 +82,6 @@ const LandlordPage = (): ReactElement => {
       return first < second ? 1 : -1;
     });
   }, []);
-
-  useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
-  }, [reviewData, sortReviews]);
 
   type Fields = keyof typeof reviewData[0];
 
@@ -202,13 +199,13 @@ const LandlordPage = (): ReactElement => {
                   {
                     item: 'Most recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
                     item: 'Most helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
@@ -276,7 +273,7 @@ const LandlordPage = (): ReactElement => {
               />
             )}
             <Grid container item spacing={3}>
-              {reviewData.map((review, index) => (
+              {sortReviews(reviewData, sortBy).map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <ReviewComponent
                     review={review}
