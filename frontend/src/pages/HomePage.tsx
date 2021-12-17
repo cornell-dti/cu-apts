@@ -56,7 +56,7 @@ const HomePage = (): ReactElement => {
         <Container maxWidth="lg">
           <Box pb={3} textAlign="left" className={classes.rentingBox}>
             <Typography variant="h4" className={classes.rentingText}>
-              Browse Renting Companies
+              Browse Housing
             </Typography>
           </Box>
 
