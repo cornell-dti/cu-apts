@@ -2,11 +2,11 @@ import React, { ReactElement, useState, useEffect, useCallback } from 'react';
 import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
-import LandlordHeader from '../components/Landlord/Header';
+import ApartmentHeader from '../components/Apartment/Header';
+import AptInfo from '../components/Apartment/AptInfo';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
 import { Landlord, Apartment, ApartmentWithId } from '../../../common/types/db-types';
@@ -39,6 +39,7 @@ const ApartmentPage = (): ReactElement => {
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const handlePageNotFound = () => {
     console.log('Page not found');
@@ -100,10 +101,6 @@ const ApartmentPage = (): ReactElement => {
       return first < second ? 1 : -1;
     });
   }, []);
-
-  useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
-  }, [reviewData, sortReviews]);
 
   type Fields = keyof typeof reviewData[0];
 
@@ -200,13 +197,13 @@ const ApartmentPage = (): ReactElement => {
                   {
                     item: 'Most recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
                     item: 'Most helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
@@ -233,7 +230,7 @@ const ApartmentPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
+      <AptInfo landlord={landlordData.name} contact={landlordData.contact} address={apt!.address} />
     </Grid>
   );
 
@@ -245,9 +242,9 @@ const ApartmentPage = (): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader
+          <ApartmentHeader
             averageRating={getAverageRating(reviewData)}
-            landlord={landlordData}
+            apartment={apt!}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}
           />
@@ -268,7 +265,7 @@ const ApartmentPage = (): ReactElement => {
               />
             )}
             <Grid container item spacing={3}>
-              {reviewData.map((review, index) => (
+              {sortReviews(reviewData, sortBy).map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <ReviewComponent
                     review={review}
