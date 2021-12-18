@@ -40,7 +40,7 @@ const makeLandlord = async (landlordWithId: LandlordWithId) => {
     const { id, ...rest } = landlordWithId;
     const doc = landlordCollection.doc(id);
     const landlord = rest as Landlord;
-    doc.set({ landlord });
+    doc.set({ ...landlord });
   } catch (err) {
     console.log(err);
   }
