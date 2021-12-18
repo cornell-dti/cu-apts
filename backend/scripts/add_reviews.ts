@@ -1,6 +1,6 @@
 import { Review } from '@common/types/db-types';
 import { db } from '../src/firebase-config';
-import reviewData from '../src/data/landlord_reviews.json';
+import reviewData from '../src/data/reviews.json';
 
 const reviewCollection = db.collection('reviews');
 
@@ -28,7 +28,7 @@ const formatReview = (data: any): Review => ({
     conditions: data['detailedRatings.condition'],
   },
   date: data.date,
-  photos: data.photos,
+  photos: data.photos ? data.photos : [],
 });
 
 reviewData.map((review) => makeReview(formatReview(review)));
