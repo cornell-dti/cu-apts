@@ -168,6 +168,8 @@ const LandlordPage = (): ReactElement => {
         landlordId={landlordId}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        aptId={''}
+        aptName={''}
         user={user}
       />
       <PhotoCarousel
