@@ -162,7 +162,7 @@ const ApartmentPage = (): ReactElement => {
     setReviewOpen(true);
   };
 
-  const Modals = landlordData && (
+  const Modals = landlordData && apt && (
     <>
       <ReviewModal
         open={reviewOpen}
@@ -171,6 +171,8 @@ const ApartmentPage = (): ReactElement => {
         landlordId={apt!.landlordId!}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        aptId={apt.id}
+        aptName={apt.name}
         user={user}
       />
       <PhotoCarousel
