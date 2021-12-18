@@ -10,9 +10,6 @@ type BuildingData = {
   landlordId: number;
   address: string;
   area: string;
-  photos: string[];
-  numBeds: number;
-  numBaths: number;
 };
 
 const getAreaType = (areaName: string): 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' => {
@@ -36,9 +33,6 @@ const formatBuilding = ({
   landlordId,
   address,
   area,
-  photos,
-  numBeds,
-  numBaths,
 }: BuildingData): ApartmentWithId => ({
   id: id.toString(),
   name,
@@ -55,7 +49,7 @@ const makeBuilding = async (apartmentWithId: ApartmentWithId) => {
     const { id, ...rest } = apartmentWithId;
     const doc = buildingCollection.doc(id);
     const building = rest as Apartment;
-    doc.set({ building });
+    doc.set({ ...building });
   } catch (err) {
     console.log(err);
   }
