@@ -85,7 +85,7 @@ const ApartmentPage = (): ReactElement => {
       setLoaded(true);
       setNotFoundLandlord(0);
     }
-  }, [aptData, apt, landlordData, buildings, reviewData, notFound]);
+  }, [aptData, apt, landlordData, buildings, reviewData]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
