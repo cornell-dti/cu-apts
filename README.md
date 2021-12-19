@@ -6,7 +6,7 @@
 
 [Staging Site (currently no backend support)](https://cu-apts-staging.web.app/)
 
-_Last updated 5/24/2021_
+_Last updated 12/17/2021_
 
 ![CU Apartments splash](./screenshots/splash.png)
 
@@ -25,22 +25,26 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 
 ## Contributors
 
-### Since 2020
+### 2020-2021
 
 - **Bahar Tehranipoor** - Product Manager
-- **Ashrita Raman**\* - Technical Product Manager
+- **Ashrita Raman** - Technical Product Manager
+- **Peter Wu** - Technical Product Manager
 - **Buma Gana** - Designer
-- **Mena Attia** - Developer
-- **Kinjal Jasani** - Developer
-- **Samantha Liu** - Developer
-- **Stacy Wei**\* - Designer
-
-### Since 2021
-
-- **Peter Wu**\* - Technical Product Manager
+- **Stacy Wei** - Designer
 - **Enoch Chen** - Developer
+- **Kinjal Jasani** - Developer
+- **Mena Attia** - Developer
+- **Sam Liu** - Developer
 
-\* = Former Contributor
+### 2021-2022
+
+- **Huey Le** - Product Manager
+- **Alex Kim** - Product Marketing Manager
+- **Sam Liu** - Technical Product Manager
+- **Heewon Ahn** - Developer
+- **Kinjal Jasani** - Developer
+- **Mena Attia** - Developer
 
 We are a team within the Cornell Design & Tech Initiative. For more information, see
 [our website](https://cornelldti.org).
