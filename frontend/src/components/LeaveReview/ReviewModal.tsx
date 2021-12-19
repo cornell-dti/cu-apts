@@ -31,11 +31,8 @@ interface Props {
   landlordId: string;
   onSuccess: () => void;
   toastTime: number;
-<<<<<<< HEAD
   aptId: string;
   aptName: string;
-=======
->>>>>>> Sign in immediately after pressing "leave a review" (#111)
   user: firebase.User | null;
 }
 
@@ -89,7 +86,6 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-<<<<<<< HEAD
 const ReviewModal = ({
   open,
   onClose,
@@ -101,9 +97,6 @@ const ReviewModal = ({
   aptName,
   user,
 }: Props) => {
-=======
-const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime, user }: Props) => {
->>>>>>> Sign in immediately after pressing "leave a review" (#111)
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
@@ -316,11 +309,13 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime,
                   maxlength: REVIEW_CHARACTER_LIMIT,
                 }}
                 placeholder="Write your review here"
-                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${emptyTextError ? ' This field is required' : ''
-                  }${includesProfanityError
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
+                  emptyTextError ? ' This field is required' : ''
+                }${
+                  includesProfanityError
                     ? ' This review contains profanity. Please edit it and try again.'
                     : ''
-                  }`}
+                }`}
                 onChange={updateBody}
               />
             </Grid>
