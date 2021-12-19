@@ -13,12 +13,12 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
     <Grid container spacing={8}>
       {data &&
         data.map(({ buildingData, numReviews, company }, index) => {
-          const { landlordId } = buildingData;
+          const { id } = buildingData;
           return (
             <Grid item xs={12} md={4} key={index}>
               <Link
                 {...{
-                  to: `/landlord/${landlordId}`,
+                  to: `/apartment/${id}`,
                   style: { textDecoration: 'none' },
                   component: RouterLink,
                 }}

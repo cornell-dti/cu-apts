@@ -76,17 +76,6 @@ export default function Autocomplete() {
     }
   };
 
-  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
-    switch (option.label) {
-      case 'LANDLORD':
-        return option.id;
-      case 'APARTMENT':
-        return option.landlordId;
-      default:
-        return null;
-    }
-  };
-
   const Menu = () => {
     return (
       <div>
@@ -106,11 +95,11 @@ export default function Autocomplete() {
                 {options.length === 0 ? (
                   <MenuItem disabled>No search results.</MenuItem>
                 ) : (
-                  options.map((option, index) => {
+                  options.map(({ id, name, address, label }, index) => {
                     return (
                       <Link
                         {...{
-                          to: `/landlord/${getLandlordId(option)}`,
+                          to: `/apartment/${id}`,
                           style: { textDecoration: 'none' },
                           component: RouterLink,
                         }}
@@ -118,18 +107,16 @@ export default function Autocomplete() {
                         <MenuItem button={true} key={index}>
                           <Grid container justify="space-between">
                             <Grid item xl={8}>
-                              <Typography className={buildingText}>{option.name}</Typography>
+                              <Typography className={buildingText}>{name}</Typography>
 
                               <Typography className={addressText}>
-                                {'address' in option &&
-                                  option.address !== option.name &&
-                                  option.address}
+                                {address !== name && address}
                               </Typography>
                             </Grid>
                             <Grid item xl={4}>
                               <Chip
                                 color="primary"
-                                label={option.label.toLowerCase()}
+                                label={label.toLowerCase()}
                                 className={resultChip}
                               />
                             </Grid>
