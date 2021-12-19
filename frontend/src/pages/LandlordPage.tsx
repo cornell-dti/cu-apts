@@ -54,7 +54,6 @@ const LandlordPage = (): ReactElement => {
   useEffect(() => {
     get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
       callback: setReviewData,
-      errorHandler: handlePageNotFound,
     });
   }, [landlordId, showConfirmation]);
 
@@ -68,7 +67,6 @@ const LandlordPage = (): ReactElement => {
   useEffect(() => {
     get<Apartment[]>(`/buildings/${landlordId}`, {
       callback: setBuildings,
-      errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 

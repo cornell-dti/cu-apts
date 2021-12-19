@@ -43,15 +43,18 @@ const ApartmentPage = (): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
+  const [notFoundLandlord, setNotFoundLandlord] = useState(0);
   const handlePageNotFound = () => {
-    console.log('Page not found');
     setNotFound(true);
+    setNotFoundLandlord(0);
+  };
+  const handleLandlordNotFound = () => {
+    setNotFoundLandlord((prevCount) => prevCount + 1);
   };
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
-
   useEffect(() => {
     get<ApartmentWithId[]>(`/apts/${aptId}`, {
       callback: setAptData,
@@ -66,29 +69,23 @@ const ApartmentPage = (): ReactElement => {
   useEffect(() => {
     get<ReviewWithId[]>(`/review/aptId/${aptId}`, {
       callback: setReviewData,
-      errorHandler: handlePageNotFound,
     });
   }, [aptId, showConfirmation]);
-
-  useEffect(() => {
-    get<Landlord>(`/landlord/${apt?.landlordId}`, {
-      callback: setLandlordData,
-      errorHandler: handlePageNotFound,
-    });
-  }, [apt]);
-
   useEffect(() => {
     get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
-      errorHandler: handlePageNotFound,
+    });
+    get<Landlord>(`/landlord/${apt?.landlordId}`, {
+      callback: setLandlordData,
+      errorHandler: handleLandlordNotFound,
     });
   }, [apt]);
-
   useEffect(() => {
     if (aptData && apt && reviewData && landlordData && buildings) {
       setLoaded(true);
+      setNotFoundLandlord(0);
     }
-  }, [aptData, apt, landlordData, buildings, reviewData]);
+  }, [aptData, apt, landlordData, buildings, reviewData, notFound]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
@@ -259,7 +256,7 @@ const ApartmentPage = (): ReactElement => {
     </Grid>
   );
 
-  return notFound ? (
+  return notFoundLandlord === 2 || notFound ? (
     <NotFoundPage />
   ) : !loaded ? (
     <LinearProgress />
