@@ -40,7 +40,6 @@ const LandlordPage = (): ReactElement => {
   const [showSignInError, setShowSignInError] = useState(false);
   const toastTime = 4750;
   const [sortBy, setSortBy] = useState<Fields>('date');
-
   const [notFound, setNotFound] = useState(false);
   const handlePageNotFound = () => {
     console.log('Page not found');
