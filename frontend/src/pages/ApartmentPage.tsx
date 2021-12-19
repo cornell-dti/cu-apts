@@ -43,13 +43,8 @@ const ApartmentPage = (): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
-  const [notFoundLandlord, setNotFoundLandlord] = useState(0);
   const handlePageNotFound = () => {
     setNotFound(true);
-    setNotFoundLandlord(0);
-  };
-  const handleLandlordNotFound = () => {
-    setNotFoundLandlord((prevCount) => prevCount + 1);
   };
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
@@ -77,13 +72,11 @@ const ApartmentPage = (): ReactElement => {
     });
     get<Landlord>(`/landlord/${apt?.landlordId}`, {
       callback: setLandlordData,
-      errorHandler: handleLandlordNotFound,
     });
   }, [apt]);
   useEffect(() => {
     if (aptData && apt && reviewData && landlordData && buildings) {
       setLoaded(true);
-      setNotFoundLandlord(0);
     }
   }, [aptData, apt, landlordData, buildings, reviewData]);
 
@@ -256,7 +249,7 @@ const ApartmentPage = (): ReactElement => {
     </Grid>
   );
 
-  return notFoundLandlord === 2 || notFound ? (
+  return notFound ? (
     <NotFoundPage />
   ) : !loaded ? (
     <LinearProgress />
