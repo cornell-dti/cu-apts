@@ -164,18 +164,18 @@ app.get('/page-data/:page', async (req, res) => {
   const { page } = req.params;
   const collection = page === 'home' ? buildingsCollection.limit(3) : buildingsCollection.limit(12);
   const buildingDocs = (await collection.get()).docs;
-  const buildings: Apartment[] = buildingDocs
-    .map((doc) => doc.data() as Apartment)
-    .filter(({ landlordId }) => landlordId !== null);
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
 
-  const homeData = await Promise.all(
+  const pageData = await Promise.all(
     buildings.map(async (buildingData) => {
-      const { landlordId } = buildingData;
+      const { id, landlordId } = buildingData;
       if (landlordId === null) {
         throw new Error('Invalid landlordId');
       }
 
-      const reviewList = await reviewCollection.where(`landlordId`, '==', landlordId).get();
+      const reviewList = await reviewCollection.where(`aptId`, '==', id).get();
       const landlordDoc = await landlordCollection.doc(landlordId).get();
 
       const numReviews = reviewList.docs.length;
@@ -187,7 +187,7 @@ app.get('/page-data/:page', async (req, res) => {
       };
     })
   );
-  res.status(200).send(JSON.stringify(homeData));
+  res.status(200).send(JSON.stringify(pageData));
 });
 
 const likeHandler =

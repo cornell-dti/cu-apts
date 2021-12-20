@@ -51,7 +51,9 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
           )}
           <Grid container item justify="space-between">
             <Grid item>
-              <Typography variant="body2">{`${numReviews} Reviews`}</Typography>
+              <Typography variant="body2">
+                {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
+              </Typography>
             </Grid>
           </Grid>
         </Grid>
