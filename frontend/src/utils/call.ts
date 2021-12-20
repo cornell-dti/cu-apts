@@ -2,12 +2,11 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 export type GetOptions<T> = {
   callback?: (data: T) => void;
-  errorHandler?: () => void;
   body?: any;
 };
 
 const get = <T>(route: string, options: GetOptions<T> = {}) => {
-  const { callback, errorHandler, body } = options;
+  const { callback, body } = options;
   const config: AxiosRequestConfig = body && {
     data: body,
   };
@@ -18,7 +17,6 @@ const get = <T>(route: string, options: GetOptions<T> = {}) => {
     })
     .catch((error) => {
       console.log('error', error);
-      errorHandler && errorHandler();
     });
 };
 

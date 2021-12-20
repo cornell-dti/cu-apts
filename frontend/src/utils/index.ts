@@ -8,7 +8,9 @@ import { useEffect } from 'react';
 export const useTitle = (titleOrFn: string | (() => string), ...deps: any[]) => {
   useEffect(
     () => {
-      document.title = ` CUAPTS | ${typeof titleOrFn === 'function' ? titleOrFn() : titleOrFn}`;
+      document.title = ` CU Apartments | ${
+        typeof titleOrFn === 'function' ? titleOrFn() : titleOrFn
+      }`;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [...deps]

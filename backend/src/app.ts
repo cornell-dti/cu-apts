@@ -76,9 +76,6 @@ app.get('/apts/:ids', async (req, res) => {
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
         const snapshot = await buildingsCollection.doc(id).get();
-        if (!snapshot.exists) {
-          throw new Error('Invalid id');
-        }
         return { id, ...snapshot.data() } as ApartmentWithId;
       })
     );
