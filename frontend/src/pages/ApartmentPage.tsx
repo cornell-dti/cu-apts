@@ -17,6 +17,7 @@ import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
 import { useParams } from 'react-router-dom';
+import NotFoundPage from './NotFoundPage';
 
 export type RatingInfo = {
   feature: string;
@@ -41,15 +42,18 @@ const ApartmentPage = (): ReactElement => {
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
-
+  const [notFound, setNotFound] = useState(false);
+  const handlePageNotFound = () => {
+    setNotFound(true);
+  };
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
-
   useEffect(() => {
     get<ApartmentWithId[]>(`/apts/${aptId}`, {
       callback: setAptData,
+      errorHandler: handlePageNotFound,
     });
   }, [aptId]);
 
@@ -62,19 +66,14 @@ const ApartmentPage = (): ReactElement => {
       callback: setReviewData,
     });
   }, [aptId, showConfirmation]);
-
-  useEffect(() => {
-    get<Landlord>(`/landlord/${apt?.landlordId}`, {
-      callback: setLandlordData,
-    });
-  }, [apt]);
-
   useEffect(() => {
     get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
+    get<Landlord>(`/landlord/${apt?.landlordId}`, {
+      callback: setLandlordData,
+    });
   }, [apt]);
-
   useEffect(() => {
     if (aptData && apt && reviewData && landlordData && buildings) {
       setLoaded(true);
@@ -250,7 +249,9 @@ const ApartmentPage = (): ReactElement => {
     </Grid>
   );
 
-  return !loaded ? (
+  return notFound ? (
+    <NotFoundPage />
+  ) : !loaded ? (
     <LinearProgress />
   ) : (
     <>

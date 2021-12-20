@@ -17,6 +17,7 @@ import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
+import NotFoundPage from './NotFoundPage';
 
 export type RatingInfo = {
   feature: string;
@@ -39,6 +40,11 @@ const LandlordPage = (): ReactElement => {
   const [showSignInError, setShowSignInError] = useState(false);
   const toastTime = 4750;
   const [sortBy, setSortBy] = useState<Fields>('date');
+  const [notFound, setNotFound] = useState(false);
+  const handlePageNotFound = () => {
+    console.log('Page not found');
+    setNotFound(true);
+  };
 
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
@@ -54,6 +60,7 @@ const LandlordPage = (): ReactElement => {
   useEffect(() => {
     get<Landlord>(`/landlord/${landlordId}`, {
       callback: setLandlordData,
+      errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 
@@ -238,7 +245,9 @@ const LandlordPage = (): ReactElement => {
     </Grid>
   );
 
-  return !loaded ? (
+  return notFound ? (
+    <NotFoundPage />
+  ) : !loaded ? (
     <LinearProgress />
   ) : (
     <>

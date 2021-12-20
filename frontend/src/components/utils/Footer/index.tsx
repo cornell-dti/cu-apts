@@ -19,7 +19,7 @@ const useStyles = makeStyles(() => ({
       margin: '0 auto',
     },
   },
-  contact: {
+  link: {
     color: '#B94630',
     fontWeight: 'bold',
     textAlign: 'center',
@@ -31,18 +31,18 @@ const useStyles = makeStyles(() => ({
   },
 }));
 const Footer = (): ReactElement => {
-  const { footer, contact, text } = useStyles();
+  const { footer, link, text } = useStyles();
   return (
     <footer>
       <Grid container className={footer} alignItems="center" justify="center" direction="column">
         <Grid item xl={12}>
           <Grid container alignItems="center" justify="center">
             <Grid item>
-              <Typography className={text}>Got a question that isn’t answered? </Typography>
+              <Typography className={text}>Want to get in touch? </Typography>
             </Grid>
             <Grid item>
               <Typography className={text}>
-                <Link className={contact} href="mailto:hello@cornelldti.org">
+                <Link className={link} href="mailto:hello@cornelldti.org">
                   Contact us!
                 </Link>
               </Typography>
@@ -50,15 +50,18 @@ const Footer = (): ReactElement => {
           </Grid>
         </Grid>
         <Grid item xl={12}>
-          <Link
-            {...{
-              to: `/policies`,
-              style: { color: 'black' },
-              component: RouterLink,
-            }}
-          >
-            <Typography> Privacy Policy </Typography>
-          </Link>
+          <Typography>
+            <Link
+              className={link}
+              {...{
+                to: `/policies`,
+                component: RouterLink,
+              }}
+            >
+              {' '}
+              Privacy Policy
+            </Link>
+          </Typography>
         </Grid>
       </Grid>
     </footer>
