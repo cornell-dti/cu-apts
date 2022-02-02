@@ -245,7 +245,12 @@ const ApartmentPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <AptInfo landlord={landlordData.name} contact={landlordData.contact} address={apt!.address} />
+      <AptInfo
+        landlord={landlordData.name}
+        contact={landlordData.contact}
+        address={apt!.address}
+        buildings={buildings.map((b) => b.name).filter((name) => name !== apt?.name)}
+      />
     </Grid>
   );
 
