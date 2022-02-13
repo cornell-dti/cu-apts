@@ -8,6 +8,7 @@ import {
   withStyles,
   makeStyles,
   Avatar,
+  Typography,
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
@@ -95,12 +96,9 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   aptRating: {
-    paddingTop: '5px',
+    color: 'white',
     marginRight: '45px',
-    '& div': {
-      display: 'inline-block',
-      marginTop: '2px',
-    },
+    marginBottom: '2px',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
@@ -154,12 +152,25 @@ const ApartmentHeader = ({
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
                   <Grid container className={ratingSection}>
-                    <Grid item className={aptRating} xs={12}>
-                      <HeartRating value={averageRating} precision={0.5} readOnly />
-                    </Grid>
+                    {!!averageRating && (
+                      <Grid item className={aptRating} xs={12}>
+                        <Grid container direction="row" alignItems="center">
+                          <Grid item xs={5}>
+                            <HeartRating value={averageRating} precision={0.5} readOnly />
+                          </Grid>
+                          <Grid item xs={7}>
+                            <Typography variant="h6">
+                              {averageRating.toFixed(1) + ' out of 5'}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    )}
                     <Grid item xs={12}>
                       <CardHeader
-                        title={numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
+                        title={
+                          numReviews + (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review')
+                        }
                         className={aptReviews}
                         disableTypography={true}
                       />
