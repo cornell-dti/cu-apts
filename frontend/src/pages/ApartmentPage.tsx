@@ -1,22 +1,22 @@
-import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import React, { ReactElement, useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
-import LandlordHeader from '../components/Landlord/Header';
+import ApartmentHeader from '../components/Apartment/Header';
+import AptInfo from '../components/Apartment/AptInfo';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
-import { Landlord, Apartment } from '../../../common/types/db-types';
+import { Landlord, Apartment, ApartmentWithId } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
+import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 
 export type RatingInfo = {
@@ -24,8 +24,8 @@ export type RatingInfo = {
   rating: number;
 };
 
-const LandlordPage = (): ReactElement => {
-  const { landlordId } = useParams<Record<string, string>>();
+const ApartmentPage = (): ReactElement => {
+  const { aptId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo] = useState<RatingInfo[]>([]);
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
@@ -35,46 +35,50 @@ const LandlordPage = (): ReactElement => {
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
+  const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
+  const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
-  const toastTime = 4750;
   const [sortBy, setSortBy] = useState<Fields>('date');
+  const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
   const handlePageNotFound = () => {
-    console.log('Page not found');
     setNotFound(true);
   };
-
   useTitle(
-    () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
-    [loaded, landlordData]
+    () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
+    [loaded, apt]
   );
-
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
-      callback: setReviewData,
-    });
-  }, [landlordId, showConfirmation]);
-
-  useEffect(() => {
-    get<Landlord>(`/landlord/${landlordId}`, {
-      callback: setLandlordData,
+    get<ApartmentWithId[]>(`/apts/${aptId}`, {
+      callback: setAptData,
       errorHandler: handlePageNotFound,
     });
-  }, [landlordId]);
+  }, [aptId]);
 
   useEffect(() => {
-    get<Apartment[]>(`/buildings/${landlordId}`, {
+    setApt(aptData[0]);
+  }, [aptData]);
+
+  useEffect(() => {
+    get<ReviewWithId[]>(`/review/aptId/${aptId}`, {
+      callback: setReviewData,
+    });
+  }, [aptId, showConfirmation]);
+  useEffect(() => {
+    get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
-  }, [landlordId]);
-
+    get<Landlord>(`/landlord/${apt?.landlordId}`, {
+      callback: setLandlordData,
+    });
+  }, [apt]);
   useEffect(() => {
-    if (landlordData && buildings && reviewData) {
+    if (aptData && apt && reviewData && landlordData && buildings) {
       setLoaded(true);
     }
-  }, [landlordData, buildings, reviewData]);
+  }, [aptData, apt, landlordData, buildings, reviewData]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
@@ -157,17 +161,17 @@ const LandlordPage = (): ReactElement => {
     setReviewOpen(true);
   };
 
-  const Modals = landlordData && (
+  const Modals = landlordData && apt && (
     <>
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         setOpen={setReviewOpen}
-        landlordId={landlordId}
+        landlordId={apt!.landlordId!}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
-        aptId={''}
-        aptName={''}
+        aptId={apt.id}
+        aptName={apt.name}
         user={user}
       />
       <PhotoCarousel
@@ -241,7 +245,12 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
+      <AptInfo
+        landlord={landlordData.name}
+        contact={landlordData.contact}
+        address={apt!.address}
+        buildings={buildings.map((b) => b.name).filter((name) => name !== apt?.name)}
+      />
     </Grid>
   );
 
@@ -253,9 +262,9 @@ const LandlordPage = (): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader
+          <ApartmentHeader
             averageRating={getAverageRating(reviewData)}
-            landlord={landlordData}
+            apartment={apt!}
             numReviews={reviewData.length}
             handleClick={() => setCarouselOpen(true)}
           />
@@ -305,4 +314,4 @@ const LandlordPage = (): ReactElement => {
   );
 };
 
-export default LandlordPage;
+export default ApartmentPage;

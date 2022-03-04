@@ -14,7 +14,7 @@ import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
-import { createAuthHeaders, getUser, uploadFile } from '../../utils/firebase';
+import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
 import Toast from './Toast';
@@ -31,6 +31,9 @@ interface Props {
   landlordId: string;
   onSuccess: () => void;
   toastTime: number;
+  aptId: string;
+  aptName: string;
+  user: firebase.User | null;
 }
 
 interface FormData {
@@ -83,7 +86,17 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
-const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime }: Props) => {
+const ReviewModal = ({
+  open,
+  onClose,
+  setOpen,
+  landlordId,
+  onSuccess,
+  toastTime,
+  aptId,
+  aptName,
+  user,
+}: Props) => {
   const [review, dispatch] = useReducer(reducer, defaultReview);
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
@@ -97,10 +110,6 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
     };
   };
   const [sending, setSending] = useState(false);
-
-  const updateAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updateAddress', address: event.target.value });
-  };
 
   const updateRating = (category: keyof DetailedRating) => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
@@ -136,7 +145,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   }: FormData): Promise<Review> => {
     const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
-      aptId: null,
+      aptId: aptId,
       date: new Date(),
       detailedRatings: ratings,
       landlordId: landlordId,
@@ -149,11 +158,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
   const onSubmit = async () => {
     try {
       setSending(true);
-      const user = await getUser(true);
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
+      const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
       if (
         data.reviewText === '' ||
@@ -196,11 +201,11 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Leave a Review</DialogTitle>
+      <DialogTitle>Leave a Review{aptName.length > 0 && `: ${aptName}`}</DialogTitle>
       <DialogContent>
         {/* This div padding prevents the scrollbar from displaying unnecessarily */}
 
-        <div className={styles.DialogContentDiv}>
+        <div>
           {showError && (
             <Toast
               isOpen={true}
@@ -219,7 +224,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
               {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
             <div className={styles.div}></div>
-            <Grid container item justify="space-between" xs={12} sm={6}>
+            {/* <Grid container item justify="space-between" xs={12} sm={6}>
               <TextField
                 fullWidth
                 autoFocus
@@ -227,7 +232,7 @@ const ReviewModal = ({ open, onClose, setOpen, landlordId, onSuccess, toastTime 
                 value={review.address}
                 onChange={updateAddress}
               />
-            </Grid>
+            </Grid> */}
             <Grid container item>
               <Grid container spacing={1} justify="center">
                 <ReviewRating

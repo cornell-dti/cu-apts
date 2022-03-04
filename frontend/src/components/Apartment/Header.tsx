@@ -8,14 +8,15 @@ import {
   withStyles,
   makeStyles,
   Avatar,
+  Typography,
 } from '@material-ui/core';
 import styles from './Header.module.scss';
-import { Landlord } from '../../../../common/types/db-types';
+import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.png';
 import defaultIcon from '../../assets/default_icon.png';
 
 type Props = {
-  readonly landlord: Landlord;
+  readonly apartment: ApartmentWithId;
   readonly numReviews: number;
   readonly handleClick: () => void;
   readonly averageRating: number;
@@ -72,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
       marginRight: '25px',
     },
   },
-  landlordName: {
+  aptName: {
     color: 'white',
     paddingLeft: 0,
     paddingBottom: 0,
@@ -82,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: '43px',
     letterSpacing: '0.02em',
   },
-  landlordReviews: {
+  aptReviews: {
     color: 'white',
     fontStyle: 'normal',
     fontWeight: 600,
@@ -94,13 +95,10 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: '0px',
     },
   },
-  landlordRating: {
-    paddingTop: '5px',
+  aptRating: {
+    color: 'white',
     marginRight: '45px',
-    '& div': {
-      display: 'inline-block',
-      marginTop: '2px',
-    },
+    marginBottom: '2px',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
@@ -119,22 +117,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LandlordHeader = ({
-  landlord,
+const ApartmentHeader = ({
+  apartment,
   numReviews,
   handleClick,
   averageRating,
 }: Props): ReactElement => {
-  const { name, profilePhoto, photos } = landlord;
-  const icon = profilePhoto ? profilePhoto : defaultIcon;
-  const photoLink = photos.length ? photos[0] : defaultHeader;
+  const { name, photos } = apartment;
+  const icon = defaultIcon;
+  const photoLink = defaultHeader;
   const {
     media,
     logo,
     photoButton,
-    landlordName,
-    landlordReviews,
-    landlordRating,
+    aptName,
+    aptReviews,
+    aptRating,
     headerSection,
     ratingSection,
     btnSection,
@@ -152,15 +150,28 @@ const LandlordHeader = ({
                   <Avatar src={icon} alt={name} className={logo} />
                 </Grid>
                 <Grid className={headerSection}>
-                  <CardHeader title={name} className={landlordName} disableTypography={true} />
+                  <CardHeader title={name} className={aptName} disableTypography={true} />
                   <Grid container className={ratingSection}>
-                    <Grid item className={landlordRating} xs={12}>
-                      <HeartRating value={averageRating} precision={0.5} readOnly />
-                    </Grid>
+                    {!!averageRating && (
+                      <Grid item className={aptRating} xs={12}>
+                        <Grid container direction="row" alignItems="center">
+                          <Grid item xs={5}>
+                            <HeartRating value={averageRating} precision={0.5} readOnly />
+                          </Grid>
+                          <Grid item xs={7}>
+                            <Typography variant="h6">
+                              {averageRating.toFixed(1) + ' out of 5'}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    )}
                     <Grid item xs={12}>
                       <CardHeader
-                        title={numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
-                        className={landlordReviews}
+                        title={
+                          numReviews + (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review')
+                        }
+                        className={aptReviews}
                         disableTypography={true}
                       />
                     </Grid>
@@ -187,4 +198,4 @@ const LandlordHeader = ({
   );
 };
 
-export default LandlordHeader;
+export default ApartmentHeader;
