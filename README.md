@@ -45,7 +45,7 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 - **Heewon Ahn** - Developer
 - **Kinjal Jasani** - Developer
 - **Mena Attia** - Developer
-- **Sophia Pham** - Developer
+- **Thuy (Sophia) Pham** - Developer
 - **Cyrus Irani** - Developer
 - **Jiayuan Gu** - Developer
 
