@@ -131,14 +131,8 @@ const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact'
 app.get('/search', async (req, res) => {
   try {
     const query = req.query.q as string;
-    const landlordDocs = (await landlordCollection.get()).docs;
-    const landlords: LandlordWithId[] = landlordDocs.map(
-      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
-    );
-    const aptDocs = (await buildingsCollection.get()).docs;
-    const apts: ApartmentWithId[] = aptDocs.map(
-      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
-    );
+    const landlords = req.app.get('landlords');
+    const apts = req.app.get('apts');
     const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
@@ -146,7 +140,7 @@ app.get('/search', async (req, res) => {
     };
     const fuse = new Fuse(aptsLandlords, options);
     const results = fuse.search(query);
-    const resultItems = results.map((result) => result.item);
+    const resultItems = results.map((result) => result.item).slice(0, 5);
 
     const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
       isLandlord(result)
@@ -167,6 +161,19 @@ app.get('/page-data/:page', async (req, res) => {
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
+
+  if (page === 'home') {
+    const landlordDocs = (await landlordCollection.get()).docs;
+    const landlords: LandlordWithId[] = landlordDocs.map(
+      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
+    );
+    const aptDocs = (await buildingsCollection.get()).docs;
+    const apts: ApartmentWithId[] = aptDocs.map(
+      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
+    );
+    app.set('landlords', landlords);
+    app.set('apts', apts);
+  }
 
   const pageData = await Promise.all(
     buildings.map(async (buildingData) => {
