@@ -139,8 +139,8 @@ app.get('/search', async (req, res) => {
       keys: ['name', 'address'],
     };
     const fuse = new Fuse(aptsLandlords, options);
-    const results = fuse.search(query);
-    const resultItems = results.map((result) => result.item).slice(0, 5);
+    const results = fuse.search(query).slice(0, 5);
+    const resultItems = results.map((result) => result.item);
 
     const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
       isLandlord(result)
