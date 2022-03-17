@@ -18,9 +18,6 @@ const useStyles = makeStyles({
   card: {
     borderRadius: '10px',
   },
-  // cardContent: {
-  //   paddingBottom: 0,
-  // },
   cardContent: {
     padding: '12px',
     '&:last-child': {
