@@ -15,6 +15,7 @@ import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types'
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
@@ -58,11 +59,16 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
+  const history = useHistory();
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
     if (event.key === 'Tab') {
       setOpen(false);
+    }
+    if (event.key === 'Enter') {
+      setOpen(false);
+      history.push('/searchresults');
     }
   }
 
@@ -179,7 +185,16 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
-        onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowDown') {
+            setFocus(true);
+          } else if (event.key === 'Enter') {
+            setFocus(true);
+            history.push('/searchresults');
+          } else {
+            setFocus(false);
+          }
+        }}
         onChange={(event) => {
           const value = event.target.value;
           if (value !== '' || value !== null) {
@@ -192,6 +207,7 @@ export default function Autocomplete() {
           className: field,
         }}
       />
+
       <Menu />
     </div>
   );
