@@ -10,12 +10,12 @@ type Props = {
 
 const ApartmentCards = ({ data }: Props): ReactElement => {
   return (
-    <Grid container spacing={8}>
+    <Grid container spacing={3}>
       {data &&
         data.map(({ buildingData, numReviews, company }, index) => {
           const { id } = buildingData;
           return (
-            <Grid item xs={12} md={4} key={index}>
+            <Grid item xs={12} key={index}>
               <Link
                 {...{
                   to: `/apartment/${id}`,
