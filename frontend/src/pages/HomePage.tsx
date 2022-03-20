@@ -4,7 +4,8 @@ import Autocomplete from '../components/Home/Autocomplete';
 import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
-import { CardData } from '../App';
+import LocationCards from '../components/Home/LocationCards';
+import { CardData, LocationCardData } from '../App';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -17,11 +18,13 @@ const useStyles = makeStyles({
     fontWeight: 400,
   },
   rentingBox: {
-    marginTop: '3em',
+    marginTop: '2em',
     marginBottom: '2em',
   },
   rentingText: {
+    marginBottom: '1em',
     fontWeight: 500,
+    color: '#B94630',
   },
 });
 
@@ -34,6 +37,25 @@ const HomePage = (): ReactElement => {
       callback: setHomeData,
     });
   }, []);
+
+  const locationData: LocationCardData[] = [
+    {
+      photo: '',
+      location: 'Collegetown',
+    },
+    {
+      photo: '',
+      location: 'West',
+    },
+    {
+      photo: '',
+      location: 'Downtown',
+    },
+    {
+      photo: '',
+      location: 'North',
+    },
+  ];
 
   return (
     <>
@@ -52,14 +74,16 @@ const HomePage = (): ReactElement => {
           </Box>
         </Container>
       </Box>
+
       <Box>
         <Container maxWidth="lg">
-          <Box pb={3} textAlign="left" className={classes.rentingBox}>
+          <Box textAlign="center" className={classes.rentingBox}>
             <Typography variant="h4" className={classes.rentingText}>
-              Browse Housing
+              Find the Best Properties in Ithaca
             </Typography>
-          </Box>
 
+            <LocationCards data={locationData} />
+          </Box>
           <ApartmentCards data={homeData} />
         </Container>
       </Box>
