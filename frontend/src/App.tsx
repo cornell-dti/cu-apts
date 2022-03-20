@@ -56,6 +56,11 @@ export type CardData = {
   company?: string;
 };
 
+export type LocationCardData = {
+  photo: string;
+  location: string;
+};
+
 const headersData = [home, review];
 
 hotjar.initialize(HJID, HJSV);
