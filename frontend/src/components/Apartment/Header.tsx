@@ -84,28 +84,34 @@ const useStyles = makeStyles((theme) => ({
     letterSpacing: '0.02em',
   },
   aptReviews: {
-    color: 'white',
+    color: 'black',
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '24px',
     lineHeight: '31px',
     position: 'relative',
-    marginBottom: '20px',
+    marginRight: '30px',
     [theme.breakpoints.down('sm')]: {
       marginLeft: '0px',
     },
   },
   aptRating: {
-    color: 'white',
-    marginRight: '45px',
-    marginBottom: '2px',
+    color: 'black',
+    // marginRight: '45px',
+    // marginBottom: '2px',
+  },
+  heartRating: {
+    marginTop: '3px',
+    marginRight: '20px',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
       marginLeft: '10px',
     },
   },
-  ratingSection: { paddingTop: '10px' },
+  ratingSection: {
+    paddingTop: '15px',
+  },
   btnSection: {
     height: '94%',
     [theme.breakpoints.down('sm')]: {
@@ -133,6 +139,7 @@ const ApartmentHeader = ({
     aptName,
     aptReviews,
     aptRating,
+    heartRating,
     headerSection,
     ratingSection,
     btnSection,
@@ -151,32 +158,10 @@ const ApartmentHeader = ({
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
-                  <Grid container className={ratingSection}>
-                    {!!averageRating && (
-                      <Grid item className={aptRating} xs={12}>
-                        <Grid container direction="row" alignItems="center">
-                          <Grid item xs={5}>
-                            <HeartRating value={averageRating} precision={0.5} readOnly />
-                          </Grid>
-                          <Grid item xs={7}>
-                            <Typography variant="h6">
-                              {averageRating.toFixed(1) + ' out of 5'}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}
-                    <Grid item xs={12}>
-                      <CardHeader
-                        title={
-                          numReviews + (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review')
-                        }
-                        className={aptReviews}
-                        disableTypography={true}
-                      />
-                    </Grid>
-                  </Grid>
                 </Grid>
+                {/* <Grid className={addSection}>
+                  <CardHeader title={name} className={aptName} disableTypography={true} />
+                </Grid> */}
               </Grid>
             </Grid>
             {photos.length > 0 && (
@@ -192,6 +177,35 @@ const ApartmentHeader = ({
               </Grid>
             )}
           </CardMedia>
+
+          <Grid container className={ratingSection}>
+            <Grid item>
+              <CardHeader
+                title={
+                  (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review') +
+                  ' (' +
+                  numReviews +
+                  ')'
+                }
+                className={aptReviews}
+                disableTypography={true}
+              />
+            </Grid>
+
+            {!!averageRating && (
+              <Grid item className={aptRating}>
+                <Grid container>
+                  <Grid item className={heartRating}>
+                    <HeartRating value={averageRating} precision={0.5} readOnly />
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="h6">{averageRating.toFixed(1) + ' out of 5'}</Typography>
+                  </Grid>
+                </Grid>
+                 
+              </Grid>
+            )}
+          </Grid>
         </Grid>
       </>
     </Grid>
