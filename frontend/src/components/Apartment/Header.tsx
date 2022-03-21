@@ -75,12 +75,17 @@ const useStyles = makeStyles((theme) => ({
   },
   aptName: {
     color: 'white',
-    paddingLeft: 0,
-    paddingBottom: 0,
-    fontStyle: 'normal',
     fontWeight: 'bold',
     fontSize: '36px',
     lineHeight: '43px',
+    letterSpacing: '0.02em',
+    marginTop: '10px',
+  },
+  aptAddress: {
+    color: 'white',
+
+    fontStyle: 'normal',
+    fontSize: '20px',
     letterSpacing: '0.02em',
   },
   aptReviews: {
@@ -97,8 +102,6 @@ const useStyles = makeStyles((theme) => ({
   },
   aptRating: {
     color: 'black',
-    // marginRight: '45px',
-    // marginBottom: '2px',
   },
   heartRating: {
     marginTop: '3px',
@@ -129,7 +132,7 @@ const ApartmentHeader = ({
   handleClick,
   averageRating,
 }: Props): ReactElement => {
-  const { name, photos } = apartment;
+  const { name, address, photos } = apartment;
   const icon = defaultIcon;
   const photoLink = defaultHeader;
   const {
@@ -137,6 +140,7 @@ const ApartmentHeader = ({
     logo,
     photoButton,
     aptName,
+    aptAddress,
     aptReviews,
     aptRating,
     heartRating,
@@ -158,10 +162,8 @@ const ApartmentHeader = ({
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
+                  <CardHeader title={address} className={aptAddress} disableTypography={true} />
                 </Grid>
-                {/* <Grid className={addSection}>
-                  <CardHeader title={name} className={aptName} disableTypography={true} />
-                </Grid> */}
               </Grid>
             </Grid>
             {photos.length > 0 && (
