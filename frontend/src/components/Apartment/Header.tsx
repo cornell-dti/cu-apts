@@ -162,7 +162,9 @@ const ApartmentHeader = ({
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
-                  <CardHeader title={address} className={aptAddress} disableTypography={true} />
+                  {address !== name && (
+                    <CardHeader title={address} className={aptAddress} disableTypography={true} />
+                  )}
                 </Grid>
               </Grid>
             </Grid>
