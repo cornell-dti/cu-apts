@@ -15,7 +15,7 @@ import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types'
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
@@ -59,7 +59,7 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
-  const navigate = useNavigate();
+  const history = useHistory();
 
   function menuHandleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
@@ -73,7 +73,7 @@ export default function Autocomplete() {
       setFocus(true);
     } else if (event.key === 'Enter') {
       setFocus(true);
-      navigate(`/search?q=${query}`);
+      history.push(`/search?q=${query}`);
     }
   }
 
