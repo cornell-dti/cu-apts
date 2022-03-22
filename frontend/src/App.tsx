@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import './App.scss';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
@@ -66,16 +66,16 @@ const App = (): ReactElement => {
       <Router>
         <NavBar headersData={headersData} />
         <div className="root">
-          <Switch>
-            <Route exact path="/" component={HomePage} />
-            <Route exact path="/faq" component={FAQPage} />
-            <Route exact path="/reviews" component={ReviewPage} />
-            <Route exact path="/policies" component={Policies} />
-            <Route path="/landlord/:landlordId" component={LandlordPage} />
-            <Route path="/apartment/:aptId" component={ApartmentPage} />
-            <Route exact path="/notfound" component={NotFoundPage} />
-            <Route exact path="/searchresults" component={SearchResultsPage} />
-          </Switch>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/reviews" element={<ReviewPage />} />
+            <Route path="/policies" element={<Policies />} />
+            <Route path="/landlord/:landlordId" element={<LandlordPage />} />
+            <Route path="/apartment/:aptId" element={<ApartmentPage />} />
+            <Route path="/notfound" element={<NotFoundPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
+          </Routes>
         </div>
         <Footer />
       </Router>

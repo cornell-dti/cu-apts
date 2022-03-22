@@ -28,7 +28,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  landlordId: string;
+  landlordId: string | undefined; //changed here b/c upgrade of typescript version
   onSuccess: () => void;
   toastTime: number;
   aptId: string;

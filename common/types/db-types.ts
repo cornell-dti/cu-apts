@@ -18,7 +18,8 @@ export type Review = {
   readonly likes?: number;
   readonly date: Date;
   readonly detailedRatings: DetailedRating;
-  readonly landlordId: string;
+  readonly landlordId: string | undefined; //change here due to upgrade
+  //of typescript version
   readonly overallRating: number;
   readonly photos: readonly string[];
   readonly reviewText: string;

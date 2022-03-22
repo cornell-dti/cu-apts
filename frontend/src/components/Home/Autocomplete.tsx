@@ -15,7 +15,7 @@ import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types'
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
@@ -59,16 +59,21 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current.offsetWidth);
-  const history = useHistory();
+  const navigate = useNavigate();
 
-  function handleListKeyDown(event: React.KeyboardEvent) {
+  function menuHandleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
     if (event.key === 'Tab') {
       setOpen(false);
     }
-    if (event.key === 'Enter') {
-      setOpen(false);
-      history.push('/searchresults');
+  }
+
+  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      setFocus(true);
+    } else if (event.key === 'Enter') {
+      setFocus(true);
+      navigate(`/search?q=${query}`);
     }
   }
 
@@ -96,7 +101,7 @@ export default function Autocomplete() {
                 style={{ width: `${width}px` }}
                 className={menuList}
                 autoFocusItem={focus}
-                onKeyDown={handleListKeyDown}
+                onKeyDown={menuHandleListKeyDown}
               >
                 {options.length === 0 ? (
                   <MenuItem disabled>No search results.</MenuItem>
@@ -185,16 +190,7 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowDown') {
-            setFocus(true);
-          } else if (event.key === 'Enter') {
-            setFocus(true);
-            history.push('/searchresults');
-          } else {
-            setFocus(false);
-          }
-        }}
+        onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;
           if (value !== '' || value !== null) {
