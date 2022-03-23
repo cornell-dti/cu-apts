@@ -197,6 +197,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar}>
         {homeLogo}
+        <div>{Autocomplete()}</div>
         <div>{getMenuButtons()}</div>
       </Toolbar>
     );
@@ -219,6 +220,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
         >
           <MenuIcon fontSize="large" />
         </IconButton>
+        {Autocomplete()}
         <Drawer
           {...{
             anchor: 'right',
