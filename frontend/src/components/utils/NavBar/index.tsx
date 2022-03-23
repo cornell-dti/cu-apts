@@ -244,6 +244,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
         >
           <MenuIcon fontSize="large" />
         </IconButton>
+        {auto()}
         <Drawer
           {...{
             anchor: 'right',
