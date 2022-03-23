@@ -20,6 +20,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
+import Autocomplete from '../../Home/Autocomplete';
 
 export type NavbarButton = {
   label: string;
