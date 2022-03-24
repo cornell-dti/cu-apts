@@ -13,6 +13,7 @@ import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.png';
 import defaultIcon from '../../assets/default_icon.png';
+import { colors } from '../../colors';
 
 type Props = {
   readonly landlord: Landlord;
@@ -55,10 +56,10 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '14px',
     lineHeight: '17px',
     textTransform: 'none',
-    color: '#000000',
+    color: colors.black,
     background: 'rgba(255, 255, 255, 1.0)',
     border: '2px solid black',
-    borderColor: 'black',
+    borderColor: colors.black,
     boxSizing: 'border-box',
     borderRadius: '8px',
     padding: '0px',
@@ -73,7 +74,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   landlordName: {
-    color: 'white',
+    color: colors.white,
     paddingLeft: 0,
     paddingBottom: 0,
     fontStyle: 'normal',
@@ -83,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
     letterSpacing: '0.02em',
   },
   landlordReviews: {
-    color: 'white',
+    color: colors.white,
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '24px',

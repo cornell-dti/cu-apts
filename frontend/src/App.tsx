@@ -5,7 +5,8 @@ import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core';
+import { ThemeProvider } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
 import { ApartmentWithId } from '../../common/types/db-types';
@@ -14,26 +15,45 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
+import { colors } from './colors';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
-      main: '#B94630',
+      main: colors.red1,
     },
     secondary: {
-      main: '#cccccc',
+      main: colors.gray2,
     },
   },
   typography: {
-    fontFamily: ['-apple-system', 'BlinkMacSystemFont', '"Work Sans"'].join(','),
+    fontFamily: ['"Work Sans"', 'sans-serif'].join(','),
+    h1: {
+      fontSize: 48,
+    },
+    h2: {
+      fontSize: 36,
+    },
+    h3: {
+      fontSize: 28,
+    },
+    h4: {
+      fontSize: 22,
+    },
+    body1: {
+      fontSize: 18,
+    },
+    body2: {
+      fontSize: 16,
+    },
   },
   overrides: {
     MuiFormLabel: {
       root: {
-        color: '#000000',
+        color: colors.black,
       },
       colorSecondary: {
-        color: '#929292',
+        color: colors.gray1,
       },
     },
   },

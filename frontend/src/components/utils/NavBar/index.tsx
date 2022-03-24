@@ -12,14 +12,15 @@ import {
   Hidden,
   Icon,
   Grid,
-  createMuiTheme,
   ThemeProvider,
   Container,
 } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
+import { colors } from '../../../colors';
 
 export type NavbarButton = {
   label: string;
@@ -35,7 +36,7 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     paddingTop: '1em',
     paddingBottom: '0.75em',
     margin: '0.5em 0 0.5em 0',
@@ -45,13 +46,11 @@ const useStyles = makeStyles(() => ({
     fontSize: 0,
   },
   logo: {
-    fontFamily: 'Work Sans, sans-serif',
     fontWeight: 600,
     '@media only screen and (max-width: 320px) ': {
       fontSize: '1.7em',
     },
-    fontStyle: 'normal',
-    color: 'black',
+    color: colors.black,
     textAlign: 'left',
     paddingTop: '25px',
     marginLeft: '10px',
@@ -59,11 +58,8 @@ const useStyles = makeStyles(() => ({
     lineHeight: '32px',
   },
   description: {
-    fontFamily: 'Work Sans, sans-serif',
-    color: 'black',
+    color: colors.black,
     textAlign: 'left',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
     fontSize: '1.125em',
     '@media only screen and (max-width: 425px) ': {
       fontSize: '0.75em',
@@ -94,9 +90,6 @@ const useStyles = makeStyles(() => ({
     alignSelf: 'right',
     marginBottom: '8px',
   },
-  drawerButton: {
-    fontFamily: 'Work Sans, sans-serif',
-  },
 }));
 function GetButtonColor(lab: string) {
   const location = useLocation();
@@ -118,10 +111,9 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerContainer,
     menuDrawer,
     icon,
-    drawerButton,
   } = useStyles();
-  const muiTheme = createMuiTheme({
-    palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
+  const muiTheme = createTheme({
+    palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
 
   const getDrawerChoices = () => {
@@ -130,9 +122,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
-              <MenuItem key={index} className={drawerButton}>
-                {label}
-              </MenuItem>
+              <MenuItem key={index}>{label}</MenuItem>
             </Link>
           );
         })}
