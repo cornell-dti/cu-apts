@@ -20,7 +20,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
-import Autocomplete from '../../Home/Autocomplete';
+import auto from '../../Home/Autocomplete';
 
 export type NavbarButton = {
   label: string;
@@ -84,9 +84,17 @@ const useStyles = makeStyles(() => ({
   },
   toolbar: {
     display: 'flex',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     paddingLeft: 0,
-    paddingRight: 0,
+    // paddingRight: 0,
+    // '& .MuiToolbar-gutters': {
+    //   paddingLeft: 0,
+    //   paddingRight: 0,
+    // },
+    // '& .MuiGrid-item': {
+    //   marginLeft: 0,
+    //   marginRight: 0,
+    // },
   },
   drawerContainer: {
     padding: '20px 30px',
@@ -97,6 +105,9 @@ const useStyles = makeStyles(() => ({
   },
   drawerButton: {
     fontFamily: 'Work Sans, sans-serif',
+  },
+  search: {
+    width: '50%',
   },
 }));
 function GetButtonColor(lab: string) {
@@ -120,6 +131,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     menuDrawer,
     icon,
     drawerButton,
+    search,
   } = useStyles();
   const muiTheme = createMuiTheme({
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
@@ -164,7 +176,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Grid container item xs={11} md={7} direction="column">
+    <Grid container item direction="column">
       <Grid>
         <Grid container alignItems="center">
           <Grid item>
@@ -195,11 +207,17 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   const displayDesktop = (): ReactElement => {
     return (
-      <Toolbar className={toolbar}>
-        {homeLogo}
-        <div>{Autocomplete()}</div>
-        <div>{getMenuButtons()}</div>
-      </Toolbar>
+      <Grid container className={toolbar} alignItems="center">
+        <Grid item md={3}>
+          {homeLogo}
+        </Grid>
+        <Grid item md={6} className={search}>
+          {auto()}
+        </Grid>
+        <Grid item md={3}>
+          {getMenuButtons()}
+        </Grid>
+      </Grid>
     );
   };
 
@@ -220,7 +238,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
         >
           <MenuIcon fontSize="large" />
         </IconButton>
-        {Autocomplete()}
         <Drawer
           {...{
             anchor: 'right',
