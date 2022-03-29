@@ -78,16 +78,6 @@ export default function Autocomplete() {
     }
   }
 
-  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'ArrowDown') {
-      setFocus(true);
-    } else if (event.key === 'Enter') {
-      setFocus(true);
-      history.push(`/search?q=${query}`);
-      setOpen(false);
-    }
-  }
-
   const handleOnChange = (query: string) => {
     setQuery(query);
     setSelected(null);
