@@ -58,7 +58,7 @@ export default function Autocomplete() {
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
-  const [width, setWidth] = useState(inputRef.current.offsetWidth);
+  const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const history = useHistory();
 
   function menuHandleListKeyDown(event: React.KeyboardEvent) {
@@ -157,7 +157,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     const handleResize = () => {
-      setWidth(inputRef.current.offsetWidth);
+      setWidth(inputRef.current?.offsetWidth);
     };
     // the width is initially 0 because the inputRef is initialized as an empty div
     // need to call handleResize when the inputRef is set to the TextField
