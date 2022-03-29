@@ -117,7 +117,7 @@ export default function Autocomplete() {
                           component: RouterLink,
                         }}
                       >
-                        <MenuItem button={true} key={index}>
+                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
                           <Grid container justify="space-between">
                             <Grid item xl={8}>
                               <Typography className={buildingText}>{name}</Typography>
