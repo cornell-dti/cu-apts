@@ -102,12 +102,17 @@ const useStyles = makeStyles(() => ({
   menuDrawer: {
     alignSelf: 'right',
     marginBottom: '8px',
+    marginLeft: '50%',
   },
   drawerButton: {
     fontFamily: 'Work Sans, sans-serif',
   },
   search: {
     width: '50%',
+    paddingLeft: '3%',
+  },
+  searchDrawer: {
+    marginBottom: '5%',
   },
 }));
 function GetButtonColor(lab: string) {
@@ -132,6 +137,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     icon,
     drawerButton,
     search,
+    searchDrawer,
   } = useStyles();
   const muiTheme = createMuiTheme({
     palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
@@ -140,6 +146,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
+        <Grid className={searchDrawer}>{auto()}</Grid>
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
@@ -225,7 +232,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar}>
         <div>{homeLogo}</div>
-        <div className={grow} />
+        {/* <div className={grow} /> */}
         <IconButton
           className={menuDrawer}
           {...{
