@@ -2,9 +2,6 @@ import { Box, Container, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// import NotFoundIcon from '../assets/not-found.svg';
-// import styles from './NotFoundPage.module.css';
-
 const SearchResultsPage = (): ReactElement => {
   const location = useLocation();
   return (
