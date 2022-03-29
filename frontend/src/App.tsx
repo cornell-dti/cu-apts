@@ -79,7 +79,7 @@ const App = (): ReactElement => {
             <Route path="/landlord/:landlordId" component={LandlordPage} />
             <Route path="/apartment/:aptId" component={ApartmentPage} />
             <Route exact path="/notfound" component={NotFoundPage} />
-            <Route exact path="/searchresults" component={SearchResultsPage} />
+            <Route path="/search" component={SearchResultsPage} />
           </Switch>
         </div>
         <Footer />
