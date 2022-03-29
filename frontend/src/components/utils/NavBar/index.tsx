@@ -126,7 +126,6 @@ function GetButtonColor(lab: string) {
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const {
-    grow,
     header,
     logo,
     description,
