@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -84,17 +84,7 @@ const useStyles = makeStyles(() => ({
   },
   toolbar: {
     display: 'flex',
-    // justifyContent: 'space-between',
     paddingLeft: 0,
-    // paddingRight: 0,
-    // '& .MuiToolbar-gutters': {
-    //   paddingLeft: 0,
-    //   paddingRight: 0,
-    // },
-    // '& .MuiGrid-item': {
-    //   marginLeft: 0,
-    //   marginRight: 0,
-    // },
   },
   drawerContainer: {
     padding: '20px 30px',
@@ -120,11 +110,12 @@ function GetButtonColor(lab: string) {
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
       lab.includes('Reviews'))
-    ? 'secondary'
-    : 'primary';
+    ? 'primary'
+    : 'secondary';
 }
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
   const {
     header,
     logo,
@@ -139,8 +130,12 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     searchDrawer,
   } = useStyles();
   const muiTheme = createMuiTheme({
-    palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
+    palette: { primary: { main: '#B94630' }, secondary: { main: '#898989' } },
   });
+
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location]);
 
   const getDrawerChoices = () => {
     return (
@@ -231,7 +226,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar}>
         <div>{homeLogo}</div>
-        {/* <div className={grow} /> */}
         <IconButton
           className={menuDrawer}
           {...{

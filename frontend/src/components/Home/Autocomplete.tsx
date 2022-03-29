@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   resultChip: { cursor: 'pointer' },
   field: {
     '&.Mui-focused': {
-      border: '20px black',
+      border: '20px black ',
       '& .MuiOutlinedInput-notchedOutline': {
         border: 'none',
       },
@@ -66,9 +66,15 @@ export default function Autocomplete() {
     if (event.key === 'Tab') {
       setOpen(false);
     }
-    if (event.key === 'Enter') {
+  }
+
+  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      setFocus(true);
+    } else if (event.key === 'Enter') {
+      setFocus(true);
+      history.push(`/search?q=${query}`);
       setOpen(false);
-      history.push('/searchresults');
     }
   }
 
@@ -93,7 +99,7 @@ export default function Autocomplete() {
           <div>
             {open ? (
               <MenuList
-                style={{ width: `${width}px` }}
+                style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
                 className={menuList}
                 autoFocusItem={focus}
                 onKeyDown={handleListKeyDown}
@@ -104,6 +110,7 @@ export default function Autocomplete() {
                   options.map(({ id, name, address, label }, index) => {
                     return (
                       <Link
+                        key={index}
                         {...{
                           to: `/apartment/${id}`,
                           style: { textDecoration: 'none' },
@@ -185,16 +192,7 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowDown') {
-            setFocus(true);
-          } else if (event.key === 'Enter') {
-            setFocus(true);
-            history.push('/searchresults');
-          } else {
-            setFocus(false);
-          }
-        }}
+        onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;
           if (value !== '' || value !== null) {
