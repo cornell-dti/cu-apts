@@ -66,9 +66,15 @@ export default function Autocomplete() {
     if (event.key === 'Tab') {
       setOpen(false);
     }
-    if (event.key === 'Enter') {
+  }
+
+  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      setFocus(true);
+    } else if (event.key === 'Enter') {
+      setFocus(true);
+      history.push(`/search?q=${query}`);
       setOpen(false);
-      history.push('/searchresults');
     }
   }
 
