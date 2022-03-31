@@ -24,11 +24,6 @@ const useStyles = makeStyles({
     width: '100%',
     padding: '17px',
   },
-  msgImg: {
-    height: '18px',
-    width: '18px',
-    marginLeft: '25px',
-  },
   aptNameTxt: {
     fontWeight: 800,
     marginLeft: '25px',
