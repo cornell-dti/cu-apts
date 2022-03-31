@@ -1,5 +1,5 @@
 import React, { ReactElement, useState, useEffect, useCallback } from 'react';
-import { Button, Container, Grid, Hidden, Typography } from '@material-ui/core';
+import { Button, Container, Grid, Hidden, Typography, makeStyles } from '@material-ui/core';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
@@ -18,11 +18,22 @@ import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
 import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
+import HeartRating from '../components/utils/HeartRating';
 
 export type RatingInfo = {
   feature: string;
   rating: number;
 };
+
+const useStyles = makeStyles((theme) => ({
+  aptRating: {
+    color: 'black',
+  },
+  heartRating: {
+    marginTop: '3px',
+    marginRight: '20px',
+  },
+}));
 
 const ApartmentPage = (): ReactElement => {
   const { aptId } = useParams<Record<string, string>>();
@@ -46,6 +57,7 @@ const ApartmentPage = (): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
+  const { aptRating, heartRating } = useStyles();
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
@@ -186,11 +198,27 @@ const ApartmentPage = (): ReactElement => {
     <>
       <Grid container item spacing={3} justify="space-between" alignItems="center">
         <Grid item>
-          <Typography variant="h4">Reviews ({reviewData.length})</Typography>
+          <Typography variant="h6">Reviews ({reviewData.length})</Typography>
           {reviewData.length === 0 && (
             <Typography>No reviews available. Be the first to leave one!</Typography>
           )}
+          {!!getAverageRating(reviewData) && (
+            <Grid item className={aptRating}>
+              <Grid container>
+                <Grid item className={heartRating}>
+                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                </Grid>
+                <Grid item>
+                  <Typography variant="h6">
+                    {getAverageRating(reviewData).toFixed(1) + ' out of 5'}
+                  </Typography>
+                </Grid>
+              </Grid>
+               
+            </Grid>
+          )}
         </Grid>
+
         {landlordData && landlordData.photos.length > 0 && (
           <Button
             color="secondary"

@@ -1,5 +1,4 @@
 import React, { ReactElement } from 'react';
-import HeartRating from '../utils/HeartRating';
 import {
   CardHeader,
   CardMedia,
@@ -8,7 +7,6 @@ import {
   withStyles,
   makeStyles,
   Avatar,
-  Typography,
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
@@ -88,32 +86,10 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '20px',
     letterSpacing: '0.02em',
   },
-  aptReviews: {
-    color: 'black',
-    fontStyle: 'normal',
-    fontWeight: 600,
-    fontSize: '24px',
-    lineHeight: '31px',
-    position: 'relative',
-    marginRight: '30px',
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: '0px',
-    },
-  },
-  aptRating: {
-    color: 'black',
-  },
-  heartRating: {
-    marginTop: '3px',
-    marginRight: '20px',
-  },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
       marginLeft: '10px',
     },
-  },
-  ratingSection: {
-    paddingTop: '15px',
   },
   btnSection: {
     height: '94%',
@@ -135,20 +111,8 @@ const ApartmentHeader = ({
   const { name, address, photos } = apartment;
   const icon = defaultIcon;
   const photoLink = defaultHeader;
-  const {
-    media,
-    logo,
-    photoButton,
-    aptName,
-    aptAddress,
-    aptReviews,
-    aptRating,
-    heartRating,
-    headerSection,
-    ratingSection,
-    btnSection,
-    logoGrid,
-  } = useStyles();
+  const { media, logo, photoButton, aptName, aptAddress, headerSection, btnSection, logoGrid } =
+    useStyles();
   return (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
@@ -181,35 +145,6 @@ const ApartmentHeader = ({
               </Grid>
             )}
           </CardMedia>
-
-          <Grid container className={ratingSection}>
-            <Grid item>
-              <CardHeader
-                title={
-                  (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review') +
-                  ' (' +
-                  numReviews +
-                  ')'
-                }
-                className={aptReviews}
-                disableTypography={true}
-              />
-            </Grid>
-
-            {!!averageRating && (
-              <Grid item className={aptRating}>
-                <Grid container>
-                  <Grid item className={heartRating}>
-                    <HeartRating value={averageRating} precision={0.5} readOnly />
-                  </Grid>
-                  <Grid item>
-                    <Typography variant="h6">{averageRating.toFixed(1) + ' out of 5'}</Typography>
-                  </Grid>
-                </Grid>
-                 
-              </Grid>
-            )}
-          </Grid>
         </Grid>
       </>
     </Grid>
