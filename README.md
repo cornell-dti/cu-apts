@@ -47,6 +47,11 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 - **Mena Attia** - Developer
 - **Sophia Pham** - Developer
 - **Cyrus Irani** - Developer
+<<<<<<< HEAD
+=======
+- **Jiayuan Gu** - Developer
+
+>>>>>>> c9a08c95106d9adcc679e2d17a6b3d27e2731570
 
 We are a team within the Cornell Design & Tech Initiative. For more information, see
 [our website](https://cornelldti.org).
