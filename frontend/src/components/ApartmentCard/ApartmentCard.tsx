@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 import { Apartment } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
-import MessageImg from '../../assets/msg.png';
 
 type Props = {
   buildingData: Apartment;
