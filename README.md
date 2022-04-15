@@ -49,7 +49,6 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 - **Cyrus Irani** - Developer
 - **Jiayuan Gu** - Developer
 
-
 We are a team within the Cornell Design & Tech Initiative. For more information, see
 [our website](https://cornelldti.org).
 

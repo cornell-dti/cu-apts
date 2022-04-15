@@ -16,6 +16,7 @@ import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
 import { get } from './utils/call';
 import { LandlordOrApartmentWithLabel } from '../../common/types/db-types';
+import SearchResultsPage from './pages/SearchResultsPage';
 
 const theme = createMuiTheme({
   palette: {
@@ -57,6 +58,11 @@ export type CardData = {
   company?: string;
 };
 
+export type LocationCardData = {
+  photo: string;
+  location: string;
+};
+
 const headersData = [home, review];
 
 hotjar.initialize(HJID, HJSV);
@@ -80,7 +86,8 @@ const App = (): ReactElement => {
             <Route exact path="/policies" component={Policies} />
             <Route path="/landlord/:landlordId" component={LandlordPage} />
             <Route path="/apartment/:aptId" component={ApartmentPage} />
-            <Route component={NotFoundPage} />
+            <Route exact path="/notfound" component={NotFoundPage} />
+            <Route path="/search" component={SearchResultsPage} />
           </Switch>
         </div>
         <Footer />
