@@ -15,7 +15,7 @@ import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
 import { get } from './utils/call';
-import { LandlordOrApartmentWithLabel } from '../../common/types/db-types';
+
 import SearchResultsPage from './pages/SearchResultsPage';
 
 const theme = createMuiTheme({
