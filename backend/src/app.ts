@@ -127,7 +127,26 @@ app.post('/new-landlord', async (req, res) => {
 });
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
+app.get('/getAllData', async (req, res) => {
+  try {
+    const landlordDocs = (await landlordCollection.get()).docs;
+    const landlords: LandlordWithId[] = landlordDocs.map(
+      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
+    );
+    const aptDocs = (await buildingsCollection.get()).docs;
+    const apts: ApartmentWithId[] = aptDocs.map(
+      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
+    );
+    app.set('landlords', landlords);
+    app.set('apts', apts);
 
+    const v: any = {};
+    res.status(200).send(JSON.stringify(v));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
 app.get('/search', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -162,18 +181,18 @@ app.get('/page-data/:page', async (req, res) => {
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
 
-  if (page === 'home') {
-    const landlordDocs = (await landlordCollection.get()).docs;
-    const landlords: LandlordWithId[] = landlordDocs.map(
-      (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
-    );
-    const aptDocs = (await buildingsCollection.get()).docs;
-    const apts: ApartmentWithId[] = aptDocs.map(
-      (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
-    );
-    app.set('landlords', landlords);
-    app.set('apts', apts);
-  }
+  // if (page === 'home') {
+  // const landlordDocs = (await landlordCollection.get()).docs;
+  // const landlords: LandlordWithId[] = landlordDocs.map(
+  //   (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
+  // );
+  // const aptDocs = (await buildingsCollection.get()).docs;
+  // const apts: ApartmentWithId[] = aptDocs.map(
+  //   (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
+  // );
+  // app.set('landlords', landlords);
+  // app.set('apts', apts);
+  // }
 
   const pageData = await Promise.all(
     buildings.map(async (buildingData) => {

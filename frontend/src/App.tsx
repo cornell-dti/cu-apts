@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -14,6 +14,8 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
+import { get } from './utils/call';
+import { LandlordOrApartmentWithLabel } from '../../common/types/db-types';
 
 const theme = createMuiTheme({
   palette: {
@@ -60,6 +62,12 @@ const headersData = [home, review];
 hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
+  useEffect(() => {
+    get<any>(`/getAllData`, {
+      callback: () => {},
+    });
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
