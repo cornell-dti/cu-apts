@@ -181,19 +181,6 @@ app.get('/page-data/:page', async (req, res) => {
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
 
-  // if (page === 'home') {
-  // const landlordDocs = (await landlordCollection.get()).docs;
-  // const landlords: LandlordWithId[] = landlordDocs.map(
-  //   (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
-  // );
-  // const aptDocs = (await buildingsCollection.get()).docs;
-  // const apts: ApartmentWithId[] = aptDocs.map(
-  //   (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
-  // );
-  // app.set('landlords', landlords);
-  // app.set('apts', apts);
-  // }
-
   const pageData = await Promise.all(
     buildings.map(async (buildingData) => {
       const { id, landlordId } = buildingData;
