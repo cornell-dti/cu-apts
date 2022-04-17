@@ -196,25 +196,24 @@ const ApartmentPage = (): ReactElement => {
 
   const Header = (
     <>
-      <Grid container item spacing={3} justify="space-between" alignItems="center">
-        <Grid item>
+      <Grid container justify="center" alignItems="center">
+        <Grid container>
           <Typography variant="h6">Reviews ({reviewData.length})</Typography>
           {reviewData.length === 0 && (
             <Typography>No reviews available. Be the first to leave one!</Typography>
           )}
           {!!getAverageRating(reviewData) && (
-            <Grid item className={aptRating}>
+            <Grid item>
               <Grid container>
                 <Grid item className={heartRating}>
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
                 </Grid>
-                <Grid item>
+                <Grid item className={aptRating}>
                   <Typography variant="h6">
                     {getAverageRating(reviewData).toFixed(1) + ' out of 5'}
                   </Typography>
                 </Grid>
               </Grid>
-               
             </Grid>
           )}
         </Grid>
@@ -229,8 +228,9 @@ const ApartmentPage = (): ReactElement => {
             Show all photos
           </Button>
         )}
+
         <Grid item sm={4} md={8}>
-          <Grid container spacing={1} justify="flex-end" alignItems="center">
+          <Grid container spacing={1} alignItems="center">
             <Grid item>
               <Typography>Sort reviews by:</Typography>
             </Grid>
@@ -265,6 +265,7 @@ const ApartmentPage = (): ReactElement => {
           </Grid>
         </Grid>
       </Grid>
+
       <Grid item xs={12}>
         <ReviewHeader aveRatingInfo={aveRatingInfo} />
       </Grid>
