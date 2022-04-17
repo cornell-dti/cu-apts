@@ -16,6 +16,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../colors';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
@@ -41,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   resultChip: { cursor: 'pointer' },
   field: {
     '&.Mui-focused': {
-      border: '20px black',
+      border: '20px black ',
       '& .MuiOutlinedInput-notchedOutline': {
         border: 'none',
       },
@@ -58,11 +59,22 @@ export default function Autocomplete() {
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
-  const [width, setWidth] = useState(inputRef.current.offsetWidth);
+  const [width, setWidth] = useState(inputRef.current?.offsetWidth);
+  const history = useHistory();
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
     if (event.key === 'Tab') {
+      setOpen(false);
+    }
+  }
+
+  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      setFocus(true);
+    } else if (event.key === 'Enter') {
+      setFocus(true);
+      history.push(`/search?q=${query}`);
       setOpen(false);
     }
   }
@@ -88,7 +100,7 @@ export default function Autocomplete() {
           <div>
             {open ? (
               <MenuList
-                style={{ width: `${width}px` }}
+                style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
                 className={menuList}
                 autoFocusItem={focus}
                 onKeyDown={handleListKeyDown}
@@ -99,13 +111,14 @@ export default function Autocomplete() {
                   options.map(({ id, name, address, label }, index) => {
                     return (
                       <Link
+                        key={index}
                         {...{
                           to: `/apartment/${id}`,
                           style: { textDecoration: 'none' },
                           component: RouterLink,
                         }}
                       >
-                        <MenuItem button={true} key={index}>
+                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
                           <Grid container justify="space-between">
                             <Grid item xl={8}>
                               <Typography className={buildingText}>{name}</Typography>
@@ -147,7 +160,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     const handleResize = () => {
-      setWidth(inputRef.current.offsetWidth);
+      setWidth(inputRef.current?.offsetWidth);
     };
     // the width is initially 0 because the inputRef is initialized as an empty div
     // need to call handleResize when the inputRef is set to the TextField
@@ -180,7 +193,7 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
-        onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
+        onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;
           if (value !== '' || value !== null) {
@@ -193,6 +206,7 @@ export default function Autocomplete() {
           className: field,
         }}
       />
+
       <Menu />
     </div>
   );
