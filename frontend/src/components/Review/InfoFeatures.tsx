@@ -2,9 +2,10 @@ import React, { ReactElement } from 'react';
 import Info from './Info';
 import PropertyInfo from './PropertyInfo';
 import { Card, CardContent, Divider } from '@material-ui/core';
+import { Apartment } from '../../../../common/types/db-types';
 
 type Props = {
-  readonly buildings: readonly string[];
+  readonly buildings: Apartment[];
   readonly contact: string | null;
   readonly address: string | null;
 };

@@ -249,7 +249,7 @@ const ApartmentPage = (): ReactElement => {
         landlord={landlordData.name}
         contact={landlordData.contact}
         address={apt!.address}
-        buildings={buildings.map((b) => b.name).filter((name) => name !== apt?.name)}
+        buildings={buildings.filter((a) => a.name !== apt?.name)}
       />
     </Grid>
   );

@@ -241,7 +241,7 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
+      <InfoFeatures {...landlordData} buildings={buildings} />
     </Grid>
   );
 
