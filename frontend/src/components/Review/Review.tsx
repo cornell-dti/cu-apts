@@ -18,6 +18,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
 import { ReviewWithId } from '../../../../common/types/db-types';
+import { colors } from '../../colors';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -34,13 +35,13 @@ const useStyles = makeStyles(() => ({
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
-    borderColor: 'black',
+    borderColor: colors.black,
   },
   expandOpen: {
     transform: 'rotate(180deg)',
   },
   dateText: {
-    color: '#5D5D5D',
+    color: colors.gray1,
   },
   button: {
     textTransform: 'none',
@@ -112,7 +113,7 @@ const ReviewComponent = ({
                 </Grid>
               )}
               <Grid item container alignContent="center">
-                <Typography>
+                <Typography variant="body2">
                   {expandedText ? reviewText : reviewText.substring(0, 500)}
                   {!expandedText && reviewText.length > 500 && '...'}
                   {reviewText.length > 500 ? (

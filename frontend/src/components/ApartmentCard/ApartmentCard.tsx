@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import { Apartment } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
+import { colors } from '../../colors';
 
 type Props = {
   buildingData: Apartment;
@@ -33,7 +34,7 @@ const useStyles = makeStyles({
   },
   card: {
     borderRadius: '10px',
-    backgroundColor: '#FFF2F2',
+    backgroundColor: colors.red6,
   },
   reviewNum: {
     fontWeight: 700,

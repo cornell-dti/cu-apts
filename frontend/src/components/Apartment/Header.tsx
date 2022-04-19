@@ -14,6 +14,7 @@ import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.png';
 import defaultIcon from '../../assets/default_icon.png';
+import { colors } from '../../colors';
 
 type Props = {
   readonly apartment: ApartmentWithId;
@@ -51,15 +52,12 @@ const useStyles = makeStyles((theme) => ({
     marginRight: '5px',
     height: '45px',
     width: '133px',
-    fontStyle: 'normal',
-    fontWeight: 'bold',
-    fontSize: '14px',
     lineHeight: '17px',
     textTransform: 'none',
-    color: '#000000',
+    color: colors.black,
     background: 'rgba(255, 255, 255, 1.0)',
     border: '2px solid black',
-    borderColor: 'black',
+    borderColor: colors.black,
     boxSizing: 'border-box',
     borderRadius: '8px',
     padding: '0px',
@@ -74,18 +72,16 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   aptName: {
-    color: 'white',
+    color: colors.white,
     paddingLeft: 0,
     paddingBottom: 0,
-    fontStyle: 'normal',
     fontWeight: 'bold',
     fontSize: '36px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
   },
   aptReviews: {
-    color: 'white',
-    fontStyle: 'normal',
+    color: colors.white,
     fontWeight: 600,
     fontSize: '24px',
     lineHeight: '31px',
@@ -96,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   aptRating: {
-    color: 'white',
+    color: colors.white,
     marginRight: '45px',
     marginBottom: '2px',
   },
