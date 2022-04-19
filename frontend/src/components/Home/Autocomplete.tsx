@@ -15,27 +15,28 @@ import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types'
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
+import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   menuList: {
     position: 'absolute',
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     maxHeight: 200,
     overflow: 'auto',
     boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
   },
   text: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     [theme.breakpoints.up('md')]: {
       width: '70%',
     },
   },
   addressText: {
-    color: '#868686',
+    color: colors.gray2,
   },
   buildingText: {
-    color: 'black',
+    color: colors.black,
   },
   searchIcon: { paddingRight: '10px' },
   resultChip: { cursor: 'pointer' },

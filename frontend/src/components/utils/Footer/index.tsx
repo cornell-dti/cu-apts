@@ -1,10 +1,11 @@
 import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { colors } from '../../../colors';
 
 const useStyles = makeStyles(() => ({
   footer: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.gray3,
     height: '94px',
     fontFamily: 'Work Sans',
     fontStyle: 'normal',
@@ -12,7 +13,7 @@ const useStyles = makeStyles(() => ({
     fontSize: '24px',
     lineHeight: '28px',
     letterSpacing: '0.02em',
-    color: '#000000',
+    color: colors.black,
     '@media only screen and (max-width: 992px) ': {
       paddingLeft: '4%',
       paddingRight: '4%',
@@ -20,7 +21,7 @@ const useStyles = makeStyles(() => ({
     },
   },
   link: {
-    color: '#B94630',
+    color: colors.red1,
     fontWeight: 'bold',
     textAlign: 'center',
     marginLeft: '4px',

@@ -3,15 +3,13 @@ import { Rating } from '@material-ui/lab';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import { withStyles } from '@material-ui/core';
+import { colors } from '../../colors';
 
 type Props = React.ComponentProps<typeof Rating>;
 
 const StyledRating = withStyles({
   iconFilled: {
-    color: '#EB5757',
-  },
-  iconHover: {
-    color: '#ff3d47',
+    color: colors.red2,
   },
 })(Rating);
 
