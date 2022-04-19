@@ -127,7 +127,7 @@ app.post('/new-landlord', async (req, res) => {
 });
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
-app.get('/getAllData', async (req, res) => {
+app.post('/set-data', async (req, res) => {
   try {
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: LandlordWithId[] = landlordDocs.map(

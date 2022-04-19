@@ -14,7 +14,7 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
-import { get } from './utils/call';
+import axios from 'axios';
 
 import SearchResultsPage from './pages/SearchResultsPage';
 
@@ -69,9 +69,10 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   useEffect(() => {
-    get<any>(`/getAllData`, {
-      callback: () => {},
-    });
+    const setData = async () => {
+      await axios.post('/set-data');
+    };
+    setData();
   }, []);
 
   return (
