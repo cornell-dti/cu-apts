@@ -140,8 +140,7 @@ app.post('/set-data', async (req, res) => {
     app.set('landlords', landlords);
     app.set('apts', apts);
 
-    const v: any = {};
-    res.status(200).send(JSON.stringify(v));
+    res.status(204).send();
   } catch (err) {
     console.error(err);
     res.status(400).send('Error');
