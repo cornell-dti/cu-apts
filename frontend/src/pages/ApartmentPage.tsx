@@ -31,7 +31,14 @@ const useStyles = makeStyles((theme) => ({
   },
   heartRating: {
     marginTop: '3px',
-    marginRight: '20px',
+    marginRight: '10px',
+  },
+  leaveReviewContainer: {
+    marginTop: '20px',
+    marginBottom: '20px',
+  },
+  reviewContainer: {
+    marginTop: '6px',
   },
 }));
 
@@ -57,7 +64,7 @@ const ApartmentPage = (): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
-  const { aptRating, heartRating } = useStyles();
+  const { aptRating, heartRating, leaveReviewContainer, reviewContainer } = useStyles();
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
@@ -196,21 +203,23 @@ const ApartmentPage = (): ReactElement => {
 
   const Header = (
     <>
-      <Grid container justify="center" alignItems="center">
-        <Grid container>
-          <Typography variant="h6">Reviews ({reviewData.length})</Typography>
-          {reviewData.length === 0 && (
-            <Typography>No reviews available. Be the first to leave one!</Typography>
-          )}
+      <Grid container alignItems="center">
+        <Grid container className={reviewContainer} spacing={1} sm={12}>
+          <Grid item>
+            <Typography variant="h6">Reviews ({reviewData.length})</Typography>
+            {reviewData.length === 0 && (
+              <Typography>No reviews available. Be the first to leave one!</Typography>
+            )}
+          </Grid>
           {!!getAverageRating(reviewData) && (
             <Grid item>
-              <Grid container>
+              <Grid container alignItems="center">
                 <Grid item className={heartRating}>
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
                 </Grid>
                 <Grid item className={aptRating}>
                   <Typography variant="h6">
-                    {getAverageRating(reviewData).toFixed(1) + ' out of 5'}
+                    {getAverageRating(reviewData).toFixed(1) + ' / 5'}
                   </Typography>
                 </Grid>
               </Grid>
@@ -229,29 +238,8 @@ const ApartmentPage = (): ReactElement => {
           </Button>
         )}
 
-        <Grid item sm={4} md={8}>
-          <Grid container spacing={1} alignItems="center">
-            <Grid item>
-              <Typography>Sort reviews by:</Typography>
-            </Grid>
-            <Grid item>
-              <DropDown
-                menuItems={[
-                  {
-                    item: 'Most recent',
-                    callback: () => {
-                      setSortBy('date');
-                    },
-                  },
-                  {
-                    item: 'Most helpful',
-                    callback: () => {
-                      setSortBy('likes');
-                    },
-                  },
-                ]}
-              />
-            </Grid>
+        <Grid item className={leaveReviewContainer} xs={12}>
+          <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
               <Button
                 color="primary"
@@ -261,6 +249,31 @@ const ApartmentPage = (): ReactElement => {
               >
                 Leave a Review
               </Button>
+            </Grid>
+            <Grid item>
+              <Grid container spacing={1} direction="row" alignItems="center">
+                <Grid item>
+                  <Typography>Sort reviews by:</Typography>
+                </Grid>
+                <Grid item>
+                  <DropDown
+                    menuItems={[
+                      {
+                        item: 'Most recent',
+                        callback: () => {
+                          setSortBy('date');
+                        },
+                      },
+                      {
+                        item: 'Most helpful',
+                        callback: () => {
+                          setSortBy('likes');
+                        },
+                      },
+                    ]}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
@@ -302,7 +315,7 @@ const ApartmentPage = (): ReactElement => {
 
       <Container className={styles.OuterContainer}>
         <Grid container spacing={5} justify="center">
-          <Grid container spacing={3} item xs={12} sm={8}>
+          <Grid container item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>
             {showConfirmation && (
