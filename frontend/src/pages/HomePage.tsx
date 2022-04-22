@@ -6,15 +6,16 @@ import styles from './HomePage.module.scss';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
 import { CardData, LocationCardData } from '../App';
+import { colors } from '../colors';
 
 const useStyles = makeStyles({
   jumboText: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 600,
     margin: '0.5em 0 0.5em 0',
   },
   jumboSub: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 400,
   },
   rentingBox: {
@@ -24,7 +25,7 @@ const useStyles = makeStyles({
   rentingText: {
     marginBottom: '1em',
     fontWeight: 500,
-    color: '#B94630',
+    color: colors.red1,
   },
 });
 
@@ -62,10 +63,10 @@ const HomePage = (): ReactElement => {
       <Box className={styles.JumboTron}>
         <Container maxWidth="lg">
           <Box py={6}>
-            <Typography variant="h3" className={classes.jumboText}>
+            <Typography variant="h1" className={classes.jumboText}>
               Search Renting Companies
             </Typography>
-            <Typography variant="subtitle1" className={classes.jumboSub}>
+            <Typography variant="body1" className={classes.jumboSub}>
               Search for off-campus housing, review apartments, and share feedback!
             </Typography>
           </Box>
@@ -78,7 +79,7 @@ const HomePage = (): ReactElement => {
       <Box>
         <Container maxWidth="lg">
           <Box textAlign="center" className={classes.rentingBox}>
-            <Typography variant="h4" className={classes.rentingText}>
+            <Typography variant="h2" className={classes.rentingText}>
               Find the Best Properties in Ithaca
             </Typography>
 

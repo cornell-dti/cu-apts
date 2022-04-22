@@ -18,6 +18,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
 import { ReviewWithId } from '../../../../common/types/db-types';
+import { colors } from '../../colors';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -34,13 +35,13 @@ const useStyles = makeStyles(() => ({
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
-    borderColor: 'black',
+    borderColor: colors.black,
   },
   expandOpen: {
     transform: 'rotate(180deg)',
   },
   dateText: {
-    color: '#5D5D5D',
+    color: colors.gray1,
   },
   button: {
     textTransform: 'none',
@@ -73,35 +74,29 @@ const ReviewComponent = ({
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justify="space-between">
-              {overallRating !== null ? (
-                <Grid container item xs={10} spacing={2}>
-                  <Grid item>
-                    <HeartRating value={overallRating} readOnly />
-                  </Grid>
-                  <Grid item>
-                    <IconButton
-                      className={clsx(expand, {
-                        [expandOpen]: expanded,
-                      })}
-                      onClick={handleExpandClick}
-                      aria-expanded={expanded}
-                      aria-label="show more"
-                      size="small"
-                    >
-                      <ExpandMoreIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              ) : (
+              <Grid container item xs={10} spacing={2}>
                 <Grid item>
-                  <Typography>This review was collected by the Ithaca Tenants Union</Typography>
+                  <HeartRating value={overallRating} readOnly />
                 </Grid>
-              )}
+                <Grid item>
+                  <IconButton
+                    className={clsx(expand, {
+                      [expandOpen]: expanded,
+                    })}
+                    onClick={handleExpandClick}
+                    aria-expanded={expanded}
+                    aria-label="show more"
+                    size="small"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+
               <Grid item>
                 <Typography className={dateText}>{formattedDate}</Typography>
               </Grid>
-            </Grid>
-            {overallRating !== null && (
+
               <Grid item>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <CardContent>
@@ -109,25 +104,31 @@ const ReviewComponent = ({
                   </CardContent>
                 </Collapse>
               </Grid>
-            )}
-            <Grid item container alignContent="center">
-              <Typography>
-                {expandedText ? reviewText : reviewText.substring(0, 500)}
-                {!expandedText && reviewText.length > 500 && '...'}
-                {reviewText.length > 500 ? (
-                  <Button className={button} onClick={() => setExpandedText(!expandedText)}>
-                    {expandedText ? 'Read Less' : 'Read More'}
-                  </Button>
-                ) : null}
-              </Typography>
-            </Grid>
-            {photos.length > 0 && (
-              <Grid container alignItems="center" justify="center">
-                <Grid item xs={12} sm={6}>
-                  <CardMedia component="img" alt="Apt image" image={photos[0]} title="Apt image" />
-                </Grid>
+
+              <Grid item container alignContent="center">
+                <Typography>
+                  {expandedText ? reviewText : reviewText.substring(0, 500)}
+                  {!expandedText && reviewText.length > 500 && '...'}
+                  {reviewText.length > 500 ? (
+                    <Button className={button} onClick={() => setExpandedText(!expandedText)}>
+                      {expandedText ? 'Read Less' : 'Read More'}
+                    </Button>
+                  ) : null}
+                </Typography>
               </Grid>
-            )}
+              {photos.length > 0 && (
+                <Grid container alignItems="center" justify="center">
+                  <Grid item xs={12} sm={6}>
+                    <CardMedia
+                      component="img"
+                      alt="Apt image"
+                      image={photos[0]}
+                      title="Apt image"
+                    />
+                  </Grid>
+                </Grid>
+              )}
+            </Grid>
           </Grid>
         </CardContent>
       </Box>

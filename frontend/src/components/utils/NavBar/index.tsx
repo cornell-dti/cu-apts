@@ -12,14 +12,15 @@ import {
   Hidden,
   Icon,
   Grid,
-  createMuiTheme,
   ThemeProvider,
   Container,
 } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
+import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
 
 export type NavbarButton = {
@@ -36,7 +37,7 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     paddingTop: '1em',
     paddingBottom: '0.75em',
     margin: '0.5em 0 0.5em 0',
@@ -46,13 +47,11 @@ const useStyles = makeStyles(() => ({
     fontSize: 0,
   },
   logo: {
-    fontFamily: 'Work Sans, sans-serif',
     fontWeight: 600,
     '@media only screen and (max-width: 320px) ': {
       fontSize: '1.7em',
     },
-    fontStyle: 'normal',
-    color: 'black',
+    color: colors.black,
     textAlign: 'left',
     paddingTop: '25px',
     marginLeft: '10px',
@@ -60,11 +59,8 @@ const useStyles = makeStyles(() => ({
     lineHeight: '32px',
   },
   description: {
-    fontFamily: 'Work Sans, sans-serif',
-    color: 'black',
+    color: colors.black,
     textAlign: 'left',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
     fontSize: '1.125em',
     '@media only screen and (max-width: 425px) ': {
       fontSize: '0.75em',
@@ -129,8 +125,8 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     search,
     searchDrawer,
   } = useStyles();
-  const muiTheme = createMuiTheme({
-    palette: { primary: { main: '#B94630' }, secondary: { main: '#898989' } },
+  const muiTheme = createTheme({
+    palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
 
   useEffect(() => {

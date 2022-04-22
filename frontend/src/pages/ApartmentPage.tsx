@@ -34,11 +34,11 @@ const useStyles = makeStyles((theme) => ({
     marginRight: '10px',
   },
   leaveReviewContainer: {
-    marginTop: '20px',
-    marginBottom: '20px',
+    marginTop: '16px',
+    marginBottom: '24px',
   },
   reviewContainer: {
-    marginTop: '6px',
+    marginTop: '2px',
   },
 }));
 
