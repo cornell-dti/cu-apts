@@ -69,51 +69,44 @@ const ReviewComponent = ({
   };
 
   return (
-    <Grid item>
-      <Card className={root} variant="outlined">
-        <Box minHeight="200px">
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item container justify="space-between">
-                {overallRating !== null ? (
-                  <Grid container item xs={10} spacing={2}>
-                    <Grid item>
-                      <HeartRating value={overallRating} readOnly />
-                    </Grid>
-                    <Grid item>
-                      <IconButton
-                        className={clsx(expand, {
-                          [expandOpen]: expanded,
-                        })}
-                        onClick={handleExpandClick}
-                        aria-expanded={expanded}
-                        aria-label="show more"
-                        size="small"
-                      >
-                        <ExpandMoreIcon />
-                      </IconButton>
-                    </Grid>
-                  </Grid>
-                ) : (
-                  <Grid item>
-                    <Typography>This review was collected by the Ithaca Tenants Union</Typography>
-                  </Grid>
-                )}
+    <Card className={root} variant="outlined">
+      <Box minHeight="200px">
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item container justify="space-between">
+              <Grid container item xs={10} spacing={2}>
                 <Grid item>
-                  <Typography className={dateText}>{formattedDate}</Typography>
+                  <HeartRating value={overallRating} readOnly />
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    className={clsx(expand, {
+                      [expandOpen]: expanded,
+                    })}
+                    onClick={handleExpandClick}
+                    aria-expanded={expanded}
+                    aria-label="show more"
+                    size="small"
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
                 </Grid>
               </Grid>
-              {overallRating !== null && (
-                <Grid item>
-                  <Collapse in={expanded} timeout="auto" unmountOnExit>
-                    <CardContent>
-                      <DetailedRatings ratings={detailedRatings} />
-                    </CardContent>
-                  </Collapse>
-                </Grid>
-              )}
+
+              <Grid item>
+                <Typography className={dateText}>{formattedDate}</Typography>
+              </Grid>
+
+              <Grid item>
+                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                  <CardContent>
+                    <DetailedRatings ratings={detailedRatings} />
+                  </CardContent>
+                </Collapse>
+              </Grid>
+
               <Grid item container alignContent="center">
-                <Typography variant="body2">
+                <Typography>
                   {expandedText ? reviewText : reviewText.substring(0, 500)}
                   {!expandedText && reviewText.length > 500 && '...'}
                   {reviewText.length > 500 ? (
@@ -136,30 +129,30 @@ const ReviewComponent = ({
                 </Grid>
               )}
             </Grid>
-          </CardContent>
-        </Box>
-        <CardActions>
-          <Grid item container justify="space-between">
-            <Grid item>
-              <Button
-                color={liked ? 'primary' : 'default'}
-                onClick={() => (liked ? removeLike : addLike)(id)}
-                className={button}
-                size="small"
-                disabled={likeLoading}
-              >
-                Helpful {`(${likes || 0})`}
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button className={button} size="small">
-                Report Abuse
-              </Button>
-            </Grid>
           </Grid>
-        </CardActions>
-      </Card>
-    </Grid>
+        </CardContent>
+      </Box>
+      <CardActions>
+        <Grid item container justify="space-between">
+          <Grid item>
+            <Button
+              color={liked ? 'primary' : 'default'}
+              onClick={() => (liked ? removeLike : addLike)(id)}
+              className={button}
+              size="small"
+              disabled={likeLoading}
+            >
+              Helpful {`(${likes || 0})`}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button className={button} size="small">
+              Report Abuse
+            </Button>
+          </Grid>
+        </Grid>
+      </CardActions>
+    </Card>
   );
 };
 
