@@ -302,9 +302,11 @@ const ApartmentPage = (): ReactElement => {
         </Grid>
       </Grid>
 
-      <Grid item xs={12} className={ratingInfo}>
-        <ReviewHeader aveRatingInfo={aveRatingInfo} />
-      </Grid>
+      {reviewData && reviewData.length > 0 && (
+        <Grid item xs={12} className={ratingInfo}>
+          <ReviewHeader aveRatingInfo={aveRatingInfo} />
+        </Grid>
+      )}
     </>
   );
 
