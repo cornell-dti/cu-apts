@@ -1,5 +1,4 @@
 import React, { ReactElement } from 'react';
-import HeartRating from '../utils/HeartRating';
 import {
   CardHeader,
   CardMedia,
@@ -8,7 +7,6 @@ import {
   withStyles,
   makeStyles,
   Avatar,
-  Typography,
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
@@ -79,29 +77,19 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '36px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
+    marginTop: '10px',
   },
-  aptReviews: {
+  aptAddress: {
     color: colors.white,
-    fontWeight: 600,
-    fontSize: '24px',
-    lineHeight: '31px',
-    position: 'relative',
-    marginBottom: '20px',
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: '0px',
-    },
-  },
-  aptRating: {
-    color: colors.white,
-    marginRight: '45px',
-    marginBottom: '2px',
+    fontStyle: 'normal',
+    fontSize: '20px',
+    letterSpacing: '0.02em',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
       marginLeft: '10px',
     },
   },
-  ratingSection: { paddingTop: '10px' },
   btnSection: {
     height: '94%',
     [theme.breakpoints.down('sm')]: {
@@ -113,27 +101,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ApartmentHeader = ({
-  apartment,
-  numReviews,
-  handleClick,
-  averageRating,
-}: Props): ReactElement => {
-  const { name, photos } = apartment;
+const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
+  const { name, address, photos } = apartment;
   const icon = defaultIcon;
   const photoLink = defaultHeader;
-  const {
-    media,
-    logo,
-    photoButton,
-    aptName,
-    aptReviews,
-    aptRating,
-    headerSection,
-    ratingSection,
-    btnSection,
-    logoGrid,
-  } = useStyles();
+  const { media, logo, photoButton, aptName, aptAddress, headerSection, btnSection, logoGrid } =
+    useStyles();
   return (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
@@ -147,31 +120,9 @@ const ApartmentHeader = ({
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
-                  <Grid container className={ratingSection}>
-                    {!!averageRating && (
-                      <Grid item className={aptRating} xs={12}>
-                        <Grid container direction="row" alignItems="center">
-                          <Grid item xs={5}>
-                            <HeartRating value={averageRating} precision={0.5} readOnly />
-                          </Grid>
-                          <Grid item xs={7}>
-                            <Typography variant="h6">
-                              {averageRating.toFixed(1) + ' out of 5'}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    )}
-                    <Grid item xs={12}>
-                      <CardHeader
-                        title={
-                          numReviews + (numReviews > 1 || numReviews === 0 ? ' Reviews' : ' Review')
-                        }
-                        className={aptReviews}
-                        disableTypography={true}
-                      />
-                    </Grid>
-                  </Grid>
+                  {address !== name && (
+                    <CardHeader title={address} className={aptAddress} disableTypography={true} />
+                  )}
                 </Grid>
               </Grid>
             </Grid>
