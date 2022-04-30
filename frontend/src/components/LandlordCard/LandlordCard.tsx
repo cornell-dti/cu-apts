@@ -9,8 +9,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@material-ui/core';
-import { Apartment, LandlordWithLabel } from '../../../../common/types/db-types';
-import HeartRating from '../utils/HeartRating';
+import { LandlordWithLabel } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
 
 type Props = {
@@ -41,8 +40,6 @@ const useStyles = makeStyles({
 });
 
 const LandlordCard = ({ landlordData }: Props): ReactElement => {
-  const { name, contact, avgRating, profilePhoto, photos, reviews, properties, address } =
-    landlordData;
   const classes = useStyles();
   //useMediaQuery here is for detecting whether the screen size wider than 960px
   // if so, matches is true; otherwise, it's false
@@ -55,16 +52,16 @@ const LandlordCard = ({ landlordData }: Props): ReactElement => {
           {matches && (
             <CardMedia
               className={classes.img}
-              image={profilePhoto ? profilePhoto : ApartmentImg}
+              image={landlordData.profilePhoto ? landlordData.profilePhoto : ApartmentImg}
               component="img"
-              title={name}
+              title={landlordData.name}
             />
           )}
         </Grid>
         <Grid item md={10}>
           <CardContent>
             <Typography variant="h5" className={classes.landlordNameTxt}>
-              {name}
+              {landlordData.name}
             </Typography>
           </CardContent>
         </Grid>
