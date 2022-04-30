@@ -10,4 +10,5 @@ export const colors = {
   gray2: '#898989',
   gray3: '#F9F9F9',
   white: '#FFFFFF',
+  landlordCardRed: '#F3664B',
 };
