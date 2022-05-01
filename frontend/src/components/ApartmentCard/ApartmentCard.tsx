@@ -73,16 +73,16 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
     <Card className={classes.card}>
       <Grid container direction="row" alignItems="center">
         {matches && (
-          <Grid item sm={3} xs={11} md={2}>
+          <Grid item sm={4} xs={11} md={2}>
             <CardMedia className={classes.img} image={img} component="img" title={name} />
           </Grid>
         )}
         {!matches && (
-          <Grid item sm={3} xs={11} md={2}>
+          <Grid item sm={4} xs={11} md={2}>
             <CardMedia className={classes.imgMobile} image={img} component="img" title={name} />
           </Grid>
         )}
-        <Grid item sm={9} md={10}>
+        <Grid item sm={8} md={10}>
           <CardContent>
             <Grid container spacing={1}>
               <Grid item>
@@ -103,7 +103,18 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
-              <Grid></Grid>
+              <Grid>
+                {matches && (
+                  <Typography variant="subtitle1" className={classes.textStyle}>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  </Typography>
+                )}
+              </Grid>
             </Grid>
           </CardContent>
         </Grid>
