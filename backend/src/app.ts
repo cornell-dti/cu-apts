@@ -127,10 +127,8 @@ app.post('/new-landlord', async (req, res) => {
 });
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
-
-app.get('/search', async (req, res) => {
+app.post('/set-data', async (req, res) => {
   try {
-    const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: LandlordWithId[] = landlordDocs.map(
       (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
@@ -139,13 +137,27 @@ app.get('/search', async (req, res) => {
     const apts: ApartmentWithId[] = aptDocs.map(
       (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
     );
+    app.set('landlords', landlords);
+    app.set('apts', apts);
+
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+app.get('/search', async (req, res) => {
+  try {
+    const query = req.query.q as string;
+    const landlords = req.app.get('landlords');
+    const apts = req.app.get('apts');
     const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
       keys: ['name', 'address'],
     };
     const fuse = new Fuse(aptsLandlords, options);
-    const results = fuse.search(query);
+    const results = fuse.search(query).slice(0, 5);
     const resultItems = results.map((result) => result.item);
 
     const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>

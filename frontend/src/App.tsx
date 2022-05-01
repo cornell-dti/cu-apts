@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -15,6 +15,7 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
+import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
 
@@ -86,6 +87,13 @@ const headersData = [home, review];
 hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
+  useEffect(() => {
+    const setData = async () => {
+      await axios.post('/set-data');
+    };
+    setData();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
