@@ -25,6 +25,13 @@ const useStyles = makeStyles({
     width: '100%',
     padding: '17px',
   },
+  imgMobile: {
+    borderRadius: '8%',
+    height: '480px',
+    width: '100%',
+    padding: '20px',
+  },
+
   aptNameTxt: {
     fontWeight: 800,
     marginLeft: '25px',
@@ -60,17 +67,22 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   const { name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const classes = useStyles();
-  const matches = useMediaQuery('(min-width:960px)');
+  const matches = useMediaQuery('(min-width:600px)');
 
   return (
     <Card className={classes.card}>
       <Grid container direction="row" alignItems="center">
-        <Grid item md={2}>
-          {matches && (
+        {matches && (
+          <Grid item sm={3} xs={11} md={2}>
             <CardMedia className={classes.img} image={img} component="img" title={name} />
-          )}
-        </Grid>
-        <Grid item md={10}>
+          </Grid>
+        )}
+        {!matches && (
+          <Grid item sm={3} xs={11} md={2}>
+            <CardMedia className={classes.imgMobile} image={img} component="img" title={name} />
+          </Grid>
+        )}
+        <Grid item sm={9} md={10}>
           <CardContent>
             <Grid container spacing={1}>
               <Grid item>
@@ -91,16 +103,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
-              <Grid>
-                <Typography variant="subtitle1" className={classes.textStyle}>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum
-                  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                  labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                  ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </Typography>
-              </Grid>
+              <Grid></Grid>
             </Grid>
           </CardContent>
         </Grid>
