@@ -19,6 +19,7 @@ import DropDown from '../components/utils/DropDown';
 import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 import HeartRating from '../components/utils/HeartRating';
+import { CardData } from '../App';
 
 export type RatingInfo = {
   feature: string;
@@ -61,6 +62,8 @@ const ApartmentPage = (): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
+  const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
+
   const handlePageNotFound = () => {
     setNotFound(true);
   };
@@ -101,6 +104,11 @@ const ApartmentPage = (): ReactElement => {
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
+  }, []);
+  useEffect(() => {
+    get<CardData[]>(`/page-data/home`, {
+      callback: setOtherproperties,
+    });
   }, []);
 
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
@@ -291,7 +299,7 @@ const ApartmentPage = (): ReactElement => {
         landlord={landlordData.name}
         contact={landlordData.contact}
         address={apt!.address}
-        buildings={buildings.map((b) => b.name).filter((name) => name !== apt?.name)}
+        buildings={otherProperties}
       />
     </Grid>
   );

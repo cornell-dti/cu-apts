@@ -1,9 +1,11 @@
 import React, { ReactElement } from 'react';
 import Grid from '@material-ui/core/Grid';
 import { Box, Typography, List, ListItem, ListItemText } from '@material-ui/core';
+import { CardData } from '../../App';
+import ApartmentCards from '../ApartmentCard/ApartmentCards';
 
 type Props = {
-  readonly info: readonly string[];
+  readonly info: CardData[];
   readonly title: string;
 };
 
@@ -14,13 +16,7 @@ export default function PropertyInfo({ info, title }: Props): ReactElement {
       <List dense component="ul">
         <Grid container spacing={0} direction="row">
           {info.length === 0 && <Typography variant="body1">No information available.</Typography>}
-          {info.map((feature, index) => (
-            <Grid item xs={6} sm={12} md={6} key={index}>
-              <ListItem disableGutters>
-                <ListItemText primary={feature} />
-              </ListItem>
-            </Grid>
-          ))}
+          <ApartmentCards data={info} />
         </Grid>
       </List>
     </Box>
