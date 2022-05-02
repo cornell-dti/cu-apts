@@ -46,10 +46,6 @@ const useStyles = makeStyles({
     fontWeight: 700,
     marginLeft: '10px',
   },
-  reviewText: {
-    color: 'gray',
-    marginLeft: '25px',
-  },
   textStyle: {
     maxWidth: '100%',
     display: '-webkit-box',
