@@ -8,8 +8,12 @@ import { useTitle } from '../utils';
 import ApartmentHeader from '../components/Apartment/Header';
 import AptInfo from '../components/Apartment/AptInfo';
 import { get } from '../utils/call';
-import styles from './LandlordPage.module.scss';
-import { Landlord, Apartment, ApartmentWithId } from '../../../common/types/db-types';
+import {
+  Landlord,
+  Apartment,
+  ApartmentWithId,
+  DetailedRating,
+} from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
@@ -37,15 +41,18 @@ const useStyles = makeStyles((theme) => ({
     marginTop: '16px',
     marginBottom: '24px',
   },
-  reviewContainer: {
-    marginTop: '2px',
+  ratingInfo: {
+    marginBottom: '30px',
+  },
+  container: {
+    marginTop: '20px',
   },
 }));
 
 const ApartmentPage = (): ReactElement => {
   const { aptId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
-  const [aveRatingInfo] = useState<RatingInfo[]>([]);
+  const [aveRatingInfo, setAveRatingInfo] = useState<RatingInfo[]>([]);
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
@@ -64,7 +71,7 @@ const ApartmentPage = (): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
-  const { aptRating, heartRating, leaveReviewContainer, reviewContainer } = useStyles();
+  const { aptRating, heartRating, leaveReviewContainer, ratingInfo, container } = useStyles();
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
@@ -93,15 +100,31 @@ const ApartmentPage = (): ReactElement => {
       callback: setLandlordData,
     });
   }, [apt]);
+
   useEffect(() => {
-    if (aptData && apt && reviewData && landlordData && buildings) {
+    setAveRatingInfo(calculateAveRating(reviewData));
+  }, [reviewData]);
+
+  useEffect(() => {
+    if (aptData && apt && reviewData && landlordData && buildings && aveRatingInfo) {
       setLoaded(true);
     }
-  }, [aptData, apt, landlordData, buildings, reviewData]);
+  }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
+
+  const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
+    const features = ['location', 'safety', 'value', 'maintenance', 'communication', 'conditions'];
+    return features.map((feature) => {
+      let key = feature as keyof DetailedRating;
+      let rating =
+        reviews.reduce((sum, review) => sum + review.detailedRatings[key], 0) / reviews.length;
+
+      return { feature, rating };
+    });
+  };
 
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
     let unsorted = arr;
@@ -204,7 +227,7 @@ const ApartmentPage = (): ReactElement => {
   const Header = (
     <>
       <Grid container alignItems="center">
-        <Grid container className={reviewContainer} spacing={1} sm={12}>
+        <Grid container spacing={1} sm={12}>
           <Grid item>
             <Typography variant="h6">Reviews ({reviewData.length})</Typography>
             {reviewData.length === 0 && (
@@ -279,9 +302,11 @@ const ApartmentPage = (): ReactElement => {
         </Grid>
       </Grid>
 
-      <Grid item xs={12}>
-        <ReviewHeader aveRatingInfo={aveRatingInfo} />
-      </Grid>
+      {reviewData && reviewData.length > 0 && (
+        <Grid item xs={12} className={ratingInfo}>
+          <ReviewHeader aveRatingInfo={aveRatingInfo} />
+        </Grid>
+      )}
     </>
   );
 
@@ -313,7 +338,7 @@ const ApartmentPage = (): ReactElement => {
         </Container>
       )}
 
-      <Container className={styles.OuterContainer}>
+      <Container className={container}>
         <Grid container spacing={5} justify="center">
           <Grid container item xs={12} sm={8}>
             {Header}

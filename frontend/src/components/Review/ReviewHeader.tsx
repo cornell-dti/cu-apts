@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import styles from './Review.module.scss';
 import LabeledLinearProgress from '../utils/LabeledLinearProgress';
 import { RatingInfo } from '../../pages/LandlordPage';
@@ -16,7 +16,9 @@ export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
           <Grid className={styles.info} item xs={12} md={6} lg={6} key={index}>
             <Grid className={styles.individualInfo} container spacing={0} direction="row">
               <Grid item xs={5} md={5} lg={5}>
-                {feature}
+                <Typography variant="body2">
+                  {feature.charAt(0).toUpperCase() + feature.slice(1)}
+                </Typography>
               </Grid>
               <Grid item xs={7} md={7} lg={7}>
                 <LabeledLinearProgress value={rating} />
