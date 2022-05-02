@@ -26,7 +26,7 @@ const useStyles = makeStyles({
     padding: '17px',
   },
   imgMobile: {
-    borderRadius: '8%',
+    borderRadius: '9%',
     width: '100%',
     padding: '15px',
   },
