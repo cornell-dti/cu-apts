@@ -27,9 +27,8 @@ const useStyles = makeStyles({
   },
   imgMobile: {
     borderRadius: '8%',
-    height: '480px',
     width: '100%',
-    padding: '20px',
+    padding: '15px',
   },
 
   aptNameTxt: {
@@ -73,12 +72,12 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
     <Card className={classes.card}>
       <Grid container direction="row" alignItems="center">
         {matches && (
-          <Grid item sm={4} xs={11} md={2}>
+          <Grid item xs={11} sm={4} md={2}>
             <CardMedia className={classes.img} image={img} component="img" title={name} />
           </Grid>
         )}
         {!matches && (
-          <Grid item sm={4} xs={11} md={2}>
+          <Grid item xs={11} sm={4} md={2}>
             <CardMedia className={classes.imgMobile} image={img} component="img" title={name} />
           </Grid>
         )}
