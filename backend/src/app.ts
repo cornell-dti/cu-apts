@@ -114,6 +114,36 @@ app.get('/buildings/:landlordId', async (req, res) => {
   }
 });
 
+app.get('/buildings/all/:landlordId', async (req, res) => {
+  const { landlordId } = req.params;
+  const buildingDocs = (await buildingsCollection.where('landlordId', '==', landlordId).get()).docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+
+  const pageData = await Promise.all(
+    buildings.map(async (buildingData) => {
+      const { id, landlordId } = buildingData;
+      if (landlordId === null) {
+        throw new Error('Invalid landlordId');
+      }
+
+      const reviewList = await reviewCollection.where(`aptId`, '==', id).get();
+      const landlordDoc = await landlordCollection.doc(landlordId).get();
+
+      const numReviews = reviewList.docs.length;
+      const company = landlordDoc.data()?.name;
+      return {
+        buildingData,
+        numReviews,
+        company,
+      };
+    })
+  );
+
+  res.status(200).send(JSON.stringify(pageData));
+});
+
 app.post('/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();

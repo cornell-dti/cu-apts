@@ -10,7 +10,7 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
-import { Landlord, Apartment } from '../../../common/types/db-types';
+import { Landlord } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
@@ -18,6 +18,7 @@ import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
 import NotFoundPage from './NotFoundPage';
+import { CardData } from '../App';
 
 export type RatingInfo = {
   feature: string;
@@ -34,7 +35,7 @@ const LandlordPage = (): ReactElement => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [buildings, setBuildings] = useState<Apartment[]>([]);
+  const [buildings, setBuildings] = useState<CardData[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
@@ -65,7 +66,7 @@ const LandlordPage = (): ReactElement => {
   }, [landlordId]);
 
   useEffect(() => {
-    get<Apartment[]>(`/buildings/${landlordId}`, {
+    get<CardData[]>(`/buildings/all/${landlordId}`, {
       callback: setBuildings,
     });
   }, [landlordId]);
@@ -241,7 +242,7 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      {/* <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} /> */}
+      <InfoFeatures {...landlordData} buildings={buildings} />
     </Grid>
   );
 

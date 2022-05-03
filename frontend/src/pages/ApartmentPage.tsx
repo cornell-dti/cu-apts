@@ -105,11 +105,12 @@ const ApartmentPage = (): ReactElement => {
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
+
   useEffect(() => {
-    get<CardData[]>(`/page-data/home`, {
+    get<CardData[]>(`/buildings/all/${apt?.landlordId}`, {
       callback: setOtherproperties,
     });
-  }, []);
+  }, [apt]);
 
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
     let unsorted = arr;
@@ -299,7 +300,7 @@ const ApartmentPage = (): ReactElement => {
         landlord={landlordData.name}
         contact={landlordData.contact}
         address={apt!.address}
-        buildings={otherProperties}
+        buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt?.name)}
       />
     </Grid>
   );
