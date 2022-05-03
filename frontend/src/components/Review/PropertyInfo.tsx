@@ -57,13 +57,11 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
           <Grid item>
             <Typography className={classes.aptNameTxt}>{name}</Typography>
           </Grid>
-
           <Grid container item justify="space-between">
             <Grid>
               <Typography variant="subtitle1">{address}</Typography>
             </Grid>
           </Grid>
-
           <Grid container direction="row" alignItems="center">
             <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
             <Typography className={classes.reviewNum}>{numReviews}</Typography>
@@ -85,7 +83,6 @@ const PropertyInfo = ({ info, title }: Props): ReactElement => {
             {info &&
               info.map(({ buildingData, numReviews, company }, index) => {
                 const { id } = buildingData;
-
                 return (
                   <Grid item key={index}>
                     <Link
