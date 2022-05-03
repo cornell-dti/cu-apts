@@ -64,7 +64,9 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
           </Grid>
           <Grid container direction="row" alignItems="center">
             <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
-            <Typography className={classes.reviewNum}>{numReviews}</Typography>
+            <Typography className={classes.reviewNum}>
+              {numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
+            </Typography>
           </Grid>
         </Grid>
       </CardContent>

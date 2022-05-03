@@ -300,7 +300,7 @@ const ApartmentPage = (): ReactElement => {
         landlord={landlordData.name}
         contact={landlordData.contact}
         address={apt!.address}
-        buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt?.name)}
+        buildings={otherProperties.filter((prop) => apt!.name)}
       />
     </Grid>
   );
