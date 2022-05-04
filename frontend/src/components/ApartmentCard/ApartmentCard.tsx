@@ -19,12 +19,18 @@ type Props = {
   company?: string;
 };
 const useStyles = makeStyles({
-  img: {
+  imgStyle: {
     borderRadius: '12%',
     height: '205px',
     width: '100%',
     padding: '17px',
   },
+  imgMobile: {
+    borderRadius: '9%',
+    width: '100%',
+    padding: '15px',
+  },
+
   aptNameTxt: {
     fontWeight: 800,
     marginLeft: '25px',
@@ -39,10 +45,6 @@ const useStyles = makeStyles({
   reviewNum: {
     fontWeight: 700,
     marginLeft: '10px',
-  },
-  reviewText: {
-    color: 'gray',
-    marginLeft: '25px',
   },
   textStyle: {
     maxWidth: '100%',
@@ -59,47 +61,54 @@ const useStyles = makeStyles({
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
-  const classes = useStyles();
-  const matches = useMediaQuery('(min-width:960px)');
+  const { imgStyle, imgMobile, aptNameTxt, marginTxt, card, reviewNum, textStyle } = useStyles();
+  const matches = useMediaQuery('(min-width:600px)');
 
   return (
-    <Card className={classes.card}>
+    <Card className={card}>
       <Grid container direction="row" alignItems="center">
-        <Grid item md={2}>
-          {matches && (
-            <CardMedia className={classes.img} image={img} component="img" title={name} />
-          )}
-        </Grid>
-        <Grid item md={10}>
+        {matches && (
+          <Grid item xs={11} sm={4} md={2}>
+            <CardMedia className={imgStyle} image={img} component="img" title={name} />
+          </Grid>
+        )}
+        {!matches && (
+          <Grid item xs={11} sm={4} md={2}>
+            <CardMedia className={imgMobile} image={img} component="img" title={name} />
+          </Grid>
+        )}
+        <Grid item sm={8} md={10}>
           <CardContent>
             <Grid container spacing={1}>
               <Grid item>
-                <Typography variant="h5" className={classes.aptNameTxt}>
+                <Typography variant="h5" className={aptNameTxt}>
                   {name}
                 </Typography>
               </Grid>
               {company && (
-                <Grid container item justify="space-between" className={classes.marginTxt}>
+                <Grid container item justify="space-between" className={marginTxt}>
                   <Grid>
                     <Typography variant="subtitle1">{buildingData.address}</Typography>
                   </Grid>
                 </Grid>
               )}
-              <Grid container direction="row" alignItems="center" className={classes.marginTxt}>
+              <Grid container direction="row" alignItems="center" className={marginTxt}>
                 <HeartRating value={3} readOnly />
-                <Typography variant="h6" className={classes.reviewNum}>
+                <Typography variant="h6" className={reviewNum}>
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
               <Grid>
-                <Typography variant="subtitle1" className={classes.textStyle}>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum
-                  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                  labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                  ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </Typography>
+                {matches && (
+                  <Typography variant="subtitle1" className={textStyle}>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </CardContent>
