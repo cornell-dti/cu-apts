@@ -14,12 +14,16 @@ type Props = {
 export default function AptInfo({ landlord, contact, address, buildings }: Props): ReactElement {
   return (
     <Grid container>
-      <Card variant="outlined">
-        <CardContent>
-          <Info landlord={landlord} contact={contact!} address={address!} />
-        </CardContent>
-      </Card>
-      <PropertyInfo title="Other Properties Owned" info={buildings} />
+      <Grid item xs={12}>
+        <Card variant="outlined">
+          <CardContent>
+            <Info landlord={landlord} contact={contact!} address={address!} />
+          </CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12}>
+        <PropertyInfo title="Other Properties Owned" info={buildings} />
+      </Grid>
     </Grid>
   );
 }

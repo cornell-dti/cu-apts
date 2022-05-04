@@ -24,6 +24,8 @@ import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 import HeartRating from '../components/utils/HeartRating';
 import { CardData } from '../App';
+import { getAverageRating } from '../utils/average';
+import { colors } from '../colors';
 
 export type RatingInfo = {
   feature: string;
@@ -32,7 +34,7 @@ export type RatingInfo = {
 
 const useStyles = makeStyles((theme) => ({
   aptRating: {
-    color: 'black',
+    color: colors.black,
   },
   heartRating: {
     marginTop: '3px',
@@ -161,12 +163,6 @@ const ApartmentPage = (): ReactElement => {
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
   };
-
-  const getAverageRating = (reviewData: ReviewWithId[]) =>
-    reviewData.reduce(
-      (currSum, { overallRating }) => (overallRating > 0 ? currSum + overallRating : currSum),
-      0
-    ) / reviewData.length;
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -349,7 +345,7 @@ const ApartmentPage = (): ReactElement => {
 
       <Container className={container}>
         <Grid container spacing={5} justify="center">
-          <Grid container item xs={12} sm={8}>
+          <Grid item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>
             {showConfirmation && (

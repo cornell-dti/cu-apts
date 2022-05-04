@@ -19,6 +19,7 @@ import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
 import NotFoundPage from './NotFoundPage';
 import { CardData } from '../App';
+import { getAverageRating } from '../utils/average';
 
 export type RatingInfo = {
   feature: string;
@@ -107,12 +108,6 @@ const LandlordPage = (): ReactElement => {
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
   };
-
-  const getAverageRating = (reviewData: ReviewWithId[]) =>
-    reviewData.reduce(
-      (currSum, { overallRating }) => (overallRating > 0 ? currSum + overallRating : currSum),
-      0
-    ) / reviewData.length;
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
