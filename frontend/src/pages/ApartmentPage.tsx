@@ -349,7 +349,7 @@ const ApartmentPage = (): ReactElement => {
 
       <Container className={container}>
         <Grid container spacing={5} justify="center">
-          <Grid container item xs={12} sm={8}>
+          <Grid item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>
             {showConfirmation && (
