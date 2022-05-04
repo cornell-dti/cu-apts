@@ -7,12 +7,6 @@ import LandlordCard from '../components/LandlordCard/LandlordCard';
 import { colors } from '../colors';
 
 const useStyles = makeStyles({
-  img: {
-    borderRadius: '50%',
-    height: '205px',
-    width: '100%',
-    padding: '17px',
-  },
   landlordTitle: {
     fontWeight: 600,
   },
@@ -26,7 +20,7 @@ const SearchResultsPage = (): ReactElement => {
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<LandlordOrApartmentWithLabel[]>([]);
   const query = location.search.substring(3);
-  const classes = useStyles();
+  const { landlordTitle } = useStyles();
 
   useEffect(() => {
     get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
@@ -43,11 +37,13 @@ const SearchResultsPage = (): ReactElement => {
   const landlordSearchResults: LandlordWithLabel[] = searchResults.filter(isLandlord).slice(0, 3);
   return (
     <Container>
-      <Box pb={3}>
-        <Typography variant="h5" align="left" className={classes.landlordTitle}>
-          Landlords
-        </Typography>
-        <Grid container spacing={4}>
+      <Box pb={5}>
+        <Box pb={2}>
+          <Typography variant="h5" align="left" className={landlordTitle}>
+            Landlords
+          </Typography>
+        </Box>
+        <Grid container spacing={2}>
           {landlordSearchResults.map((landlordSearchResult) => (
             <Grid item xs={4} md={4}>
               <LandlordCard landlordData={landlordSearchResult} />
