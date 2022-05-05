@@ -18,11 +18,12 @@ type Props = {
 const useStyles = makeStyles({
   img: {
     paddingTop: '8%',
+    paddingBottom: '8%',
     borderRadius: '50%',
     // paddingRight: '10px',
     marginLeft: '10%',
     width: '100px',
-    height: '95%',
+    height: '90%',
   },
   mobileImg: {
     margin: '10%',
