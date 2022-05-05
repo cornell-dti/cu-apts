@@ -17,47 +17,34 @@ type Props = {
 };
 const useStyles = makeStyles({
   img: {
-    paddingTop: '10.25%',
+    paddingTop: '8%',
     borderRadius: '50%',
     // paddingRight: '10px',
-    marginLeft: '60px',
+    marginLeft: '10%',
     width: '100px',
     height: '95%',
   },
-  smallImg: {
-    paddingTop: '10.25%',
-    borderRadius: '50%',
-    width: '100px',
-    marginLeft: '70px',
-    // paddingLeft: '10px',
-    // marginRight: '10px',
-    height: '90%',
-  },
   mobileImg: {
-    paddingTop: '10.25%',
+    margin: '10%',
     borderRadius: '50%',
-    width: '150px',
-    height: '100%',
+    width: '80%',
+    height: '200px',
   },
   landlordNameTxt: {
     color: colors.white,
     fontWeight: 600,
-    marginLeft: '50px',
+    marginLeft: '20px',
+    paddingTop: '8%',
 
     // paddingLeft: '50px',
     fontSize: '22px',
   },
-  smallLandlordNameTxt: {
-    color: colors.white,
-    fontWeight: 600,
-    // marginLeft: '40px',
-    paddingLeft: '35%',
-    paddingRight: '15px',
-    fontSize: '15px',
-  },
   mobileLandlordNameTxt: {
     color: colors.white,
-    paddingTop: '10.25%',
+    marginLeft: '15%',
+    marginRight: '15%',
+    paddingLeft: '5%',
+    paddingRight: '5%',
     fontWeight: 600,
     fontSize: '16px',
   },
@@ -70,38 +57,25 @@ const useStyles = makeStyles({
 });
 
 const LandlordCard = ({ landlordData }: Props): ReactElement => {
-  const {
-    img,
-    smallImg,
-    mobileImg,
-    landlordNameTxt,
-    card,
-    mobileLandlordNameTxt,
-    smallLandlordNameTxt,
-  } = useStyles();
+  const { img, mobileImg, landlordNameTxt, card, mobileLandlordNameTxt } = useStyles();
   //useMediaQuery here is for detecting whether the screen size wider than 960px
   // if so, matches is true; otherwise, it's false
-  const matches1 = useMediaQuery('(min-width:900px)');
-  const matches2 = useMediaQuery('(min-width:600px)');
+  const matches = useMediaQuery('(min-width:960px)');
 
   return (
     <Card className={card}>
       <Grid container direction="row">
-        <Grid container sm={2} justify="center" alignItems="center">
+        <Grid item xs={12} sm={12} md={4} justify="center" alignItems="center">
           <CardMedia
-            className={matches1 ? img : matches2 ? smallImg : mobileImg}
+            className={matches ? img : mobileImg}
             image={landlordData.profilePhoto ? landlordData.profilePhoto : ApartmentImg}
             component="img"
             // title={landlordData.name}
           />
         </Grid>
-        <Grid container sm={10} justify="center" alignItems="center">
+        <Grid item xs={12} sm={12} md={8} justify="center" alignItems="center">
           <CardContent>
-            <Typography
-              className={
-                matches1 ? landlordNameTxt : matches2 ? smallLandlordNameTxt : mobileLandlordNameTxt
-              }
-            >
+            <Typography className={matches ? landlordNameTxt : mobileLandlordNameTxt}>
               {landlordData.name}
             </Typography>
           </CardContent>
