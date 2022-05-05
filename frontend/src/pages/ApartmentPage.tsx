@@ -111,10 +111,18 @@ const ApartmentPage = (): ReactElement => {
   }, [reviewData]);
 
   useEffect(() => {
-    if (aptData && apt && reviewData && landlordData && buildings && aveRatingInfo) {
+    if (
+      aptData &&
+      apt &&
+      reviewData &&
+      landlordData &&
+      buildings &&
+      aveRatingInfo &&
+      otherProperties
+    ) {
       setLoaded(true);
     }
-  }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo]);
+  }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo, otherProperties]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
