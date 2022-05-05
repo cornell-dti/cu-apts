@@ -23,6 +23,9 @@ import DropDown from '../components/utils/DropDown';
 import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 import HeartRating from '../components/utils/HeartRating';
+import { CardData } from '../App';
+import { getAverageRating } from '../utils/average';
+import { colors } from '../colors';
 
 export type RatingInfo = {
   feature: string;
@@ -31,7 +34,7 @@ export type RatingInfo = {
 
 const useStyles = makeStyles((theme) => ({
   aptRating: {
-    color: 'black',
+    color: colors.black,
   },
   heartRating: {
     marginTop: '3px',
@@ -68,6 +71,8 @@ const ApartmentPage = (): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
+  const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
+
   const handlePageNotFound = () => {
     setNotFound(true);
   };
@@ -106,14 +111,28 @@ const ApartmentPage = (): ReactElement => {
   }, [reviewData]);
 
   useEffect(() => {
-    if (aptData && apt && reviewData && landlordData && buildings && aveRatingInfo) {
+    if (
+      aptData &&
+      apt &&
+      reviewData &&
+      landlordData &&
+      buildings &&
+      aveRatingInfo &&
+      otherProperties
+    ) {
       setLoaded(true);
     }
-  }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo]);
+  }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo, otherProperties]);
 
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
+
+  useEffect(() => {
+    get<CardData[]>(`/buildings/all/${apt?.landlordId}`, {
+      callback: setOtherproperties,
+    });
+  }, [apt]);
 
   const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
     const features = ['location', 'safety', 'value', 'maintenance', 'communication', 'conditions'];
@@ -152,12 +171,6 @@ const ApartmentPage = (): ReactElement => {
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
   };
-
-  const getAverageRating = (reviewData: ReviewWithId[]) =>
-    reviewData.reduce(
-      (currSum, { overallRating }) => (overallRating > 0 ? currSum + overallRating : currSum),
-      0
-    ) / reviewData.length;
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -316,7 +329,7 @@ const ApartmentPage = (): ReactElement => {
         landlord={landlordData.name}
         contact={landlordData.contact}
         address={apt!.address}
-        buildings={buildings.map((b) => b.name).filter((name) => name !== apt?.name)}
+        buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
       />
     </Grid>
   );
@@ -340,7 +353,7 @@ const ApartmentPage = (): ReactElement => {
 
       <Container className={container}>
         <Grid container spacing={5} justify="center">
-          <Grid container item xs={12} sm={8}>
+          <Grid item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>
             {showConfirmation && (
