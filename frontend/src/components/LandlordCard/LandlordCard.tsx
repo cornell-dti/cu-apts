@@ -15,37 +15,30 @@ import { colors } from '../../colors';
 type Props = {
   landlordData: LandlordWithLabel;
 };
+
 const useStyles = makeStyles({
   img: {
     paddingTop: '8%',
     paddingBottom: '8%',
     borderRadius: '50%',
-    // paddingRight: '10px',
     marginLeft: '10%',
     width: '100px',
-    height: '90%',
   },
   mobileImg: {
     margin: '10%',
     borderRadius: '50%',
     width: '80%',
-    height: '200px',
   },
   landlordNameTxt: {
     color: colors.white,
     fontWeight: 600,
     marginLeft: '20px',
     paddingTop: '8%',
-
-    // paddingLeft: '50px',
     fontSize: '22px',
   },
   mobileLandlordNameTxt: {
     color: colors.white,
-    marginLeft: '15%',
-    marginRight: '15%',
-    paddingLeft: '5%',
-    paddingRight: '5%',
+    textAlign: 'center',
     fontWeight: 600,
     fontSize: '16px',
   },
@@ -71,7 +64,6 @@ const LandlordCard = ({ landlordData }: Props): ReactElement => {
             className={matches ? img : mobileImg}
             image={landlordData.profilePhoto ? landlordData.profilePhoto : ApartmentImg}
             component="img"
-            // title={landlordData.name}
           />
         </Grid>
         <Grid item xs={12} sm={12} md={8} justify="center" alignItems="center">
