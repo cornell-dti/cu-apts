@@ -17,7 +17,7 @@ const LocationCards = ({ data }: Props): ReactElement => {
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Link
                 {...{
-                  to: `/`,
+                  to: `/location/${location}`,
                   style: { textDecoration: 'none' },
                   component: RouterLink,
                 }}
