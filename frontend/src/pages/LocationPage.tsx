@@ -1,9 +1,8 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import styles from './HomePage.module.scss';
 import { colors } from '../colors';
 import { LocationCardData } from '../App';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 type Props = {
   data: LocationCardData[];
@@ -31,8 +30,6 @@ const useStyles = makeStyles({
 });
 
 const LocationPage = ({ data }: Props): ReactElement => {
-  const classes = useStyles();
-
   return (
     <>
       <Box className={styles.JumboTron}>
