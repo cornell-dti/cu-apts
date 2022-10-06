@@ -25,31 +25,6 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 
 ## Contributors
 
-### 2020-2021
+- **Jiayuan Gu**
+- **Chenxin Fang**
 
-- **Bahar Tehranipoor** - Product Manager
-- **Ashrita Raman** - Technical Product Manager
-- **Peter Wu** - Technical Product Manager
-- **Buma Gana** - Designer
-- **Stacy Wei** - Designer
-- **Enoch Chen** - Developer
-- **Kinjal Jasani** - Developer
-- **Mena Attia** - Developer
-- **Sam Liu** - Developer
-
-### 2021-2022
-
-- **Huey Le** - Product Manager
-- **Alex Kim** - Product Marketing Manager
-- **Sam Liu** - Technical Product Manager
-- **Heewon Ahn** - Developer
-- **Kinjal Jasani** - Developer
-- **Mena Attia** - Developer
-- **Thuy (Sophia) Pham** - Developer
-- **Cyrus Irani** - Developer
-- **Jiayuan Gu** - Developer
-
-We are a team within the Cornell Design & Tech Initiative. For more information, see
-[our website](https://cornelldti.org).
-
-![dti splash](./screenshots/dti.png)
