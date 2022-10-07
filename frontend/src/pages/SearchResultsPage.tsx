@@ -30,26 +30,15 @@ const SearchResultsPage = (): ReactElement => {
     });
   }, [query]);
 
-  // if properties is in searchItem, then it has the LandlordWithLabel type
-  function isLandlord(searchItem: LandlordOrApartmentWithLabel): searchItem is LandlordWithLabel {
-    return 'properties' in searchItem;
-  }
-  const landlordSearchResults: LandlordWithLabel[] = searchResults.filter(isLandlord).slice(0, 3);
   return (
     <Container>
       <Box pb={5}>
         <Box pb={2}>
           <Typography variant="h5" align="left" className={landlordTitle}>
-            Landlords
+            Placeholder for Apartment Cards
           </Typography>
         </Box>
-        <Grid container spacing={2}>
-          {landlordSearchResults.map((landlordSearchResult) => (
-            <Grid item xs={4} md={4}>
-              <LandlordCard landlordData={landlordSearchResult} />
-            </Grid>
-          ))}
-        </Grid>
+        <Grid container spacing={2}></Grid>
       </Box>
     </Container>
   );
