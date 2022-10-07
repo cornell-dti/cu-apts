@@ -63,7 +63,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   const { imgStyle, imgMobile, aptNameTxt, marginTxt, card, reviewNum, textStyle } = useStyles();
   const matches = useMediaQuery('(min-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
-  const sampleReview = reviewList.length == 0 ? 'No Reviews' : reviewList[0].reviewText;
+  const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/aptId/${id}`, {
