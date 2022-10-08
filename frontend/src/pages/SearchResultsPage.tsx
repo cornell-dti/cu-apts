@@ -27,8 +27,8 @@ const SearchResultsPage = (): ReactElement => {
   const [searchResults, setSearchResults] = useState<LandlordOrApartmentWithLabel[]>([]);
   const query = location.search.substring(3);
   const { landlordTitle } = useStyles();
-  // const [aptData, setAptData] = useState<CardData[]>([]);
 
+  // const [aptData, setAptData] = useState<CardData[]>([]);
   // filter only apts & convert that to CardData
 
   useEffect(() => {
@@ -39,13 +39,6 @@ const SearchResultsPage = (): ReactElement => {
     });
   }, [query]);
 
-  // if properties is in searchItem, then it has the LandlordWithLabel type
-  // function isLandlord(searchItem: LandlordOrApartmentWithLabel): searchItem is LandlordWithLabel {
-  //   return 'properties' in searchItem;
-  // }
-
-  // const landlordSearchResults: LandlordWithLabel[] = searchResults.filter(isLandlord).slice(0, 3);
-
   function isApartment(searchItem: LandlordOrApartmentWithLabel): searchItem is ApartmentWithLabel {
     return 'address' in searchItem;
   }
@@ -54,7 +47,7 @@ const SearchResultsPage = (): ReactElement => {
     .filter(isApartment)
     .slice(0, 3);
 
-  // TODO: convert the data type !!!
+  // TODO: convert the data type
   // const appSearchData: CardData[] = {};
 
   return (
