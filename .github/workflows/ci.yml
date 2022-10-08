@@ -22,5 +22,3 @@ jobs:
         run: yarn format:check
       - name: Run Linter
         run: yarn lint
-      - name: Run TypeScript Compiler
-        run: yarn tsc --noEmit
