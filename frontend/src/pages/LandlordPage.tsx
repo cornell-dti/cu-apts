@@ -137,9 +137,9 @@ const LandlordPage = (): ReactElement => {
     };
   };
 
-  const addLike = likeHelper(false);
+  // const addLike = likeHelper(false);
 
-  const removeLike = likeHelper(true);
+  // const removeLike = likeHelper(true);
 
   const openReviewModal = async () => {
     if (!user) {
@@ -286,8 +286,8 @@ const LandlordPage = (): ReactElement => {
                     review={review}
                     liked={likedReviews[review.id]}
                     likeLoading={likeStatuses[review.id]}
-                    addLike={addLike}
-                    removeLike={removeLike}
+                    // addLike={addLike}
+                    // removeLike={removeLike}
                   />
                 </Grid>
               ))}
