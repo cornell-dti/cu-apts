@@ -1,4 +1,4 @@
-import express, { Express, RequestHandler } from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
@@ -13,14 +13,18 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
-import { db, FieldValue } from './firebase-config';
+import { db } from './firebase-config';
 import { Section } from './firebase-config/types';
 import authenticate from './auth';
+import DBConnect from '../dbConfigs';
+// import reviewCollections from '../models/Reviews';
+// import buildingCollections from '../models/Buildings';
+// import landlordCollections from '../models/Landlords';
 
-const reviewCollection = db.collection('reviews');
-const landlordCollection = db.collection('landlords');
-const buildingsCollection = db.collection('buildings');
-const likesCollection = db.collection('likes');
+// const reviewCollection = db.collection('reviews');
+// const landlordCollection = db.collection('landlords');
+// const buildingsCollection = db.collection('buildings');
+// const likesCollection = db.collection('likes');
 
 const app: Express = express();
 
@@ -212,35 +216,36 @@ app.get('/page-data/:page', async (req, res) => {
   res.status(200).send(JSON.stringify(await pageData(buildings)));
 });
 
-const likeHandler =
-  (dislike = false): RequestHandler =>
-  async (req, res) => {
-    try {
-      if (!req.user) throw new Error('not authenticated');
-      const { uid } = req.user;
-      const { reviewId } = req.body;
-      if (!reviewId) throw new Error('must specify review id');
-      const likesRef = likesCollection.doc(uid);
-      const reviewRef = reviewCollection.doc(reviewId);
-      await db.runTransaction(async (t) => {
-        const likesDoc = await t.get(likesRef);
-        const result = likesDoc.get(reviewId);
-        if (dislike ? result : !result) {
-          const likeEntry = dislike ? FieldValue.delete() : true;
-          const likeChange = dislike ? -1 : 1;
-          t.set(likesRef, { [reviewId]: likeEntry }, { merge: true });
-          t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
-        }
-      });
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
-    } catch (err) {
-      console.error(err);
-      res.status(400).send('Error');
-    }
-  };
+// const likeHandler =
+//   (dislike = false): RequestHandler =>
+//   async (req, res) => {
+//     try {
+//       if (!req.user) throw new Error('not authenticated');
+//       const { uid } = req.user;
+//       const { reviewId } = req.body;
+//       if (!reviewId) throw new Error('must specify review id');
+//       const likesRef = likesCollection.doc(uid);
+//       const reviewRef = reviewCollection.doc(reviewId);
+//       await db.runTransaction(async (t) => {
+//         const likesDoc = await t.get(likesRef);
+//         const result = likesDoc.get(reviewId);
+//         if (dislike ? result : !result) {
+//           const likeEntry = dislike ? FieldValue.delete() : true;
+//           const likeChange = dislike ? -1 : 1;
+//           t.set(likesRef, { [reviewId]: likeEntry }, { merge: true });
+//           t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
+//         }
+//       });
+//       res.status(200).send(JSON.stringify({ result: 'Success' }));
+//     } catch (err) {
+//       console.error(err);
+//       res.status(400).send('Error');
+//     }
+//   };
+DBConnect.dbConnection();
 
-app.post('/add-like', authenticate, likeHandler(false));
+// app.post('/add-like', authenticate, likeHandler(false));
 
-app.post('/remove-like', authenticate, likeHandler(true));
+// app.post('/remove-like', authenticate, likeHandler(true));
 
 export default app;

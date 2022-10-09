@@ -24,8 +24,8 @@ type Props = {
   readonly review: ReviewWithId;
   readonly liked: boolean;
   readonly likeLoading: boolean;
-  readonly addLike: (reviewId: string) => Promise<void>;
-  readonly removeLike: (reviewId: string) => Promise<void>;
+  // readonly addLike: (reviewId: string) => Promise<void>;
+  // readonly removeLike: (reviewId: string) => Promise<void>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -55,9 +55,9 @@ const ReviewComponent = ({
   review,
   liked,
   likeLoading,
-  addLike,
-  removeLike,
-}: Props): ReactElement => {
+}: // addLike,
+// removeLike,
+Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, expand, expandOpen, dateText, button } = useStyles();
@@ -137,7 +137,7 @@ const ReviewComponent = ({
           <Grid item>
             <Button
               color={liked ? 'primary' : 'default'}
-              onClick={() => (liked ? removeLike : addLike)(id)}
+              // onClick={() => (liked ? removeLike : addLike)(id)}
               className={button}
               size="small"
               disabled={likeLoading}

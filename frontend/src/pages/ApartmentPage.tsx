@@ -172,37 +172,37 @@ const ApartmentPage = (): ReactElement => {
     showToast(setShowSignInError);
   };
 
-  const likeHelper = (dislike = false) => {
-    return async (reviewId: string) => {
-      setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
-      try {
-        const user = await getUser(true);
-        if (!user) {
-          throw new Error('Failed to login');
-        }
-        const defaultLikes = dislike ? 1 : 0;
-        const offsetLikes = dislike ? -1 : 1;
-        const token = await user.getIdToken(true);
-        const endpoint = dislike ? '/remove-like' : '/add-like';
-        await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
-        setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
-        setReviewData((reviews) =>
-          reviews.map((review) =>
-            review.id === reviewId
-              ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
-              : review
-          )
-        );
-      } catch (err) {
-        throw new Error('Error with liking review');
-      }
-      setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: false }));
-    };
-  };
+  // const likeHelper = (dislike = false) => {
+  //   return async (reviewId: string) => {
+  //     setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
+  //     try {
+  //       const user = await getUser(true);
+  //       if (!user) {
+  //         throw new Error('Failed to login');
+  //       }
+  //       const defaultLikes = dislike ? 1 : 0;
+  //       const offsetLikes = dislike ? -1 : 1;
+  //       const token = await user.getIdToken(true);
+  //       const endpoint = dislike ? '/remove-like' : '/add-like';
+  //       await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
+  //       setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
+  //       setReviewData((reviews) =>
+  //         reviews.map((review) =>
+  //           review.id === reviewId
+  //             ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
+  //             : review
+  //         )
+  //       );
+  //     } catch (err) {
+  //       throw new Error('Error with liking review');
+  //     }
+  //     setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: false }));
+  //   };
+  // };
 
-  const addLike = likeHelper(false);
+  // const addLike = likeHelper(false);
 
-  const removeLike = likeHelper(true);
+  // const removeLike = likeHelper(true);
 
   const openReviewModal = async () => {
     if (!user) {
@@ -379,8 +379,8 @@ const ApartmentPage = (): ReactElement => {
                     review={review}
                     liked={likedReviews[review.id]}
                     likeLoading={likeStatuses[review.id]}
-                    addLike={addLike}
-                    removeLike={removeLike}
+                    // addLike={addLike}
+                    // removeLike={removeLike}
                   />
                 </Grid>
               ))}
