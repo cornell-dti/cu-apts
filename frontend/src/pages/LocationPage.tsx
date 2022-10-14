@@ -1,6 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Box, CardMedia, Container, Typography, makeStyles, Card } from '@material-ui/core';
-import styles from './HomePage.module.scss';
+import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
 import { LocationCardData } from '../App';
 import { useLocation } from 'react-router-dom';
 import CollegetownImg from '../assets/collegetown-coverpic.png';
