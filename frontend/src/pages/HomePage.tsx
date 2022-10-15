@@ -7,6 +7,10 @@ import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
 import { CardData, LocationCardData } from '../App';
 import { colors } from '../colors';
+import CollegetownImg from '../assets/collegetown-coverpic.png';
+import WestImg from '../assets/west-coverpic.jpeg';
+import NorthImg from '../assets/north-coverpic.jpeg';
+import DowntownImg from '../assets/downtown-coverpic.jpeg';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -41,19 +45,19 @@ const HomePage = (): ReactElement => {
 
   const locationData: LocationCardData[] = [
     {
-      photo: '',
+      photo: CollegetownImg,
       location: 'Collegetown',
     },
     {
-      photo: '',
+      photo: WestImg,
       location: 'West',
     },
     {
-      photo: '',
+      photo: DowntownImg,
       location: 'Downtown',
     },
     {
-      photo: '',
+      photo: NorthImg,
       location: 'North',
     },
   ];
