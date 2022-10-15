@@ -24,7 +24,7 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
         data.map(({ buildingData, numReviews, company }, index) => {
           const { id } = buildingData;
           return (
-            <Grid item key={index}>
+            <Grid item md={12} key={index}>
               <Link
                 {...{
                   to: `/apartment/${id}`,
