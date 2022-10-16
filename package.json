@@ -66,6 +66,7 @@
     "node": "16.x"
   },
   "dependencies": {
-    "bad-words": "^3.0.4"
+    "bad-words": "^3.0.4",
+    "mongoose": "^5.13.15"
   }
 }
