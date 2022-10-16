@@ -1,4 +1,5 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
+import { get } from '../../utils/call';
 import ApartmentImg from '../../assets/apartment-placeholder.png';
 import {
   Card,
@@ -9,25 +10,23 @@ import {
   Typography,
   useMediaQuery,
 } from '@material-ui/core';
-import { Apartment } from '../../../../common/types/db-types';
+import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
+import { getAverageRating } from '../../utils/average';
 import { colors } from '../../colors';
 
 type Props = {
-  buildingData: Apartment;
+  buildingData: ApartmentWithId;
   numReviews: number;
   company?: string;
 };
 const useStyles = makeStyles({
   imgStyle: {
     borderRadius: '12%',
-    height: '205px',
-    width: '100%',
     padding: '17px',
   },
   imgMobile: {
     borderRadius: '9%',
-    width: '100%',
     padding: '15px',
   },
 
@@ -59,10 +58,18 @@ const useStyles = makeStyles({
 });
 
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
-  const { name, photos } = buildingData;
+  const { id, name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const { imgStyle, imgMobile, aptNameTxt, marginTxt, card, reviewNum, textStyle } = useStyles();
   const matches = useMediaQuery('(min-width:600px)');
+  const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
+  const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
+
+  useEffect(() => {
+    get<ReviewWithId[]>(`/review/aptId/${id}`, {
+      callback: setReviewList,
+    });
+  }, [id]);
 
   return (
     <Card className={card}>
@@ -93,7 +100,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                 </Grid>
               )}
               <Grid container direction="row" alignItems="center" className={marginTxt}>
-                <HeartRating value={3} readOnly />
+                <HeartRating value={getAverageRating(reviewList)} precision={0.5} readOnly />
                 <Typography variant="h6" className={reviewNum}>
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
@@ -101,12 +108,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
               <Grid>
                 {matches && (
                   <Typography variant="subtitle1" className={textStyle}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                    nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    {sampleReview}
                   </Typography>
                 )}
               </Grid>
