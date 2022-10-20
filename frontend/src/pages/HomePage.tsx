@@ -5,12 +5,8 @@ import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
-import { CardData, LocationCardData } from '../App';
+import { CardData } from '../App';
 import { colors } from '../colors';
-import CollegetownImg from '../assets/collegetown-coverpic.png';
-import WestImg from '../assets/west-coverpic.jpeg';
-import NorthImg from '../assets/north-coverpic.jpeg';
-import DowntownImg from '../assets/downtown-coverpic.jpeg';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -43,25 +39,6 @@ const HomePage = (): ReactElement => {
     });
   }, []);
 
-  const locationData: LocationCardData[] = [
-    {
-      photo: CollegetownImg,
-      location: 'Collegetown',
-    },
-    {
-      photo: WestImg,
-      location: 'West',
-    },
-    {
-      photo: DowntownImg,
-      location: 'Downtown',
-    },
-    {
-      photo: NorthImg,
-      location: 'North',
-    },
-  ];
-
   return (
     <>
       <Box className={styles.JumboTron}>
@@ -87,7 +64,7 @@ const HomePage = (): ReactElement => {
               Find the Best Properties in Ithaca
             </Typography>
 
-            <LocationCards data={locationData} />
+            <LocationCards />
           </Box>
           <ApartmentCards data={homeData} />
         </Container>

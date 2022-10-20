@@ -3,12 +3,32 @@ import LocationCard from './LocationCard';
 import { Grid, Link } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { LocationCardData } from '../../App';
+import CollegetownImg from '../../assets/collegetown-coverpic.svg';
+import WestImg from '../../assets/west-coverpic.svg';
+import NorthImg from '../../assets/north-coverpic.svg';
+import DowntownImg from '../../assets/downtown-coverpic.svg';
 
-type Props = {
-  data: LocationCardData[];
-};
+const locationData: LocationCardData[] = [
+  {
+    photo: CollegetownImg,
+    location: 'Collegetown',
+  },
+  {
+    photo: WestImg,
+    location: 'West',
+  },
+  {
+    photo: DowntownImg,
+    location: 'Downtown',
+  },
+  {
+    photo: NorthImg,
+    location: 'North',
+  },
+];
+const data = locationData;
 
-const LocationCards = ({ data }: Props): ReactElement => {
+const LocationCards = (): ReactElement => {
   return (
     <Grid container spacing={3}>
       {data &&

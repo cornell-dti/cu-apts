@@ -2,10 +2,10 @@ import React, { ReactElement } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
 import { LocationCardData } from '../App';
 import { useLocation } from 'react-router-dom';
-import CollegetownImg from '../assets/collegetown-coverpic.png';
-import WestImg from '../assets/west-coverpic.jpeg';
-import NorthImg from '../assets/north-coverpic.jpeg';
-import DowntownImg from '../assets/downtown-coverpic.jpeg';
+import CollegetownImg from '../assets/collegetown-coverpic.svg';
+import WestImg from '../assets/west-coverpic.svg';
+import NorthImg from '../assets/north-coverpic.svg';
+import DowntownImg from '../assets/downtown-coverpic.svg';
 import { colors } from '../colors';
 
 interface Images {
@@ -24,7 +24,7 @@ const useStyles = makeStyles({
     padding: '10px',
   },
   titleStyle: {
-    marginBottom: '1em',
+    marginBottom: 'px',
     fontWeight: 'bold',
     color: colors.white,
     fontSize: '40px',
@@ -67,16 +67,14 @@ const LocationPage = ({ data }: Props): ReactElement => {
       <Box>
         <Container maxWidth="lg">
           <Typography variant="subtitle1" className={subtitleStyle}>
-            {' '}
-            Properties{' '}
+            Properties
           </Typography>
           <CardMedia className={imgStyle} image={img} component="img" title={location} />
           <Typography variant="h1" className={titleStyle}>
             {location}
           </Typography>
           <Typography variant="body1" className={bodyStyle}>
-            {' '}
-            {desc}{' '}
+            {desc}
           </Typography>
         </Container>
       </Box>
