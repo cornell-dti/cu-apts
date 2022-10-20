@@ -26,9 +26,9 @@ const locationData: LocationCardData[] = [
     location: 'North',
   },
 ];
-const data = locationData;
 
 const LocationCards = (): ReactElement => {
+  const data = locationData;
   return (
     <Grid container spacing={3}>
       {data &&
