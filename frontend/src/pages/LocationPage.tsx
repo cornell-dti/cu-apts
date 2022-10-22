@@ -24,7 +24,7 @@ const useStyles = makeStyles({
     padding: '10px',
   },
   titleStyle: {
-    marginBottom: 'px',
+    marginBottom: '40px',
     fontWeight: 'bold',
     color: colors.white,
     fontSize: '40px',
