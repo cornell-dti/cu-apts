@@ -67,16 +67,14 @@ const LocationPage = ({ data }: Props): ReactElement => {
       <Box>
         <Container maxWidth="lg">
           <Typography variant="subtitle1" className={subtitleStyle}>
-            {' '}
-            Properties{' '}
+            Properties
           </Typography>
           <CardMedia className={imgStyle} image={img} component="img" title={location} />
           <Typography variant="h1" className={titleStyle}>
             {location}
           </Typography>
           <Typography variant="body1" className={bodyStyle}>
-            {' '}
-            {desc}{' '}
+            {desc}
           </Typography>
         </Container>
       </Box>
