@@ -7,10 +7,6 @@ import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
 import { CardData } from '../App';
 import { colors } from '../colors';
-import CollegetownImg from '../assets/collegetown-coverpic.png';
-import WestImg from '../assets/west-coverpic.jpeg';
-import NorthImg from '../assets/north-coverpic.jpeg';
-import DowntownImg from '../assets/downtown-coverpic.jpeg';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -42,7 +38,6 @@ const HomePage = (): ReactElement => {
       callback: setHomeData,
     });
   }, []);
-
 
   return (
     <>
