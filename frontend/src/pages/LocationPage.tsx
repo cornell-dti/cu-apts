@@ -1,11 +1,11 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
-import { LocationCardData, CardData } from '../App';
+import { CardData } from '../App';
 import { useLocation } from 'react-router-dom';
-import CollegetownImg from '../assets/collegetown-coverpic.png';
-import WestImg from '../assets/west-coverpic.jpeg';
-import NorthImg from '../assets/north-coverpic.jpeg';
-import DowntownImg from '../assets/downtown-coverpic.jpeg';
+import CollegetownImg from '../assets/collegetown-coverpic.svg';
+import WestImg from '../assets/west-coverpic.svg';
+import NorthImg from '../assets/north-coverpic.svg';
+import DowntownImg from '../assets/downtown-coverpic.svg';
 import { colors } from '../colors';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
