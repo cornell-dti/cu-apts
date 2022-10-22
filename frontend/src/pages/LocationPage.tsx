@@ -1,3 +1,4 @@
+
 import React, { ReactElement, useState, useEffect } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
 import { LocationCardData, CardData } from '../App';
@@ -9,6 +10,7 @@ import DowntownImg from '../assets/downtown-coverpic.jpeg';
 import { colors } from '../colors';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+
 
 interface Images {
   [location: string]: string;
@@ -84,7 +86,9 @@ const LocationPage = (): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
+
           <ApartmentCards data={homeData} />
+
         </Container>
       </Box>
     </>
