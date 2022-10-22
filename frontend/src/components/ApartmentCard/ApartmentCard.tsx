@@ -26,8 +26,10 @@ const useStyles = makeStyles({
     padding: '17px',
   },
   imgMobile: {
-    borderRadius: '9%',
-    padding: '15px',
+    borderRadius: '8%',
+    height: '480px',
+    width: '100%',
+    padding: '20px',
   },
 
   aptNameTxt: {
@@ -105,6 +107,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
+
               <Grid>
                 {matches && (
                   <Typography variant="subtitle1" className={textStyle}>

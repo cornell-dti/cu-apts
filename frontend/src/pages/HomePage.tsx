@@ -5,7 +5,7 @@ import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
-import { CardData, LocationCardData } from '../App';
+import { CardData } from '../App';
 import { colors } from '../colors';
 
 const useStyles = makeStyles({
@@ -39,25 +39,6 @@ const HomePage = (): ReactElement => {
     });
   }, []);
 
-  const locationData: LocationCardData[] = [
-    {
-      photo: '',
-      location: 'Collegetown',
-    },
-    {
-      photo: '',
-      location: 'West',
-    },
-    {
-      photo: '',
-      location: 'Downtown',
-    },
-    {
-      photo: '',
-      location: 'North',
-    },
-  ];
-
   return (
     <>
       <Box className={styles.JumboTron}>
@@ -83,7 +64,7 @@ const HomePage = (): ReactElement => {
               Find the Best Properties in Ithaca
             </Typography>
 
-            <LocationCards data={locationData} />
+            <LocationCards />
           </Box>
           <ApartmentCards data={homeData} />
         </Container>
