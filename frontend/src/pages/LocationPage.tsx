@@ -14,10 +14,6 @@ interface Images {
   [location: string]: string;
 }
 
-type Props = {
-  data: LocationCardData[];
-};
-
 const useStyles = makeStyles({
   imgStyle: {
     borderRadius: '25px',
