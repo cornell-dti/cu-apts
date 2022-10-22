@@ -43,7 +43,7 @@ const useStyles = makeStyles({
   },
 });
 
-const LocationPage = ({ data }: Props): ReactElement => {
+const LocationPage = (): ReactElement => {
   const [homeData, setHomeData] = useState<CardData[]>([]);
 
   const path = useLocation();
