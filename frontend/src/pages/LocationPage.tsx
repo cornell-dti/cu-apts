@@ -1,12 +1,14 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
-import { LocationCardData } from '../App';
+import { LocationCardData, CardData } from '../App';
 import { useLocation } from 'react-router-dom';
 import CollegetownImg from '../assets/collegetown-coverpic.png';
 import WestImg from '../assets/west-coverpic.jpeg';
 import NorthImg from '../assets/north-coverpic.jpeg';
 import DowntownImg from '../assets/downtown-coverpic.jpeg';
 import { colors } from '../colors';
+import { get } from '../utils/call';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 interface Images {
   [location: string]: string;
@@ -24,7 +26,7 @@ const useStyles = makeStyles({
     padding: '10px',
   },
   titleStyle: {
-    marginBottom: '1em',
+    marginBottom: '40px',
     fontWeight: 'bold',
     color: colors.white,
     fontSize: '40px',
@@ -37,10 +39,13 @@ const useStyles = makeStyles({
   },
   bodyStyle: {
     marginLeft: '20px',
+    paddingBottom: '30px',
   },
 });
 
 const LocationPage = ({ data }: Props): ReactElement => {
+  const [homeData, setHomeData] = useState<CardData[]>([]);
+
   const path = useLocation();
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
   const locToImg: Images = {
@@ -49,6 +54,13 @@ const LocationPage = ({ data }: Props): ReactElement => {
     North: NorthImg,
     Downtown: DowntownImg,
   };
+
+  useEffect(() => {
+    get<CardData[]>(`/location/${location}`, {
+      callback: setHomeData,
+    });
+  }, []);
+
   const locDescText: Images = {
     Collegetown:
       'Living in Collegetown allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -76,6 +88,7 @@ const LocationPage = ({ data }: Props): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
+          <ApartmentCards data={homeData} />
         </Container>
       </Box>
     </>
