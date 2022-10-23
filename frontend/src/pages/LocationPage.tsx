@@ -55,7 +55,7 @@ const LocationPage = (): ReactElement => {
     get<CardData[]>(`/location/${location}`, {
       callback: setHomeData,
     });
-  }, []);
+  }, [location]);
 
   const locDescText: Images = {
     Collegetown:
