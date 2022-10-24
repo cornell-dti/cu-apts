@@ -16,10 +16,9 @@ interface Images {
 
 const useStyles = makeStyles({
   imgStyle: {
-    borderRadius: '25px',
+    borderRadius: '20px',
     height: '300px',
     width: '100%',
-    padding: '10px',
   },
   titleStyle: {
     marginBottom: '40px',
@@ -27,7 +26,7 @@ const useStyles = makeStyles({
     color: colors.white,
     fontSize: '40px',
     marginLeft: '50px',
-    marginTop: '-80px',
+    marginTop: '-70px',
   },
   subtitleStyle: {
     fontWeight: 700,
@@ -35,7 +34,6 @@ const useStyles = makeStyles({
   },
   bodyStyle: {
     marginLeft: '20px',
-    paddingBottom: '30px',
   },
 });
 

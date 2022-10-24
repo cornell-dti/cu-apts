@@ -215,7 +215,7 @@ app.get('/page-data/:page', async (req, res) => {
 app.get('/location/:loc', async (req, res) => {
   const { loc } = req.params;
   const buildingDocs = (
-    await buildingsCollection.limit(2).where(`area`, '==', loc.toUpperCase()).get()
+    await buildingsCollection.where(`area`, '==', loc.toUpperCase()).limit(2).get()
   ).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
