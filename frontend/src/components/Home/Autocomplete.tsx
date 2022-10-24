@@ -113,7 +113,7 @@ export default function Autocomplete() {
                       <Link
                         key={index}
                         {...{
-                          to: `/apartment/${id}`,
+                          to: `/${label.toLowerCase()}/${id}`,
                           style: { textDecoration: 'none' },
                           component: RouterLink,
                         }}
