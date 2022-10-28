@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Grid, makeStyles } from '@material-ui/core';
+import { Container } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
