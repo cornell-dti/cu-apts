@@ -234,6 +234,17 @@ app.get('/page-data/:page', async (req, res) => {
   res.status(200).send(JSON.stringify(await pageData(buildings)));
 });
 
+app.get('/location/:loc', async (req, res) => {
+  const { loc } = req.params;
+  const buildingDocs = (
+    await buildingsCollection.where(`area`, '==', loc.toUpperCase()).limit(2).get()
+  ).docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+  res.status(200).send(JSON.stringify(await pageData(buildings)));
+});
+
 const likeHandler =
   (dislike = false): RequestHandler =>
   async (req, res) => {
