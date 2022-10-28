@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement } from 'react';
 import ApartmentCard from './ApartmentCard';
 import { Grid, Link, makeStyles } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
@@ -17,6 +17,7 @@ const useStyles = makeStyles({
 
 const ApartmentCards = ({ data }: Props): ReactElement => {
   const { boundingBox } = useStyles();
+
   return (
     <Grid container spacing={3} className={boundingBox}>
       {data &&
