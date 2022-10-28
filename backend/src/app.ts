@@ -176,6 +176,7 @@ app.post('/set-data', async (req, res) => {
     res.status(400).send('Error');
   }
 });
+
 app.get('/search', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -196,6 +197,27 @@ app.get('/search', async (req, res) => {
         : ({ label: 'APARTMENT', ...result } as ApartmentWithLabel)
     );
     res.status(200).send(JSON.stringify(resultsWithType));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+app.get('/search-results', async (req, res) => {
+  try {
+    const query = req.query.q as string;
+    const apts = req.app.get('apts');
+    const aptsWithType: ApartmentWithId[] = apts;
+
+    const options = {
+      keys: ['name', 'address'],
+    };
+
+    const fuse = new Fuse(aptsWithType, options);
+    const results = fuse.search(query).slice(0, 5);
+    const resultItems = results.map((result) => result.item);
+
+    res.status(200).send(JSON.stringify(await pageData(resultItems)));
   } catch (err) {
     console.error(err);
     res.status(400).send('Error');
