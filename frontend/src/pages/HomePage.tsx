@@ -7,6 +7,7 @@ import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
 import { CardData } from '../App';
 import { colors } from '../colors';
+import { loadingLength } from '../constants/HomeConsts';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -32,12 +33,19 @@ const useStyles = makeStyles({
 const HomePage = (): ReactElement => {
   const classes = useStyles();
   const [homeData, setHomeData] = useState<CardData[]>([]);
+  const [dataSize, setDataSize] = useState(loadingLength);
 
   useEffect(() => {
-    get<CardData[]>(`/page-data/home`, {
+    get<CardData[]>(`/page-data/home/${dataSize}`, {
       callback: setHomeData,
     });
-  }, []);
+  }, [dataSize]);
+
+  window.onscroll = function (ev: Event) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      setDataSize(dataSize + loadingLength);
+    }
+  };
 
   return (
     <>
