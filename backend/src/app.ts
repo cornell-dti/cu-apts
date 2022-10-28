@@ -204,7 +204,7 @@ app.get('/search', async (req, res) => {
 
 app.get('/page-data/:page', async (req, res) => {
   const { page } = req.params;
-  const collection = page === 'home' ? buildingsCollection.limit(3) : buildingsCollection.limit(12);
+  const collection = page === 'home' ? buildingsCollection : buildingsCollection.limit(12);
   const buildingDocs = (await collection.get()).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
