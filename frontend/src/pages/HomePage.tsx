@@ -1,13 +1,10 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
-import { CardData } from '../App';
 import { colors } from '../colors';
-import { loadingLength } from '../constants/HomeConsts';
+import ScrollingCards from '../components/ApartmentCard/ScrollingCards';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -32,21 +29,6 @@ const useStyles = makeStyles({
 
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomeData] = useState<CardData[]>([]);
-  const [dataSize, setDataSize] = useState(loadingLength);
-
-  useEffect(() => {
-    get<CardData[]>(`/page-data/home/${dataSize}`, {
-      callback: setHomeData,
-    });
-  }, [dataSize]);
-
-  window.onscroll = function (ev: Event) {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-      setDataSize(dataSize + loadingLength);
-    }
-  };
-
   return (
     <>
       <Box className={styles.JumboTron}>
@@ -74,7 +56,7 @@ const HomePage = (): ReactElement => {
 
             <LocationCards />
           </Box>
-          <ApartmentCards data={homeData} />
+          <ScrollingCards API="/page-data/home/" />
         </Container>
       </Box>
     </>
