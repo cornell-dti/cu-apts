@@ -1,11 +1,22 @@
-import { Container } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
+import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
+import { colors } from '../colors';
+
+const useStyles = makeStyles({
+  searchText: {
+    color: colors.black,
+    fontWeight: 600,
+    fontSize: 30,
+    margin: '0.5em 0 0.5em 0',
+  },
+});
 
 const SearchResultsPage = (): ReactElement => {
+  const classes = useStyles();
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
   const query = location.search.substring(3);
@@ -18,7 +29,7 @@ const SearchResultsPage = (): ReactElement => {
 
   return (
     <Container>
-      Search Results
+      <Typography className={classes.searchText}>Search Results For "{query}"</Typography>
       <ApartmentCards data={searchResults} />
     </Container>
   );
