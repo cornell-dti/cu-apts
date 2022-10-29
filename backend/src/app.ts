@@ -214,7 +214,7 @@ app.get('/search-results', async (req, res) => {
     };
 
     const fuse = new Fuse(aptsWithType, options);
-    const results = fuse.search(query).slice(0, 5);
+    const results = fuse.search(query);
     const resultItems = results.map((result) => result.item);
 
     res.status(200).send(JSON.stringify(await pageData(resultItems)));
