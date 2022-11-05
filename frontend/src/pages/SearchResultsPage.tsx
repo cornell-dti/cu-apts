@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
 import { colors } from '../colors';
 import { CardData } from '../App';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 const useStyles = makeStyles({
   landlordTitle: {
@@ -15,19 +16,21 @@ const useStyles = makeStyles({
     backgroundColor: colors.landlordCardRed,
   },
 });
+
 const SearchResultsPage = (): ReactElement => {
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
   const query = location.search.substring(3);
-  const { landlordTitle } = useStyles();
 
-  useEffect(() => {}, [query]);
+  useEffect(() => {
+    get<CardData[]>(`/search-results?q=${query}`, {
+      callback: setSearchResults,
+    });
+  }, [query]);
 
   return (
     <Container>
-      <Typography variant="h5" align="left" className={landlordTitle}>
-        Landlords
-      </Typography>
+      <ApartmentCards data={searchResults} />
     </Container>
   );
 };
