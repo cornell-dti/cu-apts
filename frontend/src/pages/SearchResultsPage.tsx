@@ -10,7 +10,7 @@ const useStyles = makeStyles({
   searchText: {
     color: colors.black,
     fontWeight: 600,
-    fontSize: 30,
+    fontSize: 35,
     margin: '0.5em 0 0.5em 0',
   },
 });
