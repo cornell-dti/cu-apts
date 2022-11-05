@@ -7,17 +7,16 @@ import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 const useStyles = makeStyles({
-  landlordTitle: {
+  searchText: {
+    color: colors.black,
     fontWeight: 600,
-  },
-  card: {
-    height: '100%',
-    borderRadius: '10px',
-    backgroundColor: colors.landlordCardRed,
+    fontSize: 30,
+    margin: '0.5em 0 0.5em 0',
   },
 });
 
 const SearchResultsPage = (): ReactElement => {
+  const classes = useStyles();
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
   const query = location.search.substring(3);
@@ -30,6 +29,7 @@ const SearchResultsPage = (): ReactElement => {
 
   return (
     <Container>
+      <Typography className={classes.searchText}>Search Results For "{query}"</Typography>
       <ApartmentCards data={searchResults} />
     </Container>
   );
