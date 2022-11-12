@@ -55,7 +55,7 @@ const useStyles = makeStyles(() => ({
     textAlign: 'left',
     paddingTop: '25px',
     marginLeft: '10px',
-    fontSize: '27px',
+    fontSize: '20px',
     lineHeight: '32px',
   },
   description: {
@@ -191,13 +191,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item>
-        <Typography className={description}>
-          <Link color="textPrimary" underline="none" href="/">
-            Easy browsing for off-campus housing
-          </Link>
-        </Typography>
       </Grid>
     </Grid>
   );
