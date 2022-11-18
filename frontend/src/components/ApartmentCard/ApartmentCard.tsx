@@ -1,6 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import { get } from '../../utils/call';
-import ApartmentImg from '../../assets/apartment-placeholder.png';
+import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import {
   Card,
   CardContent,
@@ -13,7 +13,6 @@ import {
 import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
-import { colors } from '../../colors';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -41,7 +40,6 @@ const useStyles = makeStyles({
   },
   card: {
     borderRadius: '10px',
-    backgroundColor: colors.red6,
   },
   reviewNum: {
     fontWeight: 700,

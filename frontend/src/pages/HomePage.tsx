@@ -45,10 +45,7 @@ const HomePage = (): ReactElement => {
         <Container maxWidth="lg">
           <Box py={6}>
             <Typography variant="h1" className={classes.jumboText}>
-              Search Renting Companies
-            </Typography>
-            <Typography variant="body1" className={classes.jumboSub}>
-              Search for off-campus housing, review apartments, and share feedback!
+              Discover Housing @ Cornell
             </Typography>
           </Box>
           <Box pb={5} mx={0}>
