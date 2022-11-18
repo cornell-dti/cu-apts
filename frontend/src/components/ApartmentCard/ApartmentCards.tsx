@@ -16,6 +16,7 @@ const useStyles = makeStyles({
 });
 
 const ApartmentCards = ({ data }: Props): ReactElement => {
+  console.log(data);
   const { boundingBox } = useStyles();
 
   return (
