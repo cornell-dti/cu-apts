@@ -95,7 +95,7 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    paddingLeft: '3%',
+    // paddingLeft: '3%',
   },
   searchDrawer: {
     marginBottom: '5%',
@@ -198,10 +198,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const displayDesktop = (): ReactElement => {
     return (
       <Grid container className={toolbar} alignItems="center">
-        <Grid item md={3}>
+        <Grid item md={2}>
           {homeLogo}
         </Grid>
-        <Grid item md={6} className={search}>
+        <Grid item md={7} className={search}>
           {auto()}
         </Grid>
         <Grid item md={3}>
