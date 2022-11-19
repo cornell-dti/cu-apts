@@ -1,6 +1,5 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
-import { CardData } from '../App';
 import { useLocation } from 'react-router-dom';
 import CollegetownImg from '../assets/collegetown-coverpic.svg';
 import WestImg from '../assets/west-coverpic.svg';
