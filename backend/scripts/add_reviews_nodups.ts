@@ -37,7 +37,7 @@ const getExistingReviews = async () => {
 
   const existingReviewText = new Set(text);
 
-  reviewData.map((review) => {
+  const savedReviews = reviewData.map((review) => {
     if (!existingReviewText.has(review.reviewText)) {
       makeReview(formatReview(review));
     }
