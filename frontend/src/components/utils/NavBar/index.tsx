@@ -115,7 +115,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const {
     header,
     logo,
-    description,
     menuButton,
     toolbar,
     drawerContainer,
