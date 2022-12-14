@@ -1,14 +1,12 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
-import { CardData } from '../App';
 import { useLocation } from 'react-router-dom';
 import CollegetownImg from '../assets/collegetown-coverpic.svg';
 import WestImg from '../assets/west-coverpic.svg';
 import NorthImg from '../assets/north-coverpic.svg';
 import DowntownImg from '../assets/downtown-coverpic.svg';
 import { colors } from '../colors';
-import { get } from '../utils/call';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import ScrollingCards from '../components/ApartmentCard/ScrollingCards';
 
 interface Images {
   [location: string]: string;
@@ -38,22 +36,15 @@ const useStyles = makeStyles({
 });
 
 const LocationPage = (): ReactElement => {
-  const [homeData, setHomeData] = useState<CardData[]>([]);
-
   const path = useLocation();
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
+  const locAPI = `/location/${location}/`;
   const locToImg: Images = {
     Collegetown: CollegetownImg,
     West: WestImg,
     North: NorthImg,
     Downtown: DowntownImg,
   };
-
-  useEffect(() => {
-    get<CardData[]>(`/location/${location}`, {
-      callback: setHomeData,
-    });
-  }, [location]);
 
   const locDescText: Images = {
     Collegetown:
@@ -82,7 +73,7 @@ const LocationPage = (): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
-          <ApartmentCards data={homeData} />
+          <ScrollingCards API={locAPI} />
         </Container>
       </Box>
     </>
