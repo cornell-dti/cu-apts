@@ -24,6 +24,7 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
   const [dataSize, setDataSize] = useState(loadingLength);
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const { loadingMsg } = useStyles();
+  const isHomePage = API == '/page-data/home/';
 
   useEffect(() => {
     get<returnData>(API + `${dataSize}`, {
@@ -34,7 +35,7 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
   console.log(data.buildingData);
 
   window.onscroll = function (ev: Event) {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight && !isHomePage) {
       setDataSize(dataSize + loadingLength);
     }
   };
@@ -42,9 +43,11 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
   return (
     <>
       <ApartmentCards data={data.buildingData} />
-      <Typography className={loadingMsg}>
-        {!data.isEnded ? 'Loading more apartments...' : "There's no more apartments!"}
-      </Typography>
+      {!isHomePage ? (
+        <Typography className={loadingMsg}>
+          {!data.isEnded ? 'Loading more apartments...' : "There's no more apartments!"}
+        </Typography>
+      ) : null}
     </>
   );
 };
