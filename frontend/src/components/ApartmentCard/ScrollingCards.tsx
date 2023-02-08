@@ -24,7 +24,7 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
   const [dataSize, setDataSize] = useState(loadingLength);
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const { loadingMsg } = useStyles();
-  const isHomePage = API == '/page-data/home/';
+  const isHomePage = API === '/page-data/home/';
 
   useEffect(() => {
     get<returnData>(API + `${dataSize}`, {
