@@ -1,10 +1,12 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
 import styles from './HomePage.module.scss';
 import LocationCards from '../components/Home/LocationCards';
 import { colors } from '../colors';
-import ScrollingCards from '../components/ApartmentCard/ScrollingCards';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import { CardData } from '../App';
+import { get } from '../utils/call';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -27,8 +29,21 @@ const useStyles = makeStyles({
   },
 });
 
+type returnData = {
+  buildingData: CardData[];
+  isEnded: boolean;
+};
+
 const HomePage = (): ReactElement => {
   const classes = useStyles();
+  const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
+
+  useEffect(() => {
+    get<returnData>(`/page-data/home/3`, {
+      callback: setData,
+    });
+  }, []);
+
   return (
     <>
       <Box className={styles.JumboTron}>
@@ -50,10 +65,9 @@ const HomePage = (): ReactElement => {
             <Typography variant="h2" className={classes.rentingText}>
               Find the Best Properties in Ithaca
             </Typography>
-
             <LocationCards />
           </Box>
-          <ScrollingCards API="/page-data/home/" />
+          <ApartmentCards data={data.buildingData} />
         </Container>
       </Box>
     </>
