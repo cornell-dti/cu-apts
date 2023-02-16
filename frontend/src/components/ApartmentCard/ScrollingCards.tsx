@@ -31,8 +31,6 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
     });
   }, [dataSize, API]);
 
-  console.log(data.buildingData);
-
   window.onscroll = function (ev: Event) {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
       setDataSize(dataSize + loadingLength);
