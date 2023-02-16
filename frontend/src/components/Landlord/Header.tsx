@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
-import defaultHeader from '../../assets/default_header.png';
+import defaultHeader from '../../assets/default_header.svg';
 import defaultIcon from '../../assets/default_icon.png';
 import { colors } from '../../colors';
 

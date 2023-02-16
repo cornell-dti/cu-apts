@@ -6,7 +6,7 @@
   "scripts": {
     "add_buildings": "ts-node scripts/add_buildings.ts",
     "add_landlords": "ts-node scripts/add_landlords.ts",
-    "add_reviews": "ts-node scripts/add_reviews.ts",
+    "add_reviews": "ts-node scripts/add_reviews_nodups.ts",
     "build": "tsc",
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",

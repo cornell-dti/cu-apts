@@ -19,7 +19,7 @@ const ReviewPage = (): ReactElement => {
   const [aptData, setAptData] = useState<CardData[]>([]);
 
   useEffect(() => {
-    get<CardData[]>(`/page-data/reviews`, {
+    get<CardData[]>(`/page-data/reviews/12`, {
       callback: setAptData,
     });
   }, []);

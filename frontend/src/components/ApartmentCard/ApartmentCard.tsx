@@ -1,6 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 import { get } from '../../utils/call';
-import ApartmentImg from '../../assets/apartment-placeholder.png';
+import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import {
   Card,
   CardContent,
@@ -21,6 +21,12 @@ type Props = {
   company?: string;
 };
 const useStyles = makeStyles({
+  root: {
+    borderRadius: '10px',
+    '&:hover': {
+      background: colors.red5,
+    },
+  },
   imgStyle: {
     borderRadius: '12%',
     padding: '17px',
@@ -39,10 +45,7 @@ const useStyles = makeStyles({
   marginTxt: {
     marginLeft: '25px',
   },
-  card: {
-    borderRadius: '10px',
-    backgroundColor: colors.red6,
-  },
+
   reviewNum: {
     fontWeight: 700,
     marginLeft: '10px',
@@ -62,7 +65,16 @@ const useStyles = makeStyles({
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { id, name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
-  const { imgStyle, imgMobile, aptNameTxt, marginTxt, card, reviewNum, textStyle } = useStyles();
+  const {
+    imgStyle,
+    imgMobile,
+    aptNameTxt,
+    marginTxt,
+    root,
+
+    reviewNum,
+    textStyle,
+  } = useStyles();
   const matches = useMediaQuery('(min-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
@@ -74,7 +86,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   }, [id]);
 
   return (
-    <Card className={card}>
+    <Card className={root} variant="outlined">
       <Grid container direction="row" alignItems="center">
         {matches && (
           <Grid item xs={11} sm={4} md={2}>
