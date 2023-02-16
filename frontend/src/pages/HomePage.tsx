@@ -7,6 +7,7 @@ import { colors } from '../colors';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
 import { get } from '../utils/call';
+import { loadingLength } from '../constants/HomeConsts';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -39,7 +40,7 @@ const HomePage = (): ReactElement => {
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
 
   useEffect(() => {
-    get<returnData>(`/page-data/home/3`, {
+    get<returnData>(`/page-data/home/${loadingLength}`, {
       callback: setData,
     });
   }, []);
