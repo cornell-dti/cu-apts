@@ -67,9 +67,9 @@ const home: NavbarButton = {
   href: '/',
 };
 
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/reviews',
+const faq: NavbarButton = {
+  label: 'FAQ',
+  href: '/faq',
 };
 
 export type CardData = {
@@ -83,7 +83,7 @@ export type LocationCardData = {
   location: string;
 };
 
-const headersData = [home, review];
+const headersData = [home, faq];
 
 hotjar.initialize(HJID, HJSV);
 

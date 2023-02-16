@@ -25,17 +25,15 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 
 ## Contributors
 
-### 2020-2021
+### 2022-2023
 
-- **Bahar Tehranipoor** - Product Manager
-- **Ashrita Raman** - Technical Product Manager
-- **Peter Wu** - Technical Product Manager
-- **Buma Gana** - Designer
-- **Stacy Wei** - Designer
-- **Enoch Chen** - Developer
-- **Kinjal Jasani** - Developer
-- **Mena Attia** - Developer
-- **Sam Liu** - Developer
+- **Francis Bahk** - Product Manager
+- **Sarah Young** - Product Manager
+- **Thuy (Sophia) Pham** - Technical Product Manager
+- **Maywa Padungrat** - Designer
+- **Cyrus Irani** - Developer
+- **Daniel Jin** - Developer
+- **Ankit Lakkapragada** - Developer
 
 ### 2021-2022
 
@@ -48,6 +46,18 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 - **Thuy (Sophia) Pham** - Developer
 - **Cyrus Irani** - Developer
 - **Jiayuan Gu** - Developer
+
+### 2020-2021
+
+- **Bahar Tehranipoor** - Product Manager
+- **Ashrita Raman** - Technical Product Manager
+- **Peter Wu** - Technical Product Manager
+- **Buma Gana** - Designer
+- **Stacy Wei** - Designer
+- **Enoch Chen** - Developer
+- **Kinjal Jasani** - Developer
+- **Mena Attia** - Developer
+- **Sam Liu** - Developer
 
 We are a team within the Cornell Design & Tech Initiative. For more information, see
 [our website](https://cornelldti.org).
