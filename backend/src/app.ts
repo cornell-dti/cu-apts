@@ -224,25 +224,35 @@ app.get('/search-results', async (req, res) => {
   }
 });
 
-app.get('/page-data/:page', async (req, res) => {
-  const { page } = req.params;
-  const collection = page === 'home' ? buildingsCollection.limit(3) : buildingsCollection.limit(12);
+app.get('/page-data/:page/:size', async (req, res) => {
+  const { page, size } = req.params;
+  const collection = buildingsCollection.limit(Number(size));
   const buildingDocs = (await collection.get()).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
-  res.status(200).send(JSON.stringify(await pageData(buildings)));
+
+  const returnData = JSON.stringify({
+    buildingData: await pageData(buildings),
+    isEnded: buildings.length < Number(size),
+  });
+  res.status(200).send(returnData);
 });
 
-app.get('/location/:loc', async (req, res) => {
-  const { loc } = req.params;
+app.get('/location/:loc/:size', async (req, res) => {
+  const { loc, size } = req.params;
   const buildingDocs = (
-    await buildingsCollection.where(`area`, '==', loc.toUpperCase()).limit(2).get()
+    await buildingsCollection.where(`area`, '==', loc.toUpperCase()).limit(Number(size)).get()
   ).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
-  res.status(200).send(JSON.stringify(await pageData(buildings)));
+
+  const returnData = JSON.stringify({
+    buildingData: await pageData(buildings),
+    isEnded: buildings.length < Number(size),
+  });
+  res.status(200).send(returnData);
 });
 
 const likeHandler =

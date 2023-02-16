@@ -1,12 +1,13 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import LocationCards from '../components/Home/LocationCards';
-import { CardData } from '../App';
 import { colors } from '../colors';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import { CardData } from '../App';
+import { get } from '../utils/call';
+import { loadingLength } from '../constants/HomeConsts';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -29,13 +30,18 @@ const useStyles = makeStyles({
   },
 });
 
+type returnData = {
+  buildingData: CardData[];
+  isEnded: boolean;
+};
+
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomeData] = useState<CardData[]>([]);
+  const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
 
   useEffect(() => {
-    get<CardData[]>(`/page-data/home`, {
-      callback: setHomeData,
+    get<returnData>(`/page-data/home/${loadingLength}`, {
+      callback: setData,
     });
   }, []);
 
@@ -45,10 +51,7 @@ const HomePage = (): ReactElement => {
         <Container maxWidth="lg">
           <Box py={6}>
             <Typography variant="h1" className={classes.jumboText}>
-              Search Renting Companies
-            </Typography>
-            <Typography variant="body1" className={classes.jumboSub}>
-              Search for off-campus housing, review apartments, and share feedback!
+              Discover Housing @ Cornell
             </Typography>
           </Box>
           <Box pb={5} mx={0}>
@@ -63,10 +66,9 @@ const HomePage = (): ReactElement => {
             <Typography variant="h2" className={classes.rentingText}>
               Find the Best Properties in Ithaca
             </Typography>
-
             <LocationCards />
           </Box>
-          <ApartmentCards data={homeData} />
+          <ApartmentCards data={data.buildingData} />
         </Container>
       </Box>
     </>
