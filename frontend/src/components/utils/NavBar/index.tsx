@@ -115,7 +115,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   const {
     header,
     logo,
-    description,
     menuButton,
     toolbar,
     drawerContainer,
@@ -191,13 +190,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             </Typography>
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item>
-        <Typography className={description}>
-          <Link color="textPrimary" underline="none" href="/">
-            Easy browsing for off-campus housing
-          </Link>
-        </Typography>
       </Grid>
     </Grid>
   );
