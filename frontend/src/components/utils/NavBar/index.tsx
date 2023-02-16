@@ -22,7 +22,6 @@ import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
-import SearchBar from 'material-ui-search-bar';
 
 export type NavbarButton = {
   label: string;
