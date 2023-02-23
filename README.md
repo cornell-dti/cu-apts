@@ -27,10 +27,12 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 
 ### 2022-2023
 
-- **Francis Bahk** - Product Manager
 - **Sarah Young** - Product Manager
+- **Francis Bahk** - Product Manager
+- **Alyssa Ma** - Product Marketing Manager
 - **Thuy (Sophia) Pham** - Technical Product Manager
 - **Maywa Padungrat** - Designer
+- **Katherine Chang** - Designer
 - **Cyrus Irani** - Developer
 - **Daniel Jin** - Developer
 - **Ankit Lakkapragada** - Developer
