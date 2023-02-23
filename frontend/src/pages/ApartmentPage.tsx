@@ -93,7 +93,7 @@ const ApartmentPage = (): ReactElement => {
   }, [aptData]);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${aptId}`, {
+    get<ReviewWithId[]>(`/review/aptId/${aptId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [aptId, showConfirmation]);

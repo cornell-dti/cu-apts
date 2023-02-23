@@ -58,9 +58,11 @@ app.post('/new-review', authenticate, async (req, res) => {
   }
 });
 
-app.get('/review/:idType/:id', async (req, res) => {
-  const { idType, id } = req.params;
-  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+app.get('/review/:idType/:id/:status', async (req, res) => {
+  const { idType, id, status } = req.params;
+  const reviewDocs = (
+    await reviewCollection.where(`${idType}`, '==', id).where('status', '==', status).get()
+  ).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
     const data = doc.data();
     const review = { ...data, date: data.date.toDate() } as ReviewInternal;

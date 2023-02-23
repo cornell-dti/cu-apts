@@ -54,7 +54,7 @@ const LandlordPage = (): ReactElement => {
   );
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
+    get<ReviewWithId[]>(`/review/landlordId/${landlordId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [landlordId, showConfirmation]);
