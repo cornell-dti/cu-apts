@@ -34,6 +34,7 @@ on its own, run `yarn workspace frontend start` or `yarn workspace backend start
 - **Cyrus Irani** - Developer
 - **Daniel Jin** - Developer
 - **Ankit Lakkapragada** - Developer
+- **Jessica Han** - Developer
 
 ### 2021-2022
 
