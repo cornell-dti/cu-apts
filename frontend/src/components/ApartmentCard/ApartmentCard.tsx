@@ -80,7 +80,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${id}`, {
+    get<ReviewWithId[]>(`/review/aptId/${id}/APPROVED`, {
       callback: setReviewList,
     });
   }, [id]);
