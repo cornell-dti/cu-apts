@@ -22,16 +22,14 @@ import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
-
 export type NavbarButton = {
   label: string;
   href: string;
 };
-
 type Props = {
   readonly headersData: NavbarButton[];
+  readonly searchBar: boolean;
 };
-
 const useStyles = makeStyles(() => ({
   grow: {
     flexGrow: 1,
@@ -97,6 +95,11 @@ const useStyles = makeStyles(() => ({
     width: '50%',
     paddingLeft: '3%',
   },
+  searchHidden: {
+    width: '50%',
+    paddingLeft: '3%',
+    visibility: 'hidden',
+  },
   searchDrawer: {
     marginBottom: '5%',
   },
@@ -109,7 +112,7 @@ function GetButtonColor(lab: string) {
     ? 'primary'
     : 'secondary';
 }
-const NavBar = ({ headersData }: Props): ReactElement => {
+const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const {
@@ -122,16 +125,15 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     icon,
     drawerButton,
     search,
+    searchHidden,
     searchDrawer,
   } = useStyles();
   const muiTheme = createTheme({
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
-
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
-
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -148,7 +150,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       </ThemeProvider>
     );
   };
-
   const getMenuButtons = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -170,7 +171,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       </ThemeProvider>
     );
   };
-
   const homeLogo: ReactElement = (
     <Grid container item direction="column">
       <Grid>
@@ -193,23 +193,37 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       </Grid>
     </Grid>
   );
-
   const displayDesktop = (): ReactElement => {
-    return (
-      <Grid container className={toolbar} alignItems="center">
-        <Grid item md={3}>
-          {homeLogo}
+    if (searchBar) {
+      return (
+        <Grid container className={toolbar} alignItems="center">
+          <Grid item md={3}>
+            {homeLogo}
+          </Grid>
+          <Grid item md={6} className={search}>
+            {auto()}
+          </Grid>
+          <Grid item md={3}>
+            {getMenuButtons()}
+          </Grid>
         </Grid>
-        <Grid item md={6} className={search}>
-          {auto()}
+      );
+    } else {
+      return (
+        <Grid container className={toolbar} alignItems="center">
+          <Grid item md={3}>
+            {homeLogo}
+          </Grid>
+          <Grid item md={6} className={searchHidden}>
+            {auto()}
+          </Grid>
+          <Grid item md={3}>
+            {getMenuButtons()}
+          </Grid>
         </Grid>
-        <Grid item md={3}>
-          {getMenuButtons()}
-        </Grid>
-      </Grid>
-    );
+      );
+    }
   };
-
   const displayMobile = (): ReactElement => {
     return (
       <Toolbar className={toolbar}>
@@ -238,7 +252,6 @@ const NavBar = ({ headersData }: Props): ReactElement => {
       </Toolbar>
     );
   };
-
   return (
     <header>
       <AppBar position="static" className={header}>
@@ -250,5 +263,4 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     </header>
   );
 };
-
 export default NavBar;
