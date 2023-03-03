@@ -22,10 +22,12 @@ import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
+
 export type NavbarButton = {
   label: string;
   href: string;
 };
+
 type Props = {
   readonly headersData: NavbarButton[];
 };
@@ -115,8 +117,8 @@ function GetButtonColor(lab: string) {
 }
 
 const NavBar = ({ headersData }: Props): ReactElement => {
-  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
   const {
     header,
     logo,
@@ -259,4 +261,5 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     </header>
   );
 };
+
 export default NavBar;
