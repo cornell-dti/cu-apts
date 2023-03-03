@@ -33,7 +33,7 @@ const formatReview = (data: any): Review => ({
 
 const getExistingReviews = async () => {
   const snapshot = await reviewCollection.get();
-  const text = snapshot.docs.map((doc: any) => doc.data().reviewText);
+  const text = snapshot.docs.map((doc) => doc.data().reviewText);
 
   const existingReviewText = new Set(text);
 
