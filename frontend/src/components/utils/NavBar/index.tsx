@@ -104,6 +104,7 @@ const useStyles = makeStyles(() => ({
     marginBottom: '5%',
   },
 }));
+
 function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
@@ -112,6 +113,7 @@ function GetButtonColor(lab: string) {
     ? 'primary'
     : 'secondary';
 }
+
 const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
@@ -134,6 +136,7 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
+
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -150,6 +153,7 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
       </ThemeProvider>
     );
   };
+
   const getMenuButtons = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -171,6 +175,7 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
       </ThemeProvider>
     );
   };
+
   const homeLogo: ReactElement = (
     <Grid container item direction="column">
       <Grid>
@@ -193,37 +198,23 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
       </Grid>
     </Grid>
   );
+
   const displayDesktop = (): ReactElement => {
-    if (searchBar) {
-      return (
-        <Grid container className={toolbar} alignItems="center">
-          <Grid item md={3}>
-            {homeLogo}
-          </Grid>
-          <Grid item md={6} className={search}>
-            {auto()}
-          </Grid>
-          <Grid item md={3}>
-            {getMenuButtons()}
-          </Grid>
+    return (
+      <Grid container className={toolbar} alignItems="center">
+        <Grid item md={3}>
+          {homeLogo}
         </Grid>
-      );
-    } else {
-      return (
-        <Grid container className={toolbar} alignItems="center">
-          <Grid item md={3}>
-            {homeLogo}
-          </Grid>
-          <Grid item md={6} className={searchHidden}>
-            {auto()}
-          </Grid>
-          <Grid item md={3}>
-            {getMenuButtons()}
-          </Grid>
+        <Grid item md={6} className={searchBar ? search : searchHidden}>
+          {auto()}
         </Grid>
-      );
-    }
+        <Grid item md={3}>
+          {getMenuButtons()}
+        </Grid>
+      </Grid>
+    );
   };
+
   const displayMobile = (): ReactElement => {
     return (
       <Toolbar className={toolbar}>
@@ -252,6 +243,7 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
       </Toolbar>
     );
   };
+
   return (
     <header>
       <AppBar position="static" className={header}>
