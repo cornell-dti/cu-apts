@@ -1,4 +1,7 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+import showSignInErrorToast from '../../../pages/ApartmentPage';
+import { getUser, signOut } from '../../../utils/firebase';
+
 import {
   AppBar,
   Toolbar,
@@ -76,7 +79,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '19px',
     letterSpacing: '0.08em',
     textTransform: 'none',
-    marginLeft: '38px',
+    marginRight: '38px',
   },
   toolbar: {
     display: 'flex',
@@ -110,6 +113,8 @@ function GetButtonColor(lab: string) {
     : 'secondary';
 }
 const NavBar = ({ headersData }: Props): ReactElement => {
+  const [buttonText, setButtonText] = useState('Sign In');
+  const [user, setUser] = useState<firebase.User | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const {
@@ -146,6 +151,43 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           );
         })}
       </ThemeProvider>
+    );
+  };
+
+  const signInAction = async () => {
+    if (user) {
+      signOut();
+      setUser(null);
+      setButtonText('Sign In');
+    } else if (!user) {
+      let user = await getUser(true);
+      setUser(user);
+
+      if (!user) {
+        setButtonText('Sign In');
+        return;
+      }
+      setButtonText('Sign Out');
+    }
+  };
+
+  const signInButton = () => {
+    const buttonStyles = {
+      backgroundColor: colors.red1,
+      color: 'white',
+      '&:hover': {
+        backgroundColor: 'grey',
+      },
+      marginLeft: '10px',
+      width: '120px',
+      fontFamily: 'Work Sans, sans-serif',
+      fontWeight: 'bold',
+      fontSize: '16px',
+    };
+    return (
+      <Button onClick={signInAction} style={buttonStyles}>
+        {buttonText}
+      </Button>
     );
   };
 
@@ -196,15 +238,16 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   const displayDesktop = (): ReactElement => {
     return (
-      <Grid container className={toolbar} alignItems="center">
+      <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
           {homeLogo}
         </Grid>
-        <Grid item md={6} className={search}>
+        <Grid item md={5} className={search}>
           {auto()}
         </Grid>
-        <Grid item md={3}>
+        <Grid item md={4} container justifyContent="flex-end">
           {getMenuButtons()}
+          {signInButton()}
         </Grid>
       </Grid>
     );

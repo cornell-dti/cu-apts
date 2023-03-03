@@ -36,6 +36,10 @@ const getUser = async (promptSignIn = false) => {
   return null;
 };
 
+const signOut = async () => {
+  await auth.signOut();
+};
+
 const createAuthHeaders = (token: string): AxiosRequestConfig => {
   return {
     headers: {
@@ -61,4 +65,4 @@ const uploadFile = async (file: File) => {
   return await result.ref.getDownloadURL();
 };
 
-export { createAuthHeaders, getUser, uploadFile, subscribeLikes };
+export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
