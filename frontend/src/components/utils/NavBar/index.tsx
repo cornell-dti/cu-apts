@@ -1,5 +1,4 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import showSignInErrorToast from '../../../pages/ApartmentPage';
 import { getUser, signOut } from '../../../utils/firebase';
 
 import {
@@ -108,9 +107,10 @@ function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
-      lab.includes('Reviews'))
-    ? 'primary'
-    : 'secondary';
+      lab.includes('Reviews')) ||
+    (location.pathname.includes('faq') && lab.includes('FAQ'))
+    ? 'secondary'
+    : 'primary';
 }
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [buttonText, setButtonText] = useState('Sign In');
