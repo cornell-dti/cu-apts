@@ -59,14 +59,14 @@ const LandlordCard = ({ landlordData }: Props): ReactElement => {
   return (
     <Card className={card}>
       <Grid container direction="row">
-        <Grid item xs={12} sm={12} md={4} justify="center" alignItems="center">
+        <Grid item xs={12} sm={12} md={4} justifyContent="center" alignItems="center">
           <CardMedia
             className={matches ? img : mobileImg}
             image={landlordData.profilePhoto ? landlordData.profilePhoto : ApartmentImg}
             component="img"
           />
         </Grid>
-        <Grid item xs={12} sm={12} md={8} justify="center" alignItems="center">
+        <Grid item xs={12} sm={12} md={8} justifyContent="center" alignItems="center">
           <CardContent>
             <Typography className={matches ? landlordNameTxt : mobileLandlordNameTxt}>
               {landlordData.name}

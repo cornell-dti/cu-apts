@@ -119,7 +119,7 @@ export default function Autocomplete() {
                         }}
                       >
                         <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
-                          <Grid container justify="space-between">
+                          <Grid container justifyContent="space-between">
                             <Grid item xl={8}>
                               <Typography className={buildingText}>{name}</Typography>
 

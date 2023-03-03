@@ -107,7 +107,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                 </Typography>
               </Grid>
               {company && (
-                <Grid container item justify="space-between" className={marginTxt}>
+                <Grid container item justifyContent="space-between" className={marginTxt}>
                   <Grid>
                     <Typography variant="subtitle1">{buildingData.address}</Typography>
                   </Grid>

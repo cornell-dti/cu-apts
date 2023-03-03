@@ -170,7 +170,12 @@ const LandlordHeader = ({
               </Grid>
             </Grid>
             {photos.length > 0 && (
-              <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
+              <Grid
+                container
+                alignItems="flex-end"
+                justifyContent="flex-end"
+                className={btnSection}
+              >
                 <Button
                   disableFocusRipple
                   variant="outlined"
