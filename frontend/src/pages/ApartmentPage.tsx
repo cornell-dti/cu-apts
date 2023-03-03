@@ -176,10 +176,14 @@ const ApartmentPage = (): ReactElement => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
       try {
-        const user = await getUser(true);
+        if (!user) {
+          let user = await getUser(true);
+          setUser(user);
+        }
         if (!user) {
           throw new Error('Failed to login');
         }
+
         const defaultLikes = dislike ? 1 : 0;
         const offsetLikes = dislike ? -1 : 1;
         const token = await user.getIdToken(true);

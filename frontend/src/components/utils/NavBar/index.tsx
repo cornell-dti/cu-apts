@@ -112,6 +112,7 @@ function GetButtonColor(lab: string) {
     ? 'secondary'
     : 'primary';
 }
+
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [buttonText, setButtonText] = useState('Sign In');
   const [user, setUser] = useState<firebase.User | null>(null);
