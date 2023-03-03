@@ -95,42 +95,21 @@ const App = (): ReactElement => {
     setData();
   }, []);
 
-  const noBar = () => (
-    <>
-      <NavBar headersData={headersData} searchBar={false} />
-      <div className="root">
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-        </Switch>
-      </div>
-    </>
-  );
-
-  const yesBar = () => (
-    <>
-      <NavBar headersData={headersData} searchBar={true} />
-      <div className="root">
-        <Switch>
-          <Route exact path="/faq" component={FAQPage} />
-          <Route exact path="/reviews" component={ReviewPage} />
-          <Route exact path="/policies" component={Policies} />
-          <Route path="/location/:location" component={LocationPage} />
-          <Route path="/landlord/:landlordId" component={LandlordPage} />
-          <Route path="/apartment/:aptId" component={ApartmentPage} />
-          <Route exact path="/notfound" component={NotFoundPage} />
-          <Route path="/search" component={SearchResultsPage} />
-        </Switch>
-      </div>
-    </>
-  );
-
   return (
     <ThemeProvider theme={theme}>
       <Router>
+        <NavBar headersData={headersData} />
         <div className="root">
           <Switch>
-            <Route exact path="/" component={noBar} />
-            <Route component={yesBar} />
+            <Route exact path="/" component={HomePage} />
+            <Route exact path="/faq" component={FAQPage} />
+            <Route exact path="/reviews" component={ReviewPage} />
+            <Route exact path="/policies" component={Policies} />
+            <Route path="/location/:location" component={LocationPage} />
+            <Route path="/landlord/:landlordId" component={LandlordPage} />
+            <Route path="/apartment/:aptId" component={ApartmentPage} />
+            <Route exact path="/notfound" component={NotFoundPage} />
+            <Route path="/search" component={SearchResultsPage} />
           </Switch>
         </div>
         <Footer />

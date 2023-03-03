@@ -28,8 +28,8 @@ export type NavbarButton = {
 };
 type Props = {
   readonly headersData: NavbarButton[];
-  readonly searchBar: boolean;
 };
+
 const useStyles = makeStyles(() => ({
   grow: {
     flexGrow: 1,
@@ -114,9 +114,9 @@ function GetButtonColor(lab: string) {
     : 'secondary';
 }
 
-const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+const NavBar = ({ headersData }: Props): ReactElement => {
   const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     header,
     logo,
@@ -130,9 +130,11 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
     searchHidden,
     searchDrawer,
   } = useStyles();
+
   const muiTheme = createTheme({
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
+
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
@@ -198,6 +200,8 @@ const NavBar = ({ headersData, searchBar }: Props): ReactElement => {
       </Grid>
     </Grid>
   );
+
+  const searchBar = location.pathname !== '/';
 
   const displayDesktop = (): ReactElement => {
     return (
