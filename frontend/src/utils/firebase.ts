@@ -54,7 +54,6 @@ const subscribeLikes = (callback: (data: Likes) => void) => {
     if (!user) return;
     const doc = await firestore.collection('likes').doc(user.uid).get();
     const data = doc.data();
-    console.log(data);
     if (!data) return;
     callback(data);
   });

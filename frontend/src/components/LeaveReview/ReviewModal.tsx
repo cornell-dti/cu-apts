@@ -176,7 +176,6 @@ const ReviewModal = ({
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
-      console.log(review);
       setOpen(false);
       dispatch({ type: 'reset' });
       onSuccess();
