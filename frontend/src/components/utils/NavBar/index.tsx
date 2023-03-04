@@ -262,8 +262,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
           {homeLogo}
         </Grid>
 
-        <Grid item md={6} className={searchBar ? search : searchHidden}>
-
+        <Grid item md={5} className={search}>
           {auto()}
         </Grid>
         <Grid item md={4} container justifyContent="flex-end">
