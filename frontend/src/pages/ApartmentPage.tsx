@@ -209,8 +209,8 @@ const ApartmentPage = (): ReactElement => {
   const removeLike = likeHelper(true);
 
   const openReviewModal = async () => {
+    let user = await getUser(true);
     if (!user) {
-      let user = await getUser(true);
       setUser(user);
       if (!user) {
         showSignInErrorToast();
