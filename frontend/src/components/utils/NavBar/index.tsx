@@ -149,7 +149,6 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     icon,
     drawerButton,
     search,
-    searchHidden,
     searchDrawer,
     authButton,
   } = useStyles();
@@ -253,15 +252,12 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     </Grid>
   );
 
-  const searchBar = location.pathname !== '/';
-
   const displayDesktop = (): ReactElement => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
           {homeLogo}
         </Grid>
-
         <Grid item md={5} className={search}>
           {auto()}
         </Grid>
