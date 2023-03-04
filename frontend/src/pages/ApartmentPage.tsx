@@ -27,6 +27,11 @@ import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
 export type RatingInfo = {
   feature: string;
   rating: number;
@@ -52,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ApartmentPage = (): ReactElement => {
+const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const { aptId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo, setAveRatingInfo] = useState<RatingInfo[]>([]);
@@ -66,7 +71,6 @@ const ApartmentPage = (): ReactElement => {
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
-  const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const toastTime = 3500;
@@ -217,6 +221,7 @@ const ApartmentPage = (): ReactElement => {
         return;
       }
     }
+    setUser(user);
     setReviewOpen(true);
   };
 

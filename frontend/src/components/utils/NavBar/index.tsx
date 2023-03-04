@@ -32,6 +32,8 @@ export type NavbarButton = {
 
 type Props = {
   readonly headersData: NavbarButton[];
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -47,6 +49,18 @@ const useStyles = makeStyles(() => ({
   },
   icon: {
     fontSize: 0,
+  },
+  authButton: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
+    },
+    marginLeft: '10px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
   },
   logo: {
     fontWeight: 600,
@@ -113,9 +127,9 @@ function GetButtonColor(lab: string) {
     : 'primary';
 }
 
-const NavBar = ({ headersData }: Props): ReactElement => {
-  const [buttonText, setButtonText] = useState('Sign In');
-  const [user, setUser] = useState<firebase.User | null>(null);
+const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
+  const initialUserState = !user ? 'Sign In' : 'Sign Out';
+  const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const {
@@ -129,6 +143,7 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerButton,
     search,
     searchDrawer,
+    authButton,
   } = useStyles();
   const muiTheme = createTheme({
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
@@ -137,6 +152,14 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    if (user) {
+      setButtonText('Sign Out');
+    } else {
+      setButtonText('Sign In');
+    }
+  }, [user]);
 
   const getDrawerChoices = () => {
     return (
@@ -156,37 +179,21 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const signInAction = async () => {
+    console.log(user);
     if (user) {
       signOut();
       setUser(null);
       setButtonText('Sign In');
-    } else if (!user) {
-      let user = await getUser(true);
-      setUser(user);
-
-      if (!user) {
-        setButtonText('Sign In');
-        return;
-      }
-      setButtonText('Sign Out');
+      return;
     }
+    let newUser = await getUser(true);
+    setUser(newUser);
+    setButtonText(!newUser ? 'Sign In' : 'Sign Out');
   };
 
   const signInButton = () => {
-    const buttonStyles = {
-      backgroundColor: colors.red1,
-      color: 'white',
-      '&:hover': {
-        backgroundColor: 'grey',
-      },
-      marginLeft: '10px',
-      width: '120px',
-      fontFamily: 'Work Sans, sans-serif',
-      fontWeight: 'bold',
-      fontSize: '16px',
-    };
     return (
-      <Button onClick={signInAction} style={buttonStyles}>
+      <Button onClick={signInAction} className={authButton}>
         {buttonText}
       </Button>
     );
