@@ -97,10 +97,16 @@ const useStyles = makeStyles(() => ({
     width: '50%',
     paddingLeft: '3%',
   },
+  searchHidden: {
+    width: '50%',
+    paddingLeft: '3%',
+    visibility: 'hidden',
+  },
   searchDrawer: {
     marginBottom: '5%',
   },
 }));
+
 function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
@@ -109,6 +115,7 @@ function GetButtonColor(lab: string) {
     ? 'primary'
     : 'secondary';
 }
+
 const NavBar = ({ headersData }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
@@ -122,8 +129,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     icon,
     drawerButton,
     search,
+    searchHidden,
     searchDrawer,
   } = useStyles();
+
   const muiTheme = createTheme({
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
@@ -194,13 +203,15 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     </Grid>
   );
 
+  const searchBar = location.pathname !== '/';
+
   const displayDesktop = (): ReactElement => {
     return (
       <Grid container className={toolbar} alignItems="center">
         <Grid item md={3}>
           {homeLogo}
         </Grid>
-        <Grid item md={6} className={search}>
+        <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
         <Grid item md={3}>
