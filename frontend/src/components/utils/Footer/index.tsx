@@ -35,9 +35,15 @@ const Footer = (): ReactElement => {
   const { footer, link, text } = useStyles();
   return (
     <footer>
-      <Grid container className={footer} alignItems="center" justify="center" direction="column">
+      <Grid
+        container
+        className={footer}
+        alignItems="center"
+        justifyContent="center"
+        direction="column"
+      >
         <Grid item xl={12}>
-          <Grid container alignItems="center" justify="center">
+          <Grid container alignItems="center" justifyContent="center">
             <Grid item>
               <Typography className={text}>Want to get in touch? </Typography>
             </Grid>

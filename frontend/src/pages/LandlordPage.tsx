@@ -176,7 +176,7 @@ const LandlordPage = (): ReactElement => {
 
   const Header = (
     <>
-      <Grid container item spacing={3} justify="space-between" alignItems="center">
+      <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
           {reviewData.length === 0 && (
@@ -194,7 +194,7 @@ const LandlordPage = (): ReactElement => {
           </Button>
         )}
         <Grid item sm={4} md={8}>
-          <Grid container spacing={1} justify="flex-end" alignItems="center">
+          <Grid container spacing={1} justifyContent="flex-end" alignItems="center">
             <Grid item>
               <Typography>Sort reviews by:</Typography>
             </Grid>
@@ -259,7 +259,7 @@ const LandlordPage = (): ReactElement => {
       )}
 
       <Container className={styles.OuterContainer}>
-        <Grid container spacing={5} justify="center">
+        <Grid container spacing={5} justifyContent="center">
           <Grid container spacing={3} item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>

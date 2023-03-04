@@ -176,7 +176,6 @@ const ReviewModal = ({
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
-      console.log(review);
       setOpen(false);
       dispatch({ type: 'reset' });
       onSuccess();
@@ -214,7 +213,7 @@ const ReviewModal = ({
               time={toastTime}
             />
           )}
-          <Grid container direction="column" justify="space-evenly" spacing={4}>
+          <Grid container direction="column" justifyContent="space-evenly" spacing={4}>
             <Grid container item>
               <ReviewRating
                 name="overall"
@@ -224,7 +223,7 @@ const ReviewModal = ({
               {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
             <div className={styles.div}></div>
-            {/* <Grid container item justify="space-between" xs={12} sm={6}>
+            {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
               <TextField
                 fullWidth
                 autoFocus
@@ -234,7 +233,7 @@ const ReviewModal = ({
               />
             </Grid> */}
             <Grid container item>
-              <Grid container spacing={1} justify="center">
+              <Grid container spacing={1} justifyContent="center">
                 <ReviewRating
                   name="location"
                   label="Location"
@@ -268,11 +267,11 @@ const ReviewModal = ({
               </Grid>
             </Grid>
             <div className={styles.div}></div>
-            <Grid container item justify="space-between" spacing={3}>
+            <Grid container item justifyContent="space-between" spacing={3}>
               <Grid item>
                 <FormLabel>Upload Pictures: </FormLabel>
               </Grid>
-              <Grid item container direction="row" xs={9} justify="flex-end" spacing={3}>
+              <Grid item container direction="row" xs={9} justifyContent="flex-end" spacing={3}>
                 <Grid item>
                   <FormLabel>{generateFileStatus()}</FormLabel>
                 </Grid>
@@ -289,7 +288,7 @@ const ReviewModal = ({
                   </Button>
                 </Grid>
               </Grid>
-              <Grid item container justify="flex-end" xs={12}>
+              <Grid item container justifyContent="flex-end" xs={12}>
                 <Grid item>
                   <FormLabel color="secondary">{`Reviewers may upload up to ${REVIEW_PHOTOS_LIMIT} photos. Max photo size of ${REVIEW_PHOTO_MAX_MB}MB`}</FormLabel>
                 </Grid>

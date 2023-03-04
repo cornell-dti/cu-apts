@@ -52,7 +52,7 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
           <Grid item>
             <Typography className={aptNameTxt}>{name}</Typography>
           </Grid>
-          <Grid container item justify="space-between">
+          <Grid container item justifyContent="space-between">
             <Grid>
               <Typography variant="subtitle1">{address}</Typography>
             </Grid>
