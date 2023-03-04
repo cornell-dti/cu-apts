@@ -1,8 +1,13 @@
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import { config } from 'dotenv';
 import { AxiosRequestConfig } from 'axios';
 import { Likes } from '../../../common/types/db-types';
 import { v4 as uuid } from 'uuid';
+
+import 'firebase/auth'; // for authentication
+import 'firebase/storage'; // for storage
+import 'firebase/database'; // for realtime database
+import 'firebase/firestore'; // for cloud firestore
 
 config();
 
@@ -53,7 +58,6 @@ const subscribeLikes = (callback: (data: Likes) => void) => {
     if (!user) return;
     const doc = await firestore.collection('likes').doc(user.uid).get();
     const data = doc.data();
-    console.log(data);
     if (!data) return;
     callback(data);
   });

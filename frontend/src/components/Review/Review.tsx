@@ -73,7 +73,7 @@ const ReviewComponent = ({
       <Box minHeight="200px">
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item container justify="space-between">
+            <Grid item container justifyContent="space-between">
               <Grid container item xs={10} spacing={2}>
                 <Grid item>
                   <HeartRating value={overallRating} readOnly />
@@ -117,7 +117,7 @@ const ReviewComponent = ({
                 </Typography>
               </Grid>
               {photos.length > 0 && (
-                <Grid container alignItems="center" justify="center">
+                <Grid container alignItems="center" justifyContent="center">
                   <Grid item xs={12} sm={6}>
                     <CardMedia
                       component="img"
@@ -133,7 +133,7 @@ const ReviewComponent = ({
         </CardContent>
       </Box>
       <CardActions>
-        <Grid item container justify="space-between">
+        <Grid item container justifyContent="space-between">
           <Grid item>
             <Button
               color={liked ? 'primary' : 'default'}

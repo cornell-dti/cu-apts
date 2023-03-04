@@ -36,7 +36,7 @@ const LocationCard = ({ photo, location }: Props): ReactElement => {
       <CardMedia className={classes.img} image={img} component="img" title={location} />
       <CardContent className={classes.cardContent}>
         <Grid container spacing={1}>
-          <Grid container item justify="center" alignItems="center">
+          <Grid container item justifyContent="center" alignItems="center">
             <Grid item>
               <Grid container alignItems="center">
                 <Typography variant="h6" className={classes.nameText}>
