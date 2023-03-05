@@ -111,12 +111,18 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    paddingLeft: '3%',
+    marginRight: '25%',
+    marginBottom: '-15px',
   },
   searchHidden: {
     width: '50%',
     paddingLeft: '3%',
     visibility: 'hidden',
+  },
+  menu: {
+    alignSelf: 'right',
+    marginTop: '-40px',
+    marginLeft: '70%',
   },
   searchDrawer: {
     marginBottom: '5%',
@@ -136,7 +142,6 @@ function GetButtonColor(lab: string) {
 const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
-
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const {
@@ -149,6 +154,8 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     icon,
     drawerButton,
     search,
+    searchHidden,
+    menu,
     searchDrawer,
     authButton,
   } = useStyles();
@@ -157,16 +164,17 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
 
+  //user is intially signed out when CUApts.org is loaded
+  useEffect(() => {
+    signOut();
+  }, []);
+
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
 
   useEffect(() => {
-    if (user) {
-      setButtonText('Sign Out');
-    } else {
-      setButtonText('Sign In');
-    }
+    setButtonText(!user ? 'Sign In' : 'Sign Out');
   }, [user]);
 
   const getDrawerChoices = () => {
@@ -187,7 +195,6 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   };
 
   const signInAction = async () => {
-    console.log(user);
     if (user) {
       signOut();
       setUser(null);
@@ -252,16 +259,18 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     </Grid>
   );
 
+  const searchBar = location.pathname !== '/';
+
   const displayDesktop = (): ReactElement => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
           {homeLogo}
         </Grid>
-        <Grid item md={5} className={search}>
+        <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
-        <Grid item md={4} container justifyContent="flex-end">
+        <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
           {signInButton()}
         </Grid>
