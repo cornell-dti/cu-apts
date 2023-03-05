@@ -26,7 +26,12 @@ export type RatingInfo = {
   rating: number;
 };
 
-const LandlordPage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo] = useState<RatingInfo[]>([]);
@@ -38,7 +43,6 @@ const LandlordPage = (): ReactElement => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<CardData[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [user, setUser] = useState<firebase.User | null>(null);
   const [showSignInError, setShowSignInError] = useState(false);
   const toastTime = 4750;
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -142,14 +146,15 @@ const LandlordPage = (): ReactElement => {
   const removeLike = likeHelper(true);
 
   const openReviewModal = async () => {
+    let user = await getUser(true);
     if (!user) {
-      let user = await getUser(true);
       setUser(user);
       if (!user) {
         showSignInErrorToast();
         return;
       }
     }
+    setUser(user);
     setReviewOpen(true);
   };
 

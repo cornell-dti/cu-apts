@@ -107,7 +107,10 @@ const App = (): ReactElement => {
             <Route exact path="/reviews" component={ReviewPage} />
             <Route exact path="/policies" component={Policies} />
             <Route path="/location/:location" component={LocationPage} />
-            <Route path="/landlord/:landlordId" component={LandlordPage} />
+            <Route
+              path="/landlord/:landlordId"
+              component={() => <LandlordPage user={user} setUser={setUser} />}
+            />
             <Route
               path="/apartment/:aptId"
               component={() => <ApartmentPage user={user} setUser={setUser} />}
