@@ -29,6 +29,18 @@ provider.setCustomParameters({
   prompt: 'select_account',
 });
 
+const isCurrentUser = () => {
+  const user = auth.currentUser;
+  if (user?.email?.endsWith('@cornell.edu')) {
+    return true;
+  }
+  return false;
+};
+
+const fastGetUser = () => {
+  return auth.currentUser;
+};
+
 const getUser = async (promptSignIn = false) => {
   if (!auth.currentUser && promptSignIn) {
     await auth.signInWithPopup(provider);
@@ -69,4 +81,12 @@ const uploadFile = async (file: File) => {
   return await result.ref.getDownloadURL();
 };
 
-export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
+export {
+  createAuthHeaders,
+  getUser,
+  uploadFile,
+  subscribeLikes,
+  signOut,
+  isCurrentUser,
+  fastGetUser,
+};

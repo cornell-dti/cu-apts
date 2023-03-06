@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser, signOut } from '../../../utils/firebase';
+import { getUser, signOut, isCurrentUser, fastGetUser } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -164,11 +164,6 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
 
-  //user is intially signed out when CUApts.org is loaded
-  useEffect(() => {
-    signOut();
-  }, []);
-
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
@@ -194,7 +189,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     );
   };
 
-  const signInAction = async () => {
+  const signInOutButtonClick = async () => {
     if (user) {
       signOut();
       setUser(null);
@@ -206,9 +201,17 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     setButtonText(!newUser ? 'Sign In' : 'Sign Out');
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      if (isCurrentUser()) {
+        setUser(fastGetUser());
+      }
+    }, 1100);
+  });
+
   const signInButton = () => {
     return (
-      <Button onClick={signInAction} className={authButton}>
+      <Button onClick={signInOutButtonClick} className={authButton}>
         {buttonText}
       </Button>
     );
@@ -248,11 +251,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             </Link>
           </Grid>
           <Grid item>
-            <Typography className={logo}>
-              <Link color="textPrimary" underline="none" href="/">
-                CUAPTS
-              </Link>
-            </Typography>
+            <Link color="textPrimary" underline="none" href="/">
+              <Typography className={logo}>CUAPTS</Typography>
+            </Link>
           </Grid>
         </Grid>
       </Grid>
@@ -260,6 +261,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   );
 
   const searchBar = location.pathname !== '/';
+  // const checkUser = () => {
+  //   console.log(isCurrentUser());
+  // };
 
   const displayDesktop = (): ReactElement => {
     return (
@@ -274,6 +278,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
           {getMenuButtons()}
           {signInButton()}
         </Grid>
+        {/* <Button onClick={checkUser}> yo </Button> */}
       </Grid>
     );
   };
