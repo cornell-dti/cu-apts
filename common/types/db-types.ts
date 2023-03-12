@@ -13,12 +13,6 @@ export type DetailedRating = {
   readonly conditions: number;
 };
 
-export enum ReviewStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  DECLINED = 'DECLINED',
-}
-
 export type Review = {
   readonly aptId: string | null;
   readonly likes?: number;
@@ -28,7 +22,7 @@ export type Review = {
   readonly overallRating: number;
   readonly photos: readonly string[];
   readonly reviewText: string;
-  readonly status?: ReviewStatus;
+  readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED';
 };
 
 export type ReviewWithId = Review & Id;
