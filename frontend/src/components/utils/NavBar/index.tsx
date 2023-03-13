@@ -264,9 +264,6 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   );
 
   const searchBar = location.pathname !== '/';
-  // const checkUser = () => {
-  //   console.log(isCurrentUser());
-  // };
 
   const displayDesktop = (): ReactElement => {
     return (
@@ -281,7 +278,6 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
           {getMenuButtons()}
           {signInButton()}
         </Grid>
-        {/* <Button onClick={checkUser}> yo </Button> */}
       </Grid>
     );
   };
