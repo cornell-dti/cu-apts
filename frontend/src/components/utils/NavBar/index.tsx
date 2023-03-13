@@ -202,11 +202,14 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      if (isCurrentUser()) {
-        setUser(fastGetUser());
-      }
-    }, 1100);
+    const timeouts = [600, 800, 1500, 3000, 5000, 10000];
+    timeouts.forEach((timeout) => {
+      setTimeout(() => {
+        if (isCurrentUser()) {
+          setUser(fastGetUser());
+        }
+      }, timeout);
+    });
   });
 
   const signInButton = () => {
