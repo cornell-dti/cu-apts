@@ -15,6 +15,7 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
+import AdminPage from './pages/AdminPage';
 import LocationPage from './pages/LocationPage';
 import axios from 'axios';
 import { colors } from './colors';
@@ -110,6 +111,7 @@ const App = (): ReactElement => {
             <Route path="/apartment/:aptId" component={ApartmentPage} />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
+            <Route path="/admin" component={AdminPage} />
           </Switch>
         </div>
         <Footer />
