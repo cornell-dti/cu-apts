@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import styles from './FAQPage.module.scss';
 import { useTitle } from '../utils';
-import { Box, Button, ThemeProvider, Typography, makeStyles } from '@material-ui/core';
+import { Button, ThemeProvider, Typography, makeStyles } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import { colors } from '../colors';
 
