@@ -111,7 +111,7 @@ const App = (): ReactElement => {
             <Route path="/apartment/:aptId" component={ApartmentPage} />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
-            <Route path="/admin" component={AdminPage} />
+            <Route path="/admincuapts1234" component={AdminPage} />
           </Switch>
         </div>
         <Footer />
