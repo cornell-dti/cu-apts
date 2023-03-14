@@ -8,16 +8,14 @@ import {
   Grid,
   Typography,
   Button,
-  IconButton,
   Collapse,
-  FormLabel,
   Link,
+  createTheme,
+  ThemeProvider,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import clsx from 'clsx';
 import DetailedRatings from '../Review/DetailedRating';
 import { ApartmentWithId, Landlord, ReviewWithId } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
@@ -51,30 +49,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-type ItemProps = {
-  readonly aspect: string;
-  readonly rating: number;
-};
-
-const Item = ({ aspect, rating }: ItemProps): ReactElement => {
-  return (
-    <Grid container item xs={12} md={6}>
-      <Grid container item xs={12} sm={7} lg={5}>
-        <HeartRating value={rating} readOnly />
-      </Grid>
-      <Grid container item xs={12} sm={5} lg={7}>
-        <FormLabel>{aspect}</FormLabel>
-      </Grid>
-    </Grid>
-  );
-};
+const muiTheme = createTheme({
+  palette: { primary: { main: colors.green1 }, secondary: { main: colors.red1 } },
+});
 
 const AdminReviewComponent = ({ review }: Props): ReactElement => {
-  const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
+  const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, expand, expandOpen, dateText, button } = useStyles();
-  const [expanded, setExpanded] = useState(true);
-  const [expandedText, setExpandedText] = useState(false);
+  const { root, dateText } = useStyles();
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlord, setLandlord] = useState<Landlord>();
 
@@ -88,6 +70,10 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
       callback: setLandlord,
     });
   }, [review]);
+
+  const changeStatus = (new_status: string) => {
+    // Implement button
+  };
 
   return (
     <Card className={root} variant="outlined">
@@ -127,7 +113,7 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
               </Grid>
 
               <Grid item>
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                <Collapse in={true} timeout="auto" unmountOnExit>
                   <CardContent>
                     <DetailedRatings ratings={detailedRatings} />
                   </CardContent>
@@ -154,26 +140,23 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
           </Grid>
         </CardContent>
       </Box>
-      {/* <CardActions>
-        <Grid item container justifyContent="space-between">
-          <Grid item>
-            <Button
-              color={liked ? 'primary' : 'default'}
-              onClick={() => (liked ? removeLike : addLike)(id)}
-              className={button}
-              size="small"
-              disabled={likeLoading}
-            >
-              Helpful {`(${likes || 0})`}
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button className={button} size="small">
-              Report Abuse
-            </Button>
-          </Grid>
+
+      <CardActions>
+        <Grid item container direction="row" justifyContent="flex-end" alignItems="flex-end">
+          <ThemeProvider theme={muiTheme}>
+            <Grid item>
+              <Button onClick={() => changeStatus('APPROVED')} variant="contained" color="primary">
+                Approve
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button onClick={() => changeStatus('DECLINED')} variant="outlined" color="secondary">
+                Decline
+              </Button>
+            </Grid>
+          </ThemeProvider>
         </Grid>
-      </CardActions> */}
+      </CardActions>
     </Card>
   );
 };

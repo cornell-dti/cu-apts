@@ -1,24 +1,8 @@
 import React, { ReactElement, useCallback, useEffect, useState } from 'react';
-import styles from './FAQPage.module.scss';
-import { useTitle } from '../utils';
-import {
-  Button,
-  ThemeProvider,
-  Typography,
-  makeStyles,
-  Grid,
-  Box,
-  Container,
-} from '@material-ui/core';
-import { createTheme } from '@material-ui/core/styles';
-import { colors } from '../colors';
+import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
-
-const muiTheme = createTheme({
-  palette: { primary: { main: colors.green1 }, secondary: { main: colors.red1 } },
-});
 
 // const useStyles = makeStyles(() => ({
 //   approveButton: {
@@ -51,20 +35,19 @@ const useStyles = makeStyles((theme) => ({
 const AdminPage = (): ReactElement => {
   const [pendingData, setPendingData] = useState<ReviewWithId[]>([]);
   const [declinedData, setDeclinedData] = useState<ReviewWithId[]>([]);
-  const [toggle, setToggle] = useState<boolean>(true);
   const { container } = useStyles();
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/PENDING`, {
       callback: setPendingData,
     });
-  }, [toggle]);
+  }, []);
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/DECLINED`, {
       callback: setDeclinedData,
     });
-  }, [toggle]);
+  }, []);
 
   type Fields = keyof ReviewWithId;
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
