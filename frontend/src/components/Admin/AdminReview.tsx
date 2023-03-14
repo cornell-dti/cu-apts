@@ -11,6 +11,7 @@ import {
   IconButton,
   Collapse,
   FormLabel,
+  Link,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
@@ -21,6 +22,7 @@ import DetailedRatings from '../Review/DetailedRating';
 import { ApartmentWithId, Landlord, ReviewWithId } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
 import { get } from '../../utils/call';
+import { Link as RouterLink } from 'react-router-dom';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -74,7 +76,7 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
   const [expanded, setExpanded] = useState(true);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
-  const [landlord, setLandlord] = useState<Landlord | null>(null);
+  const [landlord, setLandlord] = useState<Landlord>();
 
   useEffect(() => {
     if (review.aptId !== null) {
@@ -96,6 +98,30 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
               <Grid item>
                 <HeartRating value={overallRating} readOnly />
               </Grid>
+              <Grid>
+                {apt.length > 0 ? (
+                  <Link
+                    {...{
+                      to: `/apts/${review.aptId}`,
+                      style: { textDecoration: 'none' },
+                      component: RouterLink,
+                    }}
+                  >
+                    {apt[0].name}
+                  </Link>
+                ) : (
+                  <Link
+                    {...{
+                      to: `/landlord/${review.landlordId}`,
+                      style: { textDecoration: 'none' },
+                      component: RouterLink,
+                    }}
+                  >
+                    {landlord?.name}
+                  </Link>
+                )}
+              </Grid>
+
               <Grid item>
                 <Typography className={dateText}>{formattedDate}</Typography>
               </Grid>
@@ -109,16 +135,9 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
               </Grid>
 
               <Grid item container alignContent="center">
-                <Typography>
-                  {expandedText ? reviewText : reviewText.substring(0, 500)}
-                  {!expandedText && reviewText.length > 500 && '...'}
-                  {reviewText.length > 500 ? (
-                    <Button className={button} onClick={() => setExpandedText(!expandedText)}>
-                      {expandedText ? 'Read Less' : 'Read More'}
-                    </Button>
-                  ) : null}
-                </Typography>
+                <Typography>{reviewText}</Typography>
               </Grid>
+
               {photos.length > 0 && (
                 <Grid container alignItems="center" justifyContent="center">
                   <Grid item xs={12} sm={6}>
