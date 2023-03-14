@@ -147,14 +147,11 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const openReviewModal = async () => {
     let user = await getUser(true);
-    if (!user) {
-      setUser(user);
-      if (!user) {
-        showSignInErrorToast();
-        return;
-      }
-    }
     setUser(user);
+    if (!user) {
+      showSignInErrorToast();
+      return;
+    }
     setReviewOpen(true);
   };
 

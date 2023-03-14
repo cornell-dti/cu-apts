@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser, signOut, isCurrentUser, fastGetUser } from '../../../utils/firebase';
+import { getUser, signOut } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -202,15 +202,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   };
 
   useEffect(() => {
-    const timeouts = [600, 800, 1500, 3000, 5000, 10000];
-    timeouts.forEach((timeout) => {
-      setTimeout(() => {
-        if (isCurrentUser()) {
-          setUser(fastGetUser());
-        }
-      }, timeout);
-    });
-  });
+    setTimeout(async () => {
+      let user = await getUser(false);
+      setUser(user);
+    }, 1000);
+  }, []);
 
   const signInButton = () => {
     return (
