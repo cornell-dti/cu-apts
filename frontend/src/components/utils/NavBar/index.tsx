@@ -243,14 +243,30 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
       <Grid>
         <Grid container alignItems="center">
           <Grid item>
-            <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
               <Icon className={icon}>
                 <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
               </Icon>
             </Link>
           </Grid>
           <Grid item>
-            <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
               <Typography className={logo}>CUAPTS</Typography>
             </Link>
           </Grid>
