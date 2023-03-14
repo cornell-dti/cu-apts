@@ -9,8 +9,8 @@ import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 const useStyles = makeStyles({
   searchText: {
     color: colors.black,
-    fontWeight: 600,
-    fontSize: 35,
+    fontWeight: 500,
+    fontSize: 30,
     margin: '0.5em 0 0.5em 0',
   },
 });
@@ -29,7 +29,7 @@ const SearchResultsPage = (): ReactElement => {
 
   return (
     <Container>
-      <Typography className={classes.searchText}>Search Results For "{query}"</Typography>
+      <Typography className={classes.searchText}>Search results for "{query}"</Typography>
       <ApartmentCards data={searchResults} />
     </Container>
   );
