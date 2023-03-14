@@ -1,63 +1,108 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useCallback, useEffect, useState } from 'react';
 import styles from './FAQPage.module.scss';
 import { useTitle } from '../utils';
-import { Button, ThemeProvider, Typography, makeStyles } from '@material-ui/core';
+import {
+  Button,
+  ThemeProvider,
+  Typography,
+  makeStyles,
+  Grid,
+  Box,
+  Container,
+} from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import { colors } from '../colors';
+import { ReviewWithId } from '../../../common/types/db-types';
+import { get } from '../utils/call';
+import AdminReviewComponent from '../components/Admin/AdminReview';
 
 const muiTheme = createTheme({
   palette: { primary: { main: colors.green1 }, secondary: { main: colors.red1 } },
 });
 
-const useStyles = makeStyles(() => ({
-  approveButton: {
-    fontFamily: 'Work Sans, sans-serif',
-    size: '100px',
-    fontSize: '40px',
-    lineHeight: '70px',
-    letterSpacing: '0.01em',
-    textTransform: 'none',
-    background: '#5aa17f',
-  },
-  rejectButton: {
-    fontFamily: 'Work Sans, sans-serif',
-    size: '100px',
-    fontSize: '40px',
-    lineHeight: '70px',
-    letterSpacing: '0.01em',
-    textTransform: 'none',
-    marginLeft: '40px',
-    background: '#FF8A8A',
+// const useStyles = makeStyles(() => ({
+//   approveButton: {
+//     fontFamily: 'Work Sans, sans-serif',
+//     size: '100px',
+//     fontSize: '40px',
+//     lineHeight: '70px',
+//     letterSpacing: '0.01em',
+//     textTransform: 'none',
+//     background: '#5aa17f',
+//   },
+//   rejectButton: {
+//     fontFamily: 'Work Sans, sans-serif',
+//     size: '100px',
+//     fontSize: '40px',
+//     lineHeight: '70px',
+//     letterSpacing: '0.01em',
+//     textTransform: 'none',
+//     marginLeft: '40px',
+//     background: '#FF8A8A',
+//   },
+// }));
+
+const useStyles = makeStyles((theme) => ({
+  container: {
+    marginTop: '20px',
   },
 }));
 
 const AdminPage = (): ReactElement => {
-  const { approveButton, rejectButton } = useStyles();
-  useTitle('Admin');
+  const [pendingData, setPendingData] = useState<ReviewWithId[]>([]);
+  const [declinedData, setDeclinedData] = useState<ReviewWithId[]>([]);
+  const [toggle, setToggle] = useState<boolean>(true);
+  const { container } = useStyles();
+
+  useEffect(() => {
+    get<ReviewWithId[]>(`/review/PENDING`, {
+      callback: setPendingData,
+    });
+  }, [toggle]);
+
+  useEffect(() => {
+    get<ReviewWithId[]>(`/review/DECLINED`, {
+      callback: setDeclinedData,
+    });
+  }, [toggle]);
+
+  type Fields = keyof ReviewWithId;
+  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
+    let unsorted = arr;
+    return unsorted.sort((r1, r2) => {
+      const first = r1?.[property] === undefined ? 0 : r1?.[property];
+      const second = r2?.[property] === undefined ? 0 : r2?.[property];
+      // @ts-ignore: Object possibly null or undefined
+      return first < second ? 1 : -1;
+    });
+  }, []);
+
   return (
-    <div className={styles.faqPage}>
-      <div className={styles.faqHeaderTitle}>
-        <Typography variant="h5">Admin Page</Typography>
-      </div>
-      <ThemeProvider theme={muiTheme}>
-        <Button
-          {...{
-            color: 'primary',
-            className: approveButton,
-          }}
-        >
-          {'Approve'.toUpperCase()}
-        </Button>
-        <Button
-          {...{
-            color: 'secondary',
-            className: rejectButton,
-          }}
-        >
-          {'Reject'.toUpperCase()}
-        </Button>
-      </ThemeProvider>
-    </div>
+    <Container className={container}>
+      <Grid container spacing={5} justifyContent="center">
+        <Grid item xs={12} sm={12}>
+          <Typography>Pending Reviews</Typography>
+          <Grid container item spacing={3}>
+            {sortReviews(pendingData, 'date').map((review, index) => (
+              <Grid item xs={12} key={index}>
+                <AdminReviewComponent review={review} />
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12} sm={12}>
+          <Typography>Declined Reviews</Typography>
+          <Grid container item spacing={3}>
+            {sortReviews(declinedData, 'date').map((review, index) => (
+              <Grid item xs={12} key={index}>
+                <AdminReviewComponent review={review} />
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 
