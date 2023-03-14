@@ -8,7 +8,6 @@ import {
   Grid,
   Typography,
   Button,
-  Collapse,
   Link,
   createTheme,
   ThemeProvider,
@@ -16,36 +15,36 @@ import {
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
-import DetailedRatings from '../Review/DetailedRating';
-import { ApartmentWithId, Landlord, ReviewWithId } from '../../../../common/types/db-types';
+import {
+  ApartmentWithId,
+  DetailedRating,
+  Landlord,
+  ReviewWithId,
+} from '../../../../common/types/db-types';
 import { colors } from '../../colors';
 import { get } from '../../utils/call';
 import { Link as RouterLink } from 'react-router-dom';
+import ReviewHeader from '../Review/ReviewHeader';
 
 type Props = {
   readonly review: ReviewWithId;
+};
+
+export type RatingInfo = {
+  feature: string;
+  rating: number;
 };
 
 const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    borderColor: colors.black,
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
-  },
   dateText: {
     color: colors.gray1,
   },
-  button: {
-    textTransform: 'none',
-    '&.Mui-disabled': {
-      color: 'inherit',
-    },
+  ratingInfo: {
+    marginTop: '10px',
+    marginBottom: '30px',
   },
 }));
 
@@ -56,7 +55,7 @@ const muiTheme = createTheme({
 const AdminReviewComponent = ({ review }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, dateText } = useStyles();
+  const { root, dateText, ratingInfo } = useStyles();
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlord, setLandlord] = useState<Landlord>();
 
@@ -70,6 +69,17 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
       callback: setLandlord,
     });
   }, [review]);
+
+  const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
+    return [
+      { feature: 'Location', rating: ratings.location },
+      { feature: 'Safety', rating: ratings.safety },
+      { feature: 'Value', rating: ratings.value },
+      { feature: 'Maintenance', rating: ratings.maintenance },
+      { feature: 'Communication', rating: ratings.communication },
+      { feature: 'Conditions', rating: ratings.conditions },
+    ];
+  };
 
   const changeStatus = (new_status: string) => {
     // Implement button
@@ -112,12 +122,8 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
                 <Typography className={dateText}>{formattedDate}</Typography>
               </Grid>
 
-              <Grid item>
-                <Collapse in={true} timeout="auto" unmountOnExit>
-                  <CardContent>
-                    <DetailedRatings ratings={detailedRatings} />
-                  </CardContent>
-                </Collapse>
+              <Grid item xs={12} className={ratingInfo}>
+                <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
               </Grid>
 
               <Grid item container alignContent="center">
