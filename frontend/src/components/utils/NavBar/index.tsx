@@ -206,7 +206,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
       let user = await getUser(false);
       setUser(user);
     }, 1000);
-  }, []);
+  });
 
   const signInButton = () => {
     return (
