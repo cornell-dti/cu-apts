@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -89,6 +89,7 @@ const headersData = [home, faq];
 hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
+  const [user, setUser] = useState<firebase.User | null>(null);
   useEffect(() => {
     const setData = async () => {
       await axios.post('/set-data');
@@ -99,7 +100,7 @@ const App = (): ReactElement => {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <NavBar headersData={headersData} />
+        <NavBar headersData={headersData} user={user} setUser={setUser} />
         <div className="root">
           <Switch>
             <Route exact path="/" component={HomePage} />
@@ -107,8 +108,14 @@ const App = (): ReactElement => {
             <Route exact path="/reviews" component={ReviewPage} />
             <Route exact path="/policies" component={Policies} />
             <Route path="/location/:location" component={LocationPage} />
-            <Route path="/landlord/:landlordId" component={LandlordPage} />
-            <Route path="/apartment/:aptId" component={ApartmentPage} />
+            <Route
+              path="/landlord/:landlordId"
+              component={() => <LandlordPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/apartment/:aptId"
+              component={() => <ApartmentPage user={user} setUser={setUser} />}
+            />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
             <Route path="/admincuapts1234" component={AdminPage} />

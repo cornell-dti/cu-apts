@@ -238,7 +238,7 @@ app.get('/search-results', async (req, res) => {
 });
 
 app.get('/page-data/:page/:size', async (req, res) => {
-  const { page, size } = req.params;
+  const { size } = req.params;
   const collection = buildingsCollection.limit(Number(size));
   const buildingDocs = (await collection.get()).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
