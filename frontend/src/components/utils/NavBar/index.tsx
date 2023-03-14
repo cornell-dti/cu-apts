@@ -1,4 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+import { getUser, signOut } from '../../../utils/firebase';
+
 import {
   AppBar,
   Toolbar,
@@ -30,6 +32,8 @@ export type NavbarButton = {
 
 type Props = {
   readonly headersData: NavbarButton[];
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -45,6 +49,18 @@ const useStyles = makeStyles(() => ({
   },
   icon: {
     fontSize: 0,
+  },
+  authButton: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
+    },
+    marginLeft: '10px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
   },
   logo: {
     fontWeight: 600,
@@ -76,7 +92,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '19px',
     letterSpacing: '0.08em',
     textTransform: 'none',
-    marginLeft: '38px',
+    marginRight: '38px',
   },
   toolbar: {
     display: 'flex',
@@ -95,12 +111,18 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    paddingLeft: '3%',
+    marginRight: '25%',
+    marginBottom: '-15px',
   },
   searchHidden: {
     width: '50%',
     paddingLeft: '3%',
     visibility: 'hidden',
+  },
+  menu: {
+    alignSelf: 'right',
+    marginTop: '-40px',
+    marginLeft: '70%',
   },
   searchDrawer: {
     marginBottom: '5%',
@@ -111,12 +133,15 @@ function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
-      lab.includes('Reviews'))
-    ? 'primary'
-    : 'secondary';
+      lab.includes('Reviews')) ||
+    (location.pathname.includes('faq') && lab.includes('FAQ'))
+    ? 'secondary'
+    : 'primary';
 }
 
-const NavBar = ({ headersData }: Props): ReactElement => {
+const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
+  const initialUserState = !user ? 'Sign In' : 'Sign Out';
+  const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const {
@@ -130,7 +155,9 @@ const NavBar = ({ headersData }: Props): ReactElement => {
     drawerButton,
     search,
     searchHidden,
+    menu,
     searchDrawer,
+    authButton,
   } = useStyles();
 
   const muiTheme = createTheme({
@@ -140,6 +167,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   useEffect(() => {
     setDrawerOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    setButtonText(!user ? 'Sign In' : 'Sign Out');
+  }, [user]);
 
   const getDrawerChoices = () => {
     return (
@@ -155,6 +186,33 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           );
         })}
       </ThemeProvider>
+    );
+  };
+
+  const signInOutButtonClick = async () => {
+    if (user) {
+      signOut();
+      setUser(null);
+      setButtonText('Sign In');
+      return;
+    }
+    let newUser = await getUser(true);
+    setUser(newUser);
+    setButtonText(!newUser ? 'Sign In' : 'Sign Out');
+  };
+
+  useEffect(() => {
+    setTimeout(async () => {
+      let user = await getUser(false);
+      setUser(user);
+    }, 1000);
+  });
+
+  const signInButton = () => {
+    return (
+      <Button onClick={signInOutButtonClick} className={authButton}>
+        {buttonText}
+      </Button>
     );
   };
 
@@ -192,11 +250,9 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             </Link>
           </Grid>
           <Grid item>
-            <Typography className={logo}>
-              <Link color="textPrimary" underline="none" href="/">
-                CUAPTS
-              </Link>
-            </Typography>
+            <Link color="textPrimary" underline="none" href="/">
+              <Typography className={logo}>CUAPTS</Typography>
+            </Link>
           </Grid>
         </Grid>
       </Grid>
@@ -207,15 +263,16 @@ const NavBar = ({ headersData }: Props): ReactElement => {
 
   const displayDesktop = (): ReactElement => {
     return (
-      <Grid container className={toolbar} alignItems="center">
+      <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
           {homeLogo}
         </Grid>
         <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
-        <Grid item md={3}>
+        <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
+          {signInButton()}
         </Grid>
       </Grid>
     );
