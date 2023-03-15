@@ -18,6 +18,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import DetailedRatings from './DetailedRating';
 import { ReviewWithId } from '../../../../common/types/db-types';
+import axios from 'axios';
 import { colors } from '../../colors';
 
 type Props = {
@@ -50,6 +51,12 @@ const useStyles = makeStyles(() => ({
     },
   },
 }));
+
+const handleReportAbuse = async (reviewId: string) => {
+  const endpoint = `update-review-status/${reviewId}/PENDING`;
+  const res = await axios.put(endpoint);
+  console.log(res);
+};
 
 const ReviewComponent = ({
   review,
@@ -146,7 +153,7 @@ const ReviewComponent = ({
             </Button>
           </Grid>
           <Grid item>
-            <Button className={button} size="small">
+            <Button onClick={() => handleReportAbuse(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>
