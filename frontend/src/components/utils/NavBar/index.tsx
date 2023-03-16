@@ -34,6 +34,7 @@ type Props = {
   readonly headersData: NavbarButton[];
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  admins: string[];
 };
 
 const useStyles = makeStyles(() => ({
@@ -57,6 +58,18 @@ const useStyles = makeStyles(() => ({
       backgroundColor: 'grey',
     },
     marginLeft: '10px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  adminBut: {
+    backgroundColor: 'grey',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
+    },
+    marginRight: '100px',
     width: '120px',
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
@@ -139,7 +152,7 @@ function GetButtonColor(lab: string) {
     : 'primary';
 }
 
-const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
+const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -157,6 +170,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     searchHidden,
     menu,
     searchDrawer,
+    adminBut,
     authButton,
   } = useStyles();
 
@@ -216,6 +230,27 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     );
   };
 
+  const adminButton = () => {
+    if (user && typeof user?.email === 'string' && admins.includes(user?.email)) {
+      return (
+        <Button
+          onClick={() => {
+            adminButtonClick();
+          }}
+          className={adminBut}
+        >
+          Admin
+        </Button>
+      );
+    } else {
+      return null;
+    }
+  };
+
+  const adminButtonClick = () => {
+    window.location.href = '/admincuapts1234';
+  };
+
   const getMenuButtons = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -269,6 +304,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
         </Grid>
         <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
+        </Grid>
+        <Grid item md={1} className={menu} container justifyContent="flex-end">
+          {adminButton()}
         </Grid>
         <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}

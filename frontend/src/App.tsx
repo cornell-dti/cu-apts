@@ -90,6 +90,19 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
+  const admins: string[] = [
+    'cri23@cornell.edu',
+    'asl256@cornell.edu',
+    'am2749@cornell.edu',
+    'dj263@cornell.edu',
+    'feb47@cornell.edu',
+    'gs622@cornell.edu',
+    'jh2228@cornell.edu',
+    'kjc249@cornell.edu',
+    'tp267@cornell.edu',
+    'sy398@cornell.edu',
+    'tpp38@cornell.edu',
+  ];
   useEffect(() => {
     const setData = async () => {
       await axios.post('/set-data');
@@ -100,7 +113,7 @@ const App = (): ReactElement => {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <NavBar headersData={headersData} user={user} setUser={setUser} />
+        <NavBar headersData={headersData} user={user} setUser={setUser} admins={admins} />
         <div className="root">
           <Switch>
             <Route exact path="/" component={HomePage} />
@@ -118,7 +131,22 @@ const App = (): ReactElement => {
             />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
-            <Route path="/admincuapts1234" component={AdminPage} />
+            {typeof user?.email === 'string' && admins.includes(user?.email) && (
+              <Route path="/admincuapts1234" component={AdminPage} />
+            )}
+
+            <Route
+              path={
+                typeof user?.email === 'string' && admins.includes(user?.email)
+                  ? '/admincuapts1234'
+                  : '/'
+              }
+              component={
+                typeof user?.email === 'string' && admins.includes(user?.email)
+                  ? AdminPage
+                  : HomePage
+              }
+            />
           </Switch>
         </div>
         <Footer />
