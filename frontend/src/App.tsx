@@ -131,9 +131,6 @@ const App = (): ReactElement => {
             />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
-            {typeof user?.email === 'string' && admins.includes(user?.email) && (
-              <Route path="/admincuapts1234" component={AdminPage} />
-            )}
 
             <Route
               path={
