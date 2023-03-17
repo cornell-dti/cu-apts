@@ -3,29 +3,6 @@ import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
-import { title } from 'process';
-
-// const useStyles = makeStyles(() => ({
-//   approveButton: {
-//     fontFamily: 'Work Sans, sans-serif',
-//     size: '100px',
-//     fontSize: '40px',
-//     lineHeight: '70px',
-//     letterSpacing: '0.01em',
-//     textTransform: 'none',
-//     background: '#5aa17f',
-//   },
-//   rejectButton: {
-//     fontFamily: 'Work Sans, sans-serif',
-//     size: '100px',
-//     fontSize: '40px',
-//     lineHeight: '70px',
-//     letterSpacing: '0.01em',
-//     textTransform: 'none',
-//     marginLeft: '40px',
-//     background: '#FF8A8A',
-//   },
-// }));
 
 const useStyles = makeStyles((theme) => ({
   container: {

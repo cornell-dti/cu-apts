@@ -64,7 +64,7 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     fontSize: '16px',
   },
-  adminBut: {
+  adminButton: {
     backgroundColor: 'grey',
     color: 'white',
     '&:hover': {
@@ -171,7 +171,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
     searchHidden,
     menu,
     searchDrawer,
-    adminBut,
+    adminButton,
     authButton,
   } = useStyles();
 
@@ -231,13 +231,14 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
     );
   };
 
-  const adminButton = () => {
+  const getAdminButton = () => {
     return (
       <Button
-        onClick={() => {
-          window.location.href = '/admincuapts1234';
+        {...{
+          to: '/admincuapts1234',
+          component: RouterLink,
+          className: adminButton,
         }}
-        className={adminBut}
       >
         Admin
       </Button>
@@ -305,7 +306,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
 
   const searchBar = location.pathname !== '/';
 
-  const displayDesktop = (): ReactElement => {
+  const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
@@ -314,9 +315,11 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
         <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
-        <Grid item md={1} className={menu} container justifyContent="flex-end">
-          {isAdmin(user) && adminButton()}
-        </Grid>
+        {isAdmin(user) && (
+          <Grid item md={1} className={menu} container justifyContent="flex-end">
+            {getAdminButton()}
+          </Grid>
+        )}
         <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
           {signInButton()}
