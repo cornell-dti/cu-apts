@@ -16,7 +16,6 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import DetailedRatings from './DetailedRating';
 import { DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
