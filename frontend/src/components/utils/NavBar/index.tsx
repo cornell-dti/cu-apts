@@ -35,7 +35,6 @@ type Props = {
   readonly headersData: NavbarButton[];
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-  admins: string[];
 };
 
 const useStyles = makeStyles(() => ({
@@ -65,7 +64,7 @@ const useStyles = makeStyles(() => ({
     fontSize: '16px',
   },
   adminButton: {
-    backgroundColor: 'grey',
+    backgroundColor: 'red',
     color: 'white',
     '&:hover': {
       backgroundColor: 'grey',
@@ -153,7 +152,7 @@ function GetButtonColor(lab: string) {
     : 'primary';
 }
 
-const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => {
+const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -235,7 +234,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
     return (
       <Button
         {...{
-          to: '/admincuapts1234',
+          to: '/admin',
           component: RouterLink,
           className: adminButton,
         }}
