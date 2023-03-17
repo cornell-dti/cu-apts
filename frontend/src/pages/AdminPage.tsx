@@ -56,7 +56,6 @@ const AdminPage = (): ReactElement => {
 
         <Grid item xs={12} sm={12}>
           <Typography variant="h3">
-            {' '}
             <strong>Declined Reviews</strong>
           </Typography>
           <Grid container item spacing={3}>
