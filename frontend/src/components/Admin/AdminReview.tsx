@@ -98,22 +98,26 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
                 {apt.length > 0 ? (
                   <Link
                     {...{
-                      to: `/apts/${review.aptId}`,
-                      style: { textDecoration: 'none' },
+                      to: `/apartment/${review.aptId}`,
+                      style: {
+                        fontWeight: 'bold',
+                      },
                       component: RouterLink,
                     }}
                   >
-                    {apt[0].name}
+                    {'Apartment  -  ' + apt[0].name}
                   </Link>
                 ) : (
                   <Link
                     {...{
                       to: `/landlord/${review.landlordId}`,
-                      style: { textDecoration: 'none' },
+                      style: {
+                        fontWeight: 'bold',
+                      },
                       component: RouterLink,
                     }}
                   >
-                    {landlord?.name}
+                    {'Landlord  -  ' + landlord?.name}
                   </Link>
                 )}
               </Grid>
@@ -151,13 +155,13 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
         <Grid item container direction="row" justifyContent="flex-end" alignItems="flex-end">
           <ThemeProvider theme={muiTheme}>
             <Grid item>
-              <Button onClick={() => changeStatus('APPROVED')} variant="contained" color="primary">
-                <strong>Approve</strong>
+              <Button onClick={() => changeStatus('DECLINED')} variant="outlined" color="secondary">
+                <strong>Decline</strong>
               </Button>
             </Grid>
             <Grid item>
-              <Button onClick={() => changeStatus('DECLINED')} variant="outlined" color="secondary">
-                <strong>Decline</strong>
+              <Button onClick={() => changeStatus('APPROVED')} variant="contained" color="primary">
+                <strong>Approve</strong>
               </Button>
             </Grid>
           </ThemeProvider>

@@ -64,7 +64,7 @@ const useStyles = makeStyles(() => ({
     fontSize: '16px',
   },
   adminButton: {
-    backgroundColor: 'red',
+    backgroundColor: colors.red1,
     color: 'white',
     '&:hover': {
       backgroundColor: 'grey',
