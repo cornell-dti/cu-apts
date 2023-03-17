@@ -47,6 +47,8 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const toastTime = 4750;
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [notFound, setNotFound] = useState(false);
+  const [toggle, setToggle] = useState(false);
+
   const handlePageNotFound = () => {
     console.log('Page not found');
     setNotFound(true);
@@ -61,7 +63,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     get<ReviewWithId[]>(`/review/landlordId/${landlordId}/APPROVED`, {
       callback: setReviewData,
     });
-  }, [landlordId, showConfirmation]);
+  }, [landlordId, showConfirmation, toggle]);
 
   useEffect(() => {
     get<Landlord>(`/landlord/${landlordId}`, {
@@ -290,6 +292,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                     likeLoading={likeStatuses[review.id]}
                     addLike={addLike}
                     removeLike={removeLike}
+                    setToggle={setToggle}
                   />
                 </Grid>
               ))}
