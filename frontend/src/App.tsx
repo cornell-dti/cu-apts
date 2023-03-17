@@ -21,6 +21,7 @@ import LocationPage from './pages/LocationPage';
 import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
+import { isAdmin } from './utils/adminTool';
 
 const theme = createTheme({
   palette: {
@@ -122,16 +123,8 @@ const App = (): ReactElement => {
             <Route path="/search" component={SearchResultsPage} />
 
             <Route
-              path={
-                typeof user?.email === 'string' && admins.includes(user?.email)
-                  ? '/admincuapts1234'
-                  : '/'
-              }
-              component={
-                typeof user?.email === 'string' && admins.includes(user?.email)
-                  ? AdminPage
-                  : HomePage
-              }
+              path={isAdmin(user) ? '/admincuapts1234' : '/'}
+              component={isAdmin(user) ? AdminPage : HomePage}
             />
           </Switch>
         </div>
