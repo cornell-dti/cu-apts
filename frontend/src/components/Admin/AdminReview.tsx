@@ -152,12 +152,12 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
           <ThemeProvider theme={muiTheme}>
             <Grid item>
               <Button onClick={() => changeStatus('APPROVED')} variant="contained" color="primary">
-                Approve
+                <strong>Approve</strong>
               </Button>
             </Grid>
             <Grid item>
               <Button onClick={() => changeStatus('DECLINED')} variant="outlined" color="secondary">
-                Decline
+                <strong>Decline</strong>
               </Button>
             </Grid>
           </ThemeProvider>

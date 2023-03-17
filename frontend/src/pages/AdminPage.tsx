@@ -3,6 +3,7 @@ import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
+import { title } from 'process';
 
 // const useStyles = makeStyles(() => ({
 //   approveButton: {
@@ -64,7 +65,9 @@ const AdminPage = (): ReactElement => {
     <Container className={container}>
       <Grid container spacing={5} justifyContent="center">
         <Grid item xs={12} sm={12}>
-          <Typography>Pending Reviews</Typography>
+          <Typography variant="h3">
+            <strong>Pending Reviews</strong>
+          </Typography>
           <Grid container item spacing={3}>
             {sortReviews(pendingData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
@@ -75,7 +78,10 @@ const AdminPage = (): ReactElement => {
         </Grid>
 
         <Grid item xs={12} sm={12}>
-          <Typography>Declined Reviews</Typography>
+          <Typography variant="h3">
+            {' '}
+            <strong>Declined Reviews</strong>
+          </Typography>
           <Grid container item spacing={3}>
             {sortReviews(declinedData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
