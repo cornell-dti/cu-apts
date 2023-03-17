@@ -13,6 +13,7 @@ import { ApartmentWithId } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
+import { admins } from './constants/HomeConsts';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
 import AdminPage from './pages/AdminPage';
@@ -90,19 +91,7 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
-  const admins: string[] = [
-    'cri23@cornell.edu',
-    'asl256@cornell.edu',
-    'am2749@cornell.edu',
-    'dj263@cornell.edu',
-    'feb47@cornell.edu',
-    'gs622@cornell.edu',
-    'jh2228@cornell.edu',
-    'kjc249@cornell.edu',
-    'tp267@cornell.edu',
-    'sy398@cornell.edu',
-    'tpp38@cornell.edu',
-  ];
+
   useEffect(() => {
     const setData = async () => {
       await axios.post('/set-data');

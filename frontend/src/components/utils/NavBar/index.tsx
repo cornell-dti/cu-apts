@@ -24,6 +24,7 @@ import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
+import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
   label: string;
@@ -231,24 +232,16 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
   };
 
   const adminButton = () => {
-    if (user && typeof user?.email === 'string' && admins.includes(user?.email)) {
-      return (
-        <Button
-          onClick={() => {
-            adminButtonClick();
-          }}
-          className={adminBut}
-        >
-          Admin
-        </Button>
-      );
-    } else {
-      return null;
-    }
-  };
-
-  const adminButtonClick = () => {
-    window.location.href = '/admincuapts1234';
+    return (
+      <Button
+        onClick={() => {
+          window.location.href = '/admincuapts1234';
+        }}
+        className={adminBut}
+      >
+        Admin
+      </Button>
+    );
   };
 
   const getMenuButtons = () => {
@@ -306,7 +299,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
           {auto()}
         </Grid>
         <Grid item md={1} className={menu} container justifyContent="flex-end">
-          {adminButton()}
+          {isAdmin(user) && adminButton()}
         </Grid>
         <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
