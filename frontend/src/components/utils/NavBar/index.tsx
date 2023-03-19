@@ -104,7 +104,7 @@ const useStyles = makeStyles(() => ({
   menuDrawer: {
     alignSelf: 'right',
     marginBottom: '8px',
-    marginLeft: '50%',
+    marginLeft: '70%',
   },
   drawerButton: {
     fontFamily: 'Work Sans, sans-serif',
