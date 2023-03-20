@@ -24,6 +24,7 @@ import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import auto from '../../Home/Autocomplete';
+import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
   label: string;
@@ -57,6 +58,18 @@ const useStyles = makeStyles(() => ({
       backgroundColor: 'grey',
     },
     marginLeft: '10px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  adminButton: {
+    backgroundColor: 'grey',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
+    },
+    marginRight: '100px',
     width: '120px',
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
@@ -157,6 +170,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     searchHidden,
     menu,
     searchDrawer,
+    adminButton,
     authButton,
   } = useStyles();
 
@@ -212,6 +226,20 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return (
       <Button onClick={signInOutButtonClick} className={authButton}>
         {buttonText}
+      </Button>
+    );
+  };
+
+  const getAdminButton = () => {
+    return (
+      <Button
+        {...{
+          to: '/admin',
+          component: RouterLink,
+          className: adminButton,
+        }}
+      >
+        Admin
       </Button>
     );
   };
@@ -277,7 +305,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const searchBar = location.pathname !== '/';
 
-  const displayDesktop = (): ReactElement => {
+  const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
@@ -286,6 +314,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
         <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
+        {isAdmin(user) && (
+          <Grid item md={1} className={menu} container justifyContent="flex-end">
+            {getAdminButton()}
+          </Grid>
+        )}
         <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
           {signInButton()}
