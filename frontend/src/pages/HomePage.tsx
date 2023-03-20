@@ -75,7 +75,11 @@ const HomePage = (): ReactElement => {
       <Box>
         <Container maxWidth="lg">
           <Box textAlign="center" className={classes.rentingBox}>
-            <Typography variant="h2" className={classes.rentingText}>
+            <Typography
+              variant="h2"
+              style={{ fontSize: isMobile ? '30px' : '40px' }}
+              className={classes.rentingText}
+            >
               Find the Best Properties in Ithaca
             </Typography>
             <LocationCards />
