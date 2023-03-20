@@ -15,10 +15,12 @@ import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
+import AdminPage from './pages/AdminPage';
 import LocationPage from './pages/LocationPage';
 import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
+import { isAdmin } from './utils/adminTool';
 
 const theme = createTheme({
   palette: {
@@ -89,6 +91,7 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
+
   useEffect(() => {
     const setData = async () => {
       await axios.post('/set-data');
@@ -117,6 +120,7 @@ const App = (): ReactElement => {
             />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route path="/search" component={SearchResultsPage} />
+            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
         <Footer />
