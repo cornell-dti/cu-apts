@@ -38,11 +38,19 @@ type returnData = {
 const HomePage = (): ReactElement => {
   const classes = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
     get<returnData>(`/page-data/home/${loadingLength}`, {
       callback: setData,
     });
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -68,7 +76,7 @@ const HomePage = (): ReactElement => {
             </Typography>
             <LocationCards />
           </Box>
-          <ApartmentCards data={data.buildingData} />
+          {!isMobile && <ApartmentCards data={data.buildingData} />}
         </Container>
       </Box>
     </>
