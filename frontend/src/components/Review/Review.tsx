@@ -21,6 +21,7 @@ import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
+import { getUser } from '../../utils/firebase';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -30,6 +31,8 @@ type Props = {
   readonly removeLike: (reviewId: string) => Promise<void>;
   readonly toggle: boolean;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -63,6 +66,8 @@ const ReviewComponent = ({
   removeLike,
   toggle,
   setToggle,
+  user,
+  setUser,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
@@ -86,6 +91,14 @@ const ReviewComponent = ({
   };
 
   const handleReportAbuse = async (reviewId: string) => {
+    if (!user) {
+      let user = await getUser(true);
+      setUser(user);
+    }
+    if (!user) {
+      throw new Error('Failed to login');
+    }
+
     const endpoint = `update-review-status/${reviewId}/PENDING`;
     await axios.put(endpoint);
     setToggle(!toggle);

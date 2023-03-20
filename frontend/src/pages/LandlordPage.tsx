@@ -294,6 +294,8 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                     removeLike={removeLike}
                     toggle={toggle}
                     setToggle={setToggle}
+                    user={user}
+                    setUser={setUser}
                   />
                 </Grid>
               ))}
