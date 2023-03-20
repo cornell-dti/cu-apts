@@ -9,8 +9,6 @@ import {
   Typography,
   Button,
   Link,
-  createTheme,
-  ThemeProvider,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
@@ -47,10 +45,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: '30px',
   },
 }));
-
-const muiTheme = createTheme({
-  palette: { primary: { main: colors.green1 }, secondary: { main: colors.red1 } },
-});
 
 const AdminReviewComponent = ({ review }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
@@ -152,19 +146,25 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
       </Box>
 
       <CardActions>
-        <Grid item container direction="row" justifyContent="flex-end" alignItems="flex-end">
-          <ThemeProvider theme={muiTheme}>
-            <Grid item>
-              <Button onClick={() => changeStatus('DECLINED')} variant="outlined" color="secondary">
-                <strong>Decline</strong>
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button onClick={() => changeStatus('APPROVED')} variant="contained" color="primary">
-                <strong>Approve</strong>
-              </Button>
-            </Grid>
-          </ThemeProvider>
+        <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
+          <Grid item>
+            <Button
+              onClick={() => changeStatus('DECLINED')}
+              variant="outlined"
+              style={{ color: colors.red1 }}
+            >
+              <strong>Decline</strong>
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              onClick={() => changeStatus('APPROVED')}
+              variant="contained"
+              style={{ backgroundColor: colors.green1 }}
+            >
+              <strong>Approve</strong>
+            </Button>
+          </Grid>
         </Grid>
       </CardActions>
     </Card>
