@@ -76,6 +76,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const toastTime = 3500;
   const [notFound, setNotFound] = useState(false);
   const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
+  const [toggle, setToggle] = useState(false);
 
   const handlePageNotFound = () => {
     setNotFound(true);
@@ -100,7 +101,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     get<ReviewWithId[]>(`/review/aptId/${aptId}/APPROVED`, {
       callback: setReviewData,
     });
-  }, [aptId, showConfirmation]);
+  }, [aptId, showConfirmation, toggle]);
+
   useEffect(() => {
     get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
@@ -387,6 +389,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                     likeLoading={likeStatuses[review.id]}
                     addLike={addLike}
                     removeLike={removeLike}
+                    toggle={toggle}
+                    setToggle={setToggle}
+                    user={user}
+                    setUser={setUser}
                   />
                 </Grid>
               ))}
