@@ -35,7 +35,6 @@ type Props = {
   readonly headersData: NavbarButton[];
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-  admins: string[];
 };
 
 const useStyles = makeStyles(() => ({
@@ -64,7 +63,7 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     fontSize: '16px',
   },
-  adminBut: {
+  adminButton: {
     backgroundColor: 'grey',
     color: 'white',
     '&:hover': {
@@ -153,7 +152,7 @@ function GetButtonColor(lab: string) {
     : 'primary';
 }
 
-const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => {
+const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -171,7 +170,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
     searchHidden,
     menu,
     searchDrawer,
-    adminBut,
+    adminButton,
     authButton,
   } = useStyles();
 
@@ -231,13 +230,14 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
     );
   };
 
-  const adminButton = () => {
+  const getAdminButton = () => {
     return (
       <Button
-        onClick={() => {
-          window.location.href = '/admincuapts1234';
+        {...{
+          to: '/admin',
+          component: RouterLink,
+          className: adminButton,
         }}
-        className={adminBut}
       >
         Admin
       </Button>
@@ -271,14 +271,30 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
       <Grid>
         <Grid container alignItems="center">
           <Grid item>
-            <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
               <Icon className={icon}>
                 <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
               </Icon>
             </Link>
           </Grid>
           <Grid item>
-            <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
               <Typography className={logo}>CUAPTS</Typography>
             </Link>
           </Grid>
@@ -289,7 +305,7 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
 
   const searchBar = location.pathname !== '/';
 
-  const displayDesktop = (): ReactElement => {
+  const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
         <Grid item md={3}>
@@ -298,9 +314,11 @@ const NavBar = ({ headersData, user, setUser, admins }: Props): ReactElement => 
         <Grid item md={6} className={searchBar ? search : searchHidden}>
           {auto()}
         </Grid>
-        <Grid item md={1} className={menu} container justifyContent="flex-end">
-          {isAdmin(user) && adminButton()}
-        </Grid>
+        {isAdmin(user) && (
+          <Grid item md={1} className={menu} container justifyContent="flex-end">
+            {getAdminButton()}
+          </Grid>
+        )}
         <Grid item md={4} className={menu} container justifyContent="flex-end">
           {getMenuButtons()}
           {signInButton()}

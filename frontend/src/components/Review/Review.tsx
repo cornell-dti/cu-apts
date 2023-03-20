@@ -16,9 +16,10 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import DetailedRatings from './DetailedRating';
-import { ReviewWithId } from '../../../../common/types/db-types';
+import { DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
+import { RatingInfo } from '../../pages/LandlordPage';
+import ReviewHeader from './ReviewHeader';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -68,6 +69,17 @@ const ReviewComponent = ({
     setExpanded(!expanded);
   };
 
+  const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
+    return [
+      { feature: 'Location', rating: ratings.location },
+      { feature: 'Safety', rating: ratings.safety },
+      { feature: 'Value', rating: ratings.value },
+      { feature: 'Maintenance', rating: ratings.maintenance },
+      { feature: 'Communication', rating: ratings.communication },
+      { feature: 'Conditions', rating: ratings.conditions },
+    ];
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -100,7 +112,7 @@ const ReviewComponent = ({
               <Grid item>
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                   <CardContent>
-                    <DetailedRatings ratings={detailedRatings} />
+                    <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
                   </CardContent>
                 </Collapse>
               </Grid>

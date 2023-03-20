@@ -4,28 +4,6 @@ import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 
-// const useStyles = makeStyles(() => ({
-//   approveButton: {
-//     fontFamily: 'Work Sans, sans-serif',
-//     size: '100px',
-//     fontSize: '40px',
-//     lineHeight: '70px',
-//     letterSpacing: '0.01em',
-//     textTransform: 'none',
-//     background: '#5aa17f',
-//   },
-//   rejectButton: {
-//     fontFamily: 'Work Sans, sans-serif',
-//     size: '100px',
-//     fontSize: '40px',
-//     lineHeight: '70px',
-//     letterSpacing: '0.01em',
-//     textTransform: 'none',
-//     marginLeft: '40px',
-//     background: '#FF8A8A',
-//   },
-// }));
-
 const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
@@ -78,7 +56,6 @@ const AdminPage = (): ReactElement => {
 
         <Grid item xs={12} sm={12}>
           <Typography variant="h3">
-            {' '}
             <strong>Declined Reviews</strong>
           </Typography>
           <Grid container item spacing={3}>
