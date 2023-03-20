@@ -71,6 +71,17 @@ app.get('/review/:idType/:id/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
+app.get('/review/:status', async (req, res) => {
+  const { status } = req.params;
+  const reviewDocs = (await reviewCollection.where('status', '==', status).get()).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => {
+    const data = doc.data();
+    const review = { ...data, date: data.date.toDate() } as ReviewInternal;
+    return { ...review, id: doc.id } as ReviewWithId;
+  });
+  res.status(200).send(JSON.stringify(reviews));
+});
+
 app.get('/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
