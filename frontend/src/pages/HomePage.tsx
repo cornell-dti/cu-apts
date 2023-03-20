@@ -58,7 +58,11 @@ const HomePage = (): ReactElement => {
       <Box className={styles.JumboTron}>
         <Container maxWidth="lg">
           <Box py={6}>
-            <Typography variant="h1" className={classes.jumboText}>
+            <Typography
+              variant="h1"
+              style={{ fontSize: isMobile ? '38px' : '48px' }}
+              className={classes.jumboText}
+            >
               Discover Housing @ Cornell
             </Typography>
           </Box>
