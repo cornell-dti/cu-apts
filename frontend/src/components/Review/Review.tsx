@@ -28,7 +28,8 @@ type Props = {
   readonly likeLoading: boolean;
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
-  readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  readonly toggle: boolean;
+  setToggle: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -60,6 +61,7 @@ const ReviewComponent = ({
   likeLoading,
   addLike,
   removeLike,
+  toggle,
   setToggle,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
@@ -86,7 +88,7 @@ const ReviewComponent = ({
   const handleReportAbuse = async (reviewId: string) => {
     const endpoint = `update-review-status/${reviewId}/PENDING`;
     await axios.put(endpoint);
-    setToggle((curToggle) => !curToggle);
+    setToggle(!toggle);
   };
 
   return (

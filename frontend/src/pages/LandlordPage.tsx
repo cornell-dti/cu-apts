@@ -292,6 +292,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                     likeLoading={likeStatuses[review.id]}
                     addLike={addLike}
                     removeLike={removeLike}
+                    toggle={toggle}
                     setToggle={setToggle}
                   />
                 </Grid>
