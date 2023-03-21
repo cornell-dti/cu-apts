@@ -332,6 +332,91 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  const MobileHeader = (
+    <>
+      <Grid container alignItems="center">
+        <Grid container spacing={4} sm={12}>
+          <Grid item>
+            <Typography variant="h5">Reviews ({reviewData.length})</Typography>
+            {reviewData.length === 0 && (
+              <Typography>No reviews available. Be the first to leave one!</Typography>
+            )}
+          </Grid>
+          {!!getAverageRating(reviewData) && (
+            <Grid item>
+              <Grid container alignItems="center">
+                <Grid item className={heartRating}>
+                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                </Grid>
+                <Grid item className={aptRating}>
+                  <Typography variant="h6">
+                    {getAverageRating(reviewData).toFixed(1) + ' / 5'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
+        <Grid container spacing={4}>
+          {landlordData && landlordData.photos.length > 0 && (
+            <Button
+              color="secondary"
+              variant="contained"
+              disableElevation
+              onClick={() => setCarouselOpen(true)}
+            >
+              Show all photos
+            </Button>
+          )}
+        </Grid>
+        {reviewData && reviewData.length > 0 && (
+          <Grid item xs={12} className={ratingInfo}>
+            <ReviewHeader aveRatingInfo={aveRatingInfo} />
+          </Grid>
+        )}
+        <Grid item className={leaveReviewContainer} xs={12}>
+          <Grid container spacing={1} alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Button
+                color="primary"
+                variant="contained"
+                disableElevation
+                onClick={openReviewModal}
+              >
+                Leave a Review
+              </Button>
+            </Grid>
+            <Grid item>
+              <Grid container spacing={1} direction="row" alignItems="center">
+                <Grid item>
+                  <Typography>Sort by:</Typography>
+                </Grid>
+                <Grid item>
+                  <DropDown
+                    menuItems={[
+                      {
+                        item: 'Most recent',
+                        callback: () => {
+                          setSortBy('date');
+                        },
+                      },
+                      {
+                        item: 'Most helpful',
+                        callback: () => {
+                          setSortBy('likes');
+                        },
+                      },
+                    ]}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
+  );
+
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
       <AptInfo
@@ -363,7 +448,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       <Container className={container}>
         <Grid container spacing={5} justifyContent="center">
           <Grid item xs={12} sm={8}>
-            {Header}
+            {isMobile ? MobileHeader : Header}
             <Hidden smUp>{InfoSection}</Hidden>
             {showConfirmation && (
               <Toast
