@@ -59,7 +59,10 @@ const HomePage = (): ReactElement => {
           <Box py={6}>
             <Typography
               variant="h1"
-              style={{ fontSize: isMobile ? '24px' : '48px' }}
+              style={{
+                fontSize: isMobile ? '24px' : '48px',
+                marginTop: isMobile ? '-30px' : '0px',
+              }}
               className={classes.jumboText}
             >
               Discover Housing @ Cornell
@@ -76,7 +79,7 @@ const HomePage = (): ReactElement => {
             </Typography>
           </Box>
 
-          <Box pb={5} mx={0}>
+          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 2 : 8}>
             <Autocomplete />
           </Box>
         </Container>
@@ -87,7 +90,7 @@ const HomePage = (): ReactElement => {
           <Box textAlign="center" className={classes.rentingBox}>
             <Typography
               variant="h2"
-              style={{ fontSize: isMobile ? '20px' : '40px', fontWeight: isMobile ? 650 : 500 }}
+              style={{ fontSize: isMobile ? '20px' : '35px', fontWeight: isMobile ? 650 : 500 }}
               className={classes.rentingText}
             >
               Find the Best Properties in Ithaca

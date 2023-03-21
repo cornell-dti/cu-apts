@@ -18,36 +18,36 @@ import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 
-const useStyles = makeStyles((theme) => ({
-  menuList: {
-    position: 'absolute',
-    backgroundColor: colors.white,
-    maxHeight: 200,
-    overflow: 'auto',
-    boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
-  },
-  text: {
-    backgroundColor: colors.white,
-  },
-  addressText: {
-    color: colors.gray2,
-  },
-  buildingText: {
-    color: colors.black,
-  },
-  searchIcon: { paddingRight: '10px' },
-  resultChip: { cursor: 'pointer' },
-  field: {
-    '&.Mui-focused': {
-      border: '20px black ',
-      '& .MuiOutlinedInput-notchedOutline': {
-        border: 'none',
-      },
-    },
-  },
-}));
-
 export default function Autocomplete() {
+  const useStyles = makeStyles((theme) => ({
+    menuList: {
+      position: 'absolute',
+      backgroundColor: colors.white,
+      maxHeight: 200,
+      overflow: 'auto',
+      boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
+    },
+    text: {
+      backgroundColor: colors.white,
+    },
+    addressText: {
+      color: colors.gray2,
+    },
+    buildingText: {
+      color: colors.black,
+    },
+    searchIcon: { paddingRight: '10px' },
+    resultChip: { cursor: 'pointer' },
+    field: {
+      '&.Mui-focused': {
+        border: '20px black ',
+        '& .MuiOutlinedInput-notchedOutline': {
+          border: 'none',
+        },
+      },
+      height: '40px',
+    },
+  }));
   const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
@@ -198,7 +198,11 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
-        style={{ borderRadius: '10px', width: !isMobile ? '70%' : '90%' }}
+        style={{
+          borderRadius: '6px',
+          width: !isMobile ? '70%' : '90%',
+          // height: !isMobile ? '40px' : '28px',
+        }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;

@@ -264,7 +264,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const homeLogo: ReactElement = (
     <Grid container item direction="column">
       <Grid>
-        <Grid container alignItems="center">
+        <Grid container alignItems="center" style={{ marginTop: '-10px' }}>
           <Grid item>
             <Link
               color="textPrimary"

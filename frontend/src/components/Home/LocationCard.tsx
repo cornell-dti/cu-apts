@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import ApartmentImg from '../../assets/apartment-sample.png';
 import { Card, CardContent, CardMedia, Grid, makeStyles, Typography } from '@material-ui/core';
 
@@ -9,14 +9,14 @@ type Props = {
 
 const useStyles = makeStyles({
   img: {
-    height: 200,
+    height: 250,
     width: '100%',
   },
   nameText: {
     fontWeight: 600,
   },
   card: {
-    borderRadius: '10px',
+    borderRadius: '5px',
   },
   cardContent: {
     padding: '12px',
@@ -27,13 +27,27 @@ const useStyles = makeStyles({
 });
 
 const LocationCard = ({ photo, location }: Props): ReactElement => {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const img = photo ? photo : ApartmentImg;
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const classes = useStyles();
 
   return (
     <Card className={classes.card}>
-      <CardMedia className={classes.img} image={img} component="img" title={location} />
+      <CardMedia
+        style={{ height: isMobile ? '140px' : '200px' }}
+        className={classes.img}
+        image={img}
+        component="img"
+        title={location}
+      />
       <CardContent className={classes.cardContent}>
         <Grid container spacing={1}>
           <Grid container item justifyContent="center" alignItems="center">
