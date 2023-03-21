@@ -77,6 +77,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [notFound, setNotFound] = useState(false);
   const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
   const [toggle, setToggle] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const handlePageNotFound = () => {
     setNotFound(true);
