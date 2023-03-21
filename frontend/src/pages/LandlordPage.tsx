@@ -48,6 +48,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [notFound, setNotFound] = useState(false);
   const [toggle, setToggle] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const handlePageNotFound = () => {
     console.log('Page not found');
@@ -77,6 +78,13 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
       callback: setBuildings,
     });
   }, [landlordId]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (landlordData && buildings && reviewData) {
@@ -239,6 +247,67 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  const MobileHeader = (
+    <>
+      <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
+        {/* <Grid item>
+          <Typography variant="h4">Reviews ({reviewData.length})</Typography>
+          {reviewData.length === 0 && (
+            <Typography>No reviews available. Be the first to leave one!</Typography>
+          )}
+        </Grid> */}
+        {landlordData && landlordData.photos.length > 0 && (
+          <Button
+            color="secondary"
+            variant="contained"
+            disableElevation
+            onClick={() => setCarouselOpen(true)}
+          >
+            Show all photos
+          </Button>
+        )}
+        <Grid item sm={4} md={8}>
+          <Grid container spacing={1} justifyContent="flex-end" alignItems="center">
+            <Grid item>
+              <Button
+                color="primary"
+                variant="contained"
+                disableElevation
+                onClick={openReviewModal}
+              >
+                Leave a Review
+              </Button>
+            </Grid>
+            <Grid item>
+              <Typography>Sort by:</Typography>
+            </Grid>
+            <Grid item>
+              <DropDown
+                menuItems={[
+                  {
+                    item: 'Most recent',
+                    callback: () => {
+                      setSortBy('date');
+                    },
+                  },
+                  {
+                    item: 'Most helpful',
+                    callback: () => {
+                      setSortBy('likes');
+                    },
+                  },
+                ]}
+              />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <ReviewHeader aveRatingInfo={aveRatingInfo} />
+      </Grid>
+    </>
+  );
+
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
       <InfoFeatures {...landlordData} buildings={buildings} />
@@ -265,8 +334,8 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
       <Container className={styles.OuterContainer}>
         <Grid container spacing={5} justifyContent="center">
           <Grid container spacing={3} item xs={12} sm={8}>
-            {Header}
-            <Hidden smUp>{InfoSection}</Hidden>
+            {isMobile ? MobileHeader : Header}
+            {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
             {showConfirmation && (
               <Toast
                 isOpen={showConfirmation}
@@ -300,6 +369,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
               ))}
             </Grid>
+            {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           </Grid>
           <Hidden xsDown>{InfoSection}</Hidden>
         </Grid>
