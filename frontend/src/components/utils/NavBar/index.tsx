@@ -75,18 +75,6 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     fontSize: '16px',
   },
-  logo: {
-    fontWeight: 600,
-    '@media only screen and (max-width: 320px) ': {
-      fontSize: '1.7em',
-    },
-    color: colors.black,
-    textAlign: 'left',
-    paddingTop: '25px',
-    marginLeft: '10px',
-    fontSize: '27px',
-    lineHeight: '32px',
-  },
   description: {
     color: colors.black,
     textAlign: 'left',
@@ -156,10 +144,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
   const {
     header,
-    logo,
     menuButton,
     toolbar,
     drawerContainer,
@@ -185,6 +173,13 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   useEffect(() => {
     setButtonText(!user ? 'Sign In' : 'Sign Out');
   }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getDrawerChoices = () => {
     return (
@@ -295,7 +290,19 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                 component: RouterLink,
               }}
             >
-              <Typography className={logo}>CUAPTS</Typography>
+              <Typography
+                style={{
+                  fontWeight: 600,
+                  fontSize: !isMobile ? '24px' : '18px',
+                  color: colors.black,
+                  textAlign: 'left',
+                  paddingTop: '25px',
+                  marginLeft: '10px',
+                  lineHeight: '32px',
+                }}
+              >
+                CUAPTS
+              </Typography>
             </Link>
           </Grid>
         </Grid>

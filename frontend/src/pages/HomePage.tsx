@@ -25,7 +25,6 @@ const useStyles = makeStyles({
   },
   rentingText: {
     marginBottom: '1em',
-    fontWeight: 500,
     color: colors.red1,
   },
 });
@@ -60,12 +59,23 @@ const HomePage = (): ReactElement => {
           <Box py={6}>
             <Typography
               variant="h1"
-              style={{ fontSize: isMobile ? '38px' : '48px' }}
+              style={{ fontSize: isMobile ? '24px' : '48px' }}
               className={classes.jumboText}
             >
               Discover Housing @ Cornell
             </Typography>
+            <Typography
+              className={classes.jumboSub}
+              style={{
+                fontStyle: 'italic',
+                fontSize: isMobile ? '15px' : '25px',
+                marginTop: isMobile ? '-5px' : '-12px',
+              }}
+            >
+              Easy browsing for off-campus housing
+            </Typography>
           </Box>
+
           <Box pb={5} mx={0}>
             <Autocomplete />
           </Box>
@@ -77,7 +87,7 @@ const HomePage = (): ReactElement => {
           <Box textAlign="center" className={classes.rentingBox}>
             <Typography
               variant="h2"
-              style={{ fontSize: isMobile ? '30px' : '40px' }}
+              style={{ fontSize: isMobile ? '20px' : '40px', fontWeight: isMobile ? 650 : 500 }}
               className={classes.rentingText}
             >
               Find the Best Properties in Ithaca

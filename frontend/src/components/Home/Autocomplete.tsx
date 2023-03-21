@@ -28,9 +28,6 @@ const useStyles = makeStyles((theme) => ({
   },
   text: {
     backgroundColor: colors.white,
-    [theme.breakpoints.up('md')]: {
-      width: '70%',
-    },
   },
   addressText: {
     color: colors.gray2,
@@ -60,7 +57,15 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const history = useHistory();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
@@ -193,6 +198,7 @@ export default function Autocomplete() {
         placeholder="Search by landlord or building address"
         className={text}
         variant="outlined"
+        style={{ borderRadius: '10px', width: !isMobile ? '70%' : '90%' }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;
