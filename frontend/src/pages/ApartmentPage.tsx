@@ -78,6 +78,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
   const [toggle, setToggle] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isClicked, setIsClicked] = useState<boolean>(true);
 
   const handlePageNotFound = () => {
     setNotFound(true);
@@ -112,6 +113,20 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       callback: setLandlordData,
     });
   }, [apt]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsClicked(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setAveRatingInfo(calculateAveRating(reviewData));
@@ -335,7 +350,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const MobileHeader = (
     <>
       <Grid container alignItems="center">
-        <Grid container spacing={4} sm={12}>
+        <Grid container spacing={1} sm={12}>
           <Grid item>
             <Typography variant="h5">Reviews ({reviewData.length})</Typography>
             {reviewData.length === 0 && (
@@ -350,12 +365,23 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
                 <Grid item className={aptRating}>
                   <Typography variant="h6">
-                    {getAverageRating(reviewData).toFixed(1) + ' / 5'}
+                    {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
                   </Typography>
                 </Grid>
               </Grid>
             </Grid>
           )}
+          <Grid item>
+            <Button
+              style={{ maxWidth: '10px', maxHeight: '30px', minWidth: '10px', minHeight: '30px' }}
+              color="secondary"
+              variant="contained"
+              disableElevation
+              onClick={() => setIsClicked(!isClicked)}
+            >
+              {isClicked ? '▼' : '▲'}
+            </Button>
+          </Grid>
         </Grid>
         <Grid container spacing={4}>
           {landlordData && landlordData.photos.length > 0 && (
@@ -369,7 +395,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </Button>
           )}
         </Grid>
-        {reviewData && reviewData.length > 0 && (
+
+        {!isClicked && reviewData && reviewData.length > 0 && (
           <Grid item xs={12} className={ratingInfo}>
             <ReviewHeader aveRatingInfo={aveRatingInfo} />
           </Grid>
@@ -449,7 +476,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         <Grid container spacing={5} justifyContent="center">
           <Grid item xs={12} sm={8}>
             {isMobile ? MobileHeader : Header}
-            <Hidden smUp>{InfoSection}</Hidden>
+            {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
             {showConfirmation && (
               <Toast
                 isOpen={showConfirmation}
@@ -483,6 +510,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
               ))}
             </Grid>
+            {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           </Grid>
           <Hidden xsDown>{InfoSection}</Hidden>
         </Grid>
