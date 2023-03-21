@@ -135,7 +135,10 @@ const pageData = async (buildings: ApartmentWithId[]) =>
         throw new Error('Invalid landlordId');
       }
 
-      const reviewList = await reviewCollection.where(`aptId`, '==', id).get();
+      const reviewList = await reviewCollection
+        .where(`aptId`, '==', id)
+        .where('status', '==', 'APPROVED')
+        .get();
       const landlordDoc = await landlordCollection.doc(landlordId).get();
 
       const numReviews = reviewList.docs.length;
