@@ -302,4 +302,20 @@ app.post('/add-like', authenticate, likeHandler(false));
 
 app.post('/remove-like', authenticate, likeHandler(true));
 
+app.put('/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+  const { reviewDocId, newStatus } = req.params;
+  const statusList = ['PENDING', 'APPROVED', 'DECLINED'];
+  try {
+    if (!statusList.includes(newStatus)) {
+      res.status(400).send('Invalid status type');
+      return;
+    }
+    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    res.status(200).send('Success');
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error');
+  }
+});
+
 export default app;
