@@ -13,19 +13,20 @@ const useStyles = makeStyles((theme) => ({
 const AdminPage = (): ReactElement => {
   const [pendingData, setPendingData] = useState<ReviewWithId[]>([]);
   const [declinedData, setDeclinedData] = useState<ReviewWithId[]>([]);
+  const [toggle, setToggle] = useState(false);
   const { container } = useStyles();
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/PENDING`, {
       callback: setPendingData,
     });
-  }, []);
+  }, [toggle]);
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/DECLINED`, {
       callback: setDeclinedData,
     });
-  }, []);
+  }, [toggle]);
 
   type Fields = keyof ReviewWithId;
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
@@ -48,7 +49,7 @@ const AdminPage = (): ReactElement => {
           <Grid container item spacing={3}>
             {sortReviews(pendingData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
-                <AdminReviewComponent review={review} />
+                <AdminReviewComponent review={review} setToggle={setToggle} />
               </Grid>
             ))}
           </Grid>
@@ -61,7 +62,7 @@ const AdminPage = (): ReactElement => {
           <Grid container item spacing={3}>
             {sortReviews(declinedData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
-                <AdminReviewComponent review={review} />
+                <AdminReviewComponent review={review} setToggle={setToggle} />
               </Grid>
             ))}
           </Grid>

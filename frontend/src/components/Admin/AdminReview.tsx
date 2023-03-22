@@ -23,9 +23,11 @@ import { colors } from '../../colors';
 import { get } from '../../utils/call';
 import { Link as RouterLink } from 'react-router-dom';
 import ReviewHeader from '../Review/ReviewHeader';
+import axios from 'axios';
 
 type Props = {
   readonly review: ReviewWithId;
+  readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export type RatingInfo = {
@@ -46,7 +48,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const AdminReviewComponent = ({ review }: Props): ReactElement => {
+const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, dateText, ratingInfo } = useStyles();
@@ -75,8 +77,10 @@ const AdminReviewComponent = ({ review }: Props): ReactElement => {
     ];
   };
 
-  const changeStatus = (new_status: string) => {
-    // Implement button
+  const changeStatus = async (newStatus: string) => {
+    const endpoint = `update-review-status/${review.id}/${newStatus}`;
+    await axios.put(endpoint);
+    setToggle((cur) => !cur);
   };
 
   return (
