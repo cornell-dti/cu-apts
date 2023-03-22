@@ -91,15 +91,14 @@ const ReviewComponent = ({
   };
 
   const handleReportAbuse = async (reviewId: string) => {
-    let user = await getUser(true);
-    setUser(user);
-    if (!user) {
-      return;
+    if (user) {
+      const endpoint = `update-review-status/${reviewId}/PENDING`;
+      await axios.put(endpoint);
+      setToggle(!toggle);
+    } else {
+      let user = await getUser(true);
+      setUser(user);
     }
-
-    const endpoint = `update-review-status/${reviewId}/PENDING`;
-    await axios.put(endpoint);
-    setToggle(!toggle);
   };
 
   return (
