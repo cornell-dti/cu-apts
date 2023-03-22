@@ -19,6 +19,7 @@ import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 
 export default function Autocomplete() {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const useStyles = makeStyles((theme) => ({
     menuList: {
       position: 'absolute',
@@ -45,7 +46,7 @@ export default function Autocomplete() {
           border: 'none',
         },
       },
-      height: '40px',
+      height: isMobile ? '30px' : '50px',
     },
   }));
   const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
@@ -57,7 +58,7 @@ export default function Autocomplete() {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+
   const history = useHistory();
 
   useEffect(() => {
@@ -201,7 +202,6 @@ export default function Autocomplete() {
         style={{
           borderRadius: '6px',
           width: !isMobile ? '70%' : '90%',
-          // height: !isMobile ? '40px' : '28px',
         }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
@@ -211,8 +211,11 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
+          style: { fontSize: isMobile ? 12 : 20 },
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
-          startAdornment: <SearchIcon className={searchIcon} />,
+          startAdornment: (
+            <SearchIcon style={{ fontSize: isMobile ? 16 : 22 }} className={searchIcon} />
+          ),
           className: field,
         }}
       />

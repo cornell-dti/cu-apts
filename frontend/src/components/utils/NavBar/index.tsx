@@ -336,7 +336,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const displayMobile = (): ReactElement => {
     return (
-      <Toolbar className={toolbar}>
+      <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
         <IconButton
           className={menuDrawer}

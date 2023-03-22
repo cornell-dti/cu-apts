@@ -54,7 +54,7 @@ const HomePage = (): ReactElement => {
 
   return (
     <>
-      <Box className={styles.JumboTron}>
+      <Box className={styles.JumboTron} mt={isMobile ? -3 : 0}>
         <Container maxWidth="lg">
           <Box py={6}>
             <Typography
@@ -90,7 +90,11 @@ const HomePage = (): ReactElement => {
           <Box textAlign="center" className={classes.rentingBox}>
             <Typography
               variant="h2"
-              style={{ fontSize: isMobile ? '20px' : '35px', fontWeight: isMobile ? 650 : 500 }}
+              style={{
+                fontSize: isMobile ? '20px' : '35px',
+                fontWeight: isMobile ? 650 : 500,
+                marginTop: isMobile ? '-15px' : '0px',
+              }}
               className={classes.rentingText}
             >
               Find the Best Properties in Ithaca
