@@ -91,12 +91,10 @@ const ReviewComponent = ({
   };
 
   const handleReportAbuse = async (reviewId: string) => {
+    let user = await getUser(true);
+    setUser(user);
     if (!user) {
-      let user = await getUser(true);
-      setUser(user);
-    }
-    if (!user) {
-      throw new Error('Failed to login');
+      return;
     }
 
     const endpoint = `update-review-status/${reviewId}/PENDING`;
