@@ -373,13 +373,20 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
           <Grid item>
             <Button
-              style={{ maxWidth: '10px', maxHeight: '30px', minWidth: '10px', minHeight: '30px' }}
+              style={{
+                maxWidth: '10px',
+                maxHeight: '30px',
+                minWidth: '10px',
+                minHeight: '30px',
+                backgroundColor: 'transparent',
+                color: 'black',
+              }}
               color="secondary"
               variant="contained"
               disableElevation
               onClick={() => setIsClicked(!isClicked)}
             >
-              {isClicked ? '▼' : '▲'}
+              {isClicked ? '˅' : '˄'}
             </Button>
           </Grid>
         </Grid>
