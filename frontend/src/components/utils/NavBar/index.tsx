@@ -126,6 +126,7 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
+    fontSize: 5,
     marginBottom: '5%',
   },
 }));
@@ -276,7 +277,12 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               }}
             >
               <Icon className={icon}>
-                <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
+                <img
+                  src={LogoIcon}
+                  alt="CU Apts Logo"
+                  height={isMobile ? 38.07 : 57.41}
+                  width={isMobile ? 20 : 30.16}
+                />
               </Icon>
             </Link>
           </Grid>
@@ -293,11 +299,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               <Typography
                 style={{
                   fontWeight: 600,
-                  fontSize: !isMobile ? '24px' : '18px',
+                  fontSize: !isMobile ? '22px' : '14px',
                   color: colors.black,
                   textAlign: 'left',
-                  paddingTop: '25px',
-                  marginLeft: '10px',
+                  marginTop: isMobile ? 18 : 20,
+                  marginLeft: '8px',
                   lineHeight: '32px',
                 }}
               >
@@ -340,6 +346,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
         <div>{homeLogo}</div>
         <IconButton
           className={menuDrawer}
+          style={{ position: 'absolute', right: '10px' }}
           {...{
             edge: 'start',
             color: 'default',
@@ -348,7 +355,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClick: () => setDrawerOpen(true),
           }}
         >
-          <MenuIcon fontSize="large" />
+          <MenuIcon fontSize={'medium'} />
         </IconButton>
         <Drawer
           {...{

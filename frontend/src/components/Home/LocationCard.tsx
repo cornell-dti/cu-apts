@@ -7,27 +7,27 @@ type Props = {
   readonly location: string;
 };
 
-const useStyles = makeStyles({
-  img: {
-    height: 250,
-    width: '100%',
-  },
-  nameText: {
-    fontWeight: 600,
-  },
-  card: {
-    borderRadius: '5px',
-  },
-  cardContent: {
-    padding: '12px',
-    '&:last-child': {
-      paddingBottom: '12px',
-    },
-  },
-});
-
 const LocationCard = ({ photo, location }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const useStyles = makeStyles({
+    img: {
+      height: 250,
+      width: '100%',
+    },
+    nameText: {
+      fontWeight: 600,
+    },
+    card: {
+      borderRadius: '5px',
+    },
+    cardContent: {
+      padding: isMobile ? '4px' : '12px',
+      '&:last-child': {
+        paddingBottom: isMobile ? '7px' : '12px',
+      },
+    },
+  });
+
   const img = photo ? photo : ApartmentImg;
 
   useEffect(() => {
@@ -53,7 +53,11 @@ const LocationCard = ({ photo, location }: Props): ReactElement => {
           <Grid container item justifyContent="center" alignItems="center">
             <Grid item>
               <Grid container alignItems="center">
-                <Typography variant="h6" className={classes.nameText}>
+                <Typography
+                  variant="h6"
+                  className={classes.nameText}
+                  style={{ fontSize: isMobile ? '14px' : '20px' }}
+                >
                   {location}
                 </Typography>
               </Grid>

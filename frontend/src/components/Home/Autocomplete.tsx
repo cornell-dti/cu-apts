@@ -211,7 +211,7 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          style: { fontSize: isMobile ? 12 : 20 },
+          style: { fontSize: isMobile ? 13 : 20 },
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
           startAdornment: (
             <SearchIcon style={{ fontSize: isMobile ? 16 : 22 }} className={searchIcon} />
