@@ -88,18 +88,24 @@ const ReviewComponent = ({
     ];
   };
 
-  const handleReportAbuse = async (reviewId: string) => {
-    if (!user) {
+  const reportAbuseHanler = async (reviewId: string) => {
+    if (user) {
+      const endpoint = `update-review-status/${reviewId}/PENDING`;
+      await axios.put(endpoint);
+      setToggle((cur) => !cur);
+    } else {
       let user = await getUser(true);
       setUser(user);
     }
-    if (!user) {
-      throw new Error('Failed to login');
-    }
+  };
 
-    const endpoint = `update-review-status/${reviewId}/PENDING`;
-    await axios.put(endpoint);
-    setToggle((cur) => !cur);
+  const likeHandler = async (id: string) => {
+    if (user) {
+      (liked ? removeLike : addLike)(id);
+    } else {
+      let user = await getUser(true);
+      setUser(user);
+    }
   };
 
   return (
@@ -171,7 +177,7 @@ const ReviewComponent = ({
           <Grid item>
             <Button
               color={liked ? 'primary' : 'default'}
-              onClick={() => (liked ? removeLike : addLike)(id)}
+              onClick={() => likeHandler(id)}
               className={button}
               size="small"
               disabled={likeLoading}
@@ -180,7 +186,7 @@ const ReviewComponent = ({
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={() => handleReportAbuse(review.id)} className={button} size="small">
+            <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>
