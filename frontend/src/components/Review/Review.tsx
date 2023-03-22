@@ -29,7 +29,6 @@ type Props = {
   readonly likeLoading: boolean;
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
-  readonly toggle: boolean;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -64,7 +63,6 @@ const ReviewComponent = ({
   likeLoading,
   addLike,
   removeLike,
-  toggle,
   setToggle,
   user,
   setUser,
@@ -101,7 +99,7 @@ const ReviewComponent = ({
 
     const endpoint = `update-review-status/${reviewId}/PENDING`;
     await axios.put(endpoint);
-    setToggle(!toggle);
+    setToggle((cur) => !cur);
   };
 
   return (
