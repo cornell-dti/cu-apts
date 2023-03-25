@@ -1,5 +1,15 @@
 import React, { ReactElement, useState, useEffect, useCallback } from 'react';
-import { Button, Container, Grid, Hidden, Typography, makeStyles } from '@material-ui/core';
+import {
+  IconButton,
+  Button,
+  Container,
+  Grid,
+  Hidden,
+  Typography,
+  makeStyles,
+} from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
@@ -26,6 +36,7 @@ import HeartRating from '../components/utils/HeartRating';
 import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
+import clsx from 'clsx';
 
 type Props = {
   user: firebase.User | null;
@@ -55,6 +66,26 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
   },
+  root: {
+    borderRadius: '10px',
+  },
+  expand: {
+    transform: 'rotate(0deg)',
+    marginLeft: 'auto',
+    borderColor: colors.black,
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+  },
+  dateText: {
+    color: colors.gray1,
+  },
+  button: {
+    textTransform: 'none',
+    '&.Mui-disabled': {
+      color: 'inherit',
+    },
+  },
 }));
 
 const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
@@ -83,7 +114,15 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
-  const { aptRating, heartRating, leaveReviewContainer, ratingInfo, container } = useStyles();
+  const {
+    aptRating,
+    heartRating,
+    leaveReviewContainer,
+    ratingInfo,
+    container,
+    expand,
+    expandOpen,
+  } = useStyles();
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
@@ -372,22 +411,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </Grid>
           )}
           <Grid item>
-            <Button
-              style={{
-                maxWidth: '10px',
-                maxHeight: '30px',
-                minWidth: '10px',
-                minHeight: '30px',
-                backgroundColor: 'transparent',
-                color: 'black',
-              }}
-              color="secondary"
-              variant="contained"
-              disableElevation
+            <IconButton
+              color="primary"
+              className={clsx(expand, {
+                [expandOpen]: !isClicked,
+              })}
               onClick={() => setIsClicked(!isClicked)}
+              aria-expanded={!isClicked}
+              aria-label="show more"
+              size="small"
             >
-              {isClicked ? '˅' : '˄'}
-            </Button>
+              <ExpandMoreIcon />
+            </IconButton>
           </Grid>
         </Grid>
         <Grid container spacing={4}>
@@ -412,6 +447,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
               <Button
+                style={{ borderRadius: 20 }}
                 color="primary"
                 variant="contained"
                 disableElevation
