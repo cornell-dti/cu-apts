@@ -280,8 +280,8 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                 <img
                   src={LogoIcon}
                   alt="CU Apts Logo"
-                  height={isMobile ? 38.07 : 57.41}
-                  width={isMobile ? 20 : 30.16}
+                  height={isMobile ? 45.684 : 57.41}
+                  width={isMobile ? 24 : 30.16}
                 />
               </Icon>
             </Link>
@@ -299,10 +299,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               <Typography
                 style={{
                   fontWeight: 600,
-                  fontSize: !isMobile ? '22px' : '14px',
+                  fontSize: !isMobile ? '22px' : '16px',
                   color: colors.black,
                   textAlign: 'left',
-                  marginTop: isMobile ? 18 : 20,
+                  marginTop: isMobile ? 17 : 20,
                   marginLeft: '8px',
                   lineHeight: '32px',
                 }}
@@ -355,7 +355,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClick: () => setDrawerOpen(true),
           }}
         >
-          <MenuIcon fontSize={'medium'} />
+          <MenuIcon fontSize={'large'} />
         </IconButton>
         <Drawer
           {...{
