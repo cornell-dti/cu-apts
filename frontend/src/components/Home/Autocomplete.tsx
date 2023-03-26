@@ -30,17 +30,6 @@ export default function Autocomplete() {
     },
     text: {
       backgroundColor: colors.white,
-      WebkitTextSizeAdjust: 'none',
-      userSelect: 'none',
-      WebkitUserSelect: 'none',
-      MozUserSelect: 'none',
-      msUserSelect: 'none',
-      touchAction: 'manipulation',
-      WebkitTapHighlightColor: 'transparent',
-      userScalable: 'no',
-      WebkitUserScalable: 'no',
-      MozUserScalable: 'no',
-      msUserScalable: 'no',
     },
 
     addressText: {
@@ -208,7 +197,7 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        placeholder="Search by landlord or building address"
+        placeholder="Search by any location e.g. “301 College Ave”"
         className={text}
         variant="outlined"
         style={{
@@ -223,10 +212,13 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          style: { fontSize: isMobile ? 14 : 20 },
+          style: { fontSize: isMobile ? 16 : 20 },
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
           startAdornment: (
-            <SearchIcon style={{ fontSize: isMobile ? 17 : 22 }} className={searchIcon} />
+            <SearchIcon
+              style={{ fontSize: isMobile ? 17 : 22, marginLeft: isMobile ? -3 : 0 }}
+              className={searchIcon}
+            />
           ),
           className: field,
         }}
