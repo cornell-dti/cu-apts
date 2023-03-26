@@ -55,6 +55,18 @@ const useStyles = makeStyles(() => ({
       color: 'inherit',
     },
   },
+  photoStyle: {
+    borderRadius: '4px',
+    width: '32%',
+    height: '16vw',
+  },
+  photoRowStyle: {
+    display: 'flex',
+    lexDirection: 'row',
+    gap: '1vw',
+    paddingTop: '2%',
+    paddingLeft: '0.6%',
+  },
 }));
 
 const ReviewComponent = ({
@@ -69,7 +81,7 @@ const ReviewComponent = ({
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, expand, expandOpen, dateText, button } = useStyles();
+  const { root, expand, expandOpen, dateText, button, photoStyle, photoRowStyle } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
 
@@ -157,14 +169,19 @@ const ReviewComponent = ({
                 </Typography>
               </Grid>
               {photos.length > 0 && (
-                <Grid container alignItems="center" justifyContent="center">
-                  <Grid item xs={12} sm={6}>
-                    <CardMedia
-                      component="img"
-                      alt="Apt image"
-                      image={photos[0]}
-                      title="Apt image"
-                    />
+                <Grid container>
+                  <Grid item className={photoRowStyle}>
+                    {photos.map((photo) => {
+                      return (
+                        <CardMedia
+                          component="img"
+                          alt="Apt image"
+                          image={photo}
+                          title="Apt image"
+                          className={photoStyle}
+                        />
+                      );
+                    })}
                   </Grid>
                 </Grid>
               )}
