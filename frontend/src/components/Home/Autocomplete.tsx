@@ -46,7 +46,7 @@ export default function Autocomplete() {
           border: 'none',
         },
       },
-      height: isMobile ? '30px' : '50px',
+      height: isMobile ? '35px' : '50px',
     },
   }));
   const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
@@ -211,10 +211,10 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          style: { fontSize: isMobile ? 13 : 20 },
+          style: { fontSize: isMobile ? 14 : 20 },
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
           startAdornment: (
-            <SearchIcon style={{ fontSize: isMobile ? 16 : 22 }} className={searchIcon} />
+            <SearchIcon style={{ fontSize: isMobile ? 17 : 22 }} className={searchIcon} />
           ),
           className: field,
         }}

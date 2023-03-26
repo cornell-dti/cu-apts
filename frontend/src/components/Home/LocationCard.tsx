@@ -56,7 +56,7 @@ const LocationCard = ({ photo, location }: Props): ReactElement => {
                 <Typography
                   variant="h6"
                   className={classes.nameText}
-                  style={{ fontSize: isMobile ? '14px' : '20px' }}
+                  style={{ fontSize: isMobile ? '18px' : '20px' }}
                 >
                   {location}
                 </Typography>

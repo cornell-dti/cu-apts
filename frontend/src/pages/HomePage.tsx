@@ -60,7 +60,7 @@ const HomePage = (): ReactElement => {
             <Typography
               variant="h1"
               style={{
-                fontSize: isMobile ? '24px' : '48px',
+                fontSize: isMobile ? '26px' : '48px',
                 marginTop: isMobile ? '-30px' : '0px',
               }}
               className={classes.jumboText}
@@ -71,7 +71,7 @@ const HomePage = (): ReactElement => {
               className={classes.jumboSub}
               style={{
                 fontStyle: 'italic',
-                fontSize: isMobile ? '15px' : '25px',
+                fontSize: isMobile ? '16px' : '25px',
                 marginTop: isMobile ? '-5px' : '-12px',
               }}
             >
@@ -79,7 +79,7 @@ const HomePage = (): ReactElement => {
             </Typography>
           </Box>
 
-          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 2 : 8}>
+          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 4 : 8}>
             <Autocomplete />
           </Box>
         </Container>
@@ -91,7 +91,7 @@ const HomePage = (): ReactElement => {
             <Typography
               variant="h2"
               style={{
-                fontSize: isMobile ? '20px' : '35px',
+                fontSize: isMobile ? '21px' : '35px',
                 fontWeight: isMobile ? 650 : 500,
                 marginTop: isMobile ? '-15px' : '0px',
               }}
