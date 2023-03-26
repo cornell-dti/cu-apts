@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import {
   CardHeader,
   CardMedia,
@@ -11,6 +11,7 @@ import {
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
+import defaultMobileHeader from '../../assets/default_header_mobile.svg';
 import defaultIcon from '../../assets/default_icon.png';
 import { colors } from '../../colors';
 
@@ -34,6 +35,12 @@ const useStyles = makeStyles((theme) => ({
     height: '400px',
     backgroundBlendMode: 'darken',
     position: 'relative',
+  },
+  mobileMedia: {
+    height: '400px',
+    backgroundBlendMode: 'darken',
+    position: 'relative',
+    marginBottom: '-230px',
   },
   logo: {
     height: '86px',
@@ -103,11 +110,30 @@ const useStyles = makeStyles((theme) => ({
 
 const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
   const { name, address, photos } = apartment;
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
   const icon = defaultIcon;
   const photoLink = defaultHeader;
-  const { media, logo, photoButton, aptName, aptAddress, headerSection, btnSection, logoGrid } =
-    useStyles();
-  return (
+  const photoMobileLink = defaultMobileHeader;
+
+  const {
+    media,
+    mobileMedia,
+    logo,
+    photoButton,
+    aptName,
+    aptAddress,
+    headerSection,
+    btnSection,
+    logoGrid,
+  } = useStyles();
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const header = (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
         <GlobalCss />
@@ -148,6 +174,28 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
       </>
     </Grid>
   );
+  const mobileHeader = (
+    <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
+      <>
+        <GlobalCss />
+        <Grid item xs={12}>
+          <CardMedia className={mobileMedia} image={photoMobileLink}>
+            <Grid className={headerSection}>
+              <Grid item xs={12} md={1} className={logoGrid}>
+                <Avatar src={icon} alt={name} className={logo} />
+              </Grid>
+              <CardHeader title={name} className={aptName} disableTypography={true} />
+              {address !== name && (
+                <CardHeader title={address} className={aptAddress} disableTypography={true} />
+              )}
+            </Grid>
+          </CardMedia>
+        </Grid>
+      </>
+    </Grid>
+  );
+
+  return isMobile ? mobileHeader : header;
 };
 
 export default ApartmentHeader;

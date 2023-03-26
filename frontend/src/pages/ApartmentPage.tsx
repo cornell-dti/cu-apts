@@ -7,6 +7,7 @@ import {
   Hidden,
   Typography,
   makeStyles,
+  Box,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
@@ -410,20 +411,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               </Grid>
             </Grid>
           )}
-          <Grid item>
-            <IconButton
-              color="primary"
-              className={clsx(expand, {
-                [expandOpen]: !isClicked,
-              })}
-              onClick={() => setIsClicked(!isClicked)}
-              aria-expanded={!isClicked}
-              aria-label="show more"
-              size="small"
-            >
-              <ExpandMoreIcon />
-            </IconButton>
-          </Grid>
+          {!!getAverageRating(reviewData) && (
+            <Grid item>
+              <IconButton
+                color="primary"
+                className={clsx(expand, {
+                  [expandOpen]: !isClicked,
+                })}
+                onClick={() => setIsClicked(!isClicked)}
+                aria-expanded={!isClicked}
+                aria-label="show more"
+                size="small"
+              >
+                <ExpandMoreIcon />
+              </IconButton>
+            </Grid>
+          )}
         </Grid>
         <Grid container spacing={4}>
           {landlordData && landlordData.photos.length > 0 && (
@@ -439,9 +442,11 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         </Grid>
 
         {!isClicked && reviewData && reviewData.length > 0 && (
-          <Grid item xs={12} className={ratingInfo}>
-            <ReviewHeader aveRatingInfo={aveRatingInfo} />
-          </Grid>
+          <Box m={1} pt={1}>
+            <Grid item xs={12} className={ratingInfo}>
+              <ReviewHeader aveRatingInfo={aveRatingInfo} />
+            </Grid>
+          </Box>
         )}
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
