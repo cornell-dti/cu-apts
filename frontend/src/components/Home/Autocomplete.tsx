@@ -30,7 +30,19 @@ export default function Autocomplete() {
     },
     text: {
       backgroundColor: colors.white,
+      WebkitTextSizeAdjust: 'none',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none',
+      touchAction: 'manipulation',
+      WebkitTapHighlightColor: 'transparent',
+      userScalable: 'no',
+      WebkitUserScalable: 'no',
+      MozUserScalable: 'no',
+      msUserScalable: 'no',
     },
+
     addressText: {
       color: colors.gray2,
     },
