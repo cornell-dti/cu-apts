@@ -57,7 +57,7 @@ const useStyles = makeStyles(() => ({
   },
   photoStyle: {
     borderRadius: '4px',
-    width: '32%',
+    width: '17vw',
     height: '16vw',
   },
   photoRowStyle: {
