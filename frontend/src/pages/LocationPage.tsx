@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import { Box, CardMedia, Container, Typography, makeStyles } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
 import CollegetownImg from '../assets/collegetown-coverpic.svg';
@@ -12,30 +12,31 @@ interface Images {
   [location: string]: string;
 }
 
-const useStyles = makeStyles({
-  imgStyle: {
-    borderRadius: '20px',
-    height: '300px',
-    width: '100%',
-  },
-  titleStyle: {
-    marginBottom: '40px',
-    fontWeight: 'bold',
-    color: colors.white,
-    fontSize: '40px',
-    marginLeft: '50px',
-    marginTop: '-70px',
-  },
-  subtitleStyle: {
-    fontWeight: 700,
-    fontSize: '24px',
-  },
-  bodyStyle: {
-    marginLeft: '20px',
-  },
-});
-
 const LocationPage = (): ReactElement => {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const useStyles = makeStyles({
+    imgStyle: {
+      borderRadius: '20px',
+      height: isMobile ? '100px' : '300px',
+      width: '100%',
+    },
+    titleStyle: {
+      marginBottom: '40px',
+      fontWeight: 'bold',
+      color: colors.white,
+      fontSize: '40px',
+      marginLeft: '50px',
+      marginTop: '-70px',
+    },
+    subtitleStyle: {
+      fontWeight: 700,
+      fontSize: '24px',
+    },
+    bodyStyle: {
+      marginLeft: '20px',
+    },
+  });
+
   const path = useLocation();
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
   const locAPI = `/location/${location}/`;
@@ -46,9 +47,17 @@ const LocationPage = (): ReactElement => {
     Downtown: DowntownImg,
   };
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const locDescText: Images = {
-    Collegetown:
-      'Living in Collegetown allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    Collegetown: !isMobile
+      ? 'Living in Collegetown, Ithaca, NY, offers a vibrant and exciting lifestyle, with easy access to Cornell University and a variety of restaurants, shops, and entertainment options.'
+      : '',
     West: 'Living in West allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     North:
       'Living in North allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',

@@ -355,7 +355,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClick: () => setDrawerOpen(true),
           }}
         >
-          <MenuIcon fontSize={'large'} />
+          <MenuIcon fontSize={'large'} style={{ color: '#B94630' }} />
         </IconButton>
         <Drawer
           {...{

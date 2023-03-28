@@ -61,7 +61,7 @@ const HomePage = (): ReactElement => {
               variant="h1"
               style={{
                 fontSize: isMobile ? '26px' : '48px',
-                marginTop: isMobile ? '-30px' : '0px',
+                marginTop: isMobile ? '0px' : '0px',
               }}
               className={classes.jumboText}
             >
@@ -72,7 +72,7 @@ const HomePage = (): ReactElement => {
               style={{
                 fontStyle: 'italic',
                 fontSize: isMobile ? '16px' : '25px',
-                marginTop: isMobile ? '-5px' : '-12px',
+                marginTop: isMobile ? '-10px' : '-12px',
               }}
             >
               Easy browsing for off-campus housing

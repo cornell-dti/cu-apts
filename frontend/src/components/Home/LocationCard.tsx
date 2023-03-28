@@ -42,7 +42,7 @@ const LocationCard = ({ photo, location }: Props): ReactElement => {
   return (
     <Card className={classes.card}>
       <CardMedia
-        style={{ height: isMobile ? '140px' : '200px' }}
+        style={{ height: isMobile ? '120px' : '200px' }}
         className={classes.img}
         image={img}
         component="img"

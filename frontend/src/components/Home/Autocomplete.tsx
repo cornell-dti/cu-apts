@@ -202,7 +202,7 @@ export default function Autocomplete() {
         variant="outlined"
         style={{
           borderRadius: '6px',
-          width: !isMobile ? '70%' : '90%',
+          width: !isMobile ? '70%' : '98%',
         }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
