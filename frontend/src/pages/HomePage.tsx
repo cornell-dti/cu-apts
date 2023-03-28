@@ -54,7 +54,7 @@ const HomePage = (): ReactElement => {
 
   return (
     <>
-      <Box className={styles.JumboTron} mt={isMobile ? -3.5 : 0}>
+      <Box className={styles.JumboTron} mt={isMobile ? -3 : 0}>
         <Container maxWidth="lg">
           <Box py={6}>
             <Typography
