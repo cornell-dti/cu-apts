@@ -61,7 +61,7 @@ const HomePage = (): ReactElement => {
               variant="h1"
               style={{
                 fontSize: isMobile ? '26px' : '48px',
-                marginTop: isMobile ? '0px' : '0px',
+                marginTop: isMobile ? '10px' : '0px',
               }}
               className={classes.jumboText}
             >
