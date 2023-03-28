@@ -40,11 +40,22 @@ const useStyles = makeStyles((theme) => ({
     height: '400px',
     backgroundBlendMode: 'darken',
     position: 'relative',
-    marginBottom: '-230px',
+    marginBottom: '-320px',
   },
   logo: {
     height: '86px',
     width: '86px',
+    fontSize: '3rem',
+    marginLeft: '5px',
+    marginBottom: '10px',
+    [theme.breakpoints.up('md')]: {
+      marginLeft: '5%',
+      marginBottom: '20px',
+    },
+  },
+  mobileLogo: {
+    height: '36px',
+    width: '36px',
     fontSize: '3rem',
     marginLeft: '5px',
     marginBottom: '10px',
@@ -92,6 +103,23 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '20px',
     letterSpacing: '0.02em',
   },
+  mobileAptName: {
+    color: colors.white,
+    paddingLeft: 0,
+    paddingBottom: 0,
+    fontWeight: 'bold',
+    fontSize: '26px',
+    lineHeight: '43px',
+    letterSpacing: '0.02em',
+    marginTop: '10px',
+  },
+  mobileAptAddress: {
+    color: colors.white,
+    fontStyle: 'normal',
+    fontSize: '18px',
+    letterSpacing: '0.02em',
+    marginLeft: '50px',
+  },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
       marginLeft: '10px',
@@ -120,12 +148,15 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
     media,
     mobileMedia,
     logo,
+    mobileLogo,
     photoButton,
     aptName,
     aptAddress,
     headerSection,
     btnSection,
     logoGrid,
+    mobileAptName,
+    mobileAptAddress,
   } = useStyles();
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -180,13 +211,15 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
         <GlobalCss />
         <Grid item xs={12}>
           <CardMedia className={mobileMedia} image={photoMobileLink}>
-            <Grid className={headerSection}>
-              <Grid item xs={12} md={1} className={logoGrid}>
-                <Avatar src={icon} alt={name} className={logo} />
-              </Grid>
-              <CardHeader title={name} className={aptName} disableTypography={true} />
+            <Grid alignItems="center" className={headerSection}>
+              <CardHeader
+                avatar={<Avatar src={icon} alt={name} className={mobileLogo} />}
+                title={name}
+                className={mobileAptName}
+                disableTypography={true}
+              />
               {address !== name && (
-                <CardHeader title={address} className={aptAddress} disableTypography={true} />
+                <CardHeader title={address} className={mobileAptAddress} disableTypography={true} />
               )}
             </Grid>
           </CardMedia>
