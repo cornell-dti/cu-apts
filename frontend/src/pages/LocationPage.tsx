@@ -16,14 +16,14 @@ const LocationPage = (): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const useStyles = makeStyles({
     imgStyle: {
-      borderRadius: '20px',
-      height: isMobile ? '100px' : '300px',
-      width: '100%',
+      height: isMobile ? '200px' : '300px',
+      width: '110%',
+      marginLeft: '-20px',
     },
     titleStyle: {
       marginBottom: '40px',
       fontWeight: 'bold',
-      color: colors.white,
+      color: colors.black,
       fontSize: '40px',
       marginLeft: '50px',
       marginTop: '-70px',
@@ -55,14 +55,19 @@ const LocationPage = (): ReactElement => {
   }, []);
 
   const locDescText: Images = {
-    Collegetown: !isMobile
-      ? 'Living in Collegetown, Ithaca, NY, offers a vibrant and exciting lifestyle, with easy access to Cornell University and a variety of restaurants, shops, and entertainment options.'
-      : '',
-    West: 'Living in West allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    North:
-      'Living in North allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    Downtown:
-      'Living in Downtown allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    Collegetown: isMobile
+      ? 'Collegetown is an off-campus gathering place for Cornellians located within walking distance of campus.'
+      : 'Collegetown is an off-campus gathering place for Cornellians located within walking distance of campus. Many upperclassmen live in apartments located within Collegetown. Collegetown hosts a diverse array of restaurants. It is a special gathering place for dining, shopping, and hanging out.',
+
+    West: isMobile
+      ? 'West Campus houses upper level students who live in a community that emphasizes informal interaction with faculty members, self-governance, social initiative, and personal discovery.'
+      : 'West Campus houses upper level students who live in a community that emphasizes informal interaction with faculty members, self-governance, social initiative, and personal discovery. West Campus has a variety of off-campus small living units that are privately and university owned. In addition, there is easy access to campus as well as restaurants in both Collegetown and Downtown Ithaca.',
+    North: isMobile
+      ? 'North Campus is located north of Fall Creek. The residential experience is foundational for increasing interaction among students, especially those of the freshman class.'
+      : 'North Campus is located north of Fall Creek. The residential experience is foundational for increasing interaction among students, especially those of the freshman class. Students may live in either a residence hall or a program house. Buses are very accessible and Greek life and other forms of off-campus housing options are available in abundance.',
+    Downtown: isMobile
+      ? 'Downtown is the area surrounding and including Ithaca Commons – a vibrant off-campus gathering place for residents of Ithaca.'
+      : 'Living in Downtown allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
   };
   let img = locToImg[location];
   let desc = locDescText[location];
@@ -70,16 +75,24 @@ const LocationPage = (): ReactElement => {
 
   return (
     <>
-      <Box>
+      <Box mt={isMobile ? -2 : 0}>
         <Container maxWidth="lg">
-          <Typography variant="subtitle1" className={subtitleStyle}>
+          {/* <Typography className={subtitleStyle} style={{ fontSize: '20px' }}>
             Properties
-          </Typography>
+          </Typography> */}
           <CardMedia className={imgStyle} image={img} component="img" title={location} />
-          <Typography variant="h1" className={titleStyle}>
+
+          <Typography
+            className={titleStyle}
+            style={{ marginTop: '20px', fontSize: '25px', marginLeft: '5px' }}
+          >
             {location}
           </Typography>
-          <Typography variant="body1" className={bodyStyle}>
+          <Typography
+            variant="body1"
+            className={bodyStyle}
+            style={{ marginTop: '-35px', fontSize: '16px', marginLeft: '5px' }}
+          >
             {desc}
           </Typography>
           <ScrollingCards API={locAPI} />
