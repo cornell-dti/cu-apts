@@ -41,7 +41,11 @@ export default function BasicMenu({ menuItems }: Props) {
   return (
     <div>
       <Button
-        style={{ borderRadius: isMobile ? 20 : 0 }}
+        style={{
+          borderRadius: isMobile ? 10 : 0,
+          backgroundColor: '#e8e8e8',
+          borderColor: '#e8e8e8',
+        }}
         id="basic-button"
         aria-controls="basic-menu"
         aria-haspopup="true"
