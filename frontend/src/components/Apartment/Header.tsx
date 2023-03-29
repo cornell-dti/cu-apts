@@ -11,7 +11,6 @@ import {
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
-import defaultMobileHeader from '../../assets/default_header_mobile.svg';
 import defaultIcon from '../../assets/default_icon.png';
 import { colors } from '../../colors';
 
@@ -40,7 +39,6 @@ const useStyles = makeStyles((theme) => ({
     height: '400px',
     backgroundBlendMode: 'darken',
     position: 'relative',
-    marginBottom: '-320px',
   },
   logo: {
     height: '86px',
@@ -54,11 +52,11 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   mobileLogo: {
-    height: '36px',
-    width: '36px',
+    height: '56px',
+    width: '56px',
     fontSize: '3rem',
-    marginLeft: '5px',
-    marginBottom: '10px',
+    marginBottom: '-50px',
+    marginLeft: '100px',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
@@ -108,17 +106,18 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: 0,
     paddingBottom: 0,
     fontWeight: 'bold',
-    fontSize: '26px',
+    fontSize: '23px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
     marginTop: '10px',
+    marginLeft: '10px',
   },
   mobileAptAddress: {
     color: colors.white,
     fontStyle: 'normal',
-    fontSize: '18px',
+    fontSize: '17px',
     letterSpacing: '0.02em',
-    marginLeft: '50px',
+    marginLeft: '165px',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
@@ -142,7 +141,6 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
 
   const icon = defaultIcon;
   const photoLink = defaultHeader;
-  const photoMobileLink = defaultMobileHeader;
 
   const {
     media,
@@ -210,17 +208,40 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
       <>
         <GlobalCss />
         <Grid item xs={12}>
-          <CardMedia className={mobileMedia} image={photoMobileLink}>
+          <CardMedia
+            className={mobileMedia}
+            image={photoLink}
+            style={{ height: '203px', width: '580px', marginLeft: '-100px' }}
+          >
             <Grid alignItems="center" className={headerSection}>
-              <CardHeader
-                avatar={<Avatar src={icon} alt={name} className={mobileLogo} />}
-                title={name}
-                className={mobileAptName}
-                disableTypography={true}
-              />
-              {address !== name && (
-                <CardHeader title={address} className={mobileAptAddress} disableTypography={true} />
-              )}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Avatar
+                  src={icon}
+                  alt={name}
+                  className={mobileLogo}
+                  style={{ marginTop: '100px' }}
+                />
+                <CardHeader
+                  title={name}
+                  className={mobileAptName}
+                  disableTypography={true}
+                  style={{ marginTop: '120px' }}
+                />
+                {address !== name && (
+                  <CardHeader
+                    title={address}
+                    className={mobileAptAddress}
+                    disableTypography={true}
+                    style={{ marginTop: '-8px' }}
+                  />
+                )}
+              </div>
             </Grid>
           </CardMedia>
         </Grid>

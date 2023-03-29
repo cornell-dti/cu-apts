@@ -391,14 +391,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     <>
       <Grid container alignItems="center">
         <Grid container spacing={1} sm={12}>
-          <Grid item>
-            <Typography variant="h5">Reviews ({reviewData.length})</Typography>
+          <Grid item style={{ marginTop: '4px' }}>
+            <Typography variant="h6" style={{ marginLeft: '5px' }}>
+              Reviews ({reviewData.length})
+            </Typography>
             {reviewData.length === 0 && (
               <Typography>No reviews available. Be the first to leave one!</Typography>
             )}
           </Grid>
           {!!getAverageRating(reviewData) && (
-            <Grid item>
+            <Grid item style={{ marginTop: '4px' }}>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
@@ -422,6 +424,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 aria-expanded={!isClicked}
                 aria-label="show more"
                 size="small"
+                style={{ marginTop: '3px' }}
               >
                 <ExpandMoreIcon />
               </IconButton>
@@ -461,7 +464,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 Leave a Review
               </Button>
             </Grid>
-            <Grid item>
+            <Grid item style={{ marginRight: '8px' }}>
               <Grid container spacing={1} direction="row" alignItems="center">
                 <Grid item>
                   <Typography>Sort by:</Typography>
@@ -557,6 +560,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
               ))}
             </Grid>
+            {isMobile && (
+              <Grid style={{ marginTop: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                <Button color="secondary" variant="contained" disableElevation>
+                  Show More
+                </Button>
+              </Grid>
+            )}
             {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           </Grid>
           <Hidden xsDown>{InfoSection}</Hidden>
