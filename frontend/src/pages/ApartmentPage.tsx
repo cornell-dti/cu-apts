@@ -561,11 +561,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               ))}
             </Grid>
             {isMobile && (
-              <Grid style={{ marginTop: '10px', marginBottom: '10px', alignItems: 'center' }}>
-                <Button color="secondary" variant="contained" disableElevation>
-                  Show More
-                </Button>
-              </Grid>
+              <Box textAlign="center">
+                <Grid style={{ marginTop: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                  <Button color="secondary" variant="contained" disableElevation>
+                    Show More
+                  </Button>
+                </Grid>
+              </Box>
             )}
             {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           </Grid>
