@@ -57,10 +57,11 @@ const useStyles = makeStyles(() => ({
   },
   photoStyle: {
     borderRadius: '4px',
-    width: '17vw',
-    height: '16vw',
+    height: '28vh',
+    width: '28vh',
   },
   photoRowStyle: {
+    overflowX: 'auto',
     display: 'flex',
     lexDirection: 'row',
     gap: '1vw',
