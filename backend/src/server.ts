@@ -8,9 +8,9 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
 // Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.use(express.static(path.join(__dirname, '../../frontend/build')));
 
 // Anything that doesn't match above (the beginning slash ('/') in the string is important!)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(`${__dirname  }/../frontend/build/index.html`));
+  res.sendFile(path.join(`${__dirname}/../../frontend/build/index.html`));
 });
