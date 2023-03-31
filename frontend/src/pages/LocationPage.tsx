@@ -28,10 +28,6 @@ const LocationPage = (): ReactElement => {
       marginLeft: '50px',
       marginTop: '-70px',
     },
-    subtitleStyle: {
-      fontWeight: 700,
-      fontSize: '24px',
-    },
     bodyStyle: {
       marginLeft: '20px',
     },
@@ -67,11 +63,11 @@ const LocationPage = (): ReactElement => {
       : 'North Campus is located north of Fall Creek. The residential experience is foundational for increasing interaction among students, especially those of the freshman class. Students may live in either a residence hall or a program house. Buses are very accessible and Greek life and other forms of off-campus housing options are available in abundance.',
     Downtown: isMobile
       ? 'Downtown is the area surrounding and including Ithaca Commons – a vibrant off-campus gathering place for residents of Ithaca.'
-      : 'Living in Downtown allows you to Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      : 'Downtown is the area surrounding and including Ithaca Commons – a vibrant off-campus gathering place for residents of Ithaca. Downtown is a walkable and well-connected area that is home to more than 100 stores and 50 restaurants.',
   };
   let img = locToImg[location];
   let desc = locDescText[location];
-  const { imgStyle, titleStyle, subtitleStyle, bodyStyle } = useStyles();
+  const { imgStyle, titleStyle, bodyStyle } = useStyles();
 
   return (
     <>
