@@ -38,6 +38,7 @@
     "lint:fix": "yarn lint --fix",
     "tsc": "tsc -p tsconfig.json"
   },
+  "proxy": "http://localhost:8080",
   "browserslist": {
     "production": [
       ">0.2%",
