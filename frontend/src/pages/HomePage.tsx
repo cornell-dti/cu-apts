@@ -25,7 +25,6 @@ const useStyles = makeStyles({
   },
   rentingText: {
     marginBottom: '1em',
-    fontWeight: 500,
     color: colors.red1,
   },
 });
@@ -38,6 +37,7 @@ type returnData = {
 const HomePage = (): ReactElement => {
   const classes = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
     get<returnData>(`/page-data/home/${loadingLength}`, {
@@ -45,16 +45,41 @@ const HomePage = (): ReactElement => {
     });
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
-      <Box className={styles.JumboTron}>
+      <Box className={styles.JumboTron} mt={isMobile ? -2 : 0}>
         <Container maxWidth="lg">
           <Box py={6}>
-            <Typography variant="h1" className={classes.jumboText}>
+            <Typography
+              variant="h1"
+              style={{
+                fontSize: isMobile ? '26px' : '48px',
+                marginTop: isMobile ? '10px' : '0px',
+              }}
+              className={classes.jumboText}
+            >
               Discover Housing @ Cornell
             </Typography>
+            <Typography
+              className={classes.jumboSub}
+              style={{
+                fontStyle: 'italic',
+                fontSize: isMobile ? '16px' : '25px',
+                marginTop: isMobile ? '-10px' : '-12px',
+              }}
+            >
+              Easy browsing for off-campus housing
+            </Typography>
           </Box>
-          <Box pb={5} mx={0}>
+
+          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 4 : 8}>
             <Autocomplete />
           </Box>
         </Container>
@@ -63,12 +88,20 @@ const HomePage = (): ReactElement => {
       <Box>
         <Container maxWidth="lg">
           <Box textAlign="center" className={classes.rentingBox}>
-            <Typography variant="h2" className={classes.rentingText}>
+            <Typography
+              variant="h2"
+              style={{
+                fontSize: isMobile ? '21px' : '35px',
+                fontWeight: isMobile ? 650 : 500,
+                marginTop: isMobile ? '-15px' : '0px',
+              }}
+              className={classes.rentingText}
+            >
               Find the Best Properties in Ithaca
             </Typography>
             <LocationCards />
           </Box>
-          <ApartmentCards data={data.buildingData} />
+          {!isMobile && <ApartmentCards data={data.buildingData} />}
         </Container>
       </Box>
     </>
