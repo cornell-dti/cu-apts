@@ -17,19 +17,22 @@ const LocationPage = (): ReactElement => {
   const useStyles = makeStyles({
     imgStyle: {
       height: isMobile ? '200px' : '300px',
-      width: isMobile ? '110%' : '100%',
-      marginLeft: '-20px',
+      width: '100%',
+      borderRadius: '10px',
     },
     titleStyle: {
       marginBottom: '40px',
-      fontWeight: 'bold',
-      color: colors.black,
-      fontSize: '40px',
-      marginLeft: '50px',
-      marginTop: '-70px',
+      color: colors.white,
+      marginLeft: '20px',
+      marginTop: '-80px',
+      fontFamily: 'Work Sans',
+      fontStyle: 'bold',
+      fontWeight: 700,
+      fontSize: '50px',
+      lineHeight: '70px',
     },
     bodyStyle: {
-      marginLeft: '20px',
+      marginLeft: '5px',
     },
   });
 
@@ -73,22 +76,9 @@ const LocationPage = (): ReactElement => {
     <>
       <Box mt={isMobile ? -2 : 0}>
         <Container maxWidth="lg">
-          {/* <Typography className={subtitleStyle} style={{ fontSize: '20px' }}>
-            Properties
-          </Typography> */}
           <CardMedia className={imgStyle} image={img} component="img" title={location} />
-
-          <Typography
-            className={titleStyle}
-            style={{ marginTop: '20px', fontSize: '25px', marginLeft: '5px' }}
-          >
-            {location}
-          </Typography>
-          <Typography
-            variant="body1"
-            className={bodyStyle}
-            style={{ marginTop: '-35px', fontSize: '16px', marginLeft: '5px' }}
-          >
+          <Typography className={titleStyle}>{location}</Typography>
+          <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
           <ScrollingCards API={locAPI} />
