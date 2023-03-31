@@ -13,7 +13,6 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
-import path from 'path';
 import { db, FieldValue } from './firebase-config';
 import { Section } from './firebase-config/types';
 import authenticate from './auth';
