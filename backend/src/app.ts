@@ -13,6 +13,7 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
+import path from 'path';
 import { db, FieldValue } from './firebase-config';
 import { Section } from './firebase-config/types';
 import authenticate from './auth';
@@ -27,8 +28,9 @@ const app: Express = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
+app.use(express.static(path.join(__dirname, '../../frontend/build')));
 
-app.get('/', async (_, res) => {
+app.get('/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
   const faqs: Section[] = snapshot.docs.map((doc) => {
@@ -317,5 +319,9 @@ app.put('/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
     res.status(500).send('Error');
   }
 });
+
+app.get('*', (_, response) =>
+  response.sendFile(path.join(__dirname, '../../frontend/build/index.html'))
+);
 
 export default app;
