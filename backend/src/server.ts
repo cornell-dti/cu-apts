@@ -8,9 +8,11 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
 // Serve static files from the React frontend app
+// eslint-disable-next-line no-console
 app.use(express.static(path.join(__dirname, '../../../../frontend/build')));
 
 // Anything that doesn't match above (the beginning slash ('/') in the string is important!)
+// eslint-disable-next-line no-console
 app.get('*', (req, res) => {
   res.sendFile(path.join(`${__dirname}/../../../../frontend/build/index.html`));
 });
