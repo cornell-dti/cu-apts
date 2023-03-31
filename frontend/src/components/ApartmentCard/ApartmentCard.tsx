@@ -27,16 +27,6 @@ const useStyles = makeStyles({
       background: colors.red5,
     },
   },
-  imgStyle: {
-    borderRadius: '12%',
-    padding: '17px',
-  },
-  imgMobile: {
-    borderRadius: '8%',
-    height: '480px',
-    width: '100%',
-    padding: '20px',
-  },
 
   aptNameTxt: {
     fontWeight: 800,
@@ -65,17 +55,8 @@ const useStyles = makeStyles({
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { id, name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
-  const {
-    imgStyle,
-    imgMobile,
-    aptNameTxt,
-    marginTxt,
-    root,
-
-    reviewNum,
-    textStyle,
-  } = useStyles();
-  const matches = useMediaQuery('(min-width:600px)');
+  const { aptNameTxt, marginTxt, root, reviewNum, textStyle } = useStyles();
+  const isDesktop = useMediaQuery('(min-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
 
@@ -88,16 +69,21 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   return (
     <Card className={root} variant="outlined">
       <Grid container direction="row" alignItems="center">
-        {matches && (
+        {
           <Grid item xs={11} sm={4} md={2}>
-            <CardMedia className={imgStyle} image={img} component="img" title={name} />
+            <CardMedia
+              style={{
+                borderRadius: isDesktop ? '10%' : '0%',
+                height: isDesktop ? 'auto' : '150px',
+                padding: '17px',
+              }}
+              image={img}
+              component="img"
+              title={name}
+            />
           </Grid>
-        )}
-        {!matches && (
-          <Grid item xs={11} sm={4} md={2}>
-            <CardMedia className={imgMobile} image={img} component="img" title={name} />
-          </Grid>
-        )}
+        }
+
         <Grid item sm={8} md={10}>
           <CardContent>
             <Grid container spacing={1}>
@@ -121,7 +107,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
               </Grid>
 
               <Grid>
-                {matches && (
+                {isDesktop && (
                   <Typography variant="subtitle1" className={textStyle}>
                     {sampleReview}
                   </Typography>
