@@ -17,7 +17,7 @@ const LocationPage = (): ReactElement => {
   const useStyles = makeStyles({
     imgStyle: {
       height: isMobile ? '200px' : '300px',
-      width: '110%',
+      width: isMobile ? '110%' : '100%',
       marginLeft: '-20px',
     },
     titleStyle: {
