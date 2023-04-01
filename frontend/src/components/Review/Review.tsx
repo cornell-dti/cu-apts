@@ -57,10 +57,11 @@ const useStyles = makeStyles(() => ({
   },
   photoStyle: {
     borderRadius: '4px',
-    width: '17vw',
-    height: '16vw',
+    height: '15em',
+    width: '15em',
   },
   photoRowStyle: {
+    overflowX: 'auto',
     display: 'flex',
     lexDirection: 'row',
     gap: '1vw',
@@ -102,7 +103,7 @@ const ReviewComponent = ({
 
   const reportAbuseHanler = async (reviewId: string) => {
     if (user) {
-      const endpoint = `update-review-status/${reviewId}/PENDING`;
+      const endpoint = `/update-review-status/${reviewId}/PENDING`;
       await axios.put(endpoint);
       setToggle((cur) => !cur);
     } else {

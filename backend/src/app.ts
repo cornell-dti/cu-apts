@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
-app.get('/', async (_, res) => {
+app.get('/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
   const faqs: Section[] = snapshot.docs.map((doc) => {

@@ -46,12 +46,25 @@ const useStyles = makeStyles(() => ({
     marginTop: '10px',
     marginBottom: '30px',
   },
+  photoStyle: {
+    borderRadius: '4px',
+    height: '15em',
+    width: '15em',
+  },
+  photoRowStyle: {
+    overflowX: 'auto',
+    display: 'flex',
+    lexDirection: 'row',
+    gap: '1vw',
+    paddingTop: '2%',
+    paddingLeft: '0.6%',
+  },
 }));
 
 const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, dateText, ratingInfo } = useStyles();
+  const { root, dateText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlord, setLandlord] = useState<Landlord>();
 
@@ -78,7 +91,7 @@ const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
   };
 
   const changeStatus = async (newStatus: string) => {
-    const endpoint = `update-review-status/${review.id}/${newStatus}`;
+    const endpoint = `/update-review-status/${review.id}/${newStatus}`;
     await axios.put(endpoint);
     setToggle((cur) => !cur);
   };
@@ -133,14 +146,19 @@ const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
               </Grid>
 
               {photos.length > 0 && (
-                <Grid container alignItems="center" justifyContent="center">
-                  <Grid item xs={12} sm={6}>
-                    <CardMedia
-                      component="img"
-                      alt="Apt image"
-                      image={photos[0]}
-                      title="Apt image"
-                    />
+                <Grid container>
+                  <Grid item className={photoRowStyle}>
+                    {photos.map((photo) => {
+                      return (
+                        <CardMedia
+                          component="img"
+                          alt="Apt image"
+                          image={photo}
+                          title="Apt image"
+                          className={photoStyle}
+                        />
+                      );
+                    })}
                   </Grid>
                 </Grid>
               )}
