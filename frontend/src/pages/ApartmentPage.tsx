@@ -562,8 +562,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </Grid>
             {isMobile && (
               <Box textAlign="center">
-                <Grid style={{ marginTop: '10px', marginBottom: '10px', alignItems: 'center' }}>
-                  <Button color="secondary" variant="contained" disableElevation>
+                <Grid style={{ marginTop: '30px', marginBottom: '30px', alignItems: 'center' }}>
+                  <Button
+                    style={{
+                      backgroundColor: '#e8e8e8',
+                      borderColor: '#e8e8e8',
+                      borderRadius: '10px',
+                    }}
+                    variant="contained"
+                    disableElevation
+                  >
                     Show More
                   </Button>
                 </Grid>
