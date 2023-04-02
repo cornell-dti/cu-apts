@@ -1,4 +1,4 @@
-import { Container, Typography, makeStyles } from '@material-ui/core';
+import { Container, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
@@ -10,16 +10,15 @@ const useStyles = makeStyles({
   searchText: {
     color: colors.black,
     fontWeight: 500,
-    fontSize: 30,
-    margin: '0.5em 0 0.5em 0',
   },
 });
 
 const SearchResultsPage = (): ReactElement => {
-  const classes = useStyles();
+  const { searchText } = useStyles();
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
   const query = location.search.substring(3);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     get<CardData[]>(`/search-results?q=${query}`, {
@@ -29,7 +28,9 @@ const SearchResultsPage = (): ReactElement => {
 
   return (
     <Container>
-      <Typography className={classes.searchText}>Search results for "{query}"</Typography>
+      <Typography className={searchText} style={{ fontSize: isMobile ? '20px' : '30px' }}>
+        Search results for "{query}"
+      </Typography>
       <ApartmentCards data={searchResults} />
     </Container>
   );
