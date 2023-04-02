@@ -10,7 +10,7 @@ type Props = {
 
 const useStyles = makeStyles({
   boundingBox: {
-    marginTop: '2em',
+    marginTop: '0.2em',
     marginBottom: '2em',
   },
   showMoreButton: {

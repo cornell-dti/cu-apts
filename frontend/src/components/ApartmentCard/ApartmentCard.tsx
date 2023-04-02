@@ -36,12 +36,13 @@ const useStyles = makeStyles({
     fontWeight: 800,
   },
   marginTxt: {
-    paddingLeft: '30px',
+    paddingBottom: '-10px',
+    paddingLeft: '20px',
   },
   reviewNum: {
     fontWeight: 700,
     marginLeft: '10px',
-    fontSize: '15px',
+    fontSize: '18px',
   },
   textStyle: {
     maxWidth: '100%',
@@ -54,14 +55,11 @@ const useStyles = makeStyles({
     marginRight: '5px',
   },
   imgMobile: {
-    borderRadius: '12px',
-    width: '100%',
-    objectFit: 'cover',
+    borderRadius: '10px',
+    marginTop: '13px',
   },
   imgContainerMobile: {
     borderRadius: '10px',
-    padding: '22px',
-    paddingBottom: '7px',
   },
 });
 
@@ -113,13 +111,22 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
         <Grid item sm={8} md={10} className={marginTxt}>
           <CardContent>
             <Grid container>
-              <Typography variant="h5" className={aptNameTxt}>
+              <Typography
+                variant="h5"
+                className={aptNameTxt}
+                style={{ fontSize: isMobile ? '20px' : '25px' }}
+              >
                 {name}
               </Typography>
               {company && (
                 <Grid container item justifyContent="space-between">
                   <Grid>
-                    <Typography variant="subtitle1">{buildingData.address}</Typography>
+                    <Typography
+                      variant="subtitle1"
+                      style={{ fontSize: isMobile ? '15px' : '20px' }}
+                    >
+                      {buildingData.address}
+                    </Typography>
                   </Grid>
                 </Grid>
               )}
@@ -129,7 +136,6 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
-
               {!isMobile && (
                 <Grid>
                   <Typography variant="subtitle1" className={textStyle}>
