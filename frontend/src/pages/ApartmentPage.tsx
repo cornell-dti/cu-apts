@@ -87,6 +87,14 @@ const useStyles = makeStyles((theme) => ({
       color: 'inherit',
     },
   },
+  horizontalLine: {
+    borderTop: '1px solid #C4C4C4',
+    width: '95%',
+    marginTop: '20px',
+    borderLeft: 'none',
+    borderRight: 'none',
+    borderBottom: 'none',
+  },
 }));
 
 const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
@@ -111,10 +119,24 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [toggle, setToggle] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(true);
+  const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
+
+  useEffect(() => {
+    if (isMobile) {
+      setResultsToShow(5);
+    } else {
+      setResultsToShow(reviewData.length);
+    }
+  }, [isMobile, reviewData.length]);
+
+  const handleShowMore = () => {
+    setResultsToShow(resultsToShow + 5);
+  };
 
   const handlePageNotFound = () => {
     setNotFound(true);
   };
+
   const {
     aptRating,
     heartRating,
@@ -123,11 +145,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
+    horizontalLine,
   } = useStyles();
+
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
+
   useEffect(() => {
     get<ApartmentWithId[]>(`/apts/${aptId}`, {
       callback: setAptData,
@@ -304,7 +329,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const Header = (
     <>
       <Grid container alignItems="center">
-        <Grid container spacing={1} sm={12}>
+        <Grid container spacing={1}>
           <Grid item>
             <Typography variant="h6">Reviews ({reviewData.length})</Typography>
             {reviewData.length === 0 && (
@@ -353,7 +378,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             <Grid item>
               <Grid container spacing={1} direction="row" alignItems="center">
                 <Grid item>
-                  <Typography>Sort reviews by:</Typography>
+                  <Typography>Sort by:</Typography>
                 </Grid>
                 <Grid item>
                   <DropDown
@@ -390,13 +415,15 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const MobileHeader = (
     <>
       <Grid container alignItems="center">
-        <Grid container spacing={1} sm={12}>
+        <Grid container spacing={1}>
           <Grid item style={{ marginTop: '4px' }}>
-            <Typography variant="h6" style={{ marginLeft: '5px' }}>
+            <Typography style={{ marginLeft: '5px', fontSize: '18px', fontWeight: 500 }}>
               Reviews ({reviewData.length})
             </Typography>
             {reviewData.length === 0 && (
-              <Typography>No reviews available. Be the first to leave one!</Typography>
+              <Typography style={{ marginLeft: '5px', fontSize: '18px' }}>
+                No reviews available. Be the first to leave one!
+              </Typography>
             )}
           </Grid>
           {!!getAverageRating(reviewData) && (
@@ -406,7 +433,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
                 </Grid>
                 <Grid item className={aptRating}>
-                  <Typography variant="h6">
+                  <Typography style={{ marginLeft: '5px', fontSize: '18px', fontWeight: 500 }}>
                     {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
                   </Typography>
                 </Grid>
@@ -455,7 +482,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
               <Button
-                style={{ borderRadius: 20 }}
+                style={{ borderRadius: 20, fontSize: '14px' }}
                 color="primary"
                 variant="contained"
                 disableElevation
@@ -467,7 +494,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             <Grid item style={{ marginRight: '8px' }}>
               <Grid container spacing={1} direction="row" alignItems="center">
                 <Grid item>
-                  <Typography>Sort by:</Typography>
+                  <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
                 </Grid>
                 <Grid item>
                   <DropDown
@@ -545,42 +572,49 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               />
             )}
             <Grid container item spacing={3}>
-              {sortReviews(reviewData, sortBy).map((review, index) => (
-                <Grid item xs={12} key={index}>
-                  <ReviewComponent
-                    review={review}
-                    liked={likedReviews[review.id]}
-                    likeLoading={likeStatuses[review.id]}
-                    addLike={addLike}
-                    removeLike={removeLike}
-                    setToggle={setToggle}
-                    user={user}
-                    setUser={setUser}
-                  />
-                </Grid>
-              ))}
+              {sortReviews(reviewData, sortBy)
+                .slice(0, resultsToShow)
+                .map((review, index) => (
+                  <Grid item xs={12} key={index}>
+                    <ReviewComponent
+                      review={review}
+                      liked={likedReviews[review.id]}
+                      likeLoading={likeStatuses[review.id]}
+                      addLike={addLike}
+                      removeLike={removeLike}
+                      setToggle={setToggle}
+                      user={user}
+                      setUser={setUser}
+                    />
+                  </Grid>
+                ))}
             </Grid>
-            {isMobile && (
+
+            {isMobile && reviewData.length > resultsToShow && (
               <Box textAlign="center">
-                <Grid style={{ marginTop: '60px', marginBottom: '60px', alignItems: 'center' }}>
+                <Grid item xs={12}>
+                  <hr className={horizontalLine} />
+                </Grid>
+                <Grid item style={{ padding: '30px' }}>
                   <Button
                     style={{
                       backgroundColor: 'white',
-                      borderRadius: '10px',
-                      border: '2px solid #e8e8e8',
-                      width: '140px',
-                      height: '50px',
+                      border: '1px solid #A3A3A3',
+                      borderRadius: '9px',
+                      width: '10em',
+                      textTransform: 'initial',
                     }}
                     variant="contained"
                     disableElevation
+                    onClick={handleShowMore}
                   >
                     Show More
                   </Button>
                 </Grid>
               </Box>
             )}
-            {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           </Grid>
+          {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           <Hidden xsDown>{InfoSection}</Hidden>
         </Grid>
       </Container>

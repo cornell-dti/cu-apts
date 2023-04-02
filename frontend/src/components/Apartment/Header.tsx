@@ -175,9 +175,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={aptName} disableTypography={true} />
-                  {address !== name && (
-                    <CardHeader title={address} className={aptAddress} disableTypography={true} />
-                  )}
+                  <CardHeader title={address} className={aptAddress} disableTypography={true} />
                 </Grid>
               </Grid>
             </Grid>
@@ -233,14 +231,12 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
                   disableTypography={true}
                   style={{ marginTop: '120px' }}
                 />
-                {address !== name && (
-                  <CardHeader
-                    title={address}
-                    className={mobileAptAddress}
-                    disableTypography={true}
-                    style={{ marginTop: '-8px' }}
-                  />
-                )}
+                <CardHeader
+                  title={address}
+                  className={mobileAptAddress}
+                  disableTypography={true}
+                  style={{ marginTop: '-8px' }}
+                />
               </div>
             </Grid>
           </CardMedia>
