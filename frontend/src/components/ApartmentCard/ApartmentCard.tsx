@@ -20,6 +20,7 @@ type Props = {
   numReviews: number;
   company?: string;
 };
+
 const useStyles = makeStyles({
   root: {
     borderRadius: '10px',
@@ -27,18 +28,21 @@ const useStyles = makeStyles({
       background: colors.red5,
     },
   },
-
+  imgStyle: {
+    borderRadius: '12%',
+    padding: '17px',
+  },
   aptNameTxt: {
     fontWeight: 800,
-    marginLeft: '25px',
   },
   marginTxt: {
-    marginLeft: '25px',
+    paddingBottom: '-10px',
+    paddingLeft: '20px',
   },
-
   reviewNum: {
     fontWeight: 700,
     marginLeft: '10px',
+    fontSize: '18px',
   },
   textStyle: {
     maxWidth: '100%',
@@ -47,18 +51,35 @@ const useStyles = makeStyles({
     WebkitLineClamp: 3,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    marginLeft: '25px',
+    marginLeft: '3px',
     marginRight: '5px',
+  },
+  imgMobile: {
+    borderRadius: '10px',
+    marginTop: '13px',
+  },
+  imgContainerMobile: {
+    borderRadius: '10px',
   },
 });
 
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { id, name, photos } = buildingData;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
-  const { aptNameTxt, marginTxt, root, reviewNum, textStyle } = useStyles();
-  const isDesktop = useMediaQuery('(min-width:600px)');
+  const isMobile = useMediaQuery('(max-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
-  const sampleReview = reviewList.length === 0 ? 'No Reviews' : reviewList[0].reviewText;
+  const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
+
+  const {
+    imgStyle,
+    imgMobile,
+    aptNameTxt,
+    marginTxt,
+    root,
+    reviewNum,
+    textStyle,
+    imgContainerMobile,
+  } = useStyles();
 
   useEffect(() => {
     get<ReviewWithId[]>(`/review/aptId/${id}/APPROVED`, {
@@ -69,50 +90,59 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   return (
     <Card className={root} variant="outlined">
       <Grid container direction="row" alignItems="center">
-        {
+        {!isMobile && (
           <Grid item xs={11} sm={4} md={2}>
-            <CardMedia
-              style={{
-                borderRadius: isDesktop ? '10%' : '0%',
-                height: isDesktop ? 'auto' : '150px',
-                padding: '17px',
-              }}
-              image={img}
-              component="img"
-              title={name}
-            />
+            <CardMedia className={imgStyle} image={img} component="img" title={name} />
           </Grid>
-        }
-
-        <Grid item sm={8} md={10}>
+        )}
+        {isMobile && (
+          <Grid container direction="row" alignItems="center" justifyContent="center">
+            <Grid item xs={11} sm={4} md={2} className={imgContainerMobile}>
+              <CardMedia
+                className={imgMobile}
+                style={{ height: isMobile ? '160px' : '480px' }}
+                image={img}
+                component="img"
+                title={name}
+              />
+            </Grid>
+          </Grid>
+        )}
+        <Grid item sm={8} md={10} className={marginTxt}>
           <CardContent>
-            <Grid container spacing={1}>
-              <Grid item>
-                <Typography variant="h5" className={aptNameTxt}>
-                  {name}
-                </Typography>
-              </Grid>
+            <Grid container>
+              <Typography
+                variant="h5"
+                className={aptNameTxt}
+                style={{ fontSize: isMobile ? '20px' : '25px' }}
+              >
+                {name}
+              </Typography>
               {company && (
-                <Grid container item justifyContent="space-between" className={marginTxt}>
+                <Grid container item justifyContent="space-between">
                   <Grid>
-                    <Typography variant="subtitle1">{buildingData.address}</Typography>
+                    <Typography
+                      variant="subtitle1"
+                      style={{ fontSize: isMobile ? '15px' : '20px' }}
+                    >
+                      {buildingData.address}
+                    </Typography>
                   </Grid>
                 </Grid>
               )}
-              <Grid container direction="row" alignItems="center" className={marginTxt}>
+              <Grid container direction="row" alignItems="center">
                 <HeartRating value={getAverageRating(reviewList)} precision={0.5} readOnly />
                 <Typography variant="h6" className={reviewNum}>
                   {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
                 </Typography>
               </Grid>
-
-              <Grid>
-                {isDesktop && (
+              {!isMobile && (
+                <Grid>
                   <Typography variant="subtitle1" className={textStyle}>
                     {sampleReview}
                   </Typography>
-                )}
-              </Grid>
+                </Grid>
+              )}
             </Grid>
           </CardContent>
         </Grid>
