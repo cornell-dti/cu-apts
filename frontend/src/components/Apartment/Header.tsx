@@ -209,7 +209,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
           <CardMedia
             className={mobileMedia}
             image={photoLink}
-            style={{ height: '203px', width: '580px', marginLeft: '-100px' }}
+            style={{ height: '203px', width: '115%', marginLeft: '-10%' }}
           >
             <Grid alignItems="center" className={headerSection}>
               <div
