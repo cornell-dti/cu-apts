@@ -81,7 +81,7 @@ const LocationPage = (): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
-          <ScrollingCards API={locAPI} />
+          <ScrollingCards API={locAPI} autoLoad={isMobile ? false : true} />
         </Container>
       </Box>
     </>
