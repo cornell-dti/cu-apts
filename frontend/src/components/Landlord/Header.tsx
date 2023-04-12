@@ -1,4 +1,5 @@
 import React, { ReactElement, useState, useEffect } from 'react';
+
 import {
   CardHeader,
   CardMedia,
@@ -123,7 +124,7 @@ const useStyles = makeStyles((theme) => ({
     width: '56px',
     fontSize: '3rem',
     marginBottom: '-50px',
-    marginLeft: '8%',
+    marginLeft: '7%',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
@@ -137,7 +138,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '23px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
-    marginTop: '10px',
+    marginBottom: '15.5px',
     marginLeft: '50%',
   },
 }));
@@ -229,12 +230,12 @@ const LandlordHeader = ({
                 <Grid item xs={12} md={1} className={logoGrid}>
                   <Avatar src={icon} alt={name} className={mobileLogo} />
                 </Grid>
-                <Grid className={headerSection}>
+                <Grid className={headerSection} alignItems="center">
                   <CardHeader
                     title={name}
                     className={mobileLandlordName}
                     disableTypography={true}
-                    style={{ marginTop: '10px' }}
+                    style={{ marginTop: '0px' }}
                   />
                   <Grid container className={ratingSection}>
                     <Grid item xs={12}></Grid>
