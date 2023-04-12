@@ -50,6 +50,18 @@ export type RatingInfo = {
 };
 
 const useStyles = makeStyles((theme) => ({
+  sortByButton: {
+    background: '#E8E8E8',
+    border: 'none',
+    borderRadius: '10px',
+    paddingRight: '5px',
+    paddingLeft: '5px',
+  },
+  reviewButton: {
+    borderRadius: '30px',
+    marginTop: '10px',
+    marginBottom: '10px',
+  },
   aptRating: {
     color: colors.black,
   },
@@ -136,18 +148,28 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
+<<<<<<< HEAD
 
   const {
+=======
+  const {
+    sortByButton,
+    reviewButton,
+>>>>>>> e8fdaa4 (Changed position and styling of ApartmentPage buttons and added line for each review card (#271))
     aptRating,
     heartRating,
     leaveReviewContainer,
     ratingInfo,
     container,
+<<<<<<< HEAD
     expand,
     expandOpen,
     horizontalLine,
   } = useStyles();
 
+=======
+  } = useStyles();
+>>>>>>> e8fdaa4 (Changed position and styling of ApartmentPage buttons and added line for each review card (#271))
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
@@ -336,6 +358,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               <Typography>No reviews available. Be the first to leave one!</Typography>
             )}
           </Grid>
+
           {!!getAverageRating(reviewData) && (
             <Grid item>
               <Grid container alignItems="center">
@@ -368,6 +391,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             <Grid item>
               <Button
                 color="primary"
+                className={reviewButton}
                 variant="contained"
                 disableElevation
                 onClick={openReviewModal}
@@ -380,17 +404,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 <Grid item>
                   <Typography>Sort by:</Typography>
                 </Grid>
-                <Grid item>
+                <Grid item className={sortByButton}>
                   <DropDown
                     menuItems={[
                       {
-                        item: 'Most recent',
+                        item: 'Recent',
                         callback: () => {
                           setSortBy('date');
                         },
                       },
                       {
-                        item: 'Most helpful',
+                        item: 'Helpful',
                         callback: () => {
                           setSortBy('likes');
                         },

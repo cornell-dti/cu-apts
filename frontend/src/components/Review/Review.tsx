@@ -38,6 +38,10 @@ const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
+  bottomborder: {
+    borderBottom: '1px #E8E8E8 solid',
+    marginBottom: '5px',
+  },
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
@@ -48,6 +52,9 @@ const useStyles = makeStyles(() => ({
   },
   dateText: {
     color: colors.gray1,
+  },
+  heartSpacing: {
+    marginBottom: '10px',
   },
   button: {
     textTransform: 'none',
@@ -82,7 +89,17 @@ const ReviewComponent = ({
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, expand, expandOpen, dateText, button, photoStyle, photoRowStyle } = useStyles();
+  const {
+    root,
+    expand,
+    expandOpen,
+    dateText,
+    button,
+    photoStyle,
+    photoRowStyle,
+    bottomborder,
+    heartSpacing,
+  } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
 
@@ -127,35 +144,37 @@ const ReviewComponent = ({
         <CardContent>
           <Grid container spacing={2}>
             <Grid item container justifyContent="space-between">
-              <Grid container item xs={10} spacing={2}>
-                <Grid item>
-                  <HeartRating value={overallRating} readOnly />
+              <Grid item container justifyContent="space-between" className={bottomborder}>
+                <Grid container item xs={10} spacing={2}>
+                  <Grid item className={heartSpacing}>
+                    <HeartRating value={overallRating} readOnly />
+                  </Grid>
+                  <Grid item>
+                    <IconButton
+                      className={clsx(expand, {
+                        [expandOpen]: expanded,
+                      })}
+                      onClick={handleExpandClick}
+                      aria-expanded={expanded}
+                      aria-label="show more"
+                      size="small"
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  </Grid>
                 </Grid>
+
                 <Grid item>
-                  <IconButton
-                    className={clsx(expand, {
-                      [expandOpen]: expanded,
-                    })}
-                    onClick={handleExpandClick}
-                    aria-expanded={expanded}
-                    aria-label="show more"
-                    size="small"
-                  >
-                    <ExpandMoreIcon />
-                  </IconButton>
+                  <Typography className={dateText}>{formattedDate}</Typography>
                 </Grid>
-              </Grid>
 
-              <Grid item>
-                <Typography className={dateText}>{formattedDate}</Typography>
-              </Grid>
-
-              <Grid item>
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <CardContent>
-                    <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
-                  </CardContent>
-                </Collapse>
+                <Grid item>
+                  <Collapse in={expanded} timeout="auto" unmountOnExit>
+                    <CardContent>
+                      <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
+                    </CardContent>
+                  </Collapse>
+                </Grid>
               </Grid>
 
               <Grid item container alignContent="center">
