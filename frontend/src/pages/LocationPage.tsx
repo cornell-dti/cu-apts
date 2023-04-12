@@ -37,13 +37,6 @@ const LocationPage = (): ReactElement => {
     bodyStyle: {
       marginLeft: '5px',
     },
-    showMoreButton: {
-      border: '1px solid #A3A3A3',
-      borderRadius: '9px',
-      color: '#000000B2',
-      width: '10em',
-      textTransform: 'initial',
-    },
   });
 
   const path = useLocation();

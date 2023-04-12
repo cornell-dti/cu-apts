@@ -13,7 +13,6 @@ const useStyles = makeStyles({
 
 type Props = {
   API: string;
-  autoLoad: boolean;
 };
 
 type returnData = {
@@ -21,7 +20,7 @@ type returnData = {
   isEnded: boolean;
 };
 
-const ScrollingCards = ({ API, autoLoad }: Props): ReactElement => {
+const ScrollingCards = ({ API }: Props): ReactElement => {
   const [dataSize, setDataSize] = useState(loadingLength);
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const { loadingMsg } = useStyles();
@@ -41,11 +40,9 @@ const ScrollingCards = ({ API, autoLoad }: Props): ReactElement => {
   return (
     <>
       <ApartmentCards data={data.buildingData} />
-      {autoLoad && (
-        <Typography className={loadingMsg}>
-          {!data.isEnded ? 'Loading more apartments...' : "There's no more apartments!"}
-        </Typography>
-      )}
+      <Typography className={loadingMsg}>
+        {!data.isEnded ? 'Loading more apartments...' : "There's no more apartments!"}
+      </Typography>
     </>
   );
 };
