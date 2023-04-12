@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
-app.get('/faqs', async (_, res) => {
+app.get('/api/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
   const faqs: Section[] = snapshot.docs.map((doc) => {
@@ -43,7 +43,7 @@ app.get('/faqs', async (_, res) => {
   res.status(200).send(JSON.stringify(faqs));
 });
 
-app.post('/new-review', authenticate, async (req, res) => {
+app.post('/api/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
     const review = req.body as Review;
@@ -58,7 +58,7 @@ app.post('/new-review', authenticate, async (req, res) => {
   }
 });
 
-app.get('/review/:idType/:id/:status', async (req, res) => {
+app.get('/api/review/:idType/:id/:status', async (req, res) => {
   const { idType, id, status } = req.params;
   const reviewDocs = (
     await reviewCollection.where(`${idType}`, '==', id).where('status', '==', status).get()
@@ -71,7 +71,7 @@ app.get('/review/:idType/:id/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
-app.get('/review/:status', async (req, res) => {
+app.get('/api/review/:status', async (req, res) => {
   const { status } = req.params;
   const reviewDocs = (await reviewCollection.where('status', '==', status).get()).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
@@ -82,7 +82,7 @@ app.get('/review/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
-app.get('/apts/:ids', async (req, res) => {
+app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
     const idsList = ids.split(',');
@@ -101,7 +101,7 @@ app.get('/apts/:ids', async (req, res) => {
   }
 });
 
-app.get('/landlord/:id', async (req, res) => {
+app.get('/api/landlord/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const ref = landlordCollection.doc(id);
@@ -116,7 +116,7 @@ app.get('/landlord/:id', async (req, res) => {
   }
 });
 
-app.get('/buildings/:landlordId', async (req, res) => {
+app.get('/api/buildings/:landlordId', async (req, res) => {
   try {
     const { landlordId } = req.params;
     const buildingRefs = await buildingsCollection.where('landlordId', '==', landlordId).get();
@@ -151,7 +151,7 @@ const pageData = async (buildings: ApartmentWithId[]) =>
     })
   );
 
-app.get('/buildings/all/:landlordId', async (req, res) => {
+app.get('/api/buildings/all/:landlordId', async (req, res) => {
   const { landlordId } = req.params;
   const buildingDocs = (await buildingsCollection.where('landlordId', '==', landlordId).get()).docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
@@ -160,7 +160,7 @@ app.get('/buildings/all/:landlordId', async (req, res) => {
   res.status(200).send(JSON.stringify(await pageData(buildings)));
 });
 
-app.post('/new-landlord', async (req, res) => {
+app.post('/api/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
     const landlord: Landlord = req.body as Landlord;
@@ -173,7 +173,7 @@ app.post('/new-landlord', async (req, res) => {
 });
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
-app.post('/set-data', async (req, res) => {
+app.post('/api/set-data', async (req, res) => {
   try {
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: LandlordWithId[] = landlordDocs.map(
@@ -193,7 +193,7 @@ app.post('/set-data', async (req, res) => {
   }
 });
 
-app.get('/search', async (req, res) => {
+app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q as string;
     const landlords = req.app.get('landlords');
@@ -219,7 +219,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-app.get('/search-results', async (req, res) => {
+app.get('/api/search-results', async (req, res) => {
   try {
     const query = req.query.q as string;
     const apts = req.app.get('apts');
@@ -240,7 +240,7 @@ app.get('/search-results', async (req, res) => {
   }
 });
 
-app.get('/page-data/:page/:size', async (req, res) => {
+app.get('/api/page-data/:page/:size', async (req, res) => {
   const { size } = req.params;
   const collection = buildingsCollection.limit(Number(size));
   const buildingDocs = (await collection.get()).docs;
@@ -255,7 +255,7 @@ app.get('/page-data/:page/:size', async (req, res) => {
   res.status(200).send(returnData);
 });
 
-app.get('/location/:loc', async (req, res) => {
+app.get('/api/location/:loc', async (req, res) => {
   const { loc } = req.params;
   const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())
     .docs;
@@ -294,11 +294,11 @@ const likeHandler =
     }
   };
 
-app.post('/add-like', authenticate, likeHandler(false));
+app.post('/api/add-like', authenticate, likeHandler(false));
 
-app.post('/remove-like', authenticate, likeHandler(true));
+app.post('/api/remove-like', authenticate, likeHandler(true));
 
-app.put('/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
   const statusList = ['PENDING', 'APPROVED', 'DECLINED'];
   try {

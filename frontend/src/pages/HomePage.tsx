@@ -40,7 +40,7 @@ const HomePage = (): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
-    get<returnData>(`/page-data/home/${loadingLength}`, {
+    get<returnData>(`/api/page-data/home/${loadingLength}`, {
       callback: setData,
     });
   }, []);
