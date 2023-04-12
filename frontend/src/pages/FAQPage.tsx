@@ -22,7 +22,7 @@ const FAQPage = (): ReactElement => {
   useTitle('FAQ');
 
   useEffect(() => {
-    get<FAQData[]>('/api/faqs', {
+    get<FAQData[]>(`/api/faqs`, {
       callback: setData,
     });
   }, []);
