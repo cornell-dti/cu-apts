@@ -305,22 +305,23 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Button
-              color="primary"
-              className={reviewButton}
-              variant="contained"
-              disableElevation
-              onClick={openReviewModal}
-            >
-              Leave a Review
-            </Button>
-
-            <Grid item className="sortByMargin">
+            <Grid item>
+              <Button
+                color="primary"
+                className={reviewButton}
+                variant="contained"
+                disableElevation
+                onClick={openReviewModal}
+              >
+                Leave a Review
+              </Button>
+            </Grid>
+            <Grid item>
               <Grid container spacing={1} direction="row" alignItems="center">
                 <Grid item>
                   <Typography>Sort by:</Typography>
                 </Grid>
-                <Grid className={sortByButton}>
+                <Grid item className={sortByButton}>
                   <DropDown
                     menuItems={[
                       {
@@ -342,13 +343,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </Grid>
           </Grid>
         </Grid>
-
-        {reviewData && reviewData.length > 0 && (
-          <Grid item xs={12} className={ratingInfo}>
-            <ReviewHeader aveRatingInfo={aveRatingInfo} />
-          </Grid>
-        )}
       </Grid>
+
+      {reviewData && reviewData.length > 0 && (
+        <Grid item xs={12} className={ratingInfo}>
+          <ReviewHeader aveRatingInfo={aveRatingInfo} />
+        </Grid>
+      )}
     </>
   );
 
