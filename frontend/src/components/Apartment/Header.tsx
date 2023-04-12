@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '23px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
-    marginTop: '10px',
+    marginTop: '100%',
     marginLeft: '2%',
   },
   mobileAptAddress: {
@@ -117,7 +117,7 @@ const useStyles = makeStyles((theme) => ({
     fontStyle: 'normal',
     fontSize: '17px',
     letterSpacing: '0.02em',
-    marginLeft: '24.2%',
+    marginLeft: '25%',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
@@ -235,7 +235,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
                   title={address}
                   className={mobileAptAddress}
                   disableTypography={true}
-                  style={{ marginTop: '-8px' }}
+                  style={{ marginTop: '-6px' }}
                 />
               </div>
             </Grid>
