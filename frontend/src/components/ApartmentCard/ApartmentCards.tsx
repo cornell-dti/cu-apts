@@ -1,8 +1,9 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState } from 'react';
 import ApartmentCard from './ApartmentCard';
-import { Grid, Link, makeStyles, Button, useMediaQuery } from '@material-ui/core';
+import { Grid, Link, makeStyles, Button } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
+import { loadingLength } from '../../constants/HomeConsts';
 
 type Props = {
   data: CardData[];
@@ -32,20 +33,11 @@ const useStyles = makeStyles({
 
 const ApartmentCards = ({ data }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
-  const isMobile = useMediaQuery('(max-width:600px)');
 
-  const [resultsToShow, setResultsToShow] = useState<number>(data.length);
-
-  useEffect(() => {
-    if (isMobile) {
-      setResultsToShow(5);
-    } else {
-      setResultsToShow(data.length);
-    }
-  }, [isMobile, data.length]);
+  const [resultsToShow, setResultsToShow] = useState<number>(loadingLength);
 
   const handleShowMore = () => {
-    setResultsToShow(resultsToShow + 5);
+    setResultsToShow(resultsToShow + loadingLength);
   };
 
   return (
@@ -74,7 +66,7 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
             );
           })}
 
-        {isMobile && data && data.length > resultsToShow && (
+        {data && data.length > resultsToShow && (
           <>
             <Grid item xs={12}>
               <hr className={horizontalLine} />

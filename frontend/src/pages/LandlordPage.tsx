@@ -245,13 +245,13 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
               <DropDown
                 menuItems={[
                   {
-                    item: 'Most recent',
+                    item: 'Recent',
                     callback: () => {
                       setSortBy('date');
                     },
                   },
                   {
-                    item: 'Most helpful',
+                    item: 'Helpful',
                     callback: () => {
                       setSortBy('likes');
                     },
