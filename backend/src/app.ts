@@ -255,20 +255,16 @@ app.get('/page-data/:page/:size', async (req, res) => {
   res.status(200).send(returnData);
 });
 
-app.get('/location/:loc/:size', async (req, res) => {
-  const { loc, size } = req.params;
-  const buildingDocs = (
-    await buildingsCollection.where(`area`, '==', loc.toUpperCase()).limit(Number(size)).get()
-  ).docs;
+app.get('/location/:loc', async (req, res) => {
+  const { loc } = req.params;
+  const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())
+    .docs;
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
 
-  const returnData = JSON.stringify({
-    buildingData: await pageData(buildings),
-    isEnded: buildings.length < Number(size),
-  });
-  res.status(200).send(returnData);
+  const data = JSON.stringify(await pageData(buildings));
+  res.status(200).send(data);
 });
 
 const likeHandler =
