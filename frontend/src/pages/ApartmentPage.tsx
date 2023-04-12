@@ -449,7 +449,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
                 </Grid>
                 <Grid item className={aptRating}>
-                  <Typography style={{ marginLeft: '5px', fontSize: '18px', fontWeight: 500 }}>
+                  <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
                     {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
                   </Typography>
                 </Grid>
@@ -457,7 +457,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </Grid>
           )}
           {!!getAverageRating(reviewData) && (
-            <Grid item>
+            <Grid item style={{ marginLeft: 'auto' }}>
               <IconButton
                 color="primary"
                 className={clsx(expand, {
