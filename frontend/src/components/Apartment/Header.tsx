@@ -36,9 +36,11 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
   },
   mobileMedia: {
-    height: '400px',
+    height: '200px',
     backgroundBlendMode: 'darken',
     position: 'relative',
+    width: '120%',
+    marginLeft: '-10%',
   },
   logo: {
     height: '86px',
@@ -55,8 +57,8 @@ const useStyles = makeStyles((theme) => ({
     height: '56px',
     width: '56px',
     fontSize: '3rem',
-    marginBottom: '-50px',
-    marginLeft: '8%',
+    marginTop: '120px',
+    marginLeft: '15%',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
@@ -103,21 +105,20 @@ const useStyles = makeStyles((theme) => ({
   },
   mobileAptName: {
     color: colors.white,
-    paddingLeft: 0,
-    paddingBottom: 0,
     fontWeight: 'bold',
     fontSize: '23px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
-    marginTop: '100%',
-    marginLeft: '2%',
+    marginTop: '115px',
+    marginLeft: '-55%',
   },
   mobileAptAddress: {
     color: colors.white,
     fontStyle: 'normal',
     fontSize: '17px',
     letterSpacing: '0.02em',
-    marginLeft: '25%',
+    marginTop: '-5px',
+    marginLeft: '-55%',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {
@@ -156,12 +157,14 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
     mobileAptName,
     mobileAptAddress,
   } = useStyles();
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
   const header = (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
@@ -170,7 +173,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
           <CardMedia className={media} image={photoLink}>
             <Grid item xs={12}>
               <Grid container className={styles.HeaderRow}>
-                <Grid item xs={12} md={1} className={logoGrid}>
+                <Grid item xs={1} md={1} className={logoGrid}>
                   <Avatar src={icon} alt={name} className={logo} />
                 </Grid>
                 <Grid className={headerSection}>
@@ -206,38 +209,15 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
       <>
         <GlobalCss />
         <Grid item xs={12}>
-          <CardMedia
-            className={mobileMedia}
-            image={photoLink}
-            style={{ height: '203px', width: '115%', marginLeft: '-10%' }}
-          >
-            <Grid alignItems="center" className={headerSection}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Avatar
-                  src={icon}
-                  alt={name}
-                  className={mobileLogo}
-                  style={{ marginTop: '100px' }}
-                />
-                <CardHeader
-                  title={name}
-                  className={mobileAptName}
-                  disableTypography={true}
-                  style={{ marginTop: '120px' }}
-                />
-                <CardHeader
-                  title={address}
-                  className={mobileAptAddress}
-                  disableTypography={true}
-                  style={{ marginTop: '-6px' }}
-                />
-              </div>
+          <CardMedia className={mobileMedia} image={photoLink}>
+            <Grid container alignItems="center" className={headerSection}>
+              <Grid item xs={6}>
+                <Avatar src={icon} alt={name} className={mobileLogo} />
+              </Grid>
+              <Grid item xs={6}>
+                <CardHeader title={name} className={mobileAptName} disableTypography={true} />
+                <CardHeader title={address} className={mobileAptAddress} disableTypography={true} />
+              </Grid>
             </Grid>
           </CardMedia>
         </Grid>
