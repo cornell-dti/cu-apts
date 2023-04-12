@@ -21,7 +21,7 @@ const SearchResultsPage = (): ReactElement => {
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    get<CardData[]>(`/search-results?q=${query}`, {
+    get<CardData[]>(`/api/search-results?q=${query}`, {
       callback: setSearchResults,
     });
   }, [query]);

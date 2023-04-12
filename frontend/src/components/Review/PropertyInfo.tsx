@@ -40,7 +40,7 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${id}/APPROVED`, {
+    get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
       callback: setReviewData,
     });
   }, [id]);

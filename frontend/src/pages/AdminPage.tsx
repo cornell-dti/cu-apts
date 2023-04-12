@@ -17,13 +17,13 @@ const AdminPage = (): ReactElement => {
   const { container } = useStyles();
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/PENDING`, {
+    get<ReviewWithId[]>(`/api/review/PENDING`, {
       callback: setPendingData,
     });
   }, [toggle]);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/DECLINED`, {
+    get<ReviewWithId[]>(`/api/review/DECLINED`, {
       callback: setDeclinedData,
     });
   }, [toggle]);
