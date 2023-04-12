@@ -19,6 +19,7 @@ import DropDown from '../components/utils/DropDown';
 import NotFoundPage from './NotFoundPage';
 import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
+import HeartRating from '../components/utils/HeartRating';
 
 export type RatingInfo = {
   feature: string;
@@ -219,6 +220,23 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const Header = (
     <>
+      <Grid
+        container
+        spacing={3}
+        alignItems="center"
+        style={{ marginTop: '10px', marginBottom: '20px' }}
+      >
+        <Typography variant="h4" style={{ fontWeight: 'bold', marginLeft: '1.5%' }}>
+          Average Rating:{' '}
+        </Typography>
+
+        <HeartRating
+          value={getAverageRating(reviewData)}
+          precision={0.5}
+          readOnly
+          style={{ marginLeft: '20px', marginTop: '0px' }}
+        />
+      </Grid>
       <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
@@ -272,7 +290,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
           </Grid>
         </Grid>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={12} style={{ marginTop: '2%' }}>
         <ReviewHeader aveRatingInfo={aveRatingInfo} />
       </Grid>
     </>
@@ -291,6 +309,23 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
             Show all photos
           </Button>
         )}
+        <Grid container spacing={1} alignItems="center" style={{ marginBottom: '-15px' }}>
+          <p
+            style={{
+              marginLeft: '30px',
+              fontSize: '17px',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Average Rating:{' '}
+          </p>
+          <HeartRating
+            value={getAverageRating(reviewData)}
+            precision={0.5}
+            readOnly
+            style={{ marginLeft: '20px', marginTop: '13px' }}
+          />
+        </Grid>
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
@@ -379,6 +414,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+
             <Grid container item spacing={3}>
               {sortReviews(reviewData, sortBy)
                 .slice(0, resultsToShow)
