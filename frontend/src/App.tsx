@@ -1,38 +1,64 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import './App.scss';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core';
+import { ThemeProvider } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
-import { Apartment } from '../../common/types/db-types';
+import { ApartmentWithId } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
+import ApartmentPage from './pages/ApartmentPage';
+import AdminPage from './pages/AdminPage';
+import LocationPage from './pages/LocationPage';
+import axios from 'axios';
+import { colors } from './colors';
+import SearchResultsPage from './pages/SearchResultsPage';
+import { isAdmin } from './utils/adminTool';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
-      main: '#B94630',
+      main: colors.red1,
     },
     secondary: {
-      main: '#cccccc',
+      main: colors.gray2,
     },
   },
   typography: {
-    fontFamily: ['-apple-system', 'BlinkMacSystemFont', '"Work Sans"'].join(','),
+    fontFamily: ['"Work Sans"', 'sans-serif'].join(','),
+    h1: {
+      fontSize: 48,
+    },
+    h2: {
+      fontSize: 36,
+    },
+    h3: {
+      fontSize: 28,
+    },
+    h4: {
+      fontSize: 22,
+    },
+    body1: {
+      fontSize: 18,
+    },
+    body2: {
+      fontSize: 16,
+    },
   },
   overrides: {
     MuiFormLabel: {
       root: {
-        color: '#000000',
+        color: colors.black,
       },
       colorSecondary: {
-        color: '#929292',
+        color: colors.gray1,
       },
     },
   },
@@ -43,34 +69,60 @@ const home: NavbarButton = {
   href: '/',
 };
 
-const review: NavbarButton = {
-  label: 'Reviews',
-  href: '/reviews',
+const faq: NavbarButton = {
+  label: 'FAQ',
+  href: '/faq',
 };
 
 export type CardData = {
-  buildingData: Apartment;
+  buildingData: ApartmentWithId;
   numReviews: number;
   company?: string;
 };
 
-const headersData = [home, review];
+export type LocationCardData = {
+  photo: string;
+  location: string;
+};
+
+const headersData = [home, faq];
+
+hotjar.initialize(HJID, HJSV);
 
 hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
+  const [user, setUser] = useState<firebase.User | null>(null);
+
+  useEffect(() => {
+    const setData = async () => {
+      await axios.post('/set-data');
+    };
+    setData();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <NavBar headersData={headersData} />
+        <NavBar headersData={headersData} user={user} setUser={setUser} />
         <div className="root">
           <Switch>
             <Route exact path="/" component={HomePage} />
             <Route exact path="/faq" component={FAQPage} />
             <Route exact path="/reviews" component={ReviewPage} />
             <Route exact path="/policies" component={Policies} />
-            <Route path="/landlord/:landlordId" component={LandlordPage} />
-            <Route component={NotFoundPage} />
+            <Route path="/location/:location" component={LocationPage} />
+            <Route
+              path="/landlord/:landlordId"
+              component={() => <LandlordPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/apartment/:aptId"
+              component={() => <ApartmentPage user={user} setUser={setUser} />}
+            />
+            <Route exact path="/notfound" component={NotFoundPage} />
+            <Route path="/search" component={SearchResultsPage} />
+            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
         <Footer />

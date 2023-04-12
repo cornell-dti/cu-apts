@@ -1,8 +1,13 @@
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import { config } from 'dotenv';
 import { AxiosRequestConfig } from 'axios';
 import { Likes } from '../../../common/types/db-types';
 import { v4 as uuid } from 'uuid';
+
+import 'firebase/auth'; // for authentication
+import 'firebase/storage'; // for storage
+import 'firebase/database'; // for realtime database
+import 'firebase/firestore'; // for cloud firestore
 
 config();
 
@@ -20,6 +25,9 @@ const firestore = firebase.firestore();
 const storage = firebase.storage();
 
 const provider = new firebase.auth.GoogleAuthProvider();
+provider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 const getUser = async (promptSignIn = false) => {
   if (!auth.currentUser && promptSignIn) {
@@ -31,6 +39,10 @@ const getUser = async (promptSignIn = false) => {
   }
   await auth.signOut();
   return null;
+};
+
+const signOut = async () => {
+  await auth.signOut();
 };
 
 const createAuthHeaders = (token: string): AxiosRequestConfig => {
@@ -46,7 +58,6 @@ const subscribeLikes = (callback: (data: Likes) => void) => {
     if (!user) return;
     const doc = await firestore.collection('likes').doc(user.uid).get();
     const data = doc.data();
-    console.log(data);
     if (!data) return;
     callback(data);
   });
@@ -58,4 +69,4 @@ const uploadFile = async (file: File) => {
   return await result.ref.getDownloadURL();
 };
 
-export { createAuthHeaders, getUser, uploadFile, subscribeLikes };
+export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };

@@ -1,10 +1,11 @@
 import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { colors } from '../../../colors';
 
 const useStyles = makeStyles(() => ({
   footer: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.gray3,
     height: '94px',
     fontFamily: 'Work Sans',
     fontStyle: 'normal',
@@ -12,15 +13,15 @@ const useStyles = makeStyles(() => ({
     fontSize: '24px',
     lineHeight: '28px',
     letterSpacing: '0.02em',
-    color: '#000000',
+    color: colors.black,
     '@media only screen and (max-width: 992px) ': {
       paddingLeft: '4%',
       paddingRight: '4%',
       margin: '0 auto',
     },
   },
-  contact: {
-    color: '#B94630',
+  link: {
+    color: colors.red1,
     fontWeight: 'bold',
     textAlign: 'center',
     marginLeft: '4px',
@@ -31,18 +32,24 @@ const useStyles = makeStyles(() => ({
   },
 }));
 const Footer = (): ReactElement => {
-  const { footer, contact, text } = useStyles();
+  const { footer, link, text } = useStyles();
   return (
     <footer>
-      <Grid container className={footer} alignItems="center" justify="center" direction="column">
+      <Grid
+        container
+        className={footer}
+        alignItems="center"
+        justifyContent="center"
+        direction="column"
+      >
         <Grid item xl={12}>
-          <Grid container alignItems="center" justify="center">
+          <Grid container alignItems="center" justifyContent="center">
             <Grid item>
-              <Typography className={text}>Got a question that isn’t answered? </Typography>
+              <Typography className={text}>Want to get in touch? </Typography>
             </Grid>
             <Grid item>
               <Typography className={text}>
-                <Link className={contact} href="mailto:hello@cornelldti.org">
+                <Link className={link} href="mailto:hello@cornelldti.org">
                   Contact us!
                 </Link>
               </Typography>
@@ -50,15 +57,18 @@ const Footer = (): ReactElement => {
           </Grid>
         </Grid>
         <Grid item xl={12}>
-          <Link
-            {...{
-              to: `/policies`,
-              style: { color: 'black' },
-              component: RouterLink,
-            }}
-          >
-            <Typography> Privacy Policy </Typography>
-          </Link>
+          <Typography>
+            <Link
+              className={link}
+              {...{
+                to: `/policies`,
+                component: RouterLink,
+              }}
+            >
+              {' '}
+              Privacy Policy
+            </Link>
+          </Typography>
         </Grid>
       </Grid>
     </footer>

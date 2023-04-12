@@ -11,8 +11,9 @@ import {
 } from '@material-ui/core';
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
-import defaultHeader from '../../assets/default_header.png';
+import defaultHeader from '../../assets/default_header.svg';
 import defaultIcon from '../../assets/default_icon.png';
+import { colors } from '../../colors';
 
 type Props = {
   readonly landlord: Landlord;
@@ -55,10 +56,10 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '14px',
     lineHeight: '17px',
     textTransform: 'none',
-    color: '#000000',
+    color: colors.black,
     background: 'rgba(255, 255, 255, 1.0)',
     border: '2px solid black',
-    borderColor: 'black',
+    borderColor: colors.black,
     boxSizing: 'border-box',
     borderRadius: '8px',
     padding: '0px',
@@ -73,7 +74,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   landlordName: {
-    color: 'white',
+    color: colors.white,
     paddingLeft: 0,
     paddingBottom: 0,
     fontStyle: 'normal',
@@ -83,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
     letterSpacing: '0.02em',
   },
   landlordReviews: {
-    color: 'white',
+    color: colors.white,
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '24px',
@@ -159,7 +160,7 @@ const LandlordHeader = ({
                     </Grid>
                     <Grid item xs={12}>
                       <CardHeader
-                        title={numReviews + ' Reviews'}
+                        title={numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
                         className={landlordReviews}
                         disableTypography={true}
                       />
@@ -169,7 +170,12 @@ const LandlordHeader = ({
               </Grid>
             </Grid>
             {photos.length > 0 && (
-              <Grid container alignItems="flex-end" justify="flex-end" className={btnSection}>
+              <Grid
+                container
+                alignItems="flex-end"
+                justifyContent="flex-end"
+                className={btnSection}
+              >
                 <Button
                   disableFocusRipple
                   variant="outlined"

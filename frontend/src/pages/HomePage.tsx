@@ -1,66 +1,107 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import Autocomplete from '../components/Home/Autocomplete';
-import { get } from '../utils/call';
 import styles from './HomePage.module.scss';
+import LocationCards from '../components/Home/LocationCards';
+import { colors } from '../colors';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
+import { get } from '../utils/call';
+import { loadingLength } from '../constants/HomeConsts';
 
 const useStyles = makeStyles({
   jumboText: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 600,
     margin: '0.5em 0 0.5em 0',
   },
   jumboSub: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 400,
   },
   rentingBox: {
-    marginTop: '3em',
+    marginTop: '2em',
     marginBottom: '2em',
   },
   rentingText: {
-    fontWeight: 500,
+    marginBottom: '1em',
+    color: colors.red1,
   },
 });
 
+type returnData = {
+  buildingData: CardData[];
+  isEnded: boolean;
+};
+
 const HomePage = (): ReactElement => {
   const classes = useStyles();
-  const [homeData, setHomeData] = useState<CardData[]>([]);
+  const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
-    get<CardData[]>(`/page-data/home`, {
-      callback: setHomeData,
+    get<returnData>(`/page-data/home/${loadingLength}`, {
+      callback: setData,
     });
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <>
-      <Box className={styles.JumboTron}>
+      <Box className={styles.JumboTron} mt={isMobile ? -2 : 0}>
         <Container maxWidth="lg">
           <Box py={6}>
-            <Typography variant="h3" className={classes.jumboText}>
-              Search Renting Companies
+            <Typography
+              variant="h1"
+              style={{
+                fontSize: isMobile ? '26px' : '48px',
+                marginTop: isMobile ? '10px' : '0px',
+              }}
+              className={classes.jumboText}
+            >
+              Discover Housing @ Cornell
             </Typography>
-            <Typography variant="subtitle1" className={classes.jumboSub}>
-              Search for off-campus housing, review apartments, and share feedback!
+            <Typography
+              className={classes.jumboSub}
+              style={{
+                fontStyle: 'italic',
+                fontSize: isMobile ? '16px' : '25px',
+                marginTop: isMobile ? '-10px' : '-12px',
+              }}
+            >
+              Easy browsing for off-campus housing
             </Typography>
           </Box>
-          <Box pb={5} mx={0}>
+
+          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 4 : 8}>
             <Autocomplete />
           </Box>
         </Container>
       </Box>
+
       <Box>
         <Container maxWidth="lg">
-          <Box pb={3} textAlign="left" className={classes.rentingBox}>
-            <Typography variant="h4" className={classes.rentingText}>
-              Browse Renting Companies
+          <Box textAlign="center" className={classes.rentingBox}>
+            <Typography
+              variant="h2"
+              style={{
+                fontSize: isMobile ? '21px' : '35px',
+                fontWeight: isMobile ? 650 : 500,
+                marginTop: isMobile ? '-15px' : '0px',
+              }}
+              className={classes.rentingText}
+            >
+              Find the Best Properties in Ithaca
             </Typography>
+            <LocationCards />
           </Box>
-
-          <ApartmentCards data={homeData} />
+          {!isMobile && <ApartmentCards data={data.buildingData} />}
         </Container>
       </Box>
     </>

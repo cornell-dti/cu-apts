@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
-app.get('/', async (_, res) => {
+app.get('/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
   const faqs: Section[] = snapshot.docs.map((doc) => {
@@ -50,7 +50,7 @@ app.post('/new-review', authenticate, async (req, res) => {
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
-    doc.set({ ...review, date: new Date(review.date), likes: 0 });
+    doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
     res.status(201).send(doc.id);
   } catch (err) {
     console.error(err);
@@ -58,9 +58,22 @@ app.post('/new-review', authenticate, async (req, res) => {
   }
 });
 
-app.get('/review/:idType/:id', async (req, res) => {
-  const { idType, id } = req.params;
-  const reviewDocs = (await reviewCollection.where(`${idType}`, '==', id).get()).docs;
+app.get('/review/:idType/:id/:status', async (req, res) => {
+  const { idType, id, status } = req.params;
+  const reviewDocs = (
+    await reviewCollection.where(`${idType}`, '==', id).where('status', '==', status).get()
+  ).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => {
+    const data = doc.data();
+    const review = { ...data, date: data.date.toDate() } as ReviewInternal;
+    return { ...review, id: doc.id } as ReviewWithId;
+  });
+  res.status(200).send(JSON.stringify(reviews));
+});
+
+app.get('/review/:status', async (req, res) => {
+  const { status } = req.params;
+  const reviewDocs = (await reviewCollection.where('status', '==', status).get()).docs;
   const reviews: Review[] = reviewDocs.map((doc) => {
     const data = doc.data();
     const review = { ...data, date: data.date.toDate() } as ReviewInternal;
@@ -76,6 +89,9 @@ app.get('/apts/:ids', async (req, res) => {
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
         const snapshot = await buildingsCollection.doc(id).get();
+        if (!snapshot.exists) {
+          throw new Error('Invalid id');
+        }
         return { id, ...snapshot.data() } as ApartmentWithId;
       })
     );
@@ -111,6 +127,39 @@ app.get('/buildings/:landlordId', async (req, res) => {
   }
 });
 
+const pageData = async (buildings: ApartmentWithId[]) =>
+  Promise.all(
+    buildings.map(async (buildingData) => {
+      const { id, landlordId } = buildingData;
+      if (landlordId === null) {
+        throw new Error('Invalid landlordId');
+      }
+
+      const reviewList = await reviewCollection
+        .where(`aptId`, '==', id)
+        .where('status', '==', 'APPROVED')
+        .get();
+      const landlordDoc = await landlordCollection.doc(landlordId).get();
+
+      const numReviews = reviewList.docs.length;
+      const company = landlordDoc.data()?.name;
+      return {
+        buildingData,
+        numReviews,
+        company,
+      };
+    })
+  );
+
+app.get('/buildings/all/:landlordId', async (req, res) => {
+  const { landlordId } = req.params;
+  const buildingDocs = (await buildingsCollection.where('landlordId', '==', landlordId).get()).docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+  res.status(200).send(JSON.stringify(await pageData(buildings)));
+});
+
 app.post('/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
@@ -124,10 +173,8 @@ app.post('/new-landlord', async (req, res) => {
 });
 
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
-
-app.get('/search', async (req, res) => {
+app.post('/set-data', async (req, res) => {
   try {
-    const query = req.query.q as string;
     const landlordDocs = (await landlordCollection.get()).docs;
     const landlords: LandlordWithId[] = landlordDocs.map(
       (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
@@ -136,13 +183,28 @@ app.get('/search', async (req, res) => {
     const apts: ApartmentWithId[] = aptDocs.map(
       (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
     );
+    app.set('landlords', landlords);
+    app.set('apts', apts);
+
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+app.get('/search', async (req, res) => {
+  try {
+    const query = req.query.q as string;
+    const landlords = req.app.get('landlords');
+    const apts = req.app.get('apts');
     const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
       keys: ['name', 'address'],
     };
     const fuse = new Fuse(aptsLandlords, options);
-    const results = fuse.search(query);
+    const results = fuse.search(query).slice(0, 5);
     const resultItems = results.map((result) => result.item);
 
     const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
@@ -157,34 +219,52 @@ app.get('/search', async (req, res) => {
   }
 });
 
-app.get('/page-data/:page', async (req, res) => {
-  const { page } = req.params;
-  const collection = page === 'home' ? buildingsCollection.limit(3) : buildingsCollection;
+app.get('/search-results', async (req, res) => {
+  try {
+    const query = req.query.q as string;
+    const apts = req.app.get('apts');
+    const aptsWithType: ApartmentWithId[] = apts;
+
+    const options = {
+      keys: ['name', 'address'],
+    };
+
+    const fuse = new Fuse(aptsWithType, options);
+    const results = fuse.search(query);
+    const resultItems = results.map((result) => result.item);
+
+    res.status(200).send(JSON.stringify(await pageData(resultItems)));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+app.get('/page-data/:page/:size', async (req, res) => {
+  const { size } = req.params;
+  const collection = buildingsCollection.limit(Number(size));
   const buildingDocs = (await collection.get()).docs;
-  const buildings: Apartment[] = buildingDocs
-    .map((doc) => doc.data() as Apartment)
-    .filter(({ landlordId }) => landlordId !== null);
-
-  const homeData = await Promise.all(
-    buildings.map(async (buildingData) => {
-      const { landlordId } = buildingData;
-      if (landlordId === null) {
-        throw new Error('Invalid landlordId');
-      }
-
-      const reviewList = await reviewCollection.where(`landlordId`, '==', landlordId).get();
-      const landlordDoc = await landlordCollection.doc(landlordId).get();
-
-      const numReviews = reviewList.docs.length;
-      const company = landlordDoc.data()?.name;
-      return {
-        buildingData,
-        numReviews,
-        company,
-      };
-    })
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
-  res.status(200).send(JSON.stringify(homeData));
+
+  const returnData = JSON.stringify({
+    buildingData: await pageData(buildings),
+    isEnded: buildings.length < Number(size),
+  });
+  res.status(200).send(returnData);
+});
+
+app.get('/location/:loc', async (req, res) => {
+  const { loc } = req.params;
+  const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())
+    .docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+
+  const data = JSON.stringify(await pageData(buildings));
+  res.status(200).send(data);
 });
 
 const likeHandler =
@@ -217,5 +297,21 @@ const likeHandler =
 app.post('/add-like', authenticate, likeHandler(false));
 
 app.post('/remove-like', authenticate, likeHandler(true));
+
+app.put('/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+  const { reviewDocId, newStatus } = req.params;
+  const statusList = ['PENDING', 'APPROVED', 'DECLINED'];
+  try {
+    if (!statusList.includes(newStatus)) {
+      res.status(400).send('Invalid status type');
+      return;
+    }
+    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    res.status(200).send('Success');
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error');
+  }
+});
 
 export default app;
