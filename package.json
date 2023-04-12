@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "heroku-postbuild": "yarn workspaces run build",
     "build": "yarn workspaces run tsc",
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",

@@ -29,7 +29,6 @@ type Props = {
   readonly likeLoading: boolean;
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
-  readonly toggle: boolean;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -56,6 +55,19 @@ const useStyles = makeStyles(() => ({
       color: 'inherit',
     },
   },
+  photoStyle: {
+    borderRadius: '4px',
+    height: '15em',
+    width: '15em',
+  },
+  photoRowStyle: {
+    overflowX: 'auto',
+    display: 'flex',
+    lexDirection: 'row',
+    gap: '1vw',
+    paddingTop: '2%',
+    paddingLeft: '0.6%',
+  },
 }));
 
 const ReviewComponent = ({
@@ -64,14 +76,13 @@ const ReviewComponent = ({
   likeLoading,
   addLike,
   removeLike,
-  toggle,
   setToggle,
   user,
   setUser,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, expand, expandOpen, dateText, button } = useStyles();
+  const { root, expand, expandOpen, dateText, button, photoStyle, photoRowStyle } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
 
@@ -90,18 +101,24 @@ const ReviewComponent = ({
     ];
   };
 
-  const handleReportAbuse = async (reviewId: string) => {
-    if (!user) {
+  const reportAbuseHanler = async (reviewId: string) => {
+    if (user) {
+      const endpoint = `/update-review-status/${reviewId}/PENDING`;
+      await axios.put(endpoint);
+      setToggle((cur) => !cur);
+    } else {
       let user = await getUser(true);
       setUser(user);
     }
-    if (!user) {
-      throw new Error('Failed to login');
-    }
+  };
 
-    const endpoint = `update-review-status/${reviewId}/PENDING`;
-    await axios.put(endpoint);
-    setToggle(!toggle);
+  const likeHandler = async (id: string) => {
+    if (user) {
+      (liked ? removeLike : addLike)(id);
+    } else {
+      let user = await getUser(true);
+      setUser(user);
+    }
   };
 
   return (
@@ -153,14 +170,19 @@ const ReviewComponent = ({
                 </Typography>
               </Grid>
               {photos.length > 0 && (
-                <Grid container alignItems="center" justifyContent="center">
-                  <Grid item xs={12} sm={6}>
-                    <CardMedia
-                      component="img"
-                      alt="Apt image"
-                      image={photos[0]}
-                      title="Apt image"
-                    />
+                <Grid container>
+                  <Grid item className={photoRowStyle}>
+                    {photos.map((photo) => {
+                      return (
+                        <CardMedia
+                          component="img"
+                          alt="Apt image"
+                          image={photo}
+                          title="Apt image"
+                          className={photoStyle}
+                        />
+                      );
+                    })}
                   </Grid>
                 </Grid>
               )}
@@ -173,7 +195,7 @@ const ReviewComponent = ({
           <Grid item>
             <Button
               color={liked ? 'primary' : 'default'}
-              onClick={() => (liked ? removeLike : addLike)(id)}
+              onClick={() => likeHandler(id)}
               className={button}
               size="small"
               disabled={likeLoading}
@@ -182,7 +204,7 @@ const ReviewComponent = ({
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={() => handleReportAbuse(review.id)} className={button} size="small">
+            <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>

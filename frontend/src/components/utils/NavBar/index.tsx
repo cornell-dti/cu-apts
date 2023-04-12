@@ -75,18 +75,6 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     fontSize: '16px',
   },
-  logo: {
-    fontWeight: 600,
-    '@media only screen and (max-width: 320px) ': {
-      fontSize: '1.7em',
-    },
-    color: colors.black,
-    textAlign: 'left',
-    paddingTop: '25px',
-    marginLeft: '10px',
-    fontSize: '27px',
-    lineHeight: '32px',
-  },
   description: {
     color: colors.black,
     textAlign: 'left',
@@ -138,6 +126,7 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
+    fontSize: 5,
     marginBottom: '5%',
   },
 }));
@@ -156,10 +145,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
   const {
     header,
-    logo,
     menuButton,
     toolbar,
     drawerContainer,
@@ -185,6 +174,13 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   useEffect(() => {
     setButtonText(!user ? 'Sign In' : 'Sign Out');
   }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getDrawerChoices = () => {
     return (
@@ -269,7 +265,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const homeLogo: ReactElement = (
     <Grid container item direction="column">
       <Grid>
-        <Grid container alignItems="center">
+        <Grid container alignItems="center" style={{ marginTop: '-10px' }}>
           <Grid item>
             <Link
               color="textPrimary"
@@ -281,7 +277,12 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               }}
             >
               <Icon className={icon}>
-                <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
+                <img
+                  src={LogoIcon}
+                  alt="CU Apts Logo"
+                  height={isMobile ? 45.684 : 57.41}
+                  width={isMobile ? 24 : 30.16}
+                />
               </Icon>
             </Link>
           </Grid>
@@ -295,7 +296,19 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                 component: RouterLink,
               }}
             >
-              <Typography className={logo}>CUAPTS</Typography>
+              <Typography
+                style={{
+                  fontWeight: 600,
+                  fontSize: !isMobile ? '22px' : '16px',
+                  color: colors.black,
+                  textAlign: 'left',
+                  marginTop: isMobile ? 17 : 20,
+                  marginLeft: '8px',
+                  lineHeight: '32px',
+                }}
+              >
+                CUAPTS
+              </Typography>
             </Link>
           </Grid>
         </Grid>
@@ -329,10 +342,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const displayMobile = (): ReactElement => {
     return (
-      <Toolbar className={toolbar}>
+      <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
         <IconButton
           className={menuDrawer}
+          style={{ position: 'absolute', right: '10px' }}
           {...{
             edge: 'start',
             color: 'default',
@@ -341,7 +355,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClick: () => setDrawerOpen(true),
           }}
         >
-          <MenuIcon fontSize="large" />
+          <MenuIcon
+            fontSize={'large'}
+            style={{ color: '#B94630', marginRight: isMobile ? '-10px' : '0px' }}
+          />
         </IconButton>
         <Drawer
           {...{
