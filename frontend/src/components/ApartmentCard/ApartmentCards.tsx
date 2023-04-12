@@ -32,7 +32,6 @@ const useStyles = makeStyles({
 
 const ApartmentCards = ({ data }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
-  const isMobile = useMediaQuery('(max-width:600px)');
 
   const [resultsToShow, setResultsToShow] = useState<number>(data.length);
 
