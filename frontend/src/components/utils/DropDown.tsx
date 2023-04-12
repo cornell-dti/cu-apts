@@ -14,13 +14,12 @@ type Props = {
 const useStyles = makeStyles({
   button: {
     minWidth: '64px',
-    border: '1px solid black',
   },
 });
 
 export default function BasicMenu({ menuItems }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('most recent');
+  const [selected, setSelected] = useState<string>('Recent');
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 

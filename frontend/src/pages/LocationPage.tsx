@@ -6,7 +6,9 @@ import WestImg from '../assets/west-coverpic.svg';
 import NorthImg from '../assets/north-coverpic.svg';
 import DowntownImg from '../assets/downtown-coverpic.svg';
 import { colors } from '../colors';
-import ScrollingCards from '../components/ApartmentCard/ScrollingCards';
+import { CardData } from '../App';
+import { get } from '../utils/call';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 interface Images {
   [location: string]: string;
@@ -14,6 +16,7 @@ interface Images {
 
 const LocationPage = (): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [data, setData] = useState<CardData[]>([]);
   const useStyles = makeStyles({
     imgStyle: {
       height: isMobile ? '200px' : '300px',
@@ -45,6 +48,12 @@ const LocationPage = (): ReactElement => {
     North: NorthImg,
     Downtown: DowntownImg,
   };
+
+  useEffect(() => {
+    get<CardData[]>(locAPI, {
+      callback: setData,
+    });
+  }, [locAPI]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -81,7 +90,7 @@ const LocationPage = (): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
-          <ScrollingCards API={locAPI} />
+          <ApartmentCards data={data} />
         </Container>
       </Box>
     </>
