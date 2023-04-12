@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme) => ({
     width: '56px',
     fontSize: '3rem',
     marginBottom: '-50px',
-    marginLeft: '100px',
+    marginLeft: '8%',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
@@ -110,14 +110,14 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: '43px',
     letterSpacing: '0.02em',
     marginTop: '10px',
-    marginLeft: '10px',
+    marginLeft: '2%',
   },
   mobileAptAddress: {
     color: colors.white,
     fontStyle: 'normal',
     fontSize: '17px',
     letterSpacing: '0.02em',
-    marginLeft: '165px',
+    marginLeft: '24.2%',
   },
   headerSection: {
     [theme.breakpoints.down('sm')]: {

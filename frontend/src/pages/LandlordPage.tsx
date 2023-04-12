@@ -9,7 +9,6 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
-import styles from './LandlordPage.module.scss';
 import { Landlord } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
