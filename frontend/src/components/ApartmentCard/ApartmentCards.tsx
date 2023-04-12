@@ -37,12 +37,8 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
   const [resultsToShow, setResultsToShow] = useState<number>(data.length);
 
   useEffect(() => {
-    if (isMobile) {
-      setResultsToShow(5);
-    } else {
-      setResultsToShow(data.length);
-    }
-  }, [isMobile, data.length]);
+    setResultsToShow(5);
+  }, [data.length]);
 
   const handleShowMore = () => {
     setResultsToShow(resultsToShow + 5);
@@ -74,7 +70,7 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
             );
           })}
 
-        {isMobile && data && data.length > resultsToShow && (
+        {data && data.length > resultsToShow && (
           <>
             <Grid item xs={12}>
               <hr className={horizontalLine} />
