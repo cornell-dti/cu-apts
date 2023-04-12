@@ -10,20 +10,28 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import styles from './LandlordPage.module.scss';
-import { Landlord, Apartment } from '../../../common/types/db-types';
+import { Landlord } from '../../../common/types/db-types';
 import Toast from '../components/LeaveReview/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
 import DropDown from '../components/utils/DropDown';
+import NotFoundPage from './NotFoundPage';
+import { CardData } from '../App';
+import { getAverageRating } from '../utils/average';
 
 export type RatingInfo = {
   feature: string;
   rating: number;
 };
 
-const LandlordPage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [aveRatingInfo] = useState<RatingInfo[]>([]);
@@ -33,9 +41,18 @@ const LandlordPage = (): ReactElement => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [buildings, setBuildings] = useState<Apartment[]>([]);
+  const [buildings, setBuildings] = useState<CardData[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const toastTime = 3500;
+  const [showSignInError, setShowSignInError] = useState(false);
+  const toastTime = 4750;
+  const [sortBy, setSortBy] = useState<Fields>('date');
+  const [notFound, setNotFound] = useState(false);
+  const [toggle, setToggle] = useState(false);
+
+  const handlePageNotFound = () => {
+    console.log('Page not found');
+    setNotFound(true);
+  };
 
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
@@ -43,19 +60,20 @@ const LandlordPage = (): ReactElement => {
   );
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/landlordId/${landlordId}`, {
+    get<ReviewWithId[]>(`/review/landlordId/${landlordId}/APPROVED`, {
       callback: setReviewData,
     });
-  }, [landlordId, showConfirmation]);
+  }, [landlordId, showConfirmation, toggle]);
 
   useEffect(() => {
     get<Landlord>(`/landlord/${landlordId}`, {
       callback: setLandlordData,
+      errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 
   useEffect(() => {
-    get<Apartment[]>(`/buildings/${landlordId}`, {
+    get<CardData[]>(`/buildings/all/${landlordId}`, {
       callback: setBuildings,
     });
   }, [landlordId]);
@@ -80,24 +98,22 @@ const LandlordPage = (): ReactElement => {
     });
   }, []);
 
-  useEffect(() => {
-    setReviewData(sortReviews(reviewData, 'date'));
-  }, [reviewData, sortReviews]);
-
   type Fields = keyof typeof reviewData[0];
 
-  const showConfirmationToast = () => {
-    setShowConfirmation(true);
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
     setTimeout(() => {
-      setShowConfirmation(false);
+      setState(false);
     }, toastTime);
   };
 
-  const getAverageRating = (reviewData: ReviewWithId[]) =>
-    reviewData.reduce(
-      (currSum, { overallRating }) => (overallRating > 0 ? currSum + overallRating : currSum),
-      0
-    ) / reviewData.length;
+  const showConfirmationToast = () => {
+    showToast(setShowConfirmation);
+  };
+
+  const showSignInErrorToast = () => {
+    showToast(setShowSignInError);
+  };
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -131,6 +147,16 @@ const LandlordPage = (): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const openReviewModal = async () => {
+    let user = await getUser(true);
+    setUser(user);
+    if (!user) {
+      showSignInErrorToast();
+      return;
+    }
+    setReviewOpen(true);
+  };
+
   const Modals = landlordData && (
     <>
       <ReviewModal
@@ -140,6 +166,9 @@ const LandlordPage = (): ReactElement => {
         landlordId={landlordId}
         onSuccess={showConfirmationToast}
         toastTime={toastTime}
+        aptId={''}
+        aptName={''}
+        user={user}
       />
       <PhotoCarousel
         photos={landlordData.photos}
@@ -151,7 +180,7 @@ const LandlordPage = (): ReactElement => {
 
   const Header = (
     <>
-      <Grid container item spacing={3} justify="space-between" alignItems="center">
+      <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
         <Grid item>
           <Typography variant="h4">Reviews ({reviewData.length})</Typography>
           {reviewData.length === 0 && (
@@ -169,7 +198,7 @@ const LandlordPage = (): ReactElement => {
           </Button>
         )}
         <Grid item sm={4} md={8}>
-          <Grid container spacing={1} justify="flex-end" alignItems="center">
+          <Grid container spacing={1} justifyContent="flex-end" alignItems="center">
             <Grid item>
               <Typography>Sort reviews by:</Typography>
             </Grid>
@@ -177,15 +206,15 @@ const LandlordPage = (): ReactElement => {
               <DropDown
                 menuItems={[
                   {
-                    item: 'Most recent',
+                    item: 'Recent',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'date')]);
+                      setSortBy('date');
                     },
                   },
                   {
-                    item: 'Most helpful',
+                    item: 'Helpful',
                     callback: () => {
-                      setReviewData([...sortReviews(reviewData, 'likes')]);
+                      setSortBy('likes');
                     },
                   },
                 ]}
@@ -196,7 +225,7 @@ const LandlordPage = (): ReactElement => {
                 color="primary"
                 variant="contained"
                 disableElevation
-                onClick={() => setReviewOpen(true)}
+                onClick={openReviewModal}
               >
                 Leave a Review
               </Button>
@@ -212,11 +241,13 @@ const LandlordPage = (): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
-      <InfoFeatures {...landlordData} buildings={buildings.map((b) => b.name)} />
+      <InfoFeatures {...landlordData} buildings={buildings} />
     </Grid>
   );
 
-  return !loaded ? (
+  return notFound ? (
+    <NotFoundPage />
+  ) : !loaded ? (
     <LinearProgress />
   ) : (
     <>
@@ -232,7 +263,7 @@ const LandlordPage = (): ReactElement => {
       )}
 
       <Container className={styles.OuterContainer}>
-        <Grid container spacing={5} justify="center">
+        <Grid container spacing={5} justifyContent="center">
           <Grid container spacing={3} item xs={12} sm={8}>
             {Header}
             <Hidden smUp>{InfoSection}</Hidden>
@@ -244,8 +275,16 @@ const LandlordPage = (): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showSignInError && (
+              <Toast
+                isOpen={showSignInError}
+                severity="error"
+                message="Error: Please sign in with a Cornell email."
+                time={toastTime}
+              />
+            )}
             <Grid container item spacing={3}>
-              {reviewData.map((review, index) => (
+              {sortReviews(reviewData, sortBy).map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <ReviewComponent
                     review={review}
@@ -253,6 +292,9 @@ const LandlordPage = (): ReactElement => {
                     likeLoading={likeStatuses[review.id]}
                     addLike={addLike}
                     removeLike={removeLike}
+                    setToggle={setToggle}
+                    user={user}
+                    setUser={setUser}
                   />
                 </Grid>
               ))}

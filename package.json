@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "heroku-postbuild": "yarn workspaces run build",
     "build": "yarn workspaces run tsc",
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
@@ -63,9 +64,10 @@
     ]
   },
   "engines": {
-    "node": "14.x"
+    "node": "16.x"
   },
   "dependencies": {
-    "bad-words": "^3.0.4"
+    "bad-words": "^3.0.4",
+    "react-infinite-scroll-component": "^6.1.0"
   }
 }

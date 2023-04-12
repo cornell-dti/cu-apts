@@ -1,4 +1,6 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
+import { getUser, signOut } from '../../../utils/firebase';
+
 import {
   AppBar,
   Toolbar,
@@ -12,14 +14,17 @@ import {
   Hidden,
   Icon,
   Grid,
-  createMuiTheme,
   ThemeProvider,
   Container,
 } from '@material-ui/core';
+import { createTheme } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
+import { colors } from '../../../colors';
+import auto from '../../Home/Autocomplete';
+import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
   label: string;
@@ -28,6 +33,8 @@ export type NavbarButton = {
 
 type Props = {
   readonly headersData: NavbarButton[];
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles(() => ({
@@ -35,7 +42,7 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     paddingTop: '1em',
     paddingBottom: '0.75em',
     margin: '0.5em 0 0.5em 0',
@@ -44,26 +51,33 @@ const useStyles = makeStyles(() => ({
   icon: {
     fontSize: 0,
   },
-  logo: {
-    fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 600,
-    '@media only screen and (max-width: 320px) ': {
-      fontSize: '1.7em',
+  authButton: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
     },
-    fontStyle: 'normal',
-    color: 'black',
-    textAlign: 'left',
-    paddingTop: '25px',
     marginLeft: '10px',
-    fontSize: '27px',
-    lineHeight: '32px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  adminButton: {
+    backgroundColor: 'grey',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'grey',
+    },
+    marginRight: '100px',
+    width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
   },
   description: {
-    fontFamily: 'Work Sans, sans-serif',
-    color: 'black',
+    color: colors.black,
     textAlign: 'left',
-    fontStyle: 'normal',
-    fontWeight: 'normal',
     fontSize: '1.125em',
     '@media only screen and (max-width: 425px) ': {
       fontSize: '0.75em',
@@ -79,13 +93,11 @@ const useStyles = makeStyles(() => ({
     lineHeight: '19px',
     letterSpacing: '0.08em',
     textTransform: 'none',
-    marginLeft: '38px',
+    marginRight: '38px',
   },
   toolbar: {
     display: 'flex',
-    justifyContent: 'space-between',
     paddingLeft: 0,
-    paddingRight: 0,
   },
   drawerContainer: {
     padding: '20px 30px',
@@ -93,40 +105,87 @@ const useStyles = makeStyles(() => ({
   menuDrawer: {
     alignSelf: 'right',
     marginBottom: '8px',
+    marginLeft: '50%',
   },
   drawerButton: {
     fontFamily: 'Work Sans, sans-serif',
   },
+  search: {
+    width: '50%',
+    marginRight: '25%',
+    marginBottom: '-15px',
+  },
+  searchHidden: {
+    width: '50%',
+    paddingLeft: '3%',
+    visibility: 'hidden',
+  },
+  menu: {
+    alignSelf: 'right',
+    marginTop: '-40px',
+    marginLeft: '70%',
+  },
+  searchDrawer: {
+    fontSize: 5,
+    marginBottom: '5%',
+  },
 }));
+
 function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
-      lab.includes('Reviews'))
+      lab.includes('Reviews')) ||
+    (location.pathname.includes('faq') && lab.includes('FAQ'))
     ? 'secondary'
     : 'primary';
 }
-const NavBar = ({ headersData }: Props): ReactElement => {
+
+const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
+  const initialUserState = !user ? 'Sign In' : 'Sign Out';
+  const [buttonText, setButtonText] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const location = useLocation();
   const {
-    grow,
     header,
-    logo,
-    description,
     menuButton,
     toolbar,
     drawerContainer,
     menuDrawer,
     icon,
     drawerButton,
+    search,
+    searchHidden,
+    menu,
+    searchDrawer,
+    adminButton,
+    authButton,
   } = useStyles();
-  const muiTheme = createMuiTheme({
-    palette: { primary: { main: '#898989' }, secondary: { main: '#B94630' } },
+
+  const muiTheme = createTheme({
+    palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
   });
+
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    setButtonText(!user ? 'Sign In' : 'Sign Out');
+  }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
+        <Grid className={searchDrawer}>{auto()}</Grid>
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
@@ -137,6 +196,47 @@ const NavBar = ({ headersData }: Props): ReactElement => {
           );
         })}
       </ThemeProvider>
+    );
+  };
+
+  const signInOutButtonClick = async () => {
+    if (user) {
+      signOut();
+      setUser(null);
+      setButtonText('Sign In');
+      return;
+    }
+    let newUser = await getUser(true);
+    setUser(newUser);
+    setButtonText(!newUser ? 'Sign In' : 'Sign Out');
+  };
+
+  useEffect(() => {
+    setTimeout(async () => {
+      let user = await getUser(false);
+      setUser(user);
+    }, 1000);
+  });
+
+  const signInButton = () => {
+    return (
+      <Button onClick={signInOutButtonClick} className={authButton}>
+        {buttonText}
+      </Button>
+    );
+  };
+
+  const getAdminButton = () => {
+    return (
+      <Button
+        {...{
+          to: '/admin',
+          component: RouterLink,
+          className: adminButton,
+        }}
+      >
+        Admin
+      </Button>
     );
   };
 
@@ -163,51 +263,90 @@ const NavBar = ({ headersData }: Props): ReactElement => {
   };
 
   const homeLogo: ReactElement = (
-    <Grid container item xs={11} md={7} direction="column">
+    <Grid container item direction="column">
       <Grid>
-        <Grid container alignItems="center">
+        <Grid container alignItems="center" style={{ marginTop: '-10px' }}>
           <Grid item>
-            <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
               <Icon className={icon}>
-                <img src={LogoIcon} alt="CU Apts Logo" height={57.41} width={30.16} />
+                <img
+                  src={LogoIcon}
+                  alt="CU Apts Logo"
+                  height={isMobile ? 45.684 : 57.41}
+                  width={isMobile ? 24 : 30.16}
+                />
               </Icon>
             </Link>
           </Grid>
           <Grid item>
-            <Typography className={logo}>
-              <Link color="textPrimary" underline="none" href="/">
+            <Link
+              color="textPrimary"
+              underline="none"
+              {...{
+                to: `/`,
+                style: { textDecoration: 'none' },
+                component: RouterLink,
+              }}
+            >
+              <Typography
+                style={{
+                  fontWeight: 600,
+                  fontSize: !isMobile ? '22px' : '16px',
+                  color: colors.black,
+                  textAlign: 'left',
+                  marginTop: isMobile ? 17 : 20,
+                  marginLeft: '8px',
+                  lineHeight: '32px',
+                }}
+              >
                 CUAPTS
-              </Link>
-            </Typography>
+              </Typography>
+            </Link>
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item>
-        <Typography className={description}>
-          <Link color="textPrimary" underline="none" href="/">
-            Easy browsing for off-campus housing
-          </Link>
-        </Typography>
       </Grid>
     </Grid>
   );
 
-  const displayDesktop = (): ReactElement => {
+  const searchBar = location.pathname !== '/';
+
+  const displayDesktop = () => {
     return (
-      <Toolbar className={toolbar}>
-        {homeLogo}
-        <div>{getMenuButtons()}</div>
-      </Toolbar>
+      <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
+        <Grid item md={3}>
+          {homeLogo}
+        </Grid>
+        <Grid item md={6} className={searchBar ? search : searchHidden}>
+          {auto()}
+        </Grid>
+        {isAdmin(user) && (
+          <Grid item md={1} className={menu} container justifyContent="flex-end">
+            {getAdminButton()}
+          </Grid>
+        )}
+        <Grid item md={4} className={menu} container justifyContent="flex-end">
+          {getMenuButtons()}
+          {signInButton()}
+        </Grid>
+      </Grid>
     );
   };
 
   const displayMobile = (): ReactElement => {
     return (
-      <Toolbar className={toolbar}>
+      <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
-        <div className={grow} />
         <IconButton
           className={menuDrawer}
+          style={{ position: 'absolute', right: '10px' }}
           {...{
             edge: 'start',
             color: 'default',
@@ -216,7 +355,10 @@ const NavBar = ({ headersData }: Props): ReactElement => {
             onClick: () => setDrawerOpen(true),
           }}
         >
-          <MenuIcon fontSize="large" />
+          <MenuIcon
+            fontSize={'large'}
+            style={{ color: '#B94630', marginRight: isMobile ? '-10px' : '0px' }}
+          />
         </IconButton>
         <Drawer
           {...{

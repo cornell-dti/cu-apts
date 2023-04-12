@@ -15,40 +15,41 @@ import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types'
 import SearchIcon from '@material-ui/icons/Search';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
-
-const useStyles = makeStyles((theme) => ({
-  menuList: {
-    position: 'absolute',
-    backgroundColor: 'white',
-    maxHeight: 200,
-    overflow: 'auto',
-    boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
-  },
-  text: {
-    backgroundColor: 'white',
-    [theme.breakpoints.up('md')]: {
-      width: '70%',
-    },
-  },
-  addressText: {
-    color: '#868686',
-  },
-  buildingText: {
-    color: 'black',
-  },
-  searchIcon: { paddingRight: '10px' },
-  resultChip: { cursor: 'pointer' },
-  field: {
-    '&.Mui-focused': {
-      border: '20px black',
-      '& .MuiOutlinedInput-notchedOutline': {
-        border: 'none',
-      },
-    },
-  },
-}));
+import { colors } from '../../colors';
+import { useHistory } from 'react-router-dom';
 
 export default function Autocomplete() {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const useStyles = makeStyles((theme) => ({
+    menuList: {
+      position: 'absolute',
+      backgroundColor: colors.white,
+      maxHeight: 200,
+      overflow: 'auto',
+      boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
+    },
+    text: {
+      backgroundColor: colors.white,
+    },
+
+    addressText: {
+      color: colors.gray2,
+    },
+    buildingText: {
+      color: colors.black,
+    },
+    searchIcon: { paddingRight: '10px' },
+    resultChip: { cursor: 'pointer' },
+    field: {
+      '&.Mui-focused': {
+        border: '20px black ',
+        '& .MuiOutlinedInput-notchedOutline': {
+          border: 'none',
+        },
+      },
+      height: isMobile ? '35px' : '50px',
+    },
+  }));
   const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
@@ -57,11 +58,30 @@ export default function Autocomplete() {
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
-  const [width, setWidth] = useState(inputRef.current.offsetWidth);
+  const [width, setWidth] = useState(inputRef.current?.offsetWidth);
+
+  const history = useHistory();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
     if (event.key === 'Tab') {
+      setOpen(false);
+    }
+  }
+
+  function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      setFocus(true);
+    } else if (event.key === 'Enter') {
+      setFocus(true);
+      history.push(`/search?q=${query}`);
       setOpen(false);
     }
   }
@@ -76,17 +96,6 @@ export default function Autocomplete() {
     }
   };
 
-  const getLandlordId = (option: LandlordOrApartmentWithLabel) => {
-    switch (option.label) {
-      case 'LANDLORD':
-        return option.id;
-      case 'APARTMENT':
-        return option.landlordId;
-      default:
-        return null;
-    }
-  };
-
   const Menu = () => {
     return (
       <div>
@@ -98,7 +107,7 @@ export default function Autocomplete() {
           <div>
             {open ? (
               <MenuList
-                style={{ width: `${width}px` }}
+                style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
                 className={menuList}
                 autoFocusItem={focus}
                 onKeyDown={handleListKeyDown}
@@ -106,30 +115,29 @@ export default function Autocomplete() {
                 {options.length === 0 ? (
                   <MenuItem disabled>No search results.</MenuItem>
                 ) : (
-                  options.map((option, index) => {
+                  options.map(({ id, name, address, label }, index) => {
                     return (
                       <Link
+                        key={index}
                         {...{
-                          to: `/landlord/${getLandlordId(option)}`,
+                          to: `/${label.toLowerCase()}/${id}`,
                           style: { textDecoration: 'none' },
                           component: RouterLink,
                         }}
                       >
-                        <MenuItem button={true} key={index}>
-                          <Grid container justify="space-between">
+                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
+                          <Grid container justifyContent="space-between">
                             <Grid item xl={8}>
-                              <Typography className={buildingText}>{option.name}</Typography>
+                              <Typography className={buildingText}>{name}</Typography>
 
                               <Typography className={addressText}>
-                                {'address' in option &&
-                                  option.address !== option.name &&
-                                  option.address}
+                                {address !== name && address}
                               </Typography>
                             </Grid>
                             <Grid item xl={4}>
                               <Chip
                                 color="primary"
-                                label={option.label.toLowerCase()}
+                                label={label.toLowerCase()}
                                 className={resultChip}
                               />
                             </Grid>
@@ -159,7 +167,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     const handleResize = () => {
-      setWidth(inputRef.current.offsetWidth);
+      setWidth(inputRef.current?.offsetWidth);
     };
     // the width is initially 0 because the inputRef is initialized as an empty div
     // need to call handleResize when the inputRef is set to the TextField
@@ -189,10 +197,14 @@ export default function Autocomplete() {
         fullWidth
         ref={inputRef}
         value={query}
-        placeholder="Search by landlord or building address"
+        placeholder="Search by any location e.g. “301 College Ave”"
         className={text}
         variant="outlined"
-        onKeyDown={(event) => (event.key === 'ArrowDown' ? setFocus(true) : setFocus(false))}
+        style={{
+          borderRadius: '6px',
+          width: !isMobile ? '70%' : '98%',
+        }}
+        onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
           const value = event.target.value;
           if (value !== '' || value !== null) {
@@ -200,11 +212,18 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
+          style: { fontSize: isMobile ? 16 : 20 },
           endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
-          startAdornment: <SearchIcon className={searchIcon} />,
+          startAdornment: (
+            <SearchIcon
+              style={{ fontSize: isMobile ? 17 : 22, marginLeft: isMobile ? -3 : 0 }}
+              className={searchIcon}
+            />
+          ),
           className: field,
         }}
       />
+
       <Menu />
     </div>
   );
