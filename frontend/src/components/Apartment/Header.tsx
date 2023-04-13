@@ -39,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
     height: '200px',
     backgroundBlendMode: 'darken',
     position: 'relative',
-    width: '120%',
-    marginLeft: '-10%',
+    width: '110%',
+    marginLeft: '-5%',
   },
   logo: {
     height: '86px',
