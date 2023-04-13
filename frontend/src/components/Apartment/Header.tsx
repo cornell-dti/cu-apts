@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme) => ({
     width: '56px',
     fontSize: '3rem',
     marginTop: '120px',
-    marginLeft: '15%',
+    marginLeft: '10%',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
