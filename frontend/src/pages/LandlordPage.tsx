@@ -20,6 +20,7 @@ import NotFoundPage from './NotFoundPage';
 import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import HeartRating from '../components/utils/HeartRating';
+import { colors } from '../colors';
 
 export type RatingInfo = {
   feature: string;
@@ -47,6 +48,25 @@ const useStyles = makeStyles((theme) => ({
     borderRight: 'none',
     borderBottom: 'none',
   },
+  heartRating: {
+    marginTop: '3px',
+    marginRight: '10px',
+  },
+  aptRating: {
+    color: colors.black,
+  },
+  reviewButton: {
+    borderRadius: '30px',
+    marginTop: '10px',
+    marginBottom: '10px',
+  },
+  sortByButton: {
+    background: '#E8E8E8',
+    border: 'none',
+    borderRadius: '10px',
+    paddingRight: '5px',
+    paddingLeft: '5px',
+  },
 }));
 
 const LandlordPage = ({ user, setUser }: Props): ReactElement => {
@@ -68,7 +88,15 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [toggle, setToggle] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
-  const { container, leaveReviewContainer, horizontalLine } = useStyles();
+  const {
+    container,
+    leaveReviewContainer,
+    horizontalLine,
+    heartRating,
+    aptRating,
+    reviewButton,
+    sortByButton,
+  } = useStyles();
 
   useEffect(() => {
     if (isMobile) {
@@ -220,30 +248,31 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const Header = (
     <>
-      <Grid
-        container
-        spacing={3}
-        alignItems="center"
-        style={{ marginTop: '10px', marginBottom: '20px' }}
-      >
-        <Typography variant="h4" style={{ fontWeight: 'bold', marginLeft: '1.5%' }}>
-          Average Rating:{' '}
-        </Typography>
+      <Grid container alignItems="center">
+        <Grid container spacing={1}>
+          <Grid item>
+            <Typography variant="h6">Reviews ({reviewData.length})</Typography>
+            {reviewData.length === 0 && (
+              <Typography>No reviews available. Be the first to leave one!</Typography>
+            )}
+          </Grid>
 
-        <HeartRating
-          value={getAverageRating(reviewData)}
-          precision={0.5}
-          readOnly
-          style={{ marginLeft: '20px', marginTop: '0px' }}
-        />
-      </Grid>
-      <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
-        <Grid item>
-          <Typography variant="h4">Reviews ({reviewData.length})</Typography>
-          {reviewData.length === 0 && (
-            <Typography>No reviews available. Be the first to leave one!</Typography>
+          {!!getAverageRating(reviewData) && (
+            <Grid item>
+              <Grid container alignItems="center">
+                <Grid item className={heartRating}>
+                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                </Grid>
+                <Grid item className={aptRating}>
+                  <Typography variant="h6">
+                    {getAverageRating(reviewData).toFixed(1) + ' / 5'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
           )}
         </Grid>
+
         {landlordData && landlordData.photos.length > 0 && (
           <Button
             color="secondary"
@@ -254,38 +283,44 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
             Show all photos
           </Button>
         )}
-        <Grid item sm={4} md={8}>
-          <Grid container spacing={1} justifyContent="flex-end" alignItems="center">
-            <Grid item>
-              <Typography>Sort reviews by:</Typography>
-            </Grid>
-            <Grid item>
-              <DropDown
-                menuItems={[
-                  {
-                    item: 'Recent',
-                    callback: () => {
-                      setSortBy('date');
-                    },
-                  },
-                  {
-                    item: 'Helpful',
-                    callback: () => {
-                      setSortBy('likes');
-                    },
-                  },
-                ]}
-              />
-            </Grid>
+
+        <Grid item className={leaveReviewContainer} xs={12}>
+          <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
               <Button
                 color="primary"
+                className={reviewButton}
                 variant="contained"
                 disableElevation
                 onClick={openReviewModal}
               >
                 Leave a Review
               </Button>
+            </Grid>
+            <Grid item>
+              <Grid container spacing={1} direction="row" alignItems="center">
+                <Grid item>
+                  <Typography>Sort by:</Typography>
+                </Grid>
+                <Grid item className={sortByButton}>
+                  <DropDown
+                    menuItems={[
+                      {
+                        item: 'Recent',
+                        callback: () => {
+                          setSortBy('date');
+                        },
+                      },
+                      {
+                        item: 'Helpful',
+                        callback: () => {
+                          setSortBy('likes');
+                        },
+                      },
+                    ]}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
@@ -298,33 +333,44 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const MobileHeader = (
     <>
-      <Grid container item spacing={3} justifyContent="space-between" alignItems="center">
-        {landlordData && landlordData.photos.length > 0 && (
-          <Button
-            color="secondary"
-            variant="contained"
-            disableElevation
-            onClick={() => setCarouselOpen(true)}
-          >
-            Show all photos
-          </Button>
-        )}
-        <Grid container spacing={1} alignItems="center" style={{ marginBottom: '-15px' }}>
-          <p
-            style={{
-              marginLeft: '30px',
-              fontSize: '17px',
-              letterSpacing: '0.02em',
-            }}
-          >
-            Average Rating:{' '}
-          </p>
-          <HeartRating
-            value={getAverageRating(reviewData)}
-            precision={0.5}
-            readOnly
-            style={{ marginLeft: '20px', marginTop: '13px' }}
-          />
+      <Grid container alignItems="center">
+        <Grid container spacing={1}>
+          <Grid item style={{ marginTop: '4px' }}>
+            <Typography style={{ marginLeft: '5px', fontSize: '18px', fontWeight: 500 }}>
+              Reviews ({reviewData.length})
+            </Typography>
+            {reviewData.length === 0 && (
+              <Typography style={{ marginLeft: '5px', fontSize: '18px' }}>
+                No reviews available. Be the first to leave one!
+              </Typography>
+            )}
+          </Grid>
+          {!!getAverageRating(reviewData) && (
+            <Grid item style={{ marginTop: '4px' }}>
+              <Grid container alignItems="center">
+                <Grid item className={heartRating}>
+                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                </Grid>
+                <Grid item className={aptRating}>
+                  <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
+                    {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
+        <Grid container spacing={4}>
+          {landlordData && landlordData.photos.length > 0 && (
+            <Button
+              color="secondary"
+              variant="contained"
+              disableElevation
+              onClick={() => setCarouselOpen(true)}
+            >
+              Show all photos
+            </Button>
+          )}
         </Grid>
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
@@ -348,13 +394,13 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                   <DropDown
                     menuItems={[
                       {
-                        item: 'Most recent',
+                        item: 'Recent',
                         callback: () => {
                           setSortBy('date');
                         },
                       },
                       {
-                        item: 'Most helpful',
+                        item: 'Helpful',
                         callback: () => {
                           setSortBy('likes');
                         },
