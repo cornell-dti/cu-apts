@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
     width: '110%',
     marginLeft: '-5%',
+    resizeMode: 'contain',
   },
   logo: {
     height: '86px',
