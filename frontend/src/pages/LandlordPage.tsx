@@ -345,7 +345,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
               </Typography>
             )}
           </Grid>
-          {!!getAverageRating(reviewData) && (
+          {reviewData.length > 0 && (
             <Grid item style={{ marginTop: '4px' }}>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
@@ -417,7 +417,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   const InfoSection = landlordData && (
-    <Grid item xs={12} sm={4}>
+    <Grid item xs={12} sm={4} style={{ marginBottom: '20px' }}>
       <InfoFeatures {...landlordData} buildings={buildings} />
     </Grid>
   );
@@ -439,6 +439,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
           <Grid item xs={12} sm={8}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
+
             {showConfirmation && (
               <Toast
                 isOpen={showConfirmation}
