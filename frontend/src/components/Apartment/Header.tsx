@@ -174,7 +174,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
           <CardMedia className={media} image={photoLink}>
             <Grid item xs={12}>
               <Grid container className={styles.HeaderRow}>
-                <Grid item xs={1} md={1} className={logoGrid}>
+                <Grid item xs={12} md={1} className={logoGrid}>
                   <Avatar src={icon} alt={name} className={logo} />
                 </Grid>
                 <Grid className={headerSection}>

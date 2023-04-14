@@ -94,7 +94,7 @@ const App = (): ReactElement => {
 
   useEffect(() => {
     const setData = async () => {
-      await axios.post('/set-data');
+      await axios.post('/api/set-data');
     };
     setData();
   }, []);

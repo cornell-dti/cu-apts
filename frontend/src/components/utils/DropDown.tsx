@@ -14,6 +14,8 @@ type Props = {
 const useStyles = makeStyles({
   button: {
     minWidth: '64px',
+    backgroundColor: '#e8e8e8',
+    borderColor: '#e8e8e8',
   },
 });
 
@@ -42,8 +44,6 @@ export default function BasicMenu({ menuItems }: Props) {
       <Button
         style={{
           borderRadius: isMobile ? 10 : 0,
-          backgroundColor: '#e8e8e8',
-          borderColor: '#e8e8e8',
         }}
         id="basic-button"
         aria-controls="basic-menu"

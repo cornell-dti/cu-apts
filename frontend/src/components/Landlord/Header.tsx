@@ -80,7 +80,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '36px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
-    marginTop: '20px',
   },
   landlordReviews: {
     color: colors.white,
@@ -107,7 +106,6 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: '10px',
     },
   },
-  ratingSection: { paddingTop: '10px' },
   btnSection: {
     height: '94%',
     [theme.breakpoints.down('sm')]: {
@@ -161,7 +159,6 @@ const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
     mobileLogo,
     mobileLandlordName,
     headerSection,
-    ratingSection,
     btnSection,
     logoGrid,
     mobileMedia,
@@ -187,9 +184,6 @@ const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={landlordName} disableTypography={true} />
-                  <Grid container className={ratingSection}>
-                    <Grid item xs={12}></Grid>
-                  </Grid>
                 </Grid>
               </Grid>
             </Grid>

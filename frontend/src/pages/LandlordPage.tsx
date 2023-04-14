@@ -257,7 +257,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
 
-          {!!getAverageRating(reviewData) && (
+          {reviewData.length > 0 && (
             <Grid item>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
@@ -435,7 +435,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center">
+        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
           <Grid item xs={12} sm={8}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}

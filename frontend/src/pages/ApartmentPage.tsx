@@ -188,20 +188,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     get<Apartment[]>(`/api/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
-    get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
-      callback: setLandlordData,
-    });
+    apt?.landlordId &&
+      get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
+        callback: setLandlordData,
+      });
   }, [apt]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => setIsClicked(window.innerWidth <= 600);
+    const handleResize = () => {
+      setIsClicked(window.innerWidth <= 600);
+      setIsMobile(window.innerWidth <= 600);
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -351,7 +348,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
 
-          {!!getAverageRating(reviewData) && (
+          {reviewData.length > 0 && (
             <Grid item>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
@@ -442,36 +439,36 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               </Typography>
             )}
           </Grid>
-          {!!getAverageRating(reviewData) && (
-            <Grid item style={{ marginTop: '4px' }}>
-              <Grid container alignItems="center">
-                <Grid item className={heartRating}>
-                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
-                </Grid>
-                <Grid item className={aptRating}>
-                  <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
-                    {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
-                  </Typography>
+          {reviewData.length > 0 && (
+            <>
+              <Grid item style={{ marginTop: '4px' }}>
+                <Grid container alignItems="center">
+                  <Grid item className={heartRating}>
+                    <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                  </Grid>
+                  <Grid item className={aptRating}>
+                    <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
+                      {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          )}
-          {!!getAverageRating(reviewData) && (
-            <Grid item style={{ marginLeft: 'auto' }}>
-              <IconButton
-                color="primary"
-                className={clsx(expand, {
-                  [expandOpen]: !isClicked,
-                })}
-                onClick={() => setIsClicked(!isClicked)}
-                aria-expanded={!isClicked}
-                aria-label="show more"
-                size="small"
-                style={{ marginTop: '3px' }}
-              >
-                <ExpandMoreIcon />
-              </IconButton>
-            </Grid>
+              <Grid item style={{ marginLeft: 'auto' }}>
+                <IconButton
+                  color="primary"
+                  className={clsx(expand, {
+                    [expandOpen]: !isClicked,
+                  })}
+                  onClick={() => setIsClicked(!isClicked)}
+                  aria-expanded={!isClicked}
+                  aria-label="show more"
+                  size="small"
+                  style={{ marginTop: '3px' }}
+                >
+                  <ExpandMoreIcon />
+                </IconButton>
+              </Grid>
+            </>
           )}
         </Grid>
         <Grid container spacing={4}>
@@ -567,7 +564,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center">
+        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
           <Grid item xs={12} sm={8}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
