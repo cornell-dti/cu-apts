@@ -430,12 +430,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader
-            averageRating={getAverageRating(reviewData)}
-            landlord={landlordData}
-            numReviews={reviewData.length}
-            handleClick={() => setCarouselOpen(true)}
-          />
+          <LandlordHeader landlord={landlordData} handleClick={() => setCarouselOpen(true)} />
         </Container>
       )}
 

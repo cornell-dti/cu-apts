@@ -17,9 +17,7 @@ import { colors } from '../../colors';
 
 type Props = {
   readonly landlord: Landlord;
-  readonly numReviews: number;
   readonly handleClick: () => void;
-  readonly averageRating: number;
 };
 
 const GlobalCss = withStyles({
@@ -123,8 +121,8 @@ const useStyles = makeStyles((theme) => ({
     height: '56px',
     width: '56px',
     fontSize: '3rem',
-    marginBottom: '-50px',
-    marginLeft: '7%',
+    marginTop: '120px',
+    marginLeft: '10%',
     [theme.breakpoints.up('md')]: {
       marginLeft: '5%',
       marginBottom: '20px',
@@ -132,23 +130,24 @@ const useStyles = makeStyles((theme) => ({
   },
   mobileLandlordName: {
     color: colors.white,
-    paddingLeft: 0,
-    paddingBottom: 0,
     fontWeight: 'bold',
     fontSize: '23px',
     lineHeight: '43px',
     letterSpacing: '0.02em',
-    marginBottom: '15.5px',
-    marginLeft: '50%',
+    marginTop: '115px',
+    marginLeft: '-55%',
+  },
+  mobileMedia: {
+    height: '200px',
+    backgroundBlendMode: 'darken',
+    position: 'relative',
+    width: '108.7%',
+    marginLeft: '-4.3%',
+    resizeMode: 'contain',
   },
 }));
 
-const LandlordHeader = ({
-  landlord,
-  numReviews,
-  handleClick,
-  averageRating,
-}: Props): ReactElement => {
+const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
   const { name, profilePhoto, photos } = landlord;
   const icon = profilePhoto ? profilePhoto : defaultIcon;
   const photoLink = photos.length ? photos[0] : defaultHeader;
@@ -165,6 +164,7 @@ const LandlordHeader = ({
     ratingSection,
     btnSection,
     logoGrid,
+    mobileMedia,
   } = useStyles();
 
   useEffect(() => {
@@ -173,6 +173,7 @@ const LandlordHeader = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
   const header = (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
@@ -220,48 +221,29 @@ const LandlordHeader = ({
       <>
         <GlobalCss />
         <Grid item xs={12}>
-          <CardMedia
-            className={media}
-            image={photoLink}
-            style={{ height: '203px', width: '115%', marginLeft: '-10%' }}
-          >
-            <Grid item xs={12}>
-              <Grid container className={styles.HeaderRow}>
-                <Grid item xs={12} md={1} className={logoGrid}>
-                  <Avatar src={icon} alt={name} className={mobileLogo} />
-                </Grid>
-                <Grid className={headerSection} alignItems="center">
-                  <CardHeader
-                    title={name}
-                    className={mobileLandlordName}
-                    disableTypography={true}
-                    style={{ marginTop: '0px' }}
-                  />
-                  <Grid container className={ratingSection}>
-                    <Grid item xs={12}></Grid>
-                  </Grid>
-                </Grid>
+          <CardMedia className={mobileMedia} image={photoLink}>
+            <Grid container alignItems="center" className={headerSection}>
+              <Grid item xs={6}>
+                <Avatar src={icon} alt={name} className={mobileLogo} />
+              </Grid>
+              <Grid item xs={6}>
+                <CardHeader title={name} className={mobileLandlordName} disableTypography={true} />
               </Grid>
             </Grid>
-            {photos.length > 0 && (
-              <Grid
-                container
-                alignItems="flex-end"
-                justifyContent="flex-end"
-                className={btnSection}
-              >
-                <Button
-                  disableFocusRipple
-                  variant="outlined"
-                  className={photoButton}
-                  onClick={handleClick}
-                >
-                  Show all photos
-                </Button>
-              </Grid>
-            )}
           </CardMedia>
         </Grid>
+        {photos.length > 0 && (
+          <Grid container alignItems="flex-end" justifyContent="flex-end" className={btnSection}>
+            <Button
+              disableFocusRipple
+              variant="outlined"
+              className={photoButton}
+              onClick={handleClick}
+            >
+              Show all photos
+            </Button>
+          </Grid>
+        )}
       </>
     </Grid>
   );
