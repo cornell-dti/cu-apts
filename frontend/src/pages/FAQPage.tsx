@@ -11,21 +11,17 @@ export type FAQ = {
   answer: string;
 };
 
-export type FAQData = {
-  headerName: string;
-  faqs: FAQ[];
-};
-
 const FAQPage = (): ReactElement => {
-  const [data, setData] = useState<FAQData[]>([]);
+  const [data, setData] = useState<FAQ[]>([]);
 
   useTitle('FAQ');
 
   useEffect(() => {
-    get<FAQData[]>(`/api/faqs`, {
+    get<FAQ[]>(`/api/faqs`, {
       callback: setData,
     });
   }, []);
+
   return (
     <div className={styles.faqPage}>
       <div className={styles.faqHeaderTitle}>

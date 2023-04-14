@@ -14,7 +14,7 @@ import {
   ApartmentWithId,
 } from '@common/types/db-types';
 import { db, FieldValue } from './firebase-config';
-import { Section } from './firebase-config/types';
+import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 
 const reviewCollection = db.collection('reviews');
@@ -31,13 +31,13 @@ app.use(morgan('combined'));
 app.get('/api/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
-  const faqs: Section[] = snapshot.docs.map((doc) => {
+  const faqs: Faq[] = snapshot.docs.map((doc) => {
     const data = doc.data();
-    const section: Section = {
-      headerName: data.headerName,
-      faqs: data.faqs,
+    const faq: Faq = {
+      question: data.question,
+      answer: data.answer,
     };
-    return section;
+    return faq;
   });
 
   res.status(200).send(JSON.stringify(faqs));
