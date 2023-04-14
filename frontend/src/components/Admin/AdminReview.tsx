@@ -70,11 +70,11 @@ const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
 
   useEffect(() => {
     if (review.aptId !== null) {
-      get<ApartmentWithId[]>(`/apts/${review.aptId}`, {
+      get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
         callback: setApt,
       });
     }
-    get<Landlord>(`/landlord/${review.landlordId}`, {
+    get<Landlord>(`/api/landlord/${review.landlordId}`, {
       callback: setLandlord,
     });
   }, [review]);

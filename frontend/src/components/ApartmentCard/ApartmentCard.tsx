@@ -82,7 +82,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   } = useStyles();
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${id}/APPROVED`, {
+    get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
       callback: setReviewList,
     });
   }, [id]);

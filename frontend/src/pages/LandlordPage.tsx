@@ -121,20 +121,20 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/landlordId/${landlordId}/APPROVED`, {
+    get<ReviewWithId[]>(`/api/review/landlordId/${landlordId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [landlordId, showConfirmation, toggle]);
 
   useEffect(() => {
-    get<Landlord>(`/landlord/${landlordId}`, {
+    get<Landlord>(`/api/landlord/${landlordId}`, {
       callback: setLandlordData,
       errorHandler: handlePageNotFound,
     });
   }, [landlordId]);
 
   useEffect(() => {
-    get<CardData[]>(`/buildings/all/${landlordId}`, {
+    get<CardData[]>(`/api/buildings/all/${landlordId}`, {
       callback: setBuildings,
     });
   }, [landlordId]);

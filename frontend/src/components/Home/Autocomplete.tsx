@@ -182,7 +182,7 @@ export default function Autocomplete() {
 
   useEffect(() => {
     if (loading && query.trim() !== '') {
-      get<LandlordOrApartmentWithLabel[]>(`/search?q=${query}`, {
+      get<LandlordOrApartmentWithLabel[]>(`/api/search?q=${query}`, {
         callback: (data) => {
           setOptions(data);
           setLoading(false);

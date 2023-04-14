@@ -168,7 +168,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   useEffect(() => {
-    get<ApartmentWithId[]>(`/apts/${aptId}`, {
+    get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
       errorHandler: handlePageNotFound,
     });
@@ -179,16 +179,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   }, [aptData]);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${aptId}/APPROVED`, {
+    get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [aptId, showConfirmation, toggle]);
 
   useEffect(() => {
-    get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
+    get<Apartment[]>(`/api/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
-    get<Landlord>(`/landlord/${apt?.landlordId}`, {
+    get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
       callback: setLandlordData,
     });
   }, [apt]);
@@ -230,7 +230,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   }, []);
 
   useEffect(() => {
-    get<CardData[]>(`/buildings/all/${apt?.landlordId}`, {
+    get<CardData[]>(`/api/buildings/all/${apt?.landlordId}`, {
       callback: setOtherproperties,
     });
   }, [apt]);
