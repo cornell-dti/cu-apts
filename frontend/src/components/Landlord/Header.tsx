@@ -1,5 +1,5 @@
-import React, { ReactElement } from 'react';
-import HeartRating from '../utils/HeartRating';
+import React, { ReactElement, useState, useEffect } from 'react';
+
 import {
   CardHeader,
   CardMedia,
@@ -17,9 +17,7 @@ import { colors } from '../../colors';
 
 type Props = {
   readonly landlord: Landlord;
-  readonly numReviews: number;
   readonly handleClick: () => void;
-  readonly averageRating: number;
 };
 
 const GlobalCss = withStyles({
@@ -108,7 +106,6 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: '10px',
     },
   },
-  ratingSection: { paddingTop: '10px' },
   btnSection: {
     height: '94%',
     [theme.breakpoints.down('sm')]: {
@@ -118,30 +115,63 @@ const useStyles = makeStyles((theme) => ({
   logoGrid: {
     marginRight: '1em',
   },
+  mobileLogo: {
+    height: '56px',
+    width: '56px',
+    fontSize: '3rem',
+    marginTop: '120px',
+    marginLeft: '10%',
+    [theme.breakpoints.up('md')]: {
+      marginLeft: '5%',
+      marginBottom: '20px',
+    },
+  },
+  mobileLandlordName: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: '23px',
+    lineHeight: '43px',
+    letterSpacing: '0.02em',
+    marginTop: '115px',
+    marginLeft: '-55%',
+  },
+  mobileMedia: {
+    height: '200px',
+    backgroundBlendMode: 'darken',
+    position: 'relative',
+    width: '108.7%',
+    marginLeft: '-4.3%',
+    resizeMode: 'contain',
+  },
 }));
 
-const LandlordHeader = ({
-  landlord,
-  numReviews,
-  handleClick,
-  averageRating,
-}: Props): ReactElement => {
+const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
   const { name, profilePhoto, photos } = landlord;
   const icon = profilePhoto ? profilePhoto : defaultIcon;
   const photoLink = photos.length ? photos[0] : defaultHeader;
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
   const {
     media,
     logo,
     photoButton,
     landlordName,
-    landlordReviews,
-    landlordRating,
+    mobileLogo,
+    mobileLandlordName,
     headerSection,
-    ratingSection,
     btnSection,
     logoGrid,
+    mobileMedia,
   } = useStyles();
-  return (
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const header = (
     <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
       <>
         <GlobalCss />
@@ -154,18 +184,6 @@ const LandlordHeader = ({
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={landlordName} disableTypography={true} />
-                  <Grid container className={ratingSection}>
-                    <Grid item className={landlordRating} xs={12}>
-                      <HeartRating value={averageRating} precision={0.5} readOnly />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <CardHeader
-                        title={numReviews + (numReviews > 1 ? ' Reviews' : ' Review')}
-                        className={landlordReviews}
-                        disableTypography={true}
-                      />
-                    </Grid>
-                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
@@ -191,6 +209,40 @@ const LandlordHeader = ({
       </>
     </Grid>
   );
+
+  const mobileHeader = (
+    <Grid container spacing={0} alignItems="flex-end" className={styles.HeaderDiv}>
+      <>
+        <GlobalCss />
+        <Grid item xs={12}>
+          <CardMedia className={mobileMedia} image={photoLink}>
+            <Grid container alignItems="center" className={headerSection}>
+              <Grid item xs={6}>
+                <Avatar src={icon} alt={name} className={mobileLogo} />
+              </Grid>
+              <Grid item xs={6}>
+                <CardHeader title={name} className={mobileLandlordName} disableTypography={true} />
+              </Grid>
+            </Grid>
+          </CardMedia>
+        </Grid>
+        {photos.length > 0 && (
+          <Grid container alignItems="flex-end" justifyContent="flex-end" className={btnSection}>
+            <Button
+              disableFocusRipple
+              variant="outlined"
+              className={photoButton}
+              onClick={handleClick}
+            >
+              Show all photos
+            </Button>
+          </Grid>
+        )}
+      </>
+    </Grid>
+  );
+
+  return isMobile ? mobileHeader : header;
 };
 
 export default LandlordHeader;

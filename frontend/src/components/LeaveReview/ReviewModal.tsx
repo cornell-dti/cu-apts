@@ -172,7 +172,7 @@ const ReviewModal = ({
           : setIncludesProfanityError(false);
         return;
       }
-      const res = await axios.post('/new-review', data, createAuthHeaders(token));
+      const res = await axios.post('/api/new-review', data, createAuthHeaders(token));
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }

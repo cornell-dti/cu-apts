@@ -41,7 +41,7 @@ const LocationPage = (): ReactElement => {
 
   const path = useLocation();
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
-  const locAPI = `/location/${location}/`;
+  const locAPI = `/api/location/${location}/`;
   const locToImg: Images = {
     Collegetown: CollegetownImg,
     West: WestImg,

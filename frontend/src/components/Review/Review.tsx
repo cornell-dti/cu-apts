@@ -145,7 +145,7 @@ const ReviewComponent = ({
           <Grid container spacing={2}>
             <Grid item container justifyContent="space-between">
               <Grid item container justifyContent="space-between" className={bottomborder}>
-                <Grid container item xs={10} spacing={2}>
+                <Grid container item spacing={1}>
                   <Grid item className={heartSpacing}>
                     <HeartRating value={overallRating} readOnly />
                   </Grid>
@@ -162,10 +162,9 @@ const ReviewComponent = ({
                       <ExpandMoreIcon />
                     </IconButton>
                   </Grid>
-                </Grid>
-
-                <Grid item>
-                  <Typography className={dateText}>{formattedDate}</Typography>
+                  <Grid item style={{ marginLeft: 'auto' }}>
+                    <Typography className={dateText}>{formattedDate}</Typography>
+                  </Grid>
                 </Grid>
 
                 <Grid item>

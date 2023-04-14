@@ -1,5 +1,16 @@
 import React, { ReactElement, useState, useEffect, useCallback } from 'react';
-import { Button, Container, Grid, Hidden, Typography, makeStyles } from '@material-ui/core';
+import {
+  IconButton,
+  Button,
+  Container,
+  Grid,
+  Hidden,
+  Typography,
+  makeStyles,
+  Box,
+} from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
@@ -26,6 +37,7 @@ import HeartRating from '../components/utils/HeartRating';
 import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
+import clsx from 'clsx';
 
 type Props = {
   user: firebase.User | null;
@@ -67,6 +79,34 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
   },
+  root: {
+    borderRadius: '10px',
+  },
+  expand: {
+    transform: 'rotate(0deg)',
+    marginLeft: 'auto',
+    borderColor: colors.black,
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+  },
+  dateText: {
+    color: colors.gray1,
+  },
+  button: {
+    textTransform: 'none',
+    '&.Mui-disabled': {
+      color: 'inherit',
+    },
+  },
+  horizontalLine: {
+    borderTop: '1px solid #C4C4C4',
+    width: '95%',
+    marginTop: '20px',
+    borderLeft: 'none',
+    borderRight: 'none',
+    borderBottom: 'none',
+  },
 }));
 
 const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
@@ -89,10 +129,26 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [notFound, setNotFound] = useState(false);
   const [otherProperties, setOtherproperties] = useState<CardData[]>([]);
   const [toggle, setToggle] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isClicked, setIsClicked] = useState<boolean>(true);
+  const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
+
+  useEffect(() => {
+    if (isMobile) {
+      setResultsToShow(5);
+    } else {
+      setResultsToShow(reviewData.length);
+    }
+  }, [isMobile, reviewData.length]);
+
+  const handleShowMore = () => {
+    setResultsToShow(resultsToShow + 5);
+  };
 
   const handlePageNotFound = () => {
     setNotFound(true);
   };
+
   const {
     sortByButton,
     reviewButton,
@@ -101,11 +157,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     leaveReviewContainer,
     ratingInfo,
     container,
+    expand,
+    expandOpen,
+    horizontalLine,
   } = useStyles();
+
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
+
   useEffect(() => {
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
@@ -127,10 +188,21 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     get<Apartment[]>(`/api/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
-    get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
-      callback: setLandlordData,
-    });
+    apt?.landlordId &&
+      get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
+        callback: setLandlordData,
+      });
   }, [apt]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsClicked(window.innerWidth <= 600);
+      setIsMobile(window.innerWidth <= 600);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setAveRatingInfo(calculateAveRating(reviewData));
@@ -268,7 +340,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const Header = (
     <>
       <Grid container alignItems="center">
-        <Grid container spacing={1} sm={12}>
+        <Grid container spacing={1}>
           <Grid item>
             <Typography variant="h6">Reviews ({reviewData.length})</Typography>
             {reviewData.length === 0 && (
@@ -276,7 +348,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
 
-          {!!getAverageRating(reviewData) && (
+          {reviewData.length > 0 && (
             <Grid item>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
@@ -353,6 +425,116 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  const MobileHeader = (
+    <>
+      <Grid container alignItems="center">
+        <Grid container spacing={1}>
+          <Grid item style={{ marginTop: '4px' }}>
+            <Typography style={{ marginLeft: '5px', fontSize: '18px', fontWeight: 500 }}>
+              Reviews ({reviewData.length})
+            </Typography>
+            {reviewData.length === 0 && (
+              <Typography style={{ marginLeft: '5px', fontSize: '18px' }}>
+                No reviews available. Be the first to leave one!
+              </Typography>
+            )}
+          </Grid>
+          {reviewData.length > 0 && (
+            <>
+              <Grid item style={{ marginTop: '4px' }}>
+                <Grid container alignItems="center">
+                  <Grid item className={heartRating}>
+                    <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                  </Grid>
+                  <Grid item className={aptRating}>
+                    <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
+                      {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item style={{ marginLeft: 'auto' }}>
+                <IconButton
+                  color="primary"
+                  className={clsx(expand, {
+                    [expandOpen]: !isClicked,
+                  })}
+                  onClick={() => setIsClicked(!isClicked)}
+                  aria-expanded={!isClicked}
+                  aria-label="show more"
+                  size="small"
+                  style={{ marginTop: '3px' }}
+                >
+                  <ExpandMoreIcon />
+                </IconButton>
+              </Grid>
+            </>
+          )}
+        </Grid>
+        <Grid container spacing={4}>
+          {landlordData && landlordData.photos.length > 0 && (
+            <Button
+              color="secondary"
+              variant="contained"
+              disableElevation
+              onClick={() => setCarouselOpen(true)}
+            >
+              Show all photos
+            </Button>
+          )}
+        </Grid>
+
+        {!isClicked && reviewData && reviewData.length > 0 && (
+          <Box m={1} pt={1}>
+            <Grid item xs={12} className={ratingInfo}>
+              <ReviewHeader aveRatingInfo={aveRatingInfo} />
+            </Grid>
+          </Box>
+        )}
+        <Grid item className={leaveReviewContainer} xs={12}>
+          <Grid container spacing={1} alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Button
+                style={{ borderRadius: 20, fontSize: '14px' }}
+                color="primary"
+                variant="contained"
+                disableElevation
+                onClick={openReviewModal}
+              >
+                Leave a Review
+              </Button>
+            </Grid>
+            <Grid item style={{ marginRight: '8px' }}>
+              <Grid container spacing={1} direction="row" alignItems="center">
+                <Grid item>
+                  <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
+                </Grid>
+                <Grid item>
+                  <DropDown
+                    menuItems={[
+                      {
+                        item: 'Recent',
+                        callback: () => {
+                          setSortBy('date');
+                        },
+                      },
+                      {
+                        item: 'Helpful',
+                        callback: () => {
+                          setSortBy('likes');
+                        },
+                      },
+                    ]}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
+  );
+
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
       <AptInfo
@@ -382,10 +564,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center">
+        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
           <Grid item xs={12} sm={8}>
-            {Header}
-            <Hidden smUp>{InfoSection}</Hidden>
+            {isMobile ? MobileHeader : Header}
+            {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
             {showConfirmation && (
               <Toast
                 isOpen={showConfirmation}
@@ -403,22 +585,49 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               />
             )}
             <Grid container item spacing={3}>
-              {sortReviews(reviewData, sortBy).map((review, index) => (
-                <Grid item xs={12} key={index}>
-                  <ReviewComponent
-                    review={review}
-                    liked={likedReviews[review.id]}
-                    likeLoading={likeStatuses[review.id]}
-                    addLike={addLike}
-                    removeLike={removeLike}
-                    setToggle={setToggle}
-                    user={user}
-                    setUser={setUser}
-                  />
-                </Grid>
-              ))}
+              {sortReviews(reviewData, sortBy)
+                .slice(0, resultsToShow)
+                .map((review, index) => (
+                  <Grid item xs={12} key={index}>
+                    <ReviewComponent
+                      review={review}
+                      liked={likedReviews[review.id]}
+                      likeLoading={likeStatuses[review.id]}
+                      addLike={addLike}
+                      removeLike={removeLike}
+                      setToggle={setToggle}
+                      user={user}
+                      setUser={setUser}
+                    />
+                  </Grid>
+                ))}
             </Grid>
+
+            {isMobile && reviewData.length > resultsToShow && (
+              <Box textAlign="center">
+                <Grid item xs={12}>
+                  <hr className={horizontalLine} />
+                </Grid>
+                <Grid item style={{ padding: '30px' }}>
+                  <Button
+                    style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #A3A3A3',
+                      borderRadius: '9px',
+                      width: '10em',
+                      textTransform: 'initial',
+                    }}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleShowMore}
+                  >
+                    Show More
+                  </Button>
+                </Grid>
+              </Box>
+            )}
           </Grid>
+          {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
           <Hidden xsDown>{InfoSection}</Hidden>
         </Grid>
       </Container>
