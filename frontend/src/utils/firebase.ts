@@ -12,10 +12,10 @@ import 'firebase/firestore'; // for cloud firestore
 config();
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCJulo-7tVPqEEsTTRjEsUzSRw8-RCLDVw',
-  authDomain: 'cuapts-68201.firebaseapp.com',
-  projectId: 'cuapts-68201',
-  storageBucket: 'cuapts-68201.appspot.com',
+  apiKey: 'AIzaSyAdMQ6iXx24ekH8UU-JIJHbTK99vkNQQ9s',
+  authDomain: 'cuapts-prod.firebaseapp.com',
+  projectId: 'cuapts-prod',
+  storageBucket: 'cuapts-prod.appspot.com',
 };
 
 firebase.initializeApp(firebaseConfig);
