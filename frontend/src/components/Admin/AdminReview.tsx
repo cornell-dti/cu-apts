@@ -91,7 +91,7 @@ const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
   };
 
   const changeStatus = async (newStatus: string) => {
-    const endpoint = `/update-review-status/${review.id}/${newStatus}`;
+    const endpoint = `/api/update-review-status/${review.id}/${newStatus}`;
     await axios.put(endpoint);
     setToggle((cur) => !cur);
   };
