@@ -120,7 +120,7 @@ const ReviewComponent = ({
 
   const reportAbuseHanler = async (reviewId: string) => {
     if (user) {
-      const endpoint = `/update-review-status/${reviewId}/PENDING`;
+      const endpoint = `/api/update-review-status/${reviewId}/PENDING`;
       await axios.put(endpoint);
       setToggle((cur) => !cur);
     } else {
