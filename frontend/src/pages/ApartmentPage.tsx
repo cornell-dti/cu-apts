@@ -285,7 +285,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         const defaultLikes = dislike ? 1 : 0;
         const offsetLikes = dislike ? -1 : 1;
         const token = await user.getIdToken(true);
-        const endpoint = dislike ? '/remove-like' : '/add-like';
+        const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
         setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
         setReviewData((reviews) =>
