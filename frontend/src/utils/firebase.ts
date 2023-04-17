@@ -18,13 +18,6 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
 };
 
-// const firebaseConfig = {
-//   apiKey: 'AIzaSyAdMQ6iXx24ekH8UU-JIJHbTK99vkNQQ9s',
-//   authDomain: 'cuapts-prod.firebaseapp.com',
-//   projectId: 'cuapts-prod',
-//   storageBucket: 'cuapts-prod.appspot.com',
-// };
-
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
