@@ -11,7 +11,8 @@
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
     "test": "NODE_ENV=test firebase emulators:exec --only firestore \"./test.sh\"",
-    "dev": "ts-node src/server.ts",
+    "dev": "env-cmd -f ../.env.dev ts-node src/server.ts",
+    "prod": "env-cmd -f ../.env.prod ts-node src/server.ts",
     "lint": "eslint . --ext .ts --ext .tsx",
     "lint:fix": "yarn lint --fix"
   },

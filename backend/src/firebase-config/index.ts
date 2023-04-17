@@ -1,20 +1,18 @@
 import * as admin from 'firebase-admin';
-import { readFileSync } from 'fs';
 import { config } from 'dotenv';
 
 config();
 
-const serviceAccountPath = './resources/firebase-adminsdk.json';
-
-const hydrateServiceAccount = (serviceAccountPath: string): admin.ServiceAccount => {
-  const serviceAccount = JSON.parse(readFileSync(serviceAccountPath).toString());
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  return { ...serviceAccount, privateKey };
+const hydrateServiceAccount = (): admin.ServiceAccount => {
+  const privateKey = process.env.REACT_APP_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const projectId = process.env.REACT_APP_PROJECT_ID;
+  const clientEmail = process.env.REACT_APP_CLIENT_EMAIL;
+  return { projectId, clientEmail, privateKey };
 };
 
 admin.initializeApp({
-  credential: admin.credential.cert(hydrateServiceAccount(serviceAccountPath)),
-  databaseURL: process.env.DATABASE_URL,
+  credential: admin.credential.cert(hydrateServiceAccount()),
+  databaseURL: process.env.REACT_APP_DATABASE_URL,
 });
 
 const db = admin.firestore();
