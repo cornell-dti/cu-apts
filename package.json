@@ -6,11 +6,14 @@
     "tsc": "yarn workspaces run tsc",
     "frontend-dev": "yarn workspace frontend start",
     "backend-dev": "yarn workspace backend dev",
+    "frontend-prod": "yarn workspace frontend start-prod",
+    "backend-prod": "yarn workspace backend prod",
     "lint": "yarn workspaces run lint",
     "lint:fix": "yarn workspaces run lint:fix",
     "format": "prettier --write **/*.{ts,js,tsx,jsx,scss,css,html}",
     "format:check": "prettier --check **/*.{ts,js,tsx,jsx,scss,css,html}",
     "start": "run-p frontend-dev backend-dev",
+    "start-prod": "run-p frontend-prod backend-prod",
     "prepare": "husky install",
     "test": "yarn workspace backend test"
   },
@@ -68,6 +71,7 @@
   },
   "dependencies": {
     "bad-words": "^3.0.4",
+    "env-cmd": "^10.1.0",
     "react-infinite-scroll-component": "^6.1.0"
   }
 }
