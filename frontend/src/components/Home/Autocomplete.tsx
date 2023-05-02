@@ -82,6 +82,7 @@ export default function Autocomplete() {
     } else if (event.key === 'Enter') {
       setFocus(true);
       history.push(`/search?q=${query}`);
+      setQuery('');
       setOpen(false);
     }
   }
