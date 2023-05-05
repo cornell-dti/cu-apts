@@ -8,6 +8,7 @@ const useStyles = makeStyles(() => ({
     backgroundColor: colors.gray3,
     height: '94px',
     fontFamily: 'Work Sans',
+
     fontStyle: 'normal',
     fontWeight: 'normal',
     fontSize: '24px',
