@@ -318,26 +318,32 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const searchBar = location.pathname !== '/';
 
-  const displayDesktop = () => {
-    return (
-      <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
-        <Grid item md={3}>
-          {homeLogo}
-        </Grid>
-        <Grid item md={6} className={searchBar ? search : searchHidden}>
-          {auto()}
-        </Grid>
-        {isAdmin(user) && (
-          <Grid item md={1} className={menu} container justifyContent="flex-end">
-            {getAdminButton()}
+  class DisplayDesktop extends React.Component {
+    render() {
+      return (
+        <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
+          <Grid item md={3}>
+            {homeLogo}
           </Grid>
-        )}
-        <Grid item md={4} className={menu} container justifyContent="flex-end">
-          {getMenuButtons()}
-          {signInButton()}
+          <Grid item md={6} className={searchBar ? search : searchHidden}>
+            {auto()}
+          </Grid>
+          {isAdmin(user) && (
+            <Grid item md={1} className={menu} container justifyContent="flex-end">
+              {getAdminButton()}
+            </Grid>
+          )}
+          <Grid item md={4} className={menu} container justifyContent="flex-end">
+            {getMenuButtons()}
+            {signInButton()}
+          </Grid>
         </Grid>
-      </Grid>
-    );
+      );
+    }
+  }
+
+  const displayDesktop = () => {
+    return DisplayDesktop;
   };
 
   const displayMobile = (): ReactElement => {
