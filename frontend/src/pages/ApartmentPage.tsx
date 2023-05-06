@@ -148,35 +148,27 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const handlePageNotFound = () => {
     setNotFound(true);
   };
-<<<<<<< HEAD
 
-  const {
-=======
   const {
     sortByButton,
     reviewButton,
->>>>>>> e8fdaa4 (Changed position and styling of ApartmentPage buttons and added line for each review card (#271))
     aptRating,
     heartRating,
     leaveReviewContainer,
     ratingInfo,
     container,
-<<<<<<< HEAD
     expand,
     expandOpen,
     horizontalLine,
   } = useStyles();
 
-=======
-  } = useStyles();
->>>>>>> e8fdaa4 (Changed position and styling of ApartmentPage buttons and added line for each review card (#271))
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
 
   useEffect(() => {
-    get<ApartmentWithId[]>(`/apts/${aptId}`, {
+    get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
       errorHandler: handlePageNotFound,
     });
@@ -187,29 +179,26 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   }, [aptData]);
 
   useEffect(() => {
-    get<ReviewWithId[]>(`/review/aptId/${aptId}/APPROVED`, {
+    get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [aptId, showConfirmation, toggle]);
 
   useEffect(() => {
-    get<Apartment[]>(`/buildings/${apt?.landlordId}`, {
+    get<Apartment[]>(`/api/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
     });
-    get<Landlord>(`/landlord/${apt?.landlordId}`, {
-      callback: setLandlordData,
-    });
+    apt?.landlordId &&
+      get<Landlord>(`/api/landlord/${apt?.landlordId}`, {
+        callback: setLandlordData,
+      });
   }, [apt]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => setIsClicked(window.innerWidth <= 600);
+    const handleResize = () => {
+      setIsClicked(window.innerWidth <= 600);
+      setIsMobile(window.innerWidth <= 600);
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -238,7 +227,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   }, []);
 
   useEffect(() => {
-    get<CardData[]>(`/buildings/all/${apt?.landlordId}`, {
+    get<CardData[]>(`/api/buildings/all/${apt?.landlordId}`, {
       callback: setOtherproperties,
     });
   }, [apt]);
@@ -296,7 +285,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         const defaultLikes = dislike ? 1 : 0;
         const offsetLikes = dislike ? -1 : 1;
         const token = await user.getIdToken(true);
-        const endpoint = dislike ? '/remove-like' : '/add-like';
+        const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
         setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
         setReviewData((reviews) =>
@@ -359,7 +348,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
 
-          {!!getAverageRating(reviewData) && (
+          {reviewData.length > 0 && (
             <Grid item>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
@@ -450,36 +439,36 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               </Typography>
             )}
           </Grid>
-          {!!getAverageRating(reviewData) && (
-            <Grid item style={{ marginTop: '4px' }}>
-              <Grid container alignItems="center">
-                <Grid item className={heartRating}>
-                  <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
-                </Grid>
-                <Grid item className={aptRating}>
-                  <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
-                    {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
-                  </Typography>
+          {reviewData.length > 0 && (
+            <>
+              <Grid item style={{ marginTop: '4px' }}>
+                <Grid container alignItems="center">
+                  <Grid item className={heartRating}>
+                    <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+                  </Grid>
+                  <Grid item className={aptRating}>
+                    <Typography style={{ fontSize: '18px', fontWeight: 500 }}>
+                      {getAverageRating(reviewData).toFixed(1) + ' / 5  '}
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          )}
-          {!!getAverageRating(reviewData) && (
-            <Grid item style={{ marginLeft: 'auto' }}>
-              <IconButton
-                color="primary"
-                className={clsx(expand, {
-                  [expandOpen]: !isClicked,
-                })}
-                onClick={() => setIsClicked(!isClicked)}
-                aria-expanded={!isClicked}
-                aria-label="show more"
-                size="small"
-                style={{ marginTop: '3px' }}
-              >
-                <ExpandMoreIcon />
-              </IconButton>
-            </Grid>
+              <Grid item style={{ marginLeft: 'auto' }}>
+                <IconButton
+                  color="primary"
+                  className={clsx(expand, {
+                    [expandOpen]: !isClicked,
+                  })}
+                  onClick={() => setIsClicked(!isClicked)}
+                  aria-expanded={!isClicked}
+                  aria-label="show more"
+                  size="small"
+                  style={{ marginTop: '3px' }}
+                >
+                  <ExpandMoreIcon />
+                </IconButton>
+              </Grid>
+            </>
           )}
         </Grid>
         <Grid container spacing={4}>
@@ -575,7 +564,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center">
+        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
           <Grid item xs={12} sm={8}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
