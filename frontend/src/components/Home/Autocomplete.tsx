@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Chip,
   CircularProgress,
@@ -38,7 +39,26 @@ export default function Autocomplete() {
     buildingText: {
       color: colors.black,
     },
-    searchIcon: { paddingRight: '10px' },
+    searchIcon: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      // fontSize: isMobile ? 17 : 22
+      height: '62%',
+      width: '62%',
+    },
+    searchIconBackground: {
+      backgroundColor: colors.red1,
+      width: '50px',
+      height: isMobile ? '35px' : '50px',
+      position: 'absolute',
+      right: '0',
+      borderRadius: '0px 10px 10px 0px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     resultChip: { cursor: 'pointer' },
     field: {
       '&.Mui-focused': {
@@ -50,7 +70,16 @@ export default function Autocomplete() {
       height: isMobile ? '35px' : '50px',
     },
   }));
-  const { menuList, text, searchIcon, resultChip, field, addressText, buildingText } = useStyles();
+  const {
+    menuList,
+    text,
+    searchIcon,
+    searchIconBackground,
+    resultChip,
+    field,
+    addressText,
+    buildingText,
+  } = useStyles();
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -191,18 +220,24 @@ export default function Autocomplete() {
     }
   }, [loading, query]);
 
+  const location = useLocation();
+  let placeholderText = '';
+  if (location.pathname === '/') {
+    placeholderText = 'Search by any location e.g. “301 College Ave”';
+  }
+
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <TextField
         fullWidth
         ref={inputRef}
         value={query}
-        placeholder="Search by any location e.g. “301 College Ave”"
+        placeholder={placeholderText}
         className={text}
         variant="outlined"
         style={{
-          borderRadius: '6px',
-          width: !isMobile ? '70%' : '98%',
+          borderRadius: '10px',
+          width: !isMobile ? '65%' : '98%',
         }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
@@ -212,19 +247,18 @@ export default function Autocomplete() {
           }
         }}
         InputProps={{
-          style: { fontSize: isMobile ? 16 : 20 },
-          endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
-          startAdornment: (
-            <SearchIcon
-              style={{ fontSize: isMobile ? 17 : 22, marginLeft: isMobile ? -3 : 0 }}
-              className={searchIcon}
-            />
+          style: { height: isMobile ? '35px' : '50px', borderRadius: '10px' },
+          endAdornment: (
+            <React.Fragment>
+              {loading ? <CircularProgress color="inherit" size={20} /> : null}
+              <div className={searchIconBackground}>
+                <SearchIcon className={searchIcon} />
+              </div>
+            </React.Fragment>
           ),
           className: field,
         }}
       />
-
-      <Menu />
     </div>
   );
 }

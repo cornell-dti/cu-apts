@@ -112,8 +112,9 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    marginRight: '25%',
+    marginLeft: '30px',
     marginBottom: '-15px',
+    borderRadius: '10px',
   },
   searchHidden: {
     width: '50%',
@@ -126,7 +127,8 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    fontSize: 5,
+    // fontSize: 5,
+    width: '100%',
     marginBottom: '5%',
   },
 }));
@@ -317,16 +319,16 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   );
 
   const searchBar = location.pathname !== '/';
-
   const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
-        <Grid item md={3}>
-          {homeLogo}
+        <Grid item md={9} container alignItems="center">
+          <Grid item>{homeLogo}</Grid>
+          <Grid item className={searchBar ? search : searchHidden}>
+            {auto()}
+          </Grid>
         </Grid>
-        <Grid item md={6} className={searchBar ? search : searchHidden}>
-          {auto()}
-        </Grid>
+
         {isAdmin(user) && (
           <Grid item md={1} className={menu} container justifyContent="flex-end">
             {getAdminButton()}
@@ -367,7 +369,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClose: () => setDrawerOpen(false),
           }}
         >
-          <div className={drawerContainer}>{getDrawerChoices()}</div>
+          <div className={drawerContainer} style={{ width: '80%' }}>
+            {getDrawerChoices()}
+          </div>
         </Drawer>
       </Toolbar>
     );
