@@ -195,6 +195,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             </Link>
           );
         })}
+        <Grid style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {signInButton()}
+        </Grid>
       </ThemeProvider>
     );
   };
