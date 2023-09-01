@@ -21,6 +21,7 @@ import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
 import { isAdmin } from './utils/adminTool';
+import LandingPage from './pages/LandingPage';
 
 const theme = createTheme({
   palette: {
@@ -101,7 +102,8 @@ const App = (): ReactElement => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Router>
+      <LandingPage />
+      {/* <Router>
         <NavBar headersData={headersData} user={user} setUser={setUser} />
         <div className="root">
           <Switch>
@@ -124,7 +126,7 @@ const App = (): ReactElement => {
           </Switch>
         </div>
         <Footer />
-      </Router>
+      </Router> */}
     </ThemeProvider>
   );
 };
