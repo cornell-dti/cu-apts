@@ -57,7 +57,7 @@ const Policies = (): ReactElement => {
         , and other sites we own and operate.
       </Typography>
       <Typography variant="body2" className={body}>
-        This policy is effective as of 2 November 2021 and was last updated on 2 November 2021.{' '}
+        This policy is effective as of 2 November 2021 and was last updated on 3 September 2023.{' '}
       </Typography>
       <Typography variant="h3" className={h3}>
         Information We Collect
@@ -99,8 +99,37 @@ const Policies = (): ReactElement => {
         purposes.
       </Typography>
       <Typography variant="body2" className={body}>
+        We use Hotjar in order to better understand our users’ needs and to optimize this service
+        and experience. Hotjar is a technology service that helps us better understand our users’
+        experience (e.g. how much time they spend on which pages, which links they choose to click,
+        what users do and don’t like, etc.) and this enables us to build and maintain our service
+        with user feedback. Hotjar uses cookies and other technologies to collect data on our users’
+        behavior and their devices. This includes a device's IP address (processed during your
+        session and stored in a de-identified form), device screen size, device type (unique device
+        identifiers), browser information, geographic location (country only), and the preferred
+        language used to display our website. Hotjar stores this information on our behalf in a
+        pseudonymized user profile. Hotjar is contractually forbidden to sell any of the data
+        collected on our behalf.
+        <br />
+        For further details, please see{' '}
+        <Link target="_blank" href="https://www.hotjar.com/legal/policies/privacy/">
+          Hotjar’s privacy policy
+        </Link>
+        .
+      </Typography>
+      <Typography variant="body2" className={body}>
         Please be aware that we may combine information we collect about you with general
         information or research data we receive from other trusted sources.
+      </Typography>
+      <Typography variant="h4" className={h4}>
+        Information from Integrated Services like Google
+      </Typography>
+      <Typography variant="body2" className={body}>
+        You can log in to our site using integrated services like Google. This allows for Google to
+        authenticate your identity as a Cornell student and to provide you the option to share
+        certain personal information such as your name and email. If you choose to provide such
+        information, you are giving CU Apartments the permission to use, share, and store it in a
+        manner consistent with this Privacy Policy.
       </Typography>
       <Typography variant="h4" className={h4}>
         Security of Your Personal Information
@@ -251,13 +280,10 @@ const Policies = (): ReactElement => {
         Contact Us
       </Typography>
       <Typography variant="body2" className={body}>
-        For any questions or concerns regarding your privacy, you may contact us using the following
-        details:
+        For any questions or concerns regarding your privacy, you may contact us here:
       </Typography>
       <Typography variant="body2" className={body}>
-        Bahar Tehranipoor
-        <br />
-        <Link href="mailto:bt277@cornell.edu">bt277@cornell.edu</Link>
+        <Link href="mailto:hello@cornelldti.org">hello@cornelldti.org</Link>
       </Typography>
     </Container>
   );
