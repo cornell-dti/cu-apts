@@ -15,6 +15,7 @@ const useStyles = makeStyles(() => ({
     letterSpacing: '0.02em',
     color: colors.black,
     '@media only screen and (max-width: 992px) ': {
+      marginTop: '13%',
       paddingLeft: '4%',
       paddingRight: '4%',
       margin: '0 auto',
