@@ -49,7 +49,11 @@ const AdminPage = (): ReactElement => {
           <Grid container item spacing={3}>
             {sortReviews(pendingData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
-                <AdminReviewComponent review={review} setToggle={setToggle} />
+                <AdminReviewComponent
+                  review={review}
+                  setToggle={setToggle}
+                  declinedSection={false}
+                />
               </Grid>
             ))}
           </Grid>
@@ -62,7 +66,11 @@ const AdminPage = (): ReactElement => {
           <Grid container item spacing={3}>
             {sortReviews(declinedData, 'date').map((review, index) => (
               <Grid item xs={12} key={index}>
-                <AdminReviewComponent review={review} setToggle={setToggle} />
+                <AdminReviewComponent
+                  review={review}
+                  setToggle={setToggle}
+                  declinedSection={true}
+                />
               </Grid>
             ))}
           </Grid>

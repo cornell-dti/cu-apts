@@ -300,7 +300,7 @@ app.post('/api/remove-like', authenticate, likeHandler(true));
 
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
-  const statusList = ['PENDING', 'APPROVED', 'DECLINED'];
+  const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
     if (!statusList.includes(newStatus)) {
       res.status(400).send('Invalid status type');
