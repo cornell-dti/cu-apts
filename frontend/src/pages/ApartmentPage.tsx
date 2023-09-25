@@ -534,7 +534,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
     </>
   );
-
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4}>
       <AptInfo

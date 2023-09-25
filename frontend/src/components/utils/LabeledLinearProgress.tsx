@@ -10,25 +10,40 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme) => ({
-  bar: {
-    width: '90%',
+  barContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  barSegment: {
+    flex: 1,
+    height: '8px', // Adjust the height as needed
+    borderRadius: '4px', // Adjust the border radius as needed
+    marginRight: '4px', // Add a small gap between segments
+  },
+  aveRating: {
+    marginLeft: '8px', // Add spacing between the segments and the rating
   },
 }));
 
 export default function LabeledLinearProgress({ value }: Props): ReactElement {
-  const { bar } = useStyles();
+  const { barContainer, barSegment, aveRating } = useStyles();
+
+  const segments = Array.from({ length: 5 }, (_, index) => (
+    <div
+      key={index}
+      className={barSegment}
+      style={{
+        backgroundColor: index < value ? '#B94630' : 'gray', // Change color based on the rating
+      }}
+    ></div>
+  ));
+
   return (
-    <Box className={styles.barContainer} display="flex" alignItems="center">
-      <Box width="90%" mr={1}>
-        <LinearProgress className={bar} variant="determinate" value={value * 20} />
-      </Box>
-      <Box minWidth={35}>
-        <Typography
-          className={styles.aveRating}
-          variant="body2"
-          color="textSecondary"
-        >{`${value.toFixed(1)}`}</Typography>
-      </Box>
-    </Box>
+    <div className={barContainer}>
+      {segments}
+      <Typography className={aveRating} variant="body2" color="textSecondary">
+        {`${value.toFixed(1)}`}
+      </Typography>
+    </div>
   );
 }
