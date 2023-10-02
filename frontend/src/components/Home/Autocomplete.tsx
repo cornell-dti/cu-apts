@@ -71,7 +71,7 @@ const Autocomplete = ({ drawerOpen, setDrawerOpen }: Props): ReactElement => {
     field: {
       '&.Mui-focused': {
         '& .MuiOutlinedInput-notchedOutline': {
-          border: `1px solid #c4c4c4`,
+          border: `1px solid ${colors.red1}`,
         },
       },
       height: isMobile ? '35px' : '45px',
