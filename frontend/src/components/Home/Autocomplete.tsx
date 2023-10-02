@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   Chip,
@@ -19,7 +19,12 @@ import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 
-export default function Autocomplete() {
+type Props = {
+  drawerOpen: boolean;
+  setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const Autocomplete = ({ drawerOpen, setDrawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const useStyles = makeStyles((theme) => ({
     menuList: {
@@ -39,6 +44,9 @@ export default function Autocomplete() {
     buildingText: {
       color: colors.black,
     },
+    homeSearchIcon: {
+      paddingRight: '10px',
+    },
     searchIcon: {
       display: 'flex',
       alignItems: 'center',
@@ -51,7 +59,7 @@ export default function Autocomplete() {
     searchIconBackground: {
       backgroundColor: colors.red1,
       width: '50px',
-      height: isMobile ? '35px' : '50px',
+      height: isMobile ? '35px' : '45px',
       position: 'absolute',
       right: '0',
       borderRadius: '0px 10px 10px 0px',
@@ -62,18 +70,18 @@ export default function Autocomplete() {
     resultChip: { cursor: 'pointer' },
     field: {
       '&.Mui-focused': {
-        border: '20px black ',
         '& .MuiOutlinedInput-notchedOutline': {
-          border: 'none',
+          border: `1px solid #c4c4c4`,
         },
       },
-      height: isMobile ? '35px' : '50px',
+      height: isMobile ? '35px' : '45px',
     },
   }));
   const {
     menuList,
     text,
     searchIcon,
+    homeSearchIcon,
     searchIconBackground,
     resultChip,
     field,
@@ -221,13 +229,47 @@ export default function Autocomplete() {
   }, [loading, query]);
 
   const location = useLocation();
-  let placeholderText = '';
-  if (location.pathname === '/') {
-    placeholderText = 'Search by any location e.g. “301 College Ave”';
-  }
+  let placeholderText =
+    location.pathname === '/' && !drawerOpen
+      ? 'Search by any location e.g. “301 College Ave”'
+      : 'Search';
+
+  /**
+   * @returns The the InputProps for the search bar depending on user's location.
+   * If: home and NavBar drawer is closed –> returns search bar style without red input adornment on right.
+   * If: home/NavBar drawer is open –> returns search bar style with red input adornment on right.
+   */
+  const getInputProps = () => {
+    if (location.pathname === '/' && !drawerOpen) {
+      return {
+        style: { fontSize: isMobile ? 16 : 20 },
+        endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
+        startAdornment: (
+          <SearchIcon
+            style={{ fontSize: isMobile ? 17 : 22, marginLeft: isMobile ? -3 : 0 }}
+            className={homeSearchIcon}
+          />
+        ),
+        className: field,
+      };
+    } else {
+      return {
+        style: { height: isMobile ? '35px' : '45px', borderRadius: '10px' },
+        endAdornment: (
+          <React.Fragment>
+            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+            <div className={searchIconBackground}>
+              <SearchIcon className={searchIcon} />
+            </div>
+          </React.Fragment>
+        ),
+        className: field,
+      };
+    }
+  };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: drawerOpen ? '100%' : '65%' }}>
       <TextField
         fullWidth
         ref={inputRef}
@@ -237,7 +279,7 @@ export default function Autocomplete() {
         variant="outlined"
         style={{
           borderRadius: '10px',
-          width: !isMobile ? '65%' : '98%',
+          width: !isMobile ? '100%' : '98%',
         }}
         onKeyDown={textFieldHandleListKeyDown}
         onChange={(event) => {
@@ -246,19 +288,10 @@ export default function Autocomplete() {
             handleOnChange(value);
           }
         }}
-        InputProps={{
-          style: { height: isMobile ? '35px' : '50px', borderRadius: '10px' },
-          endAdornment: (
-            <React.Fragment>
-              {loading ? <CircularProgress color="inherit" size={20} /> : null}
-              <div className={searchIconBackground}>
-                <SearchIcon className={searchIcon} />
-              </div>
-            </React.Fragment>
-          ),
-          className: field,
-        }}
+        InputProps={getInputProps()}
       />
     </div>
   );
-}
+};
+
+export default Autocomplete;

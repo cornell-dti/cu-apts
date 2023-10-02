@@ -23,7 +23,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
-import auto from '../../Home/Autocomplete';
+import Autocomplete from '../../Home/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
@@ -178,16 +178,23 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   }, [user]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+      if (drawerOpen && window.innerWidth >= 960) {
+        setDrawerOpen(false);
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [drawerOpen]);
 
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
-        <Grid className={searchDrawer}>{auto()}</Grid>
+        <Grid className={searchDrawer}>
+          <Autocomplete drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+        </Grid>
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
@@ -325,7 +332,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
         <Grid item md={9} container alignItems="center">
           <Grid item>{homeLogo}</Grid>
           <Grid item className={searchBar ? search : searchHidden}>
-            {auto()}
+            <Autocomplete drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
           </Grid>
         </Grid>
 

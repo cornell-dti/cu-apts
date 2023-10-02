@@ -38,6 +38,7 @@ const HomePage = (): ReactElement => {
   const classes = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     get<returnData>(`/api/page-data/home/${loadingLength}`, {
@@ -80,7 +81,7 @@ const HomePage = (): ReactElement => {
           </Box>
 
           <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 4 : 8}>
-            <Autocomplete />
+            <Autocomplete drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
           </Box>
         </Container>
       </Box>
