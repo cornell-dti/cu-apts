@@ -133,65 +133,6 @@ const Autocomplete = ({ drawerOpen, setDrawerOpen }: Props): ReactElement => {
     }
   };
 
-  const Menu = () => {
-    return (
-      <div>
-        <ClickAwayListener
-          onClickAway={() => {
-            setOpen(false);
-          }}
-        >
-          <div>
-            {open ? (
-              <MenuList
-                style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
-                className={menuList}
-                autoFocusItem={focus}
-                onKeyDown={handleListKeyDown}
-              >
-                {options.length === 0 ? (
-                  <MenuItem disabled>No search results.</MenuItem>
-                ) : (
-                  options.map(({ id, name, address, label }, index) => {
-                    return (
-                      <Link
-                        key={index}
-                        {...{
-                          to: `/${label.toLowerCase()}/${id}`,
-                          style: { textDecoration: 'none' },
-                          component: RouterLink,
-                        }}
-                      >
-                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
-                          <Grid container justifyContent="space-between">
-                            <Grid item xl={8}>
-                              <Typography className={buildingText}>{name}</Typography>
-
-                              <Typography className={addressText}>
-                                {address !== name && address}
-                              </Typography>
-                            </Grid>
-                            <Grid item xl={4}>
-                              <Chip
-                                color="primary"
-                                label={label.toLowerCase()}
-                                className={resultChip}
-                              />
-                            </Grid>
-                          </Grid>
-                        </MenuItem>
-                      </Link>
-                    );
-                  })
-                )}
-              </MenuList>
-            ) : null}
-          </div>
-        </ClickAwayListener>
-      </div>
-    );
-  };
-
   useEffect(() => {
     if (query === '') {
       setOpen(false);
