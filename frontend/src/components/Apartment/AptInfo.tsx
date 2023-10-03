@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
-import { Card, CardContent, Grid } from '@material-ui/core';
+import { Box, Card, CardContent, Divider, Grid } from '@material-ui/core';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
 
@@ -13,17 +13,14 @@ type Props = {
 
 export default function AptInfo({ landlord, contact, address, buildings }: Props): ReactElement {
   return (
-    <Grid container>
-      <Grid item xs={12}>
-        <Card variant="outlined">
-          <CardContent>
-            <Info landlord={landlord} contact={contact!} address={address!} />
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12}>
+    <Box border={1} borderColor="grey.300" borderRadius={10}>
+      <Box mx={2} mt={1}>
+        <Info landlord={landlord} contact={contact!} address={address!} />
+      </Box>
+      <Divider variant="middle" />
+      <Box mx={2} mb={1}>
         <PropertyInfo title="Other Properties Owned" info={buildings} />
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }
