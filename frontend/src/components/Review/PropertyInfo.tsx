@@ -8,6 +8,7 @@ import { colors } from '../../colors';
 import HeartRating from '../utils/HeartRating';
 import { ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
 import { getAverageRating } from '../../utils/average';
+import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 type Props = {
   readonly info: CardData[];
@@ -48,18 +49,17 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
   return (
     <Card className={card}>
       <CardContent>
-        <Grid container direction="row" alignItems="center">
-          <Grid item>
+        <Grid container direction="row" alignItems="center" justifyContent="space-between">
+          <Grid md={12} lg={6} item>
             <Typography className={aptNameTxt}>{name}</Typography>
+            <Typography variant="subtitle1">{address}</Typography>
           </Grid>
-          <Grid container item justifyContent="space-between">
-            <Grid>
-              <Typography variant="subtitle1">{address}</Typography>
-            </Grid>
-          </Grid>
-          <Grid container direction="row" alignItems="center">
-            <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
-            <Typography className={reviewNum}>{numReviews}</Typography>
+          <Grid md={12} lg={6} item direction="row" alignItems="center" spacing={2}>
+            <Box display="flex" alignItems="center">
+              <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+              <Typography className={reviewNum}>{numReviews}</Typography>
+              <KeyboardArrowRightIcon />
+            </Box>
           </Grid>
         </Grid>
       </CardContent>

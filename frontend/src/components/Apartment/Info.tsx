@@ -26,7 +26,7 @@ export default function Info({ landlord, contact, address }: Props): ReactElemen
   return (
     <Box mt={1}>
       <Typography variant="h5" className={title}>
-        Info
+        Information
       </Typography>
       <List dense>
         {landlord && <InfoItem text={`Landlord/Renting Company: ${landlord}`} />}

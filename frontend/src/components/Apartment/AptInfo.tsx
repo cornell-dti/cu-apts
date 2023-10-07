@@ -19,7 +19,7 @@ export default function AptInfo({ landlord, contact, address, buildings }: Props
       </Box>
       <Divider variant="middle" />
       <Box mx={2} mb={1}>
-        <PropertyInfo title="Other Properties Owned" info={buildings} />
+        <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
       </Box>
     </Box>
   );
