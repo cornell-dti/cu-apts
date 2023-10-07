@@ -1,6 +1,7 @@
-import { Box, List, ListItem, ListItemText, Typography } from '@material-ui/core';
+import { Box, Button, Link, List, ListItem, ListItemText, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { makeStyles } from '@material-ui/styles';
+import { Link as RouterLink } from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -37,6 +38,30 @@ export default function Info({ landlord, contact, address }: Props): ReactElemen
           </a>
         )}
       </List>
+      <Box display="flex" justifyContent="center" gridColumnGap={14} mb={4}>
+        <Link
+          {...{
+            to: `/apartment`,
+            style: { textDecoration: 'none' },
+            component: RouterLink,
+          }}
+        >
+          <Button color="primary" variant="outlined" disableElevation>
+            Visit Landlord
+          </Button>
+        </Link>
+        <Link
+          {...{
+            to: `/apartment`,
+            style: { textDecoration: 'none' },
+            component: RouterLink,
+          }}
+        >
+          <Button color="primary" variant="contained" disableElevation>
+            Contact
+          </Button>
+        </Link>
+      </Box>
     </Box>
   );
 }
