@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { useEffect, ReactElement, useState } from 'react';
 import {
   Box,
   Card,
@@ -16,12 +16,13 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import { DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
+import { DetailedRating, ReviewWithId, Landlord } from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
 import { getUser } from '../../utils/firebase';
+import { get } from '../../utils/call';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -38,6 +39,13 @@ const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
+  landlordIndicator: {
+    color: '#B94630',
+    marginTop: '6px',
+    fontSize: '15px',
+    fontWeight: 'bold',
+  },
+
   bottomborder: {
     borderBottom: '1px #E8E8E8 solid',
     marginBottom: '5px',
@@ -99,13 +107,21 @@ const ReviewComponent = ({
     photoRowStyle,
     bottomborder,
     heartSpacing,
+    landlordIndicator,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
+  const [landlord, setLandlord] = useState<Landlord>();
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
+
+  useEffect(() => {
+    get<Landlord>(`/api/landlord/${review.landlordId}`, {
+      callback: setLandlord,
+    });
+  }, [review]);
 
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
@@ -162,6 +178,13 @@ const ReviewComponent = ({
                       <ExpandMoreIcon />
                     </IconButton>
                   </Grid>
+
+                  <Typography className={landlordIndicator}>
+                    {review.aptId === '' || review.aptId == null
+                      ? 'Landlord Review - ' + landlord?.name
+                      : ''}
+                  </Typography>
+
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
