@@ -39,6 +39,7 @@ const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
+  // styling for landlord text
   landlordIndicator: {
     color: '#B94630',
     marginTop: '6px',
@@ -117,6 +118,7 @@ const ReviewComponent = ({
     setExpanded(!expanded);
   };
 
+  //Retreieving landlord data
   useEffect(() => {
     get<Landlord>(`/api/landlord/${review.landlordId}`, {
       callback: setLandlord,
@@ -179,6 +181,8 @@ const ReviewComponent = ({
                     </IconButton>
                   </Grid>
 
+                  {/* Checking to see if aptId of the review is null or empty, indicating that the review is a 
+                  landlord apartment - if landlord apartment is true, will add landlord review text */}
                   <Typography className={landlordIndicator}>
                     {review.aptId === '' || review.aptId == null
                       ? 'Landlord Review - ' + landlord?.name
