@@ -84,8 +84,14 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     if (event.key === 'ArrowDown') {
     } else if (event.key === 'Enter') {
       history.push(`/search?q=${query}`);
+      setQuery('');
     }
   }
+
+  const handleSearchIconClick = () => {
+    history.push(`/search?q=${query}`);
+    setQuery('');
+  };
 
   const handleOnChange = (query: string) => {
     setQuery(query);
@@ -151,7 +157,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            <div className={searchIconBackground}>
+            <div className={searchIconBackground} onClick={handleSearchIconClick}>
               <SearchIcon className={searchIcon} />
             </div>
           </React.Fragment>
