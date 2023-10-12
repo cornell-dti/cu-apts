@@ -598,7 +598,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               <Toast
                 isOpen={showConfirmation}
                 severity="success"
-                message="Review successfully submitted!"
+                message="Review submitted! Your review is awaiting approval from the admin."
                 time={toastTime}
               />
             )}
