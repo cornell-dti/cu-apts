@@ -193,7 +193,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return (
       <ThemeProvider theme={muiTheme}>
         <Grid className={searchDrawer}>
-          <Autocomplete drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+          <Autocomplete drawerOpen={drawerOpen} />
         </Grid>
         {headersData.map(({ label, href }, index) => {
           return (
@@ -332,7 +332,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
         <Grid item md={9} container alignItems="center">
           <Grid item>{homeLogo}</Grid>
           <Grid item className={searchBar ? search : searchHidden}>
-            <Autocomplete drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+            <Autocomplete drawerOpen={drawerOpen} />
           </Grid>
         </Grid>
 
