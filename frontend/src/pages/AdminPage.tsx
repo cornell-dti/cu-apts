@@ -81,7 +81,7 @@ const AdminPage = (): ReactElement => {
         </Grid>
         <Grid item xs={12} sm={12}>
           <Typography variant="h3">
-            <strong>Pending Reviews</strong>
+            <strong>Pending Reviews ({pendingData.length})</strong>
           </Typography>
           <Grid container item spacing={3}>
             {sortReviews(pendingData, 'date').map((review, index) => (
@@ -98,7 +98,7 @@ const AdminPage = (): ReactElement => {
 
         <Grid item xs={12} sm={12}>
           <Typography variant="h3">
-            <strong>Declined Reviews</strong>
+            <strong>Declined Reviews ({declinedData.length})</strong>
           </Typography>
           <Grid container item spacing={3}>
             {sortReviews(declinedData, 'date').map((review, index) => (
