@@ -82,6 +82,27 @@ app.get('/api/review/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
+/**
+ * Takes in the location type in the URL and returns the number of reviews made forr that location
+ */
+app.get('/api/review/:location/count', async (req, res) => {
+  const { location } = req.params;
+  const buildingsByLocation = (await buildingsCollection.where('area', '==', location).get()).docs;
+  // get IDs for buildings and filter reviews by this
+  const buildingIds = buildingsByLocation.map((doc) => doc.id);
+  const reviewDocs = (await reviewCollection.where('status', '==', 'APPROVED').get()).docs;
+  const reviews: Review[] = reviewDocs.map((doc) => {
+    const data = doc.data();
+    const review = { ...data, date: data.date.toDate() } as ReviewInternal;
+    return { ...review, id: doc.id } as ReviewWithId;
+  });
+  // add the counts together after data is fetched
+  const approvedReviewCount = reviews.filter((review) =>
+    buildingIds.includes(review.aptId ? review.aptId : '0')
+  ).length;
+  res.status(200).send(JSON.stringify({ count: approvedReviewCount }));
+});
+
 app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
