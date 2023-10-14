@@ -28,6 +28,7 @@ const useStyles = makeStyles({
   card: {
     borderRadius: '10px',
     backgroundColor: colors.red6,
+    cursor: 'pointer', // Add cursor pointer to make it clickable
   },
   reviewNum: {
     fontWeight: 700,
@@ -40,6 +41,18 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
   const { id, name, address } = buildingData;
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
 
+  /**
+   * Handles clicking on the Apartment card. Scrolls up on the window, upward
+   * to reach the top with a smooth behavior. The top is defined as 0 since this is
+   * where we want to reach.
+   */
+  const handleCardClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   useEffect(() => {
     get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
       callback: setReviewData,
@@ -47,7 +60,7 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
   }, [id]);
 
   return (
-    <Card className={card}>
+    <Card className={card} onClick={handleCardClick}>
       <CardContent>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Grid md={12} lg={6} item>
