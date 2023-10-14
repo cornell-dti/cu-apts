@@ -54,11 +54,16 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
             <Typography className={aptNameTxt}>{name}</Typography>
             <Typography variant="subtitle1">{address}</Typography>
           </Grid>
-          <Grid md={12} lg={6} item direction="row" alignItems="center" spacing={2}>
+          <Grid md={12} lg={6} item direction="row" alignItems="center" spacing={1}>
             <Box display="flex" alignItems="center">
-              <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
+              <HeartRating
+                value={getAverageRating(reviewData)}
+                precision={0.5}
+                readOnly
+                size="small"
+              />
               <Typography className={reviewNum}>{numReviews}</Typography>
-              <KeyboardArrowRightIcon />
+              <KeyboardArrowRightIcon style={{ fontSize: 40 }} color="primary" />
             </Box>
           </Grid>
         </Grid>
