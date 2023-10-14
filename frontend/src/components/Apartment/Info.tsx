@@ -44,7 +44,7 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
         {address && <InfoItem text={`Address: ${address}`} />}
       </List>
       <Grid container justifyContent="center" spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={6} sm={12} md={6}>
           {landlord && (
             <Link
               {...{
@@ -59,7 +59,7 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
             </Link>
           )}
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={6} sm={12} md={6}>
           {contact && (
             <Link
               href={contact}
