@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
-import { Box, Card, CardContent, Divider, Grid } from '@material-ui/core';
+import { Box, Divider } from '@material-ui/core';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
 
