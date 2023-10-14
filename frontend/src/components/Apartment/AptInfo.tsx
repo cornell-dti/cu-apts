@@ -5,17 +5,24 @@ import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
 
 type Props = {
+  readonly landlordId: string | null;
   readonly landlord: string;
   readonly contact: string | null;
   readonly address: string | null;
   readonly buildings: CardData[];
 };
 
-export default function AptInfo({ landlord, contact, address, buildings }: Props): ReactElement {
+export default function AptInfo({
+  landlordId,
+  landlord,
+  contact,
+  address,
+  buildings,
+}: Props): ReactElement {
   return (
     <Box border={1} borderColor="grey.300" borderRadius={10}>
       <Box mx={2} mt={1}>
-        <Info landlord={landlord} contact={contact!} address={address!} />
+        <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
       </Box>
       <Divider variant="middle" />
       <Box mx={2} mb={1}>
