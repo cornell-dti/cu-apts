@@ -10,17 +10,19 @@ import {
   Button,
   IconButton,
   Collapse,
+  Link,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import { DetailedRating, ReviewWithId, Landlord } from '../../../../common/types/db-types';
+import { DetailedRating, ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
+import { Link as RouterLink } from 'react-router-dom';
 import { getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 
@@ -33,18 +35,17 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  readonly isLandlord: boolean;
 };
 
 const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
-  // styling for landlord text
-  landlordIndicator: {
-    color: '#B94630',
-    marginTop: '6px',
-    fontSize: '15px',
-    fontWeight: 'bold',
+  // styling for apartment text
+  apartmentIndicator: {
+    marginTop: '7px',
+    marginLeft: '100px',
   },
 
   bottomborder: {
@@ -95,6 +96,7 @@ const ReviewComponent = ({
   setToggle,
   user,
   setUser,
+  isLandlord,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
@@ -108,21 +110,22 @@ const ReviewComponent = ({
     photoRowStyle,
     bottomborder,
     heartSpacing,
-    landlordIndicator,
+    apartmentIndicator,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
-  const [landlord, setLandlord] = useState<Landlord>();
+  const [apt, setApt] = useState<ApartmentWithId[]>([]);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
-
-  //Retreieving landlord data
+  //Retreieving apartment data
   useEffect(() => {
-    get<Landlord>(`/api/landlord/${review.landlordId}`, {
-      callback: setLandlord,
-    });
+    if (review.aptId !== null) {
+      get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
+        callback: setApt,
+      });
+    }
   }, [review]);
 
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
@@ -181,13 +184,24 @@ const ReviewComponent = ({
                     </IconButton>
                   </Grid>
 
-                  {/* Checking to see if aptId of the review is null or empty, indicating that the review is a 
-                  landlord apartment - if landlord apartment is true, will add landlord review text */}
-                  <Typography className={landlordIndicator}>
-                    {review.aptId === '' || review.aptId == null
-                      ? 'Landlord Review - ' + landlord?.name
-                      : ''}
-                  </Typography>
+                  {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
+                  <Grid className={apartmentIndicator}>
+                    {apt.length > 0 && isLandlord ? (
+                      <Link
+                        {...{
+                          to: `/apartment/${review.aptId}`,
+                          style: {
+                            fontWeight: 'bold',
+                          },
+                          component: RouterLink,
+                        }}
+                      >
+                        {'Apartment  -  ' + apt[0].name}
+                      </Link>
+                    ) : (
+                      ''
+                    )}
+                  </Grid>
 
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>

@@ -471,6 +471,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       user={user}
                       setUser={setUser}
+                      isLandlord={true}
                     />
                   </Grid>
                 ))}
