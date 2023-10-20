@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { colors } from '../../colors';
 import Box from '@material-ui/core/Box';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
@@ -27,13 +28,21 @@ const useStyles = makeStyles((theme) => ({
 
 export default function LabeledLinearProgress({ value }: Props): ReactElement {
   const { barContainer, barSegment, aveRating } = useStyles();
-
+  let rating_value = value * 2;
+  rating_value = Math.round(rating_value);
+  rating_value = rating_value / 2 - 1;
+  console.log(rating_value);
   const segments = Array.from({ length: 5 }, (_, index) => (
     <div
       key={index}
       className={barSegment}
       style={{
-        backgroundColor: index < value ? '#B94630' : 'gray', // Change color based on the rating
+        background:
+          index <= rating_value
+            ? colors.red1
+            : index > rating_value && rating_value + 0.5 === index
+            ? `linear-gradient(to right, ${colors.red1} 0%, ${colors.red1} 50%, ${colors.gray4} 50%, ${colors.gray4} 100%)`
+            : colors.gray4,
       }}
     ></div>
   ));

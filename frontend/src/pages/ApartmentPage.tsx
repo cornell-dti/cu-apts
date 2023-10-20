@@ -338,6 +338,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   const Header = (
+    // Header section with review count, average rating, and leave review button
+
     <>
       <Grid container alignItems="center">
         <Grid container alignItems="center" justifyContent="space-between">
@@ -349,7 +351,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           </Grid>
 
           {reviewData.length > 0 && (
-            <Grid item>
+            <Grid item style={{ paddingLeft: '20px' }}>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
@@ -524,10 +526,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   return notFound ? (
+    // Display Not Found page if the apartment is not found
     <NotFoundPage />
   ) : !loaded ? (
+    // Display Not Found page if the apartment is not found
     <LinearProgress />
   ) : (
+    // Display Not Found page if the apartment is not found
     <>
       {landlordData && (
         <Container>
