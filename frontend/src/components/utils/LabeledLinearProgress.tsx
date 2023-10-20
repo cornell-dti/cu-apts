@@ -1,9 +1,6 @@
 import React, { ReactElement } from 'react';
 import { colors } from '../../colors';
-import Box from '@material-ui/core/Box';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
-import styles from '../Review/Review.module.scss';
 import { makeStyles } from '@material-ui/core';
 
 type Props = {

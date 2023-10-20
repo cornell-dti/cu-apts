@@ -141,9 +141,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }
   }, [isMobile, reviewData.length]);
 
-  const handleShowMore = () => {
-    setResultsToShow(resultsToShow + 5);
-  };
+  // const handleShowMore = () => {
+  //   setResultsToShow(resultsToShow + 5);
+  // };
 
   const handlePageNotFound = () => {
     setNotFound(true);
@@ -159,7 +159,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
-    horizontalLine,
   } = useStyles();
 
   useTitle(
