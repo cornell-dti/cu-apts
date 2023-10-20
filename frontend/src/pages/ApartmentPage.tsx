@@ -109,6 +109,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * ApartmentPage Component
+ *
+ * This component represents a page for viewing and leaving reviews for apartments.
+ * It displays apartment information, reviews, and provides functionality to leave new reviews,
+ * sort reviews, and interact with existing reviews (like/dislike). Additionally, it contains information
+ * about the landloard and other related properties.
+ *
+ * @component
+ * @param props - The props for the ApartmentPage component.
+ * @param user props.user - The current user, null if not logged in.
+ * @param setUser - Function to set the current user.
+ * @returns ApartmentPage The ApartmentPage component.
+ */
 const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const { aptId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
@@ -133,6 +147,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [isClicked, setIsClicked] = useState<boolean>(true);
   const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
 
+  // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
     if (isMobile) {
       setResultsToShow(5);
@@ -145,6 +160,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   //   setResultsToShow(resultsToShow + 5);
   // };
 
+
+  // Set 'notFound' to true when a page is not found.
   const handlePageNotFound = () => {
     setNotFound(true);
   };
@@ -161,11 +178,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     expandOpen,
   } = useStyles();
 
+  // Set the page title based on whether apartment data is loaded.
   useTitle(
     () => (loaded && apt !== undefined ? `${apt.name}` : 'Apartment Reviews'),
     [loaded, apt]
   );
 
+  // Fetch apartment data based on the 'aptId' parameter and handle page not found error.
   useEffect(() => {
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
@@ -173,16 +192,19 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [aptId]);
 
+  // Set the apartment data once it's fetched.
   useEffect(() => {
     setApt(aptData[0]);
   }, [aptData]);
 
+  // Fetch approved reviews for the current apartment.
   useEffect(() => {
     get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [aptId, showConfirmation, toggle]);
 
+  // Fetch information about buildings related to the apartment and the landlord's data.
   useEffect(() => {
     get<Apartment[]>(`/api/buildings/${apt?.landlordId}`, {
       callback: setBuildings,
@@ -193,6 +215,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       });
   }, [apt]);
 
+  // Handle resizing of the window depending on mobile and if it is clicked.
   useEffect(() => {
     const handleResize = () => {
       setIsClicked(window.innerWidth <= 600);
@@ -203,10 +226,12 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Set the average rating after calculating it from the data.
   useEffect(() => {
     setAveRatingInfo(calculateAveRating(reviewData));
   }, [reviewData]);
 
+  // If all the information is there, then setLoaded to be true.
   useEffect(() => {
     if (
       aptData &&
@@ -221,6 +246,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }
   }, [aptData, apt, landlordData, buildings, reviewData, aveRatingInfo, otherProperties]);
 
+  // Use setLikedReviews to indicate the number of likes.
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
@@ -553,7 +579,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               <Toast
                 isOpen={showConfirmation}
                 severity="success"
-                message="Review successfully submitted!"
+                message="Review submitted! Your review is awaiting approval from the admin."
                 time={toastTime}
               />
             )}

@@ -28,6 +28,7 @@ import axios from 'axios';
 type Props = {
   readonly review: ReviewWithId;
   readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  readonly declinedSection: boolean;
 };
 
 export type RatingInfo = {
@@ -61,7 +62,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
+const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, dateText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
@@ -169,6 +170,17 @@ const AdminReviewComponent = ({ review, setToggle }: Props): ReactElement => {
 
       <CardActions>
         <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
+          {declinedSection && (
+            <Grid item>
+              <Button
+                onClick={() => changeStatus('DELETED')}
+                variant="contained"
+                style={{ color: colors.black }}
+              >
+                <strong>Delete</strong>
+              </Button>
+            </Grid>
+          )}
           <Grid item>
             <Button
               onClick={() => changeStatus('DECLINED')}
