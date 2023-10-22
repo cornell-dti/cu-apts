@@ -319,6 +319,60 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
+const saveApartmentHandler =
+  (dislike = false): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('not authenticated');
+      const { uid } = req.user;
+      const { reviewId } = req.body;
+      if (!reviewId) throw new Error('must specify review id');
+      const likesRef = likesCollection.doc(uid);
+      const reviewRef = reviewCollection.doc(reviewId);
+      await db.runTransaction(async (t) => {
+        const likesDoc = await t.get(likesRef);
+        const result = likesDoc.get(reviewId);
+        if (dislike ? result : !result) {
+          const likeEntry = dislike ? FieldValue.delete() : true;
+          const likeChange = dislike ? -1 : 1;
+          t.set(likesRef, { [reviewId]: likeEntry }, { merge: true });
+          t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
+        }
+      });
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
+const saveLandlordHandler =
+  (dislike = false): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('not authenticated');
+      const { uid } = req.user;
+      const { reviewId } = req.body;
+      if (!reviewId) throw new Error('must specify review id');
+      const likesRef = likesCollection.doc(uid);
+      const reviewRef = reviewCollection.doc(reviewId);
+      await db.runTransaction(async (t) => {
+        const likesDoc = await t.get(likesRef);
+        const result = likesDoc.get(reviewId);
+        if (dislike ? result : !result) {
+          const likeEntry = dislike ? FieldValue.delete() : true;
+          const likeChange = dislike ? -1 : 1;
+          t.set(likesRef, { [reviewId]: likeEntry }, { merge: true });
+          t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
+        }
+      });
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
