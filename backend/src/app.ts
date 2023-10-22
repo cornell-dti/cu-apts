@@ -21,6 +21,7 @@ const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
+const usersCollection = db.collection('users');
 
 const app: Express = express();
 
@@ -328,33 +329,41 @@ const saveApartmentHandler =
   (add = true): RequestHandler =>
   async (req, res) => {
     try {
-      if (!req.user) throw new Error('not authenticated');
+      if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
-      const { reviewId } = req.body;
+      const { apartment } = req.body;
 
-      if (!reviewId) throw new Error('must specify review id');
+      if (!apartment) throw new Error('Must specify apartment');
 
-      const userRef = db.collection('users').doc(uid);
-      const userData = (await userRef.get()).data();
+      const userRef = usersCollection.doc(uid);
+      const apartmentRef = buildingsCollection.doc(apartment);
 
-      if (!userData) {
+      if (!userRef) {
         throw new Error('User data not found');
       }
 
-      const savedApartments = userData.savedApartments || [];
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        const apartmentDoc = await t.get(apartmentRef);
 
-      if (add) {
-        if (!savedApartments.includes(reviewId)) {
-          savedApartments.push(reviewId);
+        if (!userDoc || !userDoc.exists || !apartmentDoc.exists) {
+          throw new Error('User or apartment data not found');
         }
-      } else {
-        const index = savedApartments.indexOf(reviewId);
-        if (index !== -1) {
-          savedApartments.splice(index, 1);
-        }
-      }
+        const userApartments = userDoc.data()?.apartments || [];
 
-      await userRef.update({ savedApartments });
+        if (add) {
+          if (!userApartments.includes(apartment)) {
+            userApartments.push(apartment);
+          }
+        } else {
+          const index = userApartments.indexOf(apartment);
+          if (index !== -1) {
+            userApartments.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { apartments: userApartments });
+      });
 
       res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
@@ -372,33 +381,43 @@ const saveLandlordHandler =
   (add = true): RequestHandler =>
   async (req, res) => {
     try {
-      if (!req.user) throw new Error('not authenticated');
+      if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
-      const { reviewId } = req.body;
+      const { landlord } = req.body;
 
-      if (!reviewId) throw new Error('must specify review id');
+      if (!landlord) throw new Error('Must specify landlord');
 
-      const userRef = db.collection('users').doc(uid);
-      const userData = (await userRef.get()).data();
+      const userRef = usersCollection.doc(uid);
+      const landlordRef = landlordCollection.doc(landlord);
 
-      if (!userData) {
+      if (!userRef) {
         throw new Error('User data not found');
       }
 
-      const savedLandlords = userData.savedLandlords || [];
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        const landlordDoc = await t.get(landlordRef);
 
-      if (add) {
-        if (!savedLandlords.includes(reviewId)) {
-          savedLandlords.push(reviewId);
+        if (!userDoc || !userDoc.exists || !landlordDoc.exists) {
+          throw new Error('User or landlord data not found');
         }
-      } else {
-        const index = savedLandlords.indexOf(reviewId);
-        if (index !== -1) {
-          savedLandlords.splice(index, 1);
-        }
-      }
 
-      await userRef.update({ savedLandlords });
+        // Check if userDoc.data() is not undefined before accessing landlord
+        const userLandlords = userDoc.data()?.landlords || [];
+
+        if (add) {
+          if (!userLandlords.includes(landlord)) {
+            userLandlords.push(landlord);
+          }
+        } else {
+          const index = userLandlords.indexOf(landlord);
+          if (index !== -1) {
+            userLandlords.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { landlords: userLandlords });
+      });
 
       res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
