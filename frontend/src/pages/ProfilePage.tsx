@@ -181,10 +181,19 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
             <Card variant="outlined" className={myProfileCard}>
               <CardContent>
                 <button className={questionButton}>
-                  <img src={questionIcon} onClick={openModal} className={questionIconStyle} />
+                  <img
+                    src={questionIcon}
+                    onClick={openModal}
+                    className={questionIconStyle}
+                    alt="Who can view my profile?"
+                  />
                 </button>
                 <div>
-                  <img src={user?.photoURL || ''} className={userImage}></img>
+                  <img
+                    src={user?.photoURL || ''}
+                    className={userImage}
+                    alt="User Profile Image"
+                  ></img>
                 </div>
                 <h3 style={{ marginTop: '0', marginBottom: '4px' }}>{user?.displayName}</h3>
                 <h5

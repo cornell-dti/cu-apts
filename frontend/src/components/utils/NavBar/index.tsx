@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser, signOut } from '../../../utils/firebase';
+import { getUser } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -247,7 +247,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   /** This function returns a Sign In button or Profile (circular picture) depending on whether the user is signed in or not **/
   const signInButton = () => {
-    if (drawerOpen || buttonState == 'Sign In') {
+    if (drawerOpen || buttonState === 'Sign In') {
       return (
         <Button onClick={signInProfileButtonClick} className={authButton}>
           {buttonState}
@@ -264,7 +264,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             color: 'transparent',
           }}
         >
-          <img src={user?.photoURL || ''} className={profileButton} />
+          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile Image" />
         </Button>
       );
     }
