@@ -30,6 +30,18 @@ export default function LabeledLinearProgress({ value }: Props): ReactElement {
   rating_value = rating_value / 2 - 1;
   console.log(rating_value);
   const segments = Array.from({ length: 5 }, (_, index) => (
+    /**
+     * This JSX code represents a rendering of a bar segment for a rating display. The rating value is used to determine the visual appearance of the segment.
+     *
+     * @param {number} index - The index of the segment within the rating bar.
+     * @param {string} barSegment - The CSS class name for styling the segment.
+     * @param {number} rating_value - The rating value to be displayed.
+     *
+     * The background style of the div is set based on the index and rating value:
+     * - If the index is less than or equal to the rating_value, the background is set to colors.red1.
+     * - If the index is greater than the rating_value and is exactly 0.5 more than the rating_value, a gradient background is applied. The gradient transitions from colors.red1 to colors.gray4, creating a partial fill effect.
+     * - For all other cases, the background is set to colors.gray4.
+     */
     <div
       key={index}
       className={barSegment}
