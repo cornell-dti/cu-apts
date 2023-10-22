@@ -264,7 +264,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             color: 'transparent',
           }}
         >
-          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile Image" />
+          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile" />
         </Button>
       );
     }

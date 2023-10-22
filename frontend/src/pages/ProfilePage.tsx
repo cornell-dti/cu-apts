@@ -189,11 +189,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   />
                 </button>
                 <div>
-                  <img
-                    src={user?.photoURL || ''}
-                    className={userImage}
-                    alt="User Profile Image"
-                  ></img>
+                  <img src={user?.photoURL || ''} className={userImage} alt="User Profile"></img>
                 </div>
                 <h3 style={{ marginTop: '0', marginBottom: '4px' }}>{user?.displayName}</h3>
                 <h5
