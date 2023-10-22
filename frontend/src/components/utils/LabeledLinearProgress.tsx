@@ -1,8 +1,6 @@
 import React, { ReactElement } from 'react';
-import Box from '@material-ui/core/Box';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import { colors } from '../../colors';
 import Typography from '@material-ui/core/Typography';
-import styles from '../Review/Review.module.scss';
 import { makeStyles } from '@material-ui/core';
 
 type Props = {
@@ -10,25 +8,48 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme) => ({
-  bar: {
-    width: '90%',
+  barContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  barSegment: {
+    flex: 1,
+    height: '8px', // Adjust the height as needed
+    borderRadius: '4px', // Adjust the border radius as needed
+    marginRight: '4px', // Add a small gap between segments
+  },
+  aveRating: {
+    marginLeft: '8px', // Add spacing between the segments and the rating
   },
 }));
 
 export default function LabeledLinearProgress({ value }: Props): ReactElement {
-  const { bar } = useStyles();
+  const { barContainer, barSegment, aveRating } = useStyles();
+  let rating_value = value * 2;
+  rating_value = Math.round(rating_value);
+  rating_value = rating_value / 2 - 1;
+  console.log(rating_value);
+  const segments = Array.from({ length: 5 }, (_, index) => (
+    <div
+      key={index}
+      className={barSegment}
+      style={{
+        background:
+          index <= rating_value
+            ? colors.red1
+            : index > rating_value && rating_value + 0.5 === index
+            ? `linear-gradient(to right, ${colors.red1} 0%, ${colors.red1} 50%, ${colors.gray4} 50%, ${colors.gray4} 100%)`
+            : colors.gray4,
+      }}
+    ></div>
+  ));
+
   return (
-    <Box className={styles.barContainer} display="flex" alignItems="center">
-      <Box width="90%" mr={1}>
-        <LinearProgress className={bar} variant="determinate" value={value * 20} />
-      </Box>
-      <Box minWidth={35}>
-        <Typography
-          className={styles.aveRating}
-          variant="body2"
-          color="textSecondary"
-        >{`${value.toFixed(1)}`}</Typography>
-      </Box>
-    </Box>
+    <div className={barContainer}>
+      {segments}
+      <Typography className={aveRating} variant="body2" color="textSecondary">
+        {`${value.toFixed(1)}`}
+      </Typography>
+    </div>
   );
 }

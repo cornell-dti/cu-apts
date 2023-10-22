@@ -156,10 +156,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }
   }, [isMobile, reviewData.length]);
 
-  // Increase the number of results to show when the "Show More" button is clicked.
-  const handleShowMore = () => {
-    setResultsToShow(resultsToShow + 5);
-  };
+  // const handleShowMore = () => {
+  //   setResultsToShow(resultsToShow + 5);
+  // };
 
   // Set 'notFound' to true when a page is not found.
   const handlePageNotFound = () => {
@@ -176,7 +175,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
-    horizontalLine,
   } = useStyles();
 
   // Set the page title based on whether apartment data is loaded.
@@ -364,9 +362,11 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   const Header = (
+    // Header section with review count, average rating, and leave review button
+
     <>
       <Grid container alignItems="center">
-        <Grid container spacing={1}>
+        <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
             <Typography variant="h6">Reviews ({reviewData.length})</Typography>
             {reviewData.length === 0 && (
@@ -375,7 +375,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           </Grid>
 
           {reviewData.length > 0 && (
-            <Grid item>
+            <Grid item style={{ paddingLeft: '20px' }}>
               <Grid container alignItems="center">
                 <Grid item className={heartRating}>
                   <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
@@ -388,6 +388,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               </Grid>
             </Grid>
           )}
+
+          <Grid item style={{ marginLeft: 'auto' }}>
+            <Button
+              color="primary"
+              className={reviewButton}
+              variant="contained"
+              disableElevation
+              onClick={openReviewModal}
+            >
+              Leave a Review
+            </Button>
+          </Grid>
         </Grid>
 
         {landlordData && landlordData.photos.length > 0 && (
@@ -403,42 +415,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item>
-              <Button
-                color="primary"
-                className={reviewButton}
-                variant="contained"
-                disableElevation
-                onClick={openReviewModal}
-              >
-                Leave a Review
-              </Button>
-            </Grid>
-            <Grid item>
-              <Grid container spacing={1} direction="row" alignItems="center">
-                <Grid item>
-                  <Typography>Sort by:</Typography>
-                </Grid>
-                <Grid item className={sortByButton}>
-                  <DropDown
-                    menuItems={[
-                      {
-                        item: 'Recent',
-                        callback: () => {
-                          setSortBy('date');
-                        },
-                      },
-                      {
-                        item: 'Helpful',
-                        callback: () => {
-                          setSortBy('likes');
-                        },
-                      },
-                    ]}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
+            <Grid item></Grid>
+            <Grid item></Grid>
           </Grid>
         </Grid>
       </Grid>
@@ -560,9 +538,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
     </>
   );
-
   const InfoSection = landlordData && (
-    <Grid item xs={12} sm={4}>
+    <Grid item xs={12}>
       <AptInfo
         landlord={landlordData.name}
         contact={landlordData.contact}
@@ -573,10 +550,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   return notFound ? (
+    // Display Not Found page if the apartment is not found
     <NotFoundPage />
   ) : !loaded ? (
+    // Display Not Found page if the apartment is not found
     <LinearProgress />
   ) : (
+    // Display Not Found page if the apartment is not found
     <>
       {landlordData && (
         <Container>
@@ -591,7 +571,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
       <Container className={container}>
         <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={12}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
             {showConfirmation && (
@@ -610,51 +590,76 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
-            <Grid container item spacing={3}>
-              {sortReviews(reviewData, sortBy)
-                .slice(0, resultsToShow)
-                .map((review, index) => (
-                  <Grid item xs={12} key={index}>
-                    <ReviewComponent
-                      review={review}
-                      liked={likedReviews[review.id]}
-                      likeLoading={likeStatuses[review.id]}
-                      addLike={addLike}
-                      removeLike={removeLike}
-                      setToggle={setToggle}
-                      user={user}
-                      setUser={setUser}
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-
-            {isMobile && reviewData.length > resultsToShow && (
-              <Box textAlign="center">
-                <Grid item xs={12}>
-                  <hr className={horizontalLine} />
-                </Grid>
-                <Grid item style={{ padding: '30px' }}>
-                  <Button
-                    style={{
-                      backgroundColor: 'white',
-                      border: '1px solid #A3A3A3',
-                      borderRadius: '9px',
-                      width: '10em',
-                      textTransform: 'initial',
-                    }}
-                    variant="contained"
-                    disableElevation
-                    onClick={handleShowMore}
+            <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
+              <Grid item xs={12} sm={8}>
+                {!isMobile && (
+                  <Grid
+                    container
+                    spacing={1}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    style={{ paddingBottom: '10px' }}
                   >
-                    Show More
-                  </Button>
+                    <Grid item>
+                      <Typography>Sort by:</Typography>
+                    </Grid>
+                    <Grid item className={sortByButton}>
+                      <DropDown
+                        menuItems={[
+                          {
+                            item: 'Recent',
+                            callback: () => {
+                              setSortBy('date');
+                            },
+                          },
+                          {
+                            item: 'Helpful',
+                            callback: () => {
+                              setSortBy('likes');
+                            },
+                          },
+                        ]}
+                      />
+                    </Grid>
+                  </Grid>
+                )}
+                {/* Rest of your Review List content */}
+                <Grid container spacing={3}>
+                  {sortReviews(reviewData, sortBy)
+                    .slice(0, resultsToShow)
+                    .map((review, index) => (
+                      <Grid item xs={12} key={index}>
+                        <ReviewComponent
+                          review={review}
+                          liked={likedReviews[review.id]}
+                          likeLoading={likeStatuses[review.id]}
+                          addLike={addLike}
+                          removeLike={removeLike}
+                          setToggle={setToggle}
+                          user={user}
+                          setUser={setUser}
+                        />
+                      </Grid>
+                    ))}
                 </Grid>
-              </Box>
-            )}
+              </Grid>
+
+              {/* Second Grid item (InfoSection) */}
+              {isMobile && (
+                <Hidden smUp>
+                  <Grid item xs={12}>
+                    {InfoSection}
+                  </Grid>
+                </Hidden>
+              )}
+              <Hidden xsDown>
+                <Grid item xs={4}>
+                  {InfoSection}
+                </Grid>
+              </Hidden>
+            </Grid>
           </Grid>
-          {isMobile && <Hidden smUp>{InfoSection}</Hidden>}
-          <Hidden xsDown>{InfoSection}</Hidden>
         </Grid>
       </Container>
       {Modals}

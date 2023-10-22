@@ -20,7 +20,7 @@ export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
                   {feature.charAt(0).toUpperCase() + feature.slice(1)}
                 </Typography>
               </Grid>
-              <Grid item xs={7} md={7} lg={7}>
+              <Grid item xs={7} style={{ marginLeft: '-10%' }}>
                 <LabeledLinearProgress value={rating} />
               </Grid>
             </Grid>
