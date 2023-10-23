@@ -23,7 +23,7 @@ import { Link as RouterLink, useHistory } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
-import auto from '../../Home/Autocomplete';
+import Autocomplete from '../../Home/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
@@ -124,8 +124,9 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    marginRight: '25%',
+    marginLeft: '30px',
     marginBottom: '-15px',
+    borderRadius: '10px',
   },
   searchHidden: {
     width: '50%',
@@ -138,7 +139,8 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    fontSize: 5,
+    // fontSize: 5,
+    width: '100%',
     marginBottom: '5%',
   },
 }));
@@ -202,16 +204,23 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   }, [user]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+      if (drawerOpen && window.innerWidth >= 960) {
+        setDrawerOpen(false);
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [drawerOpen]);
 
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
-        <Grid className={searchDrawer}>{auto()}</Grid>
+        <Grid className={searchDrawer}>
+          <Autocomplete drawerOpen={drawerOpen} />
+        </Grid>
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
@@ -361,16 +370,16 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   );
 
   const searchBar = location.pathname !== '/';
-
   const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
-        <Grid item md={3}>
-          {homeLogo}
+        <Grid item md={9} container alignItems="center">
+          <Grid item>{homeLogo}</Grid>
+          <Grid item className={searchBar ? search : searchHidden}>
+            <Autocomplete drawerOpen={drawerOpen} />
+          </Grid>
         </Grid>
-        <Grid item md={6} className={searchBar ? search : searchHidden}>
-          {auto()}
-        </Grid>
+
         {isAdmin(user) && (
           <Grid item md={1} className={menu} container justifyContent="flex-end">
             {getAdminButton()}
@@ -411,7 +420,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClose: () => setDrawerOpen(false),
           }}
         >
-          <div className={drawerContainer}>{getDrawerChoices()}</div>
+          <div className={drawerContainer} style={{ width: '80%' }}>
+            {getDrawerChoices()}
+          </div>
         </Drawer>
       </Toolbar>
     );
