@@ -42,10 +42,11 @@ const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
   },
-  // styling for apartment text
+  // styling for apartment indicator text
   apartmentIndicator: {
     marginTop: '7px',
-    marginLeft: '100px',
+    marginBottom: '10px',
+    fontSize: '21px',
   },
 
   bottomborder: {
@@ -184,25 +185,6 @@ const ReviewComponent = ({
                     </IconButton>
                   </Grid>
 
-                  {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
-                  <Grid className={apartmentIndicator}>
-                    {apt.length > 0 && isLandlord ? (
-                      <Link
-                        {...{
-                          to: `/apartment/${review.aptId}`,
-                          style: {
-                            fontWeight: 'bold',
-                          },
-                          component: RouterLink,
-                        }}
-                      >
-                        {'Apartment  -  ' + apt[0].name}
-                      </Link>
-                    ) : (
-                      ''
-                    )}
-                  </Grid>
-
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
@@ -215,6 +197,33 @@ const ReviewComponent = ({
                     </CardContent>
                   </Collapse>
                 </Grid>
+              </Grid>
+
+              {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
+
+              <Grid>
+                <Typography className={apartmentIndicator}>
+                  {apt.length > 0 && isLandlord ? (
+                    <>
+                      <span style={{ fontWeight: 'bold' }}>Property:</span>{' '}
+                      <Link
+                        {...{
+                          to: `/apartment/${review.aptId}`,
+                          style: {
+                            color: 'black',
+                            textDecoration: 'underline',
+                            paddingBottom: '3px',
+                          },
+                          component: RouterLink,
+                        }}
+                      >
+                        {apt[0].name}
+                      </Link>
+                    </>
+                  ) : (
+                    ''
+                  )}
+                </Typography>
               </Grid>
 
               <Grid item container alignContent="center">
