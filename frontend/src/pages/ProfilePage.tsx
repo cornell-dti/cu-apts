@@ -119,7 +119,7 @@ const useStyles = makeStyles((theme) => ({
  * Profile Page
  * This componenet represents the Profile page. It displays the user's profile and their past reviews.
  * @component
- * @param props - The props for the ApartmentPage component.
+ * @param props - The props for the ProfilePage component.
  * @param user props.user - The current user, null if not logged in.
  * @param setUser - Function to set the current user.
  * @returns ProfilePage The ProfilePage component.
