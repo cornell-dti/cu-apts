@@ -21,6 +21,7 @@ const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
+const usersCollection = db.collection('users');
 
 const app: Express = express();
 
@@ -318,6 +319,120 @@ const likeHandler =
 app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
+
+/**
+ * Handles saving or removing saved apartments for a user in the database.
+ *
+ * @param add - If true, the apartment is added to the user's saved list. If false, it is removed.
+ */
+const saveApartmentHandler =
+  (add = true): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('Not authenticated');
+      const { uid } = req.user;
+      const { apartment } = req.body;
+
+      if (!apartment) throw new Error('Must specify apartment');
+
+      const userRef = usersCollection.doc(uid);
+      const apartmentRef = buildingsCollection.doc(apartment);
+
+      if (!userRef) {
+        throw new Error('User data not found');
+      }
+
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        const apartmentDoc = await t.get(apartmentRef);
+
+        if (!userDoc || !userDoc.exists || !apartmentDoc.exists) {
+          throw new Error('User or apartment data not found');
+        }
+        const userApartments = userDoc.data()?.apartments || [];
+
+        if (add) {
+          if (!userApartments.includes(apartment)) {
+            userApartments.push(apartment);
+          }
+        } else {
+          const index = userApartments.indexOf(apartment);
+          if (index !== -1) {
+            userApartments.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { apartments: userApartments });
+      });
+
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
+/**
+ * Handles saving or removing saved landlords for a user in the database.
+ *
+ * @param add - If true, the landlord is added to the user's saved list. If false, it is removed.
+ */
+const saveLandlordHandler =
+  (add = true): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('Not authenticated');
+      const { uid } = req.user;
+      const { landlord } = req.body;
+
+      if (!landlord) throw new Error('Must specify landlord');
+
+      const userRef = usersCollection.doc(uid);
+      const landlordRef = landlordCollection.doc(landlord);
+
+      if (!userRef) {
+        throw new Error('User data not found');
+      }
+
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        const landlordDoc = await t.get(landlordRef);
+
+        if (!userDoc || !userDoc.exists || !landlordDoc.exists) {
+          throw new Error('User or landlord data not found');
+        }
+
+        // Check if userDoc.data() is not undefined before accessing landlord
+        const userLandlords = userDoc.data()?.landlords || [];
+
+        if (add) {
+          if (!userLandlords.includes(landlord)) {
+            userLandlords.push(landlord);
+          }
+        } else {
+          const index = userLandlords.indexOf(landlord);
+          if (index !== -1) {
+            userLandlords.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { landlords: userLandlords });
+      });
+
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
+app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
+
+app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
+
+app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
+
+app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
 
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
