@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser, signOut } from '../../../utils/firebase';
+import { getUser } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -19,11 +19,11 @@ import {
 } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
-import auto from '../../Home/Autocomplete';
+import Autocomplete from '../../Home/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
 
 export type NavbarButton = {
@@ -62,6 +62,18 @@ const useStyles = makeStyles(() => ({
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
     fontSize: '16px',
+  },
+  profileButton: {
+    width: '3.5em',
+    height: '3.5em',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&:hover': {
+      backgroundColor: 'red',
+    },
   },
   adminButton: {
     backgroundColor: 'grey',
@@ -112,8 +124,9 @@ const useStyles = makeStyles(() => ({
   },
   search: {
     width: '50%',
-    marginRight: '25%',
+    marginLeft: '30px',
     marginBottom: '-15px',
+    borderRadius: '10px',
   },
   searchHidden: {
     width: '50%',
@@ -126,7 +139,8 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    fontSize: 5,
+    // fontSize: 5,
+    width: '100%',
     marginBottom: '5%',
   },
 }));
@@ -154,7 +168,7 @@ function GetButtonColor(lab: string) {
 
 const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
-  const [buttonText, setButtonText] = useState(initialUserState);
+  const [buttonState, setButtonState] = useState(initialUserState);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
@@ -172,7 +186,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     searchDrawer,
     adminButton,
     authButton,
+    profileButton,
   } = useStyles();
+
+  const history = useHistory();
 
   const muiTheme = createTheme({
     palette: { primary: { main: colors.gray2 }, secondary: { main: colors.red1 } },
@@ -183,20 +200,27 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   }, [location]);
 
   useEffect(() => {
-    setButtonText(!user ? 'Sign In' : 'Sign Out');
+    setButtonState(!user ? 'Sign In' : 'Profile');
   }, [user]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+      if (drawerOpen && window.innerWidth >= 960) {
+        setDrawerOpen(false);
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [drawerOpen]);
 
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
-        <Grid className={searchDrawer}>{auto()}</Grid>
+        <Grid className={searchDrawer}>
+          <Autocomplete drawerOpen={drawerOpen} />
+        </Grid>
         {headersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
@@ -213,16 +237,14 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     );
   };
 
-  const signInOutButtonClick = async () => {
+  const signInProfileButtonClick = async () => {
     if (user) {
-      signOut();
-      setUser(null);
-      setButtonText('Sign In');
+      history.push(`/profile/${user.uid}`);
       return;
     }
     let newUser = await getUser(true);
     setUser(newUser);
-    setButtonText(!newUser ? 'Sign In' : 'Sign Out');
+    setButtonState(!newUser ? 'Sign In' : 'Profile');
   };
 
   useEffect(() => {
@@ -232,12 +254,29 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     }, 1000);
   });
 
+  /** This function returns a Sign In button or Profile (circular picture) depending on whether the user is signed in or not **/
   const signInButton = () => {
-    return (
-      <Button onClick={signInOutButtonClick} className={authButton}>
-        {buttonText}
-      </Button>
-    );
+    if (drawerOpen || buttonState === 'Sign In') {
+      return (
+        <Button onClick={signInProfileButtonClick} className={authButton}>
+          {buttonState}
+        </Button>
+      );
+    } else {
+      return (
+        <Button
+          onClick={signInProfileButtonClick}
+          style={{
+            height: '40px',
+            width: '0',
+            backgroundColor: 'transparent',
+            color: 'transparent',
+          }}
+        >
+          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile" />
+        </Button>
+      );
+    }
   };
 
   const getAdminButton = () => {
@@ -331,16 +370,16 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   );
 
   const searchBar = location.pathname !== '/';
-
   const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
-        <Grid item md={3}>
-          {homeLogo}
+        <Grid item md={9} container alignItems="center">
+          <Grid item>{homeLogo}</Grid>
+          <Grid item className={searchBar ? search : searchHidden}>
+            <Autocomplete drawerOpen={drawerOpen} />
+          </Grid>
         </Grid>
-        <Grid item md={6} className={searchBar ? search : searchHidden}>
-          {auto()}
-        </Grid>
+
         {isAdmin(user) && (
           <Grid item md={1} className={menu} container justifyContent="flex-end">
             {getAdminButton()}
@@ -381,7 +420,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClose: () => setDrawerOpen(false),
           }}
         >
-          <div className={drawerContainer}>{getDrawerChoices()}</div>
+          <div className={drawerContainer} style={{ width: '80%' }}>
+            {getDrawerChoices()}
+          </div>
         </Drawer>
       </Toolbar>
     );
