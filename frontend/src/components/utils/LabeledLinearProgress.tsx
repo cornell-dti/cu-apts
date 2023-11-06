@@ -25,10 +25,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function LabeledLinearProgress({ value }: Props): ReactElement {
   const { barContainer, barSegment, aveRating } = useStyles();
-  let rating_value = value * 2;
-  rating_value = Math.round(rating_value);
-  rating_value = rating_value / 2 - 1;
-  console.log(rating_value);
+  let rating_value = value - 1;
+
   const segments = Array.from({ length: 5 }, (_, index) => (
     /**
      * This JSX code represents a rendering of a bar segment for a rating display. The rating value is used to determine the visual appearance of the segment.
@@ -42,6 +40,9 @@ export default function LabeledLinearProgress({ value }: Props): ReactElement {
      * - If the index is greater than the rating_value and is exactly 0.5 more than the rating_value, a gradient background is applied. The gradient transitions from colors.red1 to colors.gray4, creating a partial fill effect.
      * - For all other cases, the background is set to colors.gray4.
      */
+    /**
+     * Make it so the segments fill, and when there is a decimal leftover, the segment gets filled to that decimal.
+     */
     <div
       key={index}
       className={barSegment}
@@ -49,8 +50,10 @@ export default function LabeledLinearProgress({ value }: Props): ReactElement {
         background:
           index <= rating_value
             ? colors.red1
-            : index > rating_value && rating_value + 0.5 === index
-            ? `linear-gradient(to right, ${colors.red1} 0%, ${colors.red1} 50%, ${colors.gray4} 50%, ${colors.gray4} 100%)`
+            : index > rating_value && index - 1 < rating_value
+            ? `linear-gradient(to right, ${colors.red1} ${(rating_value - index + 1 / 1) * 100}%, ${
+                colors.gray4
+              } 0%)`
             : colors.gray4,
       }}
     ></div>

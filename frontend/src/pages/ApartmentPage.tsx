@@ -570,7 +570,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
+        <Grid container spacing={5} justifyContent="center">
           <Grid item xs={12}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
