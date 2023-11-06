@@ -11,4 +11,5 @@ export const admins: string[] = [
   'km653@cornell.edu', // Kevin
   'mml267@cornell.edu', // Miranda
   'to98@cornell.edu', // Tina
+  'egk46@cornell.edu', // Ella
 ];
