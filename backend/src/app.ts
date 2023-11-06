@@ -293,9 +293,9 @@ const likeHandler =
   (dislike = false): RequestHandler =>
   async (req, res) => {
     try {
-      if (!req.user) throw new Error('not authenticated');
-      const { uid } = req.user;
-      const { reviewId } = req.body;
+      // if (!req.user) throw new Error('not authenticated');
+      const { uid, reviewId } = req.body;
+      // const { reviewId } = req.body;
       if (!reviewId) throw new Error('must specify review id');
       const likesRef = likesCollection.doc(uid);
       const reviewRef = reviewCollection.doc(reviewId);
