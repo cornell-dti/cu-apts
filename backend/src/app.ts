@@ -261,10 +261,42 @@ app.get('/api/search-results', async (req, res) => {
   }
 });
 
+/*
+ * assumption, what you return for each of the pages may be different
+ * currently, we are assuming 'home' and a default case for everything else for the page
+ * for the home case, we are returning the top (size) apartments, top being having the most reviews
+ */
 app.get('/api/page-data/:page/:size', async (req, res) => {
-  const { size } = req.params;
-  const collection = buildingsCollection.limit(Number(size));
-  const buildingDocs = (await collection.get()).docs;
+  const { page, size } = req.params;
+  let collection;
+  let buildingDocs;
+  let buildingReviewCounts: [
+    number,
+    FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+  ][];
+  switch (page) {
+    case 'home':
+      buildingDocs = (await buildingsCollection.get()).docs;
+      // get the total approved review counts for each of buildings
+      buildingReviewCounts = await Promise.all(
+        buildingDocs.map(async (doc) => [
+          (
+            await reviewCollection
+              .where('aptId', '==', doc.id)
+              .where('status', '==', 'APPROVED')
+              .get()
+          ).docs.length,
+          doc,
+        ])
+      );
+      buildingReviewCounts.sort().reverse();
+      // get top five most reviewed
+      buildingDocs = buildingReviewCounts.splice(0, 5).map((elem) => elem[1]);
+      break;
+    default:
+      collection = buildingsCollection.limit(Number(size));
+      buildingDocs = (await collection.get()).docs;
+  }
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
