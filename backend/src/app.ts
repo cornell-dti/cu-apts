@@ -316,9 +316,9 @@ const likeHandler =
     }
   };
 
-app.post('/api/add-like', authenticate, likeHandler(false));
+app.post('/api/add-like', likeHandler(false));
 
-app.post('/api/remove-like', authenticate, likeHandler(true));
+app.post('/api/remove-like', likeHandler(true));
 
 /**
  * Handles saving or removing saved apartments for a user in the database.
@@ -426,13 +426,13 @@ const saveLandlordHandler =
     }
   };
 
-app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
+app.post('/api/add-saved-apartment', saveApartmentHandler(true));
 
-app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
+app.post('/api/remove-saved-apartment', saveApartmentHandler(false));
 
-app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
+app.post('/api/add-saved-landlord', saveLandlordHandler(true));
 
-app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
+app.post('/api/remove-saved-landlord', saveLandlordHandler(false));
 
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
