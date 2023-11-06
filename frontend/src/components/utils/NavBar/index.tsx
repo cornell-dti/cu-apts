@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser } from '../../../utils/firebase';
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
+import { getUser, signOut } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -25,6 +25,10 @@ import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import Autocomplete from '../../Home/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
+import defaultProfilePic from '../../../assets/cuapts-bear.png';
+import { ReactComponent as ProfileIcon } from '../../../assets/profile-icon.svg';
+import { ReactComponent as BookmarkIcon } from '../../../assets/bookmark.svg';
+import { ReactComponent as SignOutIcon } from '../../../assets/signout.svg';
 
 export type NavbarButton = {
   label: string;
@@ -72,7 +76,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     justifyContent: 'center',
     '&:hover': {
-      backgroundColor: 'red',
+      backgroundColor: 'transparent',
     },
   },
   adminButton: {
@@ -139,9 +143,50 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    // fontSize: 5,
     width: '100%',
     marginBottom: '5%',
+  },
+  profileDropDownMenu: {
+    position: 'absolute',
+    right: '0',
+    top: '100%',
+    width: '14em',
+    color: 'black',
+    backgroundColor: 'white',
+    listStyle: 'none',
+    borderRadius: '10px',
+    boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.2)',
+    paddingBottom: '10%',
+    paddingTop: '10%',
+    paddingRight: '0',
+    paddingLeft: '0',
+    zIndex: 1000,
+  },
+  drawerProfileDropDown: {
+    position: 'absolute',
+    top: '100%',
+    width: '14em',
+    color: 'black',
+    backgroundColor: 'white',
+    listStyle: 'none',
+    borderRadius: '10px',
+    boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.2)',
+    paddingBottom: '10%',
+    paddingTop: '10%',
+    paddingRight: '0',
+    paddingLeft: '0',
+  },
+  dropDownIcons: {
+    fill: colors.red1,
+    paddingRight: '0.8em',
+  },
+  dropDownButtons: {
+    fontFamily: 'Work Sans',
+    fontSize: '16px',
+    textTransform: 'none',
+    width: '95%',
+    paddingRight: '0',
+    justifyContent: 'flex-start',
   },
 }));
 
@@ -172,6 +217,8 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
+  const [dropDownOpen, setDropDownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
   const {
     header,
     menuButton,
@@ -187,6 +234,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     adminButton,
     authButton,
     profileButton,
+    profileDropDownMenu,
+    drawerProfileDropDown,
+    dropDownIcons,
+    dropDownButtons,
   } = useStyles();
 
   const history = useHistory();
@@ -215,6 +266,19 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return () => window.removeEventListener('resize', handleResize);
   }, [drawerOpen]);
 
+  /** This sets the Profile button drop down menu to false (close) when user clicks outside */
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropDownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [dropDownOpen]);
+
   const getDrawerChoices = () => {
     return (
       <ThemeProvider theme={muiTheme}>
@@ -237,9 +301,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     );
   };
 
-  const signInProfileButtonClick = async () => {
+  const signInProfileButtonClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     if (user) {
-      history.push(`/profile/${user.uid}`);
+      setDropDownOpen(!dropDownOpen);
       return;
     }
     let newUser = await getUser(true);
@@ -254,9 +319,23 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     }, 1000);
   });
 
+  /** This function navigates the user to the page depending on the dropdown button pressed */
+  const dropDownButtonClick = async (button: 'profile' | 'savedApts' | 'signOut') => {
+    if (button === 'profile') {
+      history.push(`/profile/${user ? user.uid : ''}`);
+    } else if (button === 'savedApts') {
+      history.push(`/savedapartments/${user ? user.uid : ''}`);
+    } else {
+      signOut();
+      history.push('/');
+      setDropDownOpen(false);
+    }
+    setDropDownOpen(false);
+  };
+
   /** This function returns a Sign In button or Profile (circular picture) depending on whether the user is signed in or not **/
   const signInButton = () => {
-    if (drawerOpen || buttonState === 'Sign In') {
+    if (buttonState === 'Sign In') {
       return (
         <Button onClick={signInProfileButtonClick} className={authButton}>
           {buttonState}
@@ -264,17 +343,60 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
       );
     } else {
       return (
-        <Button
-          onClick={signInProfileButtonClick}
-          style={{
-            height: '40px',
-            width: '0',
-            backgroundColor: 'transparent',
-            color: 'transparent',
-          }}
-        >
-          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile" />
-        </Button>
+        <div>
+          <Button
+            onClick={signInProfileButtonClick}
+            style={{
+              height: '40px',
+              width: '0',
+              backgroundColor: 'transparent',
+              color: 'transparent',
+            }}
+          >
+            <img
+              src={user?.photoURL || defaultProfilePic}
+              className={profileButton}
+              alt="User Profile"
+            />
+            {dropDownOpen && (
+              <ul
+                className={drawerOpen ? drawerProfileDropDown : profileDropDownMenu}
+                ref={dropdownRef}
+              >
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('profile')}
+                  >
+                    <ProfileIcon className={dropDownIcons} />
+                    Profile
+                  </Button>
+                </li>
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('savedApts')}
+                  >
+                    <BookmarkIcon className={dropDownIcons} />
+                    Saved Apartments
+                  </Button>
+                </li>
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('signOut')}
+                  >
+                    <SignOutIcon className={dropDownIcons} />
+                    Sign Out
+                  </Button>
+                </li>
+              </ul>
+            )}
+          </Button>
+        </div>
       );
     }
   };
