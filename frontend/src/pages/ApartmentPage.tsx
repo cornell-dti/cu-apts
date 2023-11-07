@@ -422,7 +422,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
 
       {reviewData && reviewData.length > 0 && (
-        <Grid item xs={12} className={ratingInfo}>
+        <Grid item xs={12} className={ratingInfo} style={{ marginTop: '-2%' }}>
           <ReviewHeader aveRatingInfo={aveRatingInfo} />
         </Grid>
       )}
@@ -570,7 +570,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       )}
 
       <Container className={container}>
-        <Grid container spacing={5} justifyContent="center">
+        <Grid container spacing={5} justifyContent="center" style={{ marginBottom: '20px' }}>
           <Grid item xs={12}>
             {isMobile ? MobileHeader : Header}
             {!isMobile && <Hidden smUp>{InfoSection}</Hidden>}
