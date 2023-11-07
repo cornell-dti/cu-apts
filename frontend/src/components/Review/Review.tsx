@@ -160,6 +160,13 @@ const ReviewComponent = ({
     }
   };
 
+  const handleLinkClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -216,6 +223,7 @@ const ReviewComponent = ({
                           },
                           component: RouterLink,
                         }}
+                        onClick={handleLinkClick}
                       >
                         {apt[0].name}
                       </Link>
