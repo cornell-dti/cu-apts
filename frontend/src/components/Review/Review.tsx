@@ -44,11 +44,11 @@ const useStyles = makeStyles(() => ({
   },
   // styling for apartment indicator text
   apartmentIndicator: {
+    display: 'inline-flex',
     marginTop: '7px',
-    marginBottom: '10px',
-    fontSize: '21px',
+    marginBottom: '7px',
+    fontSize: '19px',
   },
-
   bottomborder: {
     borderBottom: '1px #E8E8E8 solid',
     marginBottom: '5px',
@@ -205,7 +205,7 @@ const ReviewComponent = ({
                 <Typography className={apartmentIndicator}>
                   {apt.length > 0 && isLandlord ? (
                     <>
-                      <span style={{ fontWeight: 'bold' }}>Property:</span>{' '}
+                      <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
                       <Link
                         {...{
                           to: `/apartment/${review.aptId}`,
