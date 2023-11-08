@@ -162,7 +162,6 @@ const ReviewModal = ({
       setSending(true);
       const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
-      console.log(data);
       if (
         data.reviewText === '' ||
         data.overallRating === 0 ||
