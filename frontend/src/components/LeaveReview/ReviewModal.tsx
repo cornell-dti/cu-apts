@@ -152,6 +152,8 @@ const ReviewModal = ({
       overallRating,
       photos,
       reviewText: body,
+      //added userId to the data
+      userId: user?.uid,
     };
   };
 
@@ -160,6 +162,7 @@ const ReviewModal = ({
       setSending(true);
       const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
+      console.log(data);
       if (
         data.reviewText === '' ||
         data.overallRating === 0 ||
