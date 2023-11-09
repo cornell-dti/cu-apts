@@ -5,6 +5,7 @@ import { get } from '../utils/call';
 import { colors } from '../colors';
 import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import { useTitle } from '../utils';
 
 const useStyles = makeStyles({
   searchText: {
@@ -19,6 +20,8 @@ const SearchResultsPage = (): ReactElement => {
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
   const query = location.search.substring(3);
   const isMobile = useMediaQuery('(max-width:600px)');
+
+  useTitle('Search Result');
 
   useEffect(() => {
     get<CardData[]>(`/api/search-results?q=${query}`, {
