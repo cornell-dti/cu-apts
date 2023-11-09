@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { useEffect, ReactElement, useState } from 'react';
 import {
   Box,
   Card,
@@ -10,18 +10,21 @@ import {
   Button,
   IconButton,
   Collapse,
+  Link,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import { DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
+import { DetailedRating, ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
+import { Link as RouterLink } from 'react-router-dom';
 import { getUser } from '../../utils/firebase';
+import { get } from '../../utils/call';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -32,11 +35,19 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  readonly isLandlord: boolean;
 };
 
 const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
+  },
+  // styling for apartment indicator text
+  apartmentIndicator: {
+    display: 'inline-flex',
+    marginTop: '7px',
+    marginBottom: '7px',
+    fontSize: '19px',
   },
   bottomborder: {
     borderBottom: '1px #E8E8E8 solid',
@@ -86,6 +97,7 @@ const ReviewComponent = ({
   setToggle,
   user,
   setUser,
+  isLandlord,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
@@ -99,13 +111,23 @@ const ReviewComponent = ({
     photoRowStyle,
     bottomborder,
     heartSpacing,
+    apartmentIndicator,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
+  const [apt, setApt] = useState<ApartmentWithId[]>([]);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
+  //Retreieving apartment data
+  useEffect(() => {
+    if (review.aptId !== null) {
+      get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
+        callback: setApt,
+      });
+    }
+  }, [review]);
 
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
@@ -138,6 +160,13 @@ const ReviewComponent = ({
     }
   };
 
+  const handleLinkClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -162,6 +191,7 @@ const ReviewComponent = ({
                       <ExpandMoreIcon />
                     </IconButton>
                   </Grid>
+
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
@@ -174,6 +204,34 @@ const ReviewComponent = ({
                     </CardContent>
                   </Collapse>
                 </Grid>
+              </Grid>
+
+              {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
+
+              <Grid>
+                <Typography className={apartmentIndicator}>
+                  {apt.length > 0 && isLandlord ? (
+                    <>
+                      <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
+                      <Link
+                        {...{
+                          to: `/apartment/${review.aptId}`,
+                          style: {
+                            color: 'black',
+                            textDecoration: 'underline',
+                            paddingBottom: '3px',
+                          },
+                          component: RouterLink,
+                        }}
+                        onClick={handleLinkClick}
+                      >
+                        {apt[0].name}
+                      </Link>
+                    </>
+                  ) : (
+                    ''
+                  )}
+                </Typography>
               </Grid>
 
               <Grid item container alignContent="center">
