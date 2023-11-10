@@ -590,6 +590,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8}>
                 {!isMobile && (
@@ -622,6 +623,24 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                         ]}
                       />
                     </Grid>
+                    
+            <Grid container item spacing={3}>
+              {sortReviews(reviewData, sortBy)
+                .slice(0, resultsToShow)
+                .map((review, index) => (
+                  <Grid item xs={12} key={index}>
+                    <ReviewComponent
+                      review={review}
+                      liked={likedReviews[review.id]}
+                      likeLoading={likeStatuses[review.id]}
+                      addLike={addLike}
+                      removeLike={removeLike}
+                      setToggle={setToggle}
+                      user={user}
+                      setUser={setUser}
+                      isLandlord={false}
+                    />
+                  
                   </Grid>
                 )}
                 {/* Rest of your Review List content */}

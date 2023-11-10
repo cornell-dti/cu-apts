@@ -69,6 +69,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * LandlordPage Component
+ *
+ * This component represents a page for viewing and leaving reviews for landlords.
+ * It displays landlords information, reviews, and provides functionality to leave new reviews,
+ * sort reviews. Additionally, it contains information about other properties the landloard owns.
+ *
+ * @component
+ * @param setUser - Function to set the current user.
+ * @returns LandlordPage The LandlordPage component.
+ */
 const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const { landlordId } = useParams<Record<string, string>>();
   const [landlordData, setLandlordData] = useState<Landlord>();
@@ -98,6 +109,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     sortByButton,
   } = useStyles();
 
+  // useEffect hook to control the number of results to show based on screen size and reviewData length
   useEffect(() => {
     if (isMobile) {
       setResultsToShow(5);
@@ -106,26 +118,31 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     }
   }, [isMobile, reviewData.length]);
 
+  // Function to handle "Show More" button click
   const handleShowMore = () => {
     setResultsToShow(resultsToShow + 5);
   };
 
+  // Function to handle page not found
   const handlePageNotFound = () => {
     console.log('Page not found');
     setNotFound(true);
   };
 
+  // Set the page title using the useTitle custom hook
   useTitle(
     () => (loaded && landlordData !== undefined ? `${landlordData.name}` : 'Landlord Reviews'),
     [loaded, landlordData]
   );
 
+  // Fetch review data when the component mounts or when showConfirmation or toggle change
   useEffect(() => {
     get<ReviewWithId[]>(`/api/review/landlordId/${landlordId}/APPROVED`, {
       callback: setReviewData,
     });
   }, [landlordId, showConfirmation, toggle]);
 
+  // Fetch landlord data when the component mounts or when landlordId changes
   useEffect(() => {
     get<Landlord>(`/api/landlord/${landlordId}`, {
       callback: setLandlordData,
@@ -133,12 +150,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [landlordId]);
 
+  // Fetch building data when the component mounts or when landlordId changes
   useEffect(() => {
     get<CardData[]>(`/api/buildings/all/${landlordId}`, {
       callback: setBuildings,
     });
   }, [landlordId]);
 
+  // useEffect hook to handle screen size changes
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
     handleResize();
@@ -146,16 +165,19 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Check if the necessary data is loaded to render the component
   useEffect(() => {
     if (landlordData && buildings && reviewData) {
       setLoaded(true);
     }
   }, [landlordData, buildings, reviewData]);
 
+  // Subscribe to liked reviews using Firebase
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
   }, []);
 
+  // Function to sort reviews based on a specific property
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
     let unsorted = arr;
     return unsorted.sort((r1, r2) => {
@@ -166,8 +188,10 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, []);
 
+  // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof reviewData[0];
 
+  // Function to display a toast message and hide it after a certain time
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);
     setTimeout(() => {
@@ -175,14 +199,17 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     }, toastTime);
   };
 
+  // Function to show a confirmation toast
   const showConfirmationToast = () => {
     showToast(setShowConfirmation);
   };
 
+  // Function to show a sign-in error toast
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
   };
 
+  // Function to handle liking or disliking a review
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -211,6 +238,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     };
   };
 
+  // Define two functions for handling likes and dislikes
   const addLike = likeHelper(false);
 
   const removeLike = likeHelper(true);
@@ -225,6 +253,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
+  // Define a component 'Modals' conditionally based on landlordData existence
   const Modals = landlordData && (
     <>
       <ReviewModal
@@ -246,6 +275,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  // Define a component 'Header' for displaying information at the top of the landlord page
   const Header = (
     <>
       <Grid container alignItems="center">
@@ -331,6 +361,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  // Define a component 'MobileHeader' for displaying information on mobile at the top of the landlord page
   const MobileHeader = (
     <>
       <Grid container alignItems="center">
@@ -416,6 +447,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     </>
   );
 
+  // Define an 'InfoSection' component for displaying landlord information
   const InfoSection = landlordData && (
     <Grid item xs={12} sm={4} style={{ marginBottom: '20px' }}>
       <InfoFeatures {...landlordData} buildings={buildings} />
@@ -471,6 +503,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       user={user}
                       setUser={setUser}
+                      isLandlord={true}
                     />
                   </Grid>
                 ))}
