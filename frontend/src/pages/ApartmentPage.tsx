@@ -550,13 +550,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   );
 
   return notFound ? (
-    // Display Not Found page if the apartment is not found
     <NotFoundPage />
   ) : !loaded ? (
-    // Display Not Found page if the apartment is not found
     <LinearProgress />
   ) : (
-    // Display Not Found page if the apartment is not found
     <>
       {landlordData && (
         <Container>
@@ -623,33 +620,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                         ]}
                       />
                     </Grid>
-                    
-            <Grid container item spacing={3}>
-              {sortReviews(reviewData, sortBy)
-                .slice(0, resultsToShow)
-                .map((review, index) => (
-                  <Grid item xs={12} key={index}>
-                    <ReviewComponent
-                      review={review}
-                      liked={likedReviews[review.id]}
-                      likeLoading={likeStatuses[review.id]}
-                      addLike={addLike}
-                      removeLike={removeLike}
-                      setToggle={setToggle}
-                      user={user}
-                      setUser={setUser}
-                      isLandlord={false}
-                    />
-                  
                   </Grid>
                 )}
-                {/* Rest of your Review List content */}
-                <Grid container spacing={3}>
+
+                <Grid container item spacing={3}>
                   {sortReviews(reviewData, sortBy)
                     .slice(0, resultsToShow)
                     .map((review, index) => (
                       <Grid item xs={12} key={index}>
                         <ReviewComponent
+                          isLandlord={review.landlordId != null} // Make sure this is correct
                           review={review}
                           liked={likedReviews[review.id]}
                           likeLoading={likeStatuses[review.id]}
