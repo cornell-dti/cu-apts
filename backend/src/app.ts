@@ -319,7 +319,38 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
-app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+app.put('/api/edit-review/:reviewDocId', authenticate, async (req, res) => {
+  try {
+    const { reviewDocId } = req.params;
+    const review = req.body as Review;
+    if (review.overallRating === 0 || review.reviewText === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    await reviewCollection.doc(reviewDocId).update({ ...review, date: new Date(review.date) });
+    res.status(201).send(reviewDocId);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+app.put('/api/delete-review/:reviewDocId/:newStatus', async (req, res) => {
+  const { reviewDocId, newStatus } = req.params;
+  const statusList = ['DELETED'];
+  try {
+    if (!statusList.includes(newStatus)) {
+      res.status(400).send('Invalid status type');
+      return;
+    }
+    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    res.status(200).send('Success');
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error');
+  }
+});
+
+app.put(' :reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
