@@ -36,7 +36,7 @@ const useStyles = makeStyles({
   },
 });
 
-const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactElement => {
+const PropertyCard = ({ buildingData, numReviews }: CardProps): ReactElement => {
   const { aptNameTxt, card, reviewNum } = useStyles();
   const { id, name, address } = buildingData;
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
@@ -88,7 +88,9 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
 const PropertyInfo = ({ info, title }: Props): ReactElement => {
   return (
     <Box mt={2} mb={1}>
-      <Typography variant="h6">{title}</Typography>
+      <Typography variant="h6" style={{ fontWeight: 400, fontSize: '17px', marginBottom: '10px' }}>
+        {title}
+      </Typography>
       <List dense component="ul">
         <Grid container spacing={0} direction="row">
           {info.length === 0 && <Typography variant="body1">No information available.</Typography>}

@@ -35,8 +35,8 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
   const { title } = useStyles();
 
   return (
-    <Box mt={1} mb={2}>
-      <Typography variant="h5" className={title}>
+    <Box mt={1} mb={3}>
+      <Typography variant="h6" className={title} style={{ fontWeight: 400 }}>
         Information
       </Typography>
       <List dense>
