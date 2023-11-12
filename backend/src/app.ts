@@ -319,14 +319,17 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
-app.put('/api/edit-review/:reviewDocId', authenticate, async (req, res) => {
+app.put('/api/edit-review/:reviewDocId', async (req, res) => {
   try {
     const { reviewDocId } = req.params;
     const review = req.body as Review;
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
-    await reviewCollection.doc(reviewDocId).update({ ...review, date: new Date(review.date) });
+    await reviewCollection
+      .doc(reviewDocId)
+      .update({ ...review, date: new Date(review.date), status: 'PENDING' });
+    console.log(review.reviewText);
     res.status(201).send(reviewDocId);
   } catch (err) {
     console.error(err);
@@ -334,15 +337,10 @@ app.put('/api/edit-review/:reviewDocId', authenticate, async (req, res) => {
   }
 });
 
-app.put('/api/delete-review/:reviewDocId/:newStatus', async (req, res) => {
-  const { reviewDocId, newStatus } = req.params;
-  const statusList = ['DELETED'];
+app.put('/api/delete-review/:reviewDocId', async (req, res) => {
+  const { reviewDocId } = req.params;
   try {
-    if (!statusList.includes(newStatus)) {
-      res.status(400).send('Invalid status type');
-      return;
-    }
-    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    await reviewCollection.doc(reviewDocId).update({ status: 'DELETED' });
     res.status(200).send('Success');
   } catch (err) {
     console.log(err);
