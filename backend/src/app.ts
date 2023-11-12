@@ -328,44 +328,46 @@ app.post('/api/remove-like', authenticate, likeHandler(true));
 const saveApartmentHandler =
   (add = true): RequestHandler =>
   async (req, res) => {
+    console.log('T1');
     try {
+      console.log('T1');
       if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
       const { apartment } = req.body;
-
+      console.log(apartment);
       if (!apartment) throw new Error('Must specify apartment');
+      console.log('T3');
+      //   const userRef = usersCollection.doc(uid);
+      //   const apartmentRef = buildingsCollection.doc(apartment);
+      //   console.log("T4")
+      //   if (!userRef) {
+      //     throw new Error('User data not found');
+      //   }
 
-      const userRef = usersCollection.doc(uid);
-      const apartmentRef = buildingsCollection.doc(apartment);
+      //   await db.runTransaction(async (t) => {
+      //     const userDoc = await t.get(userRef);
+      //     const apartmentDoc = await t.get(apartmentRef);
 
-      if (!userRef) {
-        throw new Error('User data not found');
-      }
+      //     if (!userDoc || !userDoc.exists || !apartmentDoc.exists) {
+      //       throw new Error('User or apartment data not found');
+      //     }
+      //     const userApartments = userDoc.data()?.apartments || [];
 
-      await db.runTransaction(async (t) => {
-        const userDoc = await t.get(userRef);
-        const apartmentDoc = await t.get(apartmentRef);
+      //     if (add) {
+      //       if (!userApartments.includes(apartment)) {
+      //         userApartments.push(apartment);
+      //       }
+      //     } else {
+      //       const index = userApartments.indexOf(apartment);
+      //       if (index !== -1) {
+      //         userApartments.splice(index, 1);
+      //       }
+      //     }
 
-        if (!userDoc || !userDoc.exists || !apartmentDoc.exists) {
-          throw new Error('User or apartment data not found');
-        }
-        const userApartments = userDoc.data()?.apartments || [];
+      //     t.update(userRef, { apartments: userApartments });
+      //   });
 
-        if (add) {
-          if (!userApartments.includes(apartment)) {
-            userApartments.push(apartment);
-          }
-        } else {
-          const index = userApartments.indexOf(apartment);
-          if (index !== -1) {
-            userApartments.splice(index, 1);
-          }
-        }
-
-        t.update(userRef, { apartments: userApartments });
-      });
-
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      //   res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
       res.status(400).send('Error');
