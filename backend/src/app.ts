@@ -328,46 +328,38 @@ app.post('/api/remove-like', authenticate, likeHandler(true));
 const saveApartmentHandler =
   (add = true): RequestHandler =>
   async (req, res) => {
-    console.log('T1');
     try {
-      console.log('T1');
       if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
       const { apartment } = req.body;
-      console.log(apartment);
       if (!apartment) throw new Error('Must specify apartment');
-      console.log('T3');
-      //   const userRef = usersCollection.doc(uid);
-      //   const apartmentRef = buildingsCollection.doc(apartment);
-      //   console.log("T4")
-      //   if (!userRef) {
-      //     throw new Error('User data not found');
-      //   }
+      const userRef = usersCollection.doc(uid);
+      if (!userRef) {
+        throw new Error('User data not found');
+      }
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        if (!userDoc.exists) {
+          t.set(userRef, { apartments: [] });
+          return;
+        }
+        const userApartments = userDoc.data()?.apartments || [];
 
-      //   await db.runTransaction(async (t) => {
-      //     const userDoc = await t.get(userRef);
-      //     const apartmentDoc = await t.get(apartmentRef);
+        if (add) {
+          if (!userApartments.includes(apartment)) {
+            userApartments.push(apartment);
+          }
+        } else {
+          const index = userApartments.indexOf(apartment);
+          if (index !== -1) {
+            userApartments.splice(index, 1);
+          }
+        }
 
-      //     if (!userDoc || !userDoc.exists || !apartmentDoc.exists) {
-      //       throw new Error('User or apartment data not found');
-      //     }
-      //     const userApartments = userDoc.data()?.apartments || [];
+        t.update(userRef, { apartments: userApartments });
+      });
 
-      //     if (add) {
-      //       if (!userApartments.includes(apartment)) {
-      //         userApartments.push(apartment);
-      //       }
-      //     } else {
-      //       const index = userApartments.indexOf(apartment);
-      //       if (index !== -1) {
-      //         userApartments.splice(index, 1);
-      //       }
-      //     }
-
-      //     t.update(userRef, { apartments: userApartments });
-      //   });
-
-      //   res.status(200).send(JSON.stringify({ result: 'Success' }));
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
       res.status(400).send('Error');
@@ -386,25 +378,17 @@ const saveLandlordHandler =
       if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
       const { landlord } = req.body;
-
       if (!landlord) throw new Error('Must specify landlord');
-
       const userRef = usersCollection.doc(uid);
-      const landlordRef = landlordCollection.doc(landlord);
-
       if (!userRef) {
         throw new Error('User data not found');
       }
-
       await db.runTransaction(async (t) => {
         const userDoc = await t.get(userRef);
-        const landlordDoc = await t.get(landlordRef);
-
-        if (!userDoc || !userDoc.exists || !landlordDoc.exists) {
-          throw new Error('User or landlord data not found');
+        if (!userDoc.exists) {
+          t.set(userRef, { landlords: [] });
+          return;
         }
-
-        // Check if userDoc.data() is not undefined before accessing landlord
         const userLandlords = userDoc.data()?.landlords || [];
 
         if (add) {

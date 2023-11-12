@@ -342,18 +342,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
-  const testButton = async () => {
-    let user = await getUser(true);
-    setUser(user);
-    if (!user) {
-      showSignInErrorToast();
-      return;
-    }
-    const token = await user.getIdToken(true);
-    console.log(aptId);
-    axios.post('/api/add-saved-apartment', { aptId }, createAuthHeaders(token));
-  };
-
   const Modals = landlordData && apt && (
     <>
       <ReviewModal
@@ -424,15 +412,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 onClick={openReviewModal}
               >
                 Leave a Review
-              </Button>
-              <Button
-                color="primary"
-                className={reviewButton}
-                variant="contained"
-                disableElevation
-                onClick={testButton}
-              >
-                Test API
               </Button>
             </Grid>
             <Grid item>
