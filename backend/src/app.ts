@@ -319,30 +319,42 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
+// Endpoint to update a review by its document ID
 app.put('/api/edit-review/:reviewDocId', async (req, res) => {
   try {
-    const { reviewDocId } = req.params;
-    const review = req.body as Review;
+    const { reviewDocId } = req.params; // Extract the review document ID from the request parameters
+    const review = req.body as Review; // Get the review data from the request body and cast it to the "Review" type
+
+    // Check if the required fields (overallRating and reviewText) are missing or invalid
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
+
+    // Update the review document in the database with the provided data
     await reviewCollection
       .doc(reviewDocId)
       .update({ ...review, date: new Date(review.date), status: 'PENDING' });
-    console.log(review.reviewText);
+
+    // Send a success response with the updated review document ID
     res.status(201).send(reviewDocId);
   } catch (err) {
+    // Handle any errors that may occur during the update process
     console.error(err);
     res.status(401).send('Error');
   }
 });
 
+// Endpoint to delete a review by its document ID
 app.put('/api/delete-review/:reviewDocId', async (req, res) => {
-  const { reviewDocId } = req.params;
+  const { reviewDocId } = req.params; // Extract the review document ID from the request parameters
   try {
+    // Update the status of the review document to 'DELETED'
     await reviewCollection.doc(reviewDocId).update({ status: 'DELETED' });
+
+    // Send a success response
     res.status(200).send('Success');
   } catch (err) {
+    // Handle any errors that may occur during the deletion process
     console.log(err);
     res.status(500).send('Error');
   }
