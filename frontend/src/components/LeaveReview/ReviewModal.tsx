@@ -152,6 +152,8 @@ const ReviewModal = ({
       overallRating,
       photos,
       reviewText: body,
+      //added userId to the data
+      userId: user?.uid,
     };
   };
 
