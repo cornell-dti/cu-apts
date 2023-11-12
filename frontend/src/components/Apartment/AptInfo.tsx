@@ -25,7 +25,7 @@ export default function AptInfo({
         <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
       </Box>
       <Divider variant="middle" />
-      <Box mx={2} mb={1}>
+      <Box mx={2} mb={1} mt={2}>
         <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
       </Box>
     </Box>
