@@ -97,6 +97,7 @@ app.get('/api/review/like', authenticate, async (req, res) => {
       const matchingReviews: ReviewWithId[] = [];
       const querySnapshot = await reviewCollection
         .where(FieldPath.documentId(), 'in', reviewIds)
+        .where('status', '==', 'APPROVED')
         .get();
       querySnapshot.forEach((doc) => {
         const reviewData = doc.data();
