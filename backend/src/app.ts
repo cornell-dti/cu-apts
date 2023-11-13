@@ -261,18 +261,40 @@ app.get('/api/search-results', async (req, res) => {
   }
 });
 
+/*
+ * assumption, what you return for a given page may be different
+ * currently, we are assuming 'home' as a potential input and a default case for everything else for the page
+ * for the home case, we are returning the top (size) apartments, top being having the most reviews
+ */
 app.get('/api/page-data/:page/:size', async (req, res) => {
-  const { size } = req.params;
-  const collection = buildingsCollection.limit(Number(size));
-  const buildingDocs = (await collection.get()).docs;
+  const { page, size } = req.params;
+  let buildingDocs;
+  let buildingData;
+
+  if (page !== 'home') {
+    // we only limit on size off the bat if we are not the homepage
+    buildingDocs = (await buildingsCollection.limit(Number(size)).get()).docs;
+  } else {
+    buildingDocs = (await buildingsCollection.get()).docs;
+  }
+
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
 
+  if (page === 'home') {
+    const buildingReviewCounts = (await pageData(buildings)).map((elem) => [elem.numReviews, elem]);
+    buildingReviewCounts.sort().reverse();
+    buildingData = buildingReviewCounts.splice(0, Number(size)).map((elem) => elem[1]);
+  } else {
+    buildingData = await pageData(buildings);
+  }
+
   const returnData = JSON.stringify({
-    buildingData: await pageData(buildings),
+    buildingData,
     isEnded: buildings.length < Number(size),
   });
+
   res.status(200).send(returnData);
 });
 
