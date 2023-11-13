@@ -3,12 +3,24 @@ import { Grid, Typography } from '@material-ui/core';
 import styles from './Review.module.scss';
 import LabeledLinearProgress from '../utils/LabeledLinearProgress';
 import { RatingInfo } from '../../pages/LandlordPage';
+import { useEffect, useState } from 'react';
 
 type Props = {
   readonly aveRatingInfo: RatingInfo[];
 };
 
 export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 750);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className={styles.detail}>
       <Grid className={styles.infoContainer} container spacing={2} direction="row">
@@ -20,7 +32,7 @@ export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
                   {feature.charAt(0).toUpperCase() + feature.slice(1)}
                 </Typography>
               </Grid>
-              <Grid item xs={7} style={{ marginLeft: '-10%' }}>
+              <Grid item xs={7} style={{ marginLeft: isMobile ? '0%' : '-4%' }}>
                 <LabeledLinearProgress value={rating} />
               </Grid>
             </Grid>

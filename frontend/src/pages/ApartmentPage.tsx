@@ -156,10 +156,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }
   }, [isMobile, reviewData.length]);
 
-  // const handleShowMore = () => {
-  //   setResultsToShow(resultsToShow + 5);
-  // };
-
   // Set 'notFound' to true when a page is not found.
   const handlePageNotFound = () => {
     setNotFound(true);
