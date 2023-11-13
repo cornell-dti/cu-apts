@@ -9,7 +9,10 @@ import {
   makeStyles,
   Typography,
   useMediaQuery,
+  IconButton,
 } from '@material-ui/core';
+import savedIcon from '../../assets/filled-saved-icon.png';
+import unsavedIcon from '../../assets/unfilled-saved-icon.png';
 import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
@@ -65,10 +68,14 @@ const useStyles = makeStyles({
 
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { id, name, photos } = buildingData;
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const isMobile = useMediaQuery('(max-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
+  const [isSaved, setIsSaved] = useState(false);
+  const [key, setKey] = useState(0);
 
   const {
     imgStyle,
@@ -80,6 +87,13 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
     textStyle,
     imgContainerMobile,
   } = useStyles();
+
+  const handleSaveToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    event.preventDefault(); // Prevent the default behavior
+    setIsSaved((prevIsSaved) => !prevIsSaved);
+    setKey((prevKey) => prevKey + 1);
+  };
 
   useEffect(() => {
     get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
@@ -118,6 +132,23 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
               >
                 {name}
               </Typography>
+              {/* Add saved and unsaved icons on the right side */}
+              <Grid
+                container
+                item
+                justifyContent="flex-end"
+                alignItems="center"
+                style={{ margin: '0', position: 'absolute', right: '10%' }}
+              >
+                <IconButton onClick={handleSaveToggle} style={{ padding: 0, zIndex: 100 }}>
+                  <img
+                    key={key} // Add key attribute to force re-render
+                    src={isSaved ? saved : unsaved}
+                    alt={isSaved ? 'Saved' : 'Unsaved'}
+                    style={{ width: '50%', height: '50%', marginRight: '5px' }}
+                  />
+                </IconButton>
+              </Grid>
               {company && (
                 <Grid container item justifyContent="space-between">
                   <Grid>

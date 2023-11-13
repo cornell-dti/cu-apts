@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState } from 'react';
 import ApartmentImg from '../../assets/apartment-placeholder.png';
 import {
   Card,
@@ -8,9 +8,12 @@ import {
   makeStyles,
   Typography,
   useMediaQuery,
+  IconButton,
 } from '@material-ui/core';
 import { LandlordWithLabel } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
+import savedIcon from '../../assets/filled-saved-icon.png';
+import unsavedIcon from '../../assets/unfilled-saved-icon.png';
 
 type Props = {
   landlordData: LandlordWithLabel;
@@ -55,6 +58,10 @@ const LandlordCard = ({ landlordData }: Props): ReactElement => {
   //useMediaQuery here is for detecting whether the screen size wider than 960px
   // if so, matches is true; otherwise, it's false
   const matches = useMediaQuery('(min-width:960px)');
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
+  const [isSaved, setIsSaved] = useState(false);
+  const [key, setKey] = useState(0);
 
   return (
     <Card className={card}>
