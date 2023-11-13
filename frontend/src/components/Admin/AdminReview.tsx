@@ -25,14 +25,25 @@ import { Link as RouterLink } from 'react-router-dom';
 import ReviewHeader from '../Review/ReviewHeader';
 import axios from 'axios';
 
+/**
+ * Component Props for AdminReviewComponent.
+ */
 type Props = {
+  /** The review to be displayed. */
   readonly review: ReviewWithId;
+  /** Function to toggle the display. */
   readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Indicates if the review is in the declined section. */
   readonly declinedSection: boolean;
 };
 
+/**
+ * Information about a specific rating feature.
+ */
 export type RatingInfo = {
+  /** The name of the feature. */
   feature: string;
+  /** The numerical rating for the feature. */
   rating: number;
 };
 
@@ -55,13 +66,19 @@ const useStyles = makeStyles(() => ({
   photoRowStyle: {
     overflowX: 'auto',
     display: 'flex',
-    lexDirection: 'row',
+    flexDirection: 'row',
     gap: '1vw',
     paddingTop: '2%',
     paddingLeft: '0.6%',
   },
 }));
 
+/**
+ * AdminReviewComponent displays an individual review for admin approval or deletion.
+ *
+ * @param review review - The review to approve
+ * @returns The rendered component.
+ */
 const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): ReactElement => {
   const { detailedRatings, overallRating, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
@@ -80,6 +97,12 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
     });
   }, [review]);
 
+  /**
+   * Get an array of rating information from detailed ratings.
+   *
+   * @param ratings - The detailed ratings object.
+   * @returns An array of rating information.
+   */
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
       { feature: 'Location', rating: ratings.location },
@@ -91,7 +114,13 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
     ];
   };
 
-  const changeStatus = async (newStatus: string) => {
+  /**
+   * Change the status of the review and trigger a re-render.
+   *
+   * @param newStatus - The new status for the review.
+   * @returns A promise representing the completion of the operation.
+   */
+  const changeStatus = async (newStatus: string): Promise<void> => {
     const endpoint = `/api/update-review-status/${review.id}/${newStatus}`;
     await axios.put(endpoint);
     setToggle((cur) => !cur);
