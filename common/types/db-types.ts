@@ -22,7 +22,8 @@ export type Review = {
   readonly overallRating: number;
   readonly photos: readonly string[];
   readonly reviewText: string;
-  readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED';
+  readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'DELETED';
+  readonly userId?: string | null;
 };
 
 export type ReviewWithId = Review & Id;
