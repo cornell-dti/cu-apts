@@ -8,6 +8,7 @@ import { colors } from '../../colors';
 import HeartRating from '../utils/HeartRating';
 import { ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
 import { getAverageRating } from '../../utils/average';
+import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 type Props = {
   readonly info: CardData[];
@@ -35,7 +36,7 @@ const useStyles = makeStyles({
   },
 });
 
-const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactElement => {
+const PropertyCard = ({ buildingData, numReviews }: CardProps): ReactElement => {
   const { aptNameTxt, card, reviewNum } = useStyles();
   const { id, name, address } = buildingData;
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
@@ -61,20 +62,22 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
   return (
     <Card className={card} onClick={handleCardClick}>
       <CardContent>
-        <Grid container direction="row" alignItems="center">
-          <Grid item>
+        <Grid container direction="row" alignItems="center" justifyContent="space-between">
+          <Grid md={12} lg={6} item>
             <Typography className={aptNameTxt}>{name}</Typography>
+            <Typography variant="subtitle1">{address}</Typography>
           </Grid>
-          <Grid container item justifyContent="space-between">
-            <Grid>
-              <Typography variant="subtitle1">{address}</Typography>
-            </Grid>
-          </Grid>
-          <Grid container direction="row" alignItems="center">
-            <HeartRating value={getAverageRating(reviewData)} precision={0.5} readOnly />
-            <Typography className={reviewNum}>
-              {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
-            </Typography>
+          <Grid md={12} lg={6} item direction="row" alignItems="center" spacing={1}>
+            <Box display="flex" alignItems="center">
+              <HeartRating
+                value={getAverageRating(reviewData)}
+                precision={0.5}
+                readOnly
+                size="small"
+              />
+              <Typography className={reviewNum}>{numReviews}</Typography>
+              <KeyboardArrowRightIcon style={{ fontSize: 40 }} color="primary" />
+            </Box>
           </Grid>
         </Grid>
       </CardContent>
@@ -85,7 +88,9 @@ const PropertyCard = ({ buildingData, numReviews, company }: CardProps): ReactEl
 const PropertyInfo = ({ info, title }: Props): ReactElement => {
   return (
     <Box mt={2} mb={1}>
-      <Typography variant="h6">{title}</Typography>
+      <Typography variant="h6" style={{ fontWeight: 400, fontSize: '17px', marginBottom: '10px' }}>
+        {title}
+      </Typography>
       <List dense component="ul">
         <Grid container spacing={0} direction="row">
           {info.length === 0 && <Typography variant="body1">No information available.</Typography>}
