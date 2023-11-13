@@ -63,7 +63,7 @@ export default function LabeledLinearProgress({ value }: Props): ReactElement {
     <div className={barContainer}>
       {segments}
       <Typography className={aveRating} variant="body2" color="textSecondary">
-        {`${value.toFixed(1)}`}
+        {value !== null && value !== undefined ? value.toFixed(1) : ''}
       </Typography>
     </div>
   );
