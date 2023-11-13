@@ -23,6 +23,7 @@ import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
 import { isAdmin } from './utils/adminTool';
+import SavedPage from './pages/SavedPage';
 
 const theme = createTheme({
   palette: {
@@ -118,9 +119,14 @@ const App = (): ReactElement => {
             />
             <Route
               path="/profile"
+              exact
               component={() => <ProfilePage user={user} setUser={setUser} />}
             />
             <Route path="/bookmarks" component={() => <BookmarksPage user={user} />} />
+            <Route
+              path="/profile/:profileId/saved"
+              component={() => <SavedPage user={user} setUser={setUser} />}
+            />
             <Route
               path="/apartment/:aptId"
               component={() => <ApartmentPage user={user} setUser={setUser} />}
