@@ -331,8 +331,8 @@ const saveApartmentHandler =
     try {
       if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
-      const { apartment } = req.body;
-      if (!apartment) throw new Error('Must specify apartment');
+      const { apartmentId } = req.body;
+      if (!apartmentId) throw new Error('Must specify apartment');
       const userRef = usersCollection.doc(uid);
       if (!userRef) {
         throw new Error('User data not found');
@@ -341,16 +341,15 @@ const saveApartmentHandler =
         const userDoc = await t.get(userRef);
         if (!userDoc.exists) {
           t.set(userRef, { apartments: [] });
-          return;
         }
         const userApartments = userDoc.data()?.apartments || [];
 
         if (add) {
-          if (!userApartments.includes(apartment)) {
-            userApartments.push(apartment);
+          if (!userApartments.includes(apartmentId)) {
+            userApartments.push(apartmentId);
           }
         } else {
-          const index = userApartments.indexOf(apartment);
+          const index = userApartments.indexOf(apartmentId);
           if (index !== -1) {
             userApartments.splice(index, 1);
           }
@@ -377,8 +376,8 @@ const saveLandlordHandler =
     try {
       if (!req.user) throw new Error('Not authenticated');
       const { uid } = req.user;
-      const { landlord } = req.body;
-      if (!landlord) throw new Error('Must specify landlord');
+      const { landlordId } = req.body;
+      if (!landlordId) throw new Error('Must specify landlord');
       const userRef = usersCollection.doc(uid);
       if (!userRef) {
         throw new Error('User data not found');
@@ -387,16 +386,15 @@ const saveLandlordHandler =
         const userDoc = await t.get(userRef);
         if (!userDoc.exists) {
           t.set(userRef, { landlords: [] });
-          return;
         }
         const userLandlords = userDoc.data()?.landlords || [];
 
         if (add) {
-          if (!userLandlords.includes(landlord)) {
-            userLandlords.push(landlord);
+          if (!userLandlords.includes(landlordId)) {
+            userLandlords.push(landlordId);
           }
         } else {
-          const index = userLandlords.indexOf(landlord);
+          const index = userLandlords.indexOf(landlordId);
           if (index !== -1) {
             userLandlords.splice(index, 1);
           }
