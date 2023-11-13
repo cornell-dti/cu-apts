@@ -120,7 +120,7 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
    * @param newStatus - The new status for the review.
    * @returns A promise representing the completion of the operation.
    */
-  const changeStatus = async (newStatus: string): Promise<void> => {
+  const changeStatus = async (newStatus: string) => {
     const endpoint = `/api/update-review-status/${review.id}/${newStatus}`;
     await axios.put(endpoint);
     setToggle((cur) => !cur);
