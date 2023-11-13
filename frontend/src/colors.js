@@ -9,6 +9,7 @@ export const colors = {
   gray1: '#5D5D5D',
   gray2: '#898989',
   gray3: '#F9F9F9',
+  gray4: '#C4C4C4',
   white: '#FFFFFF',
   landlordCardRed: '#F3664B',
   green1: '#68BB59',
