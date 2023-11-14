@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 import { Container, Link, Typography, makeStyles } from '@material-ui/core';
 import { colors } from '../colors';
+import { useTitle } from '../utils';
 
 const useStyles = makeStyles(() => ({
   h2: {
@@ -42,6 +43,9 @@ const useStyles = makeStyles(() => ({
 
 const Policies = (): ReactElement => {
   const { h2, h3, h4, body, link } = useStyles();
+
+  useTitle('Policies');
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h2" className={h2}>
