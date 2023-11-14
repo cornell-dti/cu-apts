@@ -18,6 +18,6 @@ admin.initializeApp({
 const db = admin.firestore();
 const auth = admin.auth();
 
-const { FieldValue } = admin.firestore;
+const { FieldValue, FieldPath } = admin.firestore;
 
-export { db, auth, FieldValue };
+export { db, auth, FieldValue, FieldPath };

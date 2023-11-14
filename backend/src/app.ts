@@ -13,7 +13,7 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
-import { db, FieldValue } from './firebase-config';
+import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 
@@ -81,6 +81,35 @@ app.get('/api/review/:status', async (req, res) => {
     return { ...review, id: doc.id } as ReviewWithId;
   });
   res.status(200).send(JSON.stringify(reviews));
+});
+
+/**
+ * Return list of reviews that user marked as helpful (like)
+ */
+app.get('/api/review/like', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('not authenticated');
+  const { uid } = req.user;
+  const likesDoc = await likesCollection.doc(uid).get();
+
+  if (likesDoc.exists) {
+    const data = likesDoc.data();
+    if (data) {
+      const reviewIds = Object.keys(data);
+      const matchingReviews: ReviewWithId[] = [];
+      const querySnapshot = await reviewCollection
+        .where(FieldPath.documentId(), 'in', reviewIds)
+        .where('status', '==', 'APPROVED')
+        .get();
+      querySnapshot.forEach((doc) => {
+        const reviewData = doc.data();
+        matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
+      });
+      res.status(200).send(JSON.stringify(matchingReviews));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
 });
 
 /**
