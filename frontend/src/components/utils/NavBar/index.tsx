@@ -190,12 +190,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+/** This function dictates whether a menu button(/menu drawer button) is red or not. It should be red when the user is on that page. */
 function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
       lab.includes('Reviews')) ||
-    (location.pathname.includes('faq') && lab.includes('FAQ'))
+    (location.pathname.includes('faq') && lab.includes('FAQ')) ||
+    (location.pathname.includes('profile') && lab.includes('Profile')) ||
+    (location.pathname.includes('savedapartments') && lab.includes('Saved Apartments'))
     ? 'secondary'
     : 'primary';
 }
@@ -279,13 +282,25 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     };
   }, [dropDownOpen]);
 
+  /** This returns the drawer menu buttons */
   const getDrawerChoices = () => {
+    const profile: NavbarButton = {
+      label: 'Profile',
+      href: `/profile/${user ? user.uid : ''}`,
+    };
+    const savedApartments: NavbarButton = {
+      label: 'Saved Apartments',
+      href: `/savedapartments/${user ? user.uid : ''}`,
+    };
+    //Sets headers data depending on whether menu drawer is open or not. If open, add profile and saved apartment buttons.
+    const displayHeadersData =
+      drawerOpen && user ? [...headersData, profile, savedApartments] : headersData;
     return (
       <ThemeProvider theme={muiTheme}>
         <Grid className={searchDrawer}>
           <Autocomplete drawerOpen={drawerOpen} />
         </Grid>
-        {headersData.map(({ label, href }, index) => {
+        {displayHeadersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
               <MenuItem key={index} className={drawerButton}>
@@ -333,12 +348,18 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     setDropDownOpen(false);
   };
 
-  /** This function returns a Sign In button or Profile (circular picture) depending on whether the user is signed in or not **/
+  /** This function returns a Sign In button or Sign Out button or Profile (circular picture) depending on whether the user is signed in or not/drawer is open or not**/
   const signInButton = () => {
     if (buttonState === 'Sign In') {
       return (
         <Button onClick={signInProfileButtonClick} className={authButton}>
           {buttonState}
+        </Button>
+      );
+    } else if (drawerOpen) {
+      return (
+        <Button onClick={() => dropDownButtonClick('signOut')} className={authButton}>
+          Sign Out
         </Button>
       );
     } else {
