@@ -3,6 +3,7 @@ import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
+import { useTitle } from '../utils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -23,6 +24,8 @@ const AdminPage = (): ReactElement => {
   const [toggle, setToggle] = useState(false);
 
   const { container } = useStyles();
+
+  useTitle('Admin');
 
   // calls the APIs and the callback function to set the reviews for each review type
   useEffect(() => {

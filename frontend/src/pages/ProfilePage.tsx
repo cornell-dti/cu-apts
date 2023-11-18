@@ -13,6 +13,7 @@ import questionIcon from '../assets/question.svg';
 import { signOut } from '../utils/firebase';
 import { useHistory } from 'react-router-dom';
 import defaultProfilePic from '../assets/cuapts-bear.png';
+import { useTitle } from '../utils';
 
 type Props = {
   user: firebase.User | null;
@@ -144,6 +145,8 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const history = useHistory();
   const theme = useTheme();
   const isXsScreen = useMediaQuery(theme.breakpoints.down('xs'));
+
+  useTitle('Profile');
 
   /** This function opens the 'Who can view my profile?' modal **/
   const openModal = () => {
