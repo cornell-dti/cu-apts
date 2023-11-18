@@ -66,6 +66,20 @@ const useStyles = makeStyles({
   },
 });
 
+/**
+ * ApartmentCard Component
+ *
+ * This component displays a card containing information about a specific apartment,
+ * including its name, address, average rating, number of reviews, and a sample review.
+ * The card is responsive and adjusts its layout based on the screen size.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {ApartmentWithId} props.buildingData - The data for the apartment.
+ * @param {number} props.numReviews - The number of reviews for the apartment.
+ * @param {string} [props.company] - The company associated with the apartment (optional).
+ * @returns {ReactElement} ApartmentCard component.
+ */
 const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
   const { id, name, photos } = buildingData;
   const saved = savedIcon;
@@ -96,6 +110,7 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
   };
 
   useEffect(() => {
+    // Fetches approved reviews for the current apartment.
     get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
       callback: setReviewList,
     });
