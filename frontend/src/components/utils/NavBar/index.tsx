@@ -198,7 +198,7 @@ function GetButtonColor(lab: string) {
       lab.includes('Reviews')) ||
     (location.pathname.includes('faq') && lab.includes('FAQ')) ||
     (location.pathname.includes('profile') && lab.includes('Profile')) ||
-    (location.pathname.includes('savedapartments') && lab.includes('Saved Apartments'))
+    (location.pathname.includes('bookmarks') && lab.includes('Bookmarks'))
     ? 'secondary'
     : 'primary';
 }
@@ -288,13 +288,13 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
       label: 'Profile',
       href: `/profile/${user ? user.uid : ''}`,
     };
-    const savedApartments: NavbarButton = {
-      label: 'Saved Apartments',
-      href: `/savedapartments/${user ? user.uid : ''}`,
+    const bookmarks: NavbarButton = {
+      label: 'Bookmarks',
+      href: `/bookmarks/${user ? user.uid : ''}`,
     };
-    //Sets headers data depending on whether menu drawer is open or not. If open, add profile and saved apartment buttons.
+    //Sets headers data depending on whether menu drawer is open or not. If open, add profile and bookmarks page buttons.
     const displayHeadersData =
-      drawerOpen && user ? [...headersData, profile, savedApartments] : headersData;
+      drawerOpen && user ? [...headersData, profile, bookmarks] : headersData;
     return (
       <ThemeProvider theme={muiTheme}>
         <Grid className={searchDrawer}>
@@ -335,11 +335,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   });
 
   /** This function navigates the user to the page depending on the dropdown button pressed */
-  const dropDownButtonClick = async (button: 'profile' | 'savedApts' | 'signOut') => {
+  const dropDownButtonClick = async (button: 'profile' | 'bookmarks' | 'signOut') => {
     if (button === 'profile') {
       history.push(`/profile/${user ? user.uid : ''}`);
-    } else if (button === 'savedApts') {
-      history.push(`/savedapartments/${user ? user.uid : ''}`);
+    } else if (button === 'bookmarks') {
+      history.push(`/bookmarks/${user ? user.uid : ''}`);
     } else {
       signOut();
       history.push('/');
@@ -398,10 +398,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                   {' '}
                   <Button
                     className={dropDownButtons}
-                    onClick={() => dropDownButtonClick('savedApts')}
+                    onClick={() => dropDownButtonClick('bookmarks')}
                   >
                     <BookmarkIcon className={dropDownIcons} />
-                    Saved Apartments
+                    Bookmarks
                   </Button>
                 </li>
                 <li>

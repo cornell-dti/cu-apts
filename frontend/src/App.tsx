@@ -6,7 +6,7 @@ import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
-import SavedApartmentsPage from './pages/SavedApartmentsPage';
+import BookmarksPage from './pages/BookmarksPage';
 import { ThemeProvider } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import NavBar, { NavbarButton } from './components/utils/NavBar';
@@ -117,13 +117,10 @@ const App = (): ReactElement => {
               component={() => <LandlordPage user={user} setUser={setUser} />}
             />
             <Route
-              path="/profile/:profileId"
+              path="/profile"
               component={() => <ProfilePage user={user} setUser={setUser} />}
             />
-            <Route
-              path="/savedapartments/:profileId"
-              component={() => <SavedApartmentsPage user={user} />}
-            />
+            <Route path="/bookmarks" component={() => <BookmarksPage user={user} />} />
             <Route
               path="/apartment/:aptId"
               component={() => <ApartmentPage user={user} setUser={setUser} />}
