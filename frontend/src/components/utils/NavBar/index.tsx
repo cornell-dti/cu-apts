@@ -431,7 +431,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     }
   };
 
-  const getAdminButton = (isMobile: boolean) => {
+  const getAdminButton = () => {
     return (
       <Button
         to="/admin"
@@ -532,7 +532,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
         {isAdmin(user) && (
           <Grid item md={1} className={menu} container justifyContent="flex-end">
-            {getAdminButton(false)}
+            {getAdminButton()}
           </Grid>
         )}
         <Grid item md={4} className={menu} container justifyContent="flex-end">
@@ -547,7 +547,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
-        {isAdmin(user) && getAdminButton(true)}
+        {isAdmin(user) && getAdminButton()}
         <IconButton
           className={menuDrawer}
           style={{ position: 'absolute', right: '10px' }}
