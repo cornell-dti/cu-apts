@@ -72,6 +72,7 @@
   "dependencies": {
     "bad-words": "^3.0.4",
     "env-cmd": "^10.1.0",
+    "react-google-charts": "^4.0.1",
     "react-infinite-scroll-component": "^6.1.0"
   }
 }
