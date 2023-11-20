@@ -86,7 +86,7 @@ app.get('/api/review/:status', async (req, res) => {
 /**
  * Return list of reviews that user marked as helpful (like)
  */
-app.get('/api/review/like', authenticate, async (req, res) => {
+app.get('/api/review/like/:uid', authenticate, async (req, res) => {
   if (!req.user) throw new Error('not authenticated');
   const { uid } = req.user;
   const likesDoc = await likesCollection.doc(uid).get();

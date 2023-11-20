@@ -1,7 +1,10 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Grid, makeStyles } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
+import axios from 'axios';
+import { createAuthHeaders } from '../utils/firebase';
+import { ReviewWithId } from '../../../common/types/db-types';
 
 type Props = {
   user: firebase.User | null;
@@ -42,8 +45,22 @@ const useStyles = makeStyles((theme) => ({
 
 const BookmarksPage = ({ user }: Props): ReactElement => {
   const { background, root, gridContainer, headerStyle } = useStyles();
+  const [likedReviews, setLikedReviews] = useState<ReviewWithId[]>([]);
 
   useTitle('Bookmarks');
+
+  useEffect(() => {
+    const fetchLikedReviews = async () => {
+      if (user) {
+        const token = await user.getIdToken(true);
+        const response = await axios.get(`/api/review/like/${user.uid}`, createAuthHeaders(token));
+        setLikedReviews(response.data);
+      }
+    };
+    fetchLikedReviews();
+  }, [user]);
+
+  console.log(likedReviews);
 
   return (
     <div className={background}>
