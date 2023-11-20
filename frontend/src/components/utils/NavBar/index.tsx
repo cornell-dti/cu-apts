@@ -286,11 +286,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const getDrawerChoices = () => {
     const profile: NavbarButton = {
       label: 'Profile',
-      href: `/profile/${user ? user.uid : ''}`,
+      href: `/profile`,
     };
     const bookmarks: NavbarButton = {
       label: 'Bookmarks',
-      href: `/bookmarks/${user ? user.uid : ''}`,
+      href: `/bookmarks`,
     };
     //Sets headers data depending on whether menu drawer is open or not. If open, add profile and bookmarks page buttons.
     const displayHeadersData =
@@ -337,9 +337,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   /** This function navigates the user to the page depending on the dropdown button pressed */
   const dropDownButtonClick = async (button: 'profile' | 'bookmarks' | 'signOut') => {
     if (button === 'profile') {
-      history.push(`/profile/${user ? user.uid : ''}`);
+      history.push(`/profile`);
     } else if (button === 'bookmarks') {
-      history.push(`/bookmarks/${user ? user.uid : ''}`);
+      history.push(`/bookmarks`);
     } else {
       signOut();
       history.push('/');
