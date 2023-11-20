@@ -86,6 +86,7 @@ app.get('/api/review/:status', async (req, res) => {
 /**
  * Return list of reviews that user marked as helpful (like)
  */
+// TODO: uid param is unused here but when remove it encounter 304 status and req.user is null
 app.get('/api/review/like/:uid', authenticate, async (req, res) => {
   if (!req.user) throw new Error('not authenticated');
   const { uid } = req.user;
