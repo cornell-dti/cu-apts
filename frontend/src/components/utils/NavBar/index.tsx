@@ -91,6 +91,14 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     fontSize: '16px',
   },
+  adminButtonMobile: {
+    backgroundColor: 'grey',
+    color: 'white',
+    marginLeft: '10px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
   description: {
     color: colors.black,
     textAlign: 'left',
@@ -235,6 +243,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     menu,
     searchDrawer,
     adminButton,
+    adminButtonMobile,
     authButton,
     profileButton,
     profileDropDownMenu,
@@ -425,11 +434,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const getAdminButton = () => {
     return (
       <Button
-        {...{
-          to: '/admin',
-          component: RouterLink,
-          className: adminButton,
-        }}
+        to="/admin"
+        component={RouterLink}
+        className={isMobile ? adminButtonMobile : adminButton}
       >
         Admin
       </Button>
@@ -540,6 +547,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
+        {isAdmin(user) && getAdminButton()}
         <IconButton
           className={menuDrawer}
           style={{ position: 'absolute', right: '10px' }}

@@ -4,6 +4,7 @@ import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
+import { Chart } from 'react-google-charts';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -67,23 +68,46 @@ const AdminPage = (): ReactElement => {
     });
   }, []);
 
+  const pieChartData = [
+    ['Location', 'Review Count'],
+    ['Collegetown', ctownReviewCount.count],
+    ['West', westReviewCount.count],
+    ['Downtown', dtownReviewCount.count],
+    ['North', northReviewCount.count],
+  ];
+
   return (
     <Container className={container}>
       <Grid container spacing={5} justifyContent="center">
-        <Grid item xs={12} sm={12}>
-          <Typography variant="h3">
-            <strong>Review Counts</strong>
-          </Typography>
-          <ul>
-            <li>Total: {approvedData.length}</li>
-            <li>Collegetown: {ctownReviewCount.count}</li>
-            <li>West: {westReviewCount.count}</li>
-            <li>Downtown: {dtownReviewCount.count}</li>
-            <li>North: {northReviewCount.count}</li>
-          </ul>
+        <Grid container>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Review Counts</strong>
+            </Typography>
+            <ul style={{ fontSize: '18px', marginLeft: '5%' }}>
+              <li>Total: {approvedData.length}</li>
+              <li>Collegetown: {ctownReviewCount.count}</li>
+              <li>West: {westReviewCount.count}</li>
+              <li>Downtown: {dtownReviewCount.count}</li>
+              <li>North: {northReviewCount.count}</li>
+            </ul>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Chart
+              chartType="PieChart"
+              data={pieChartData}
+              options={{
+                title: 'Reviews Breakdown',
+              }}
+              width={'100%'}
+              height={'400px'}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={12}>
-          <Typography variant="h3">
+
+        <Grid container>
+          <Typography variant="h3" style={{ margin: '10px' }}>
             <strong>Pending Reviews ({pendingData.length})</strong>
           </Typography>
           <Grid container item spacing={3}>
@@ -99,20 +123,22 @@ const AdminPage = (): ReactElement => {
           </Grid>
         </Grid>
 
-        <Grid item xs={12} sm={12}>
-          <Typography variant="h3">
-            <strong>Declined Reviews ({declinedData.length})</strong>
-          </Typography>
-          <Grid container item spacing={3}>
-            {sortReviews(declinedData, 'date').map((review, index) => (
-              <Grid item xs={12} key={index}>
-                <AdminReviewComponent
-                  review={review}
-                  setToggle={setToggle}
-                  declinedSection={true}
-                />
-              </Grid>
-            ))}
+        <Grid container>
+          <Grid item xs={12} sm={12}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Declined Reviews ({declinedData.length})</strong>
+            </Typography>
+            <Grid container item spacing={3}>
+              {sortReviews(declinedData, 'date').map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    declinedSection={true}
+                  />
+                </Grid>
+              ))}
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
