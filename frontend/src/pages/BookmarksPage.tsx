@@ -63,7 +63,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [resultsToShow, setResultsToShow] = useState<number>(2);
-  const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
   const [showMoreLessState, setShowMoreLessState] = useState<String>('Show More');
@@ -96,10 +95,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
 
-  useEffect(() => {
-    return subscribeLikes(setLikedReviews);
-  }, []);
-
   // Function to handle "Show More" button click
   const handleShowMoreLess = () => {
     if (showMoreLessState === 'Show More') {
@@ -125,7 +120,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         const token = await user.getIdToken(true);
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
-        setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
         setHelpfulReviewsData((reviews) =>
           reviews.map((review) =>
             review.id === reviewId
@@ -137,12 +131,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         throw new Error('Error with liking review');
       }
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: false }));
+      setToggle(!toggle);
     };
   };
 
   // Define two functions for handling likes and dislikes
   const addLike = likeHelper(false);
   const removeLike = likeHelper(true);
+
+  const isLiked = (reviewId: string) => {
+    return helpfulReviewsData.some((review) => review.id === reviewId);
+  };
 
   return (
     <div className={background}>
@@ -198,7 +197,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                   <Grid item xs={12} key={index}>
                     <ReviewComponent
                       review={review}
-                      liked={likedReviews[review.id]}
+                      liked={isLiked(review.id)}
                       likeLoading={likeStatuses[review.id]}
                       addLike={addLike}
                       removeLike={removeLike}
