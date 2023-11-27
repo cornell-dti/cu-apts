@@ -17,7 +17,12 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import { DetailedRating, ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
+import {
+  DetailedRating,
+  ReviewWithId,
+  ApartmentWithId,
+  Landlord,
+} from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
@@ -116,6 +121,7 @@ const ReviewComponent = ({
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
+  const [landlordData, setLandlordData] = useState<Landlord>();
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -167,6 +173,64 @@ const ReviewComponent = ({
     });
   };
 
+  // Fetch landlord data when the component mounts or when landlordId changes
+  useEffect(() => {
+    get<Landlord>(`/api/landlord/${review.landlordId}`, {
+      callback: setLandlordData,
+      errorHandler: landlordNotFound,
+    });
+  }, [review.landlordId]);
+
+  const landlordNotFound = () => {
+    console.error('Landlord with id ' + review.landlordId + ' not found.');
+  };
+
+  const propertyLandlordLink = () => {
+    if (apt.length > 0 && isLandlord) {
+      return (
+        <>
+          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
+          <Link
+            {...{
+              to: `/apartment/${review.aptId}`,
+              style: {
+                color: 'black',
+                textDecoration: 'underline',
+                paddingBottom: '3px',
+              },
+              component: RouterLink,
+            }}
+            onClick={handleLinkClick}
+          >
+            {apt[0].name}
+          </Link>
+        </>
+      );
+    } else if (isLandlord) {
+      return (
+        <>
+          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Landlord:</Grid>{' '}
+          <Link
+            {...{
+              to: `/landlord/${review.landlordId}`,
+              style: {
+                color: 'black',
+                textDecoration: 'underline',
+                paddingBottom: '3px',
+              },
+              component: RouterLink,
+            }}
+            onClick={handleLinkClick}
+          >
+            {landlordData ? landlordData.name : ''}
+          </Link>
+        </>
+      );
+    } else {
+      return '';
+    }
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -209,29 +273,7 @@ const ReviewComponent = ({
               {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
 
               <Grid>
-                <Typography className={apartmentIndicator}>
-                  {apt.length > 0 && isLandlord ? (
-                    <>
-                      <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
-                      <Link
-                        {...{
-                          to: `/apartment/${review.aptId}`,
-                          style: {
-                            color: 'black',
-                            textDecoration: 'underline',
-                            paddingBottom: '3px',
-                          },
-                          component: RouterLink,
-                        }}
-                        onClick={handleLinkClick}
-                      >
-                        {apt[0].name}
-                      </Link>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                </Typography>
+                <Typography className={apartmentIndicator}>{propertyLandlordLink()}</Typography>
               </Grid>
 
               <Grid item container alignContent="center">

@@ -102,7 +102,8 @@ app.get('/api/review/like/:uid', authenticate, async (req, res) => {
         .where('status', '==', 'APPROVED')
         .get();
       querySnapshot.forEach((doc) => {
-        const reviewData = doc.data();
+        const data = doc.data();
+        const reviewData = { ...data, date: data.date.toDate() };
         matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
       });
       res.status(200).send(JSON.stringify(matchingReviews));
