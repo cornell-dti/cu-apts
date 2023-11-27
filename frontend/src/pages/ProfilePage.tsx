@@ -121,10 +121,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     zIndex: 1000,
   },
-  reviewCardStyle: {
-    marginBottom: '20px',
-    marginLeft: '-20px',
-  },
+  reviewCardStyle: {},
 }));
 
 /**
