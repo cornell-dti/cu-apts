@@ -1,7 +1,10 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Grid, makeStyles } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
+import { CardData } from '../App';
+import { get } from '../utils/call';
+import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 
 type Props = {
   user: firebase.User | null;
@@ -39,17 +42,27 @@ const useStyles = makeStyles((theme) => ({
  * @param user props.user - The current user, null if not logged in.
  * @returns BookmarksPage The BookmarksPage component.
  */
-
 const BookmarksPage = ({ user }: Props): ReactElement => {
   const { background, root, gridContainer, headerStyle } = useStyles();
 
   useTitle('Bookmarks');
 
+  const [data, setData] = useState<CardData[]>([]);
+  const savedAPI = '/api/location/West/';
+
+  useEffect(() => {
+    get<CardData[]>(savedAPI, {
+      callback: setData,
+    });
+  }, [savedAPI]);
+
   return (
     <div className={background}>
       <div className={root}>
-        <h2 className={headerStyle}>Saved Properties and Landlords</h2>
-        <Grid container spacing={2} className={gridContainer}></Grid>
+        <h2 className={headerStyle}>Saved Properties and Landlords ({data.length})</h2>
+        <Grid container spacing={2} className={gridContainer}>
+          <ApartmentCards data={data} />
+        </Grid>
 
         <h2 className={headerStyle}>Reviews Marked Helpful</h2>
         <Grid container spacing={2} className={gridContainer}></Grid>
