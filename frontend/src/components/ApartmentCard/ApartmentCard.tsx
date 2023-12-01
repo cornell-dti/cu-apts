@@ -124,31 +124,34 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
         )}
         <Grid item sm={8} md={10} className={marginTxt}>
           <CardContent>
-            <Grid container>
-              <Typography
-                variant="h5"
-                className={aptNameTxt}
-                style={{ fontSize: isMobile ? '20px' : '25px' }}
-              >
-                {name}
-              </Typography>
+            <Grid container direction="row" alignItems="center">
+              <Grid item style={{ flex: 1 }}>
+                <Typography
+                  variant="h5"
+                  className={aptNameTxt}
+                  style={{ fontSize: isMobile ? '20px' : '25px' }}
+                >
+                  {name}
+                </Typography>
+              </Grid>
               {/* Add saved and unsaved icons on the right side */}
-              <Grid
-                container
-                item
-                justifyContent="flex-end"
-                alignItems="center"
-                style={{ margin: '0', position: 'absolute', right: '10%' }}
-              >
-                <IconButton onClick={handleSaveToggle} style={{ padding: 0, zIndex: 100 }}>
+              <Grid item>
+                <IconButton
+                  onClick={handleSaveToggle}
+                  style={{
+                    padding: 30,
+                    marginLeft: 'auto', // This pushes the icon to the right
+                  }}
+                >
                   <img
-                    key={key} // Add key attribute to force re-render
+                    key={key}
                     src={isSaved ? saved : unsaved}
                     alt={isSaved ? 'Saved' : 'Unsaved'}
-                    style={{ width: '50%', height: '50%', marginRight: '5px' }}
+                    style={{ width: '25.2', height: '32.4px' }}
                   />
                 </IconButton>
               </Grid>
+
               {company && (
                 <Grid container item justifyContent="space-between">
                   <Grid>
