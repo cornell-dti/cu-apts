@@ -114,7 +114,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
-  const [key, setKey] = useState(0);
   const {
     container,
     leaveReviewContainer,
@@ -204,7 +203,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
             createAuthHeaders(token)
           );
           setIsSaved(response.data.result);
-          setKey((prevKey) => prevKey + 1);
         } else {
           setIsSaved(false);
         }
@@ -284,7 +282,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
       const endpoint = newIsSaved ? '/api/add-saved-landlord' : '/api/remove-saved-landlord';
       await axios.post(endpoint, { landlordId: landlordId }, createAuthHeaders(token));
       setIsSaved((prevIsSaved) => !prevIsSaved);
-      setKey((prevKey) => prevKey + 1);
     } catch (err) {
       throw new Error(newIsSaved ? 'Error with saving landlord' : 'Error with unsaving landlord');
     }
@@ -365,13 +362,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
               <IconButton
+                disableRipple
                 onClick={handleSaveToggle}
                 style={{
                   padding: 15,
+                  backgroundColor: 'transparent',
                 }}
               >
                 <img
-                  key={key}
                   src={isSaved ? saved : unsaved}
                   alt={isSaved ? 'Saved' : 'Unsaved'}
                   style={{ width: '107px', height: '43px' }}
@@ -465,15 +463,16 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         </Grid>
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item>
+            <Grid item style={{ marginTop: '-20px' }}>
               <IconButton
+                disableRipple
                 onClick={handleSaveToggle}
                 style={{
-                  padding: 15,
+                  padding: 5,
+                  backgroundColor: 'transparent',
                 }}
               >
                 <img
-                  key={key}
                   src={isSaved ? saved : unsaved}
                   alt={isSaved ? 'Saved' : 'Unsaved'}
                   style={{ width: '107px', height: '43px' }}

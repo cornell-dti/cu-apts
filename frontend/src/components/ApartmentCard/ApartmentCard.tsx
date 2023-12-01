@@ -99,7 +99,6 @@ const ApartmentCard = ({
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
-  const [key, setKey] = useState(0);
 
   const {
     imgStyle,
@@ -123,7 +122,6 @@ const ApartmentCard = ({
             createAuthHeaders(token)
           );
           setIsSaved(response.data.result);
-          setKey((prevKey) => prevKey + 1);
         } else {
           setIsSaved(false);
         }
@@ -150,7 +148,6 @@ const ApartmentCard = ({
       const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
       await axios.post(endpoint, { apartmentId: id }, createAuthHeaders(token));
       setIsSaved((prevIsSaved) => !prevIsSaved);
-      setKey((prevKey) => prevKey + 1);
     } catch (err) {
       throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
     }
@@ -199,14 +196,15 @@ const ApartmentCard = ({
               {/* Add saved and unsaved icons on the right side */}
               <Grid item>
                 <IconButton
+                  disableRipple
                   onClick={handleSaveToggle}
                   style={{
-                    padding: 30,
+                    padding: isMobile ? 0 : 30,
                     marginLeft: 'auto', // This pushes the icon to the right
+                    backgroundColor: 'transparent',
                   }}
                 >
                   <img
-                    key={key}
                     src={isSaved ? saved : unsaved}
                     alt={isSaved ? 'Saved' : 'Unsaved'}
                     style={{ width: '25.2', height: '32.4px' }}
