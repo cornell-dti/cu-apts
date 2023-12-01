@@ -4,7 +4,12 @@ import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
 
-const ReviewPage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const ReviewPage = ({ user, setUser }: Props): ReactElement => {
   const useStyles = makeStyles({
     rentingBox: {
       marginTop: '3em',
@@ -31,7 +36,7 @@ const ReviewPage = (): ReactElement => {
           Reviews By Renting Company
         </Typography>
       </Box>
-      <ApartmentCards data={aptData} />
+      <ApartmentCards user={user} setUser={setUser} data={aptData} />
     </Container>
   );
 };

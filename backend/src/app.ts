@@ -502,6 +502,66 @@ const saveLandlordHandler =
     }
   };
 
+const checkSavedApartment = (): RequestHandler => async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { apartmentId } = req.body;
+    if (!apartmentId) throw new Error('Must specify apartment');
+    const userRef = usersCollection.doc(uid);
+    if (!userRef) {
+      throw new Error('User data not found');
+    }
+    await db.runTransaction(async (t) => {
+      const userDoc = await t.get(userRef);
+      if (!userDoc.exists) {
+        t.set(userRef, { apartments: [] });
+      }
+      const userApartments = userDoc.data()?.apartments || [];
+      if (userApartments.includes(apartmentId)) {
+        res.status(200).send(JSON.stringify({ result: true }));
+      } else {
+        res.status(200).send(JSON.stringify({ result: false }));
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+};
+
+const checkSavedLandlord = (): RequestHandler => async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { landlordId } = req.body;
+    if (!landlordId) throw new Error('Must specify landlord');
+    const userRef = usersCollection.doc(uid);
+    if (!userRef) {
+      throw new Error('User data not found');
+    }
+    await db.runTransaction(async (t) => {
+      const userDoc = await t.get(userRef);
+      if (!userDoc.exists) {
+        t.set(userRef, { landlords: [] });
+      }
+      const userLandlords = userDoc.data()?.landlords || [];
+      if (userLandlords.includes(landlordId)) {
+        res.status(200).send(JSON.stringify({ result: true }));
+      } else {
+        res.status(200).send(JSON.stringify({ result: false }));
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+};
+
+app.post('/api/check-saved-apartment', authenticate, checkSavedApartment());
+
+app.post('/api/check-saved-landlord', authenticate, checkSavedLandlord());
+
 app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
 
 app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));

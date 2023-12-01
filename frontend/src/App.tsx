@@ -107,11 +107,20 @@ const App = (): ReactElement => {
         <NavBar headersData={headersData} user={user} setUser={setUser} />
         <div className="root">
           <Switch>
-            <Route exact path="/" component={HomePage} />
+            <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
+
             <Route exact path="/faq" component={FAQPage} />
-            <Route exact path="/reviews" component={ReviewPage} />
+            <Route
+              exact
+              path="/reviews"
+              component={() => <ReviewPage user={user} setUser={setUser} />}
+            />
+
             <Route exact path="/policies" component={Policies} />
-            <Route path="/location/:location" component={LocationPage} />
+            <Route
+              path="/location/:location"
+              component={() => <LocationPage user={user} setUser={setUser} />}
+            />
             <Route
               path="/landlord/:landlordId"
               component={() => <LandlordPage user={user} setUser={setUser} />}
@@ -129,7 +138,10 @@ const App = (): ReactElement => {
               component={() => <ApartmentPage user={user} setUser={setUser} />}
             />
             <Route exact path="/notfound" component={NotFoundPage} />
-            <Route path="/search" component={SearchResultsPage} />
+            <Route
+              path="/search"
+              component={() => <SearchResultsPage user={user} setUser={setUser} />}
+            />
             {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
