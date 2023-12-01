@@ -120,7 +120,10 @@ const App = (): ReactElement => {
               path="/profile"
               component={() => <ProfilePage user={user} setUser={setUser} />}
             />
-            <Route path="/bookmarks" component={() => <BookmarksPage user={user} />} />
+            <Route
+              path="/bookmarks"
+              component={() => <BookmarksPage user={user} setUser={setUser} />}
+            />
             <Route
               path="/apartment/:aptId"
               component={() => <ApartmentPage user={user} setUser={setUser} />}
