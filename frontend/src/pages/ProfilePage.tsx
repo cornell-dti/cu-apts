@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect, useCallback } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import {
   Grid,
   Card,
@@ -19,6 +19,7 @@ import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
 import defaultProfilePic from '../assets/cuapts-bear.png';
 import { useTitle } from '../utils';
+import { sortReviews } from '../utils/sortReviews';
 
 type Props = {
   user: firebase.User | null;
@@ -177,19 +178,6 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [user?.uid, toggle]);
 
-  //sorts reviews
-  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
-    let unsorted = arr;
-    return unsorted.sort((r1, r2) => {
-      const first = r1?.[property] === undefined ? 0 : r1?.[property];
-      const second = r2?.[property] === undefined ? 0 : r2?.[property];
-      // @ts-ignore: Object possibly null or undefined
-      return first < second ? 1 : -1;
-    });
-  }, []);
-
-  type Fields = keyof typeof approvedReviews[0];
-
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -313,7 +301,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   user={user}
                   setUser={setUser}
-                  isLandlord={true}
+                  showLabel={true}
                 />
               </Grid>
             ))}
@@ -332,7 +320,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   user={user}
                   setUser={setUser}
-                  isLandlord={true}
+                  showLabel={true}
                 />
               </Grid>
             ))}

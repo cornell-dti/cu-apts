@@ -86,7 +86,8 @@ app.get('/api/review/:status', async (req, res) => {
 /**
  * Return list of reviews that user marked as helpful (like)
  */
-app.get('/api/review/like', authenticate, async (req, res) => {
+// TODO: uid param is unused here but when remove it encounter 304 status and req.user is null
+app.get('/api/review/like/:uid', authenticate, async (req, res) => {
   if (!req.user) throw new Error('not authenticated');
   const { uid } = req.user;
   const likesDoc = await likesCollection.doc(uid).get();
@@ -101,7 +102,8 @@ app.get('/api/review/like', authenticate, async (req, res) => {
         .where('status', '==', 'APPROVED')
         .get();
       querySnapshot.forEach((doc) => {
-        const reviewData = doc.data();
+        const data = doc.data();
+        const reviewData = { ...data, date: data.date.toDate() };
         matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
       });
       res.status(200).send(JSON.stringify(matchingReviews));
