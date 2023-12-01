@@ -3,7 +3,6 @@ import { Button, Grid, Link, makeStyles, Typography, Box } from '@material-ui/co
 import { colors } from '../colors';
 import { useTitle } from '../utils';
 import { CardData } from '../App';
-import { get } from '../utils/call';
 import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
 import { Link as RouterLink } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
@@ -29,10 +28,6 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'flex-start',
     justifyContent: 'center',
     marginTop: '10px',
-  },
-  root: {
-    minHeight: '80vh',
-    width: '75%',
   },
   gridContainer: {
     display: 'flex',
@@ -64,8 +59,7 @@ const useStyles = makeStyles((theme) => ({
  * @returns BookmarksPage The BookmarksPage component.
  */
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, root, headerStyle, sortByButton, headerContainer, gridContainer } =
-    useStyles();
+  const { background, headerStyle, sortByButton, headerContainer, gridContainer } = useStyles();
   const defaultShow = 6;
 
   const [toShow, setToShow] = useState<number>(defaultShow);
@@ -84,25 +78,22 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
   const [showMoreLessState, setShowMoreLessState] = useState<String>('Show More');
+  const [data, setData] = useState<CardData[]>([]);
 
   useTitle('Bookmarks');
-
-  const [data, setData] = useState<CardData[]>([]);
-  const savedAPI = '/api/location/West/';
-
-  useEffect(() => {
-    get<CardData[]>(savedAPI, {
-      callback: setData,
-    });
-  }, [savedAPI]);
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
     const fetchLikedReviews = async () => {
       if (user) {
         const token = await user.getIdToken(true);
-        const response = await axios.get(`/api/review/like/${user.uid}`, createAuthHeaders(token));
-        setHelpfulReviewsData(response.data);
+        const responseReviews = await axios.get(
+          `/api/review/like/${user.uid}`,
+          createAuthHeaders(token)
+        );
+        setHelpfulReviewsData(responseReviews.data);
+        const responseApts = await axios.get(`/api/get-saved-apartments`, createAuthHeaders(token));
+        setData(responseApts.data);
       }
     };
     fetchLikedReviews();
@@ -157,12 +148,12 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <div className={root}>
-        <Box className={headerContainer}>
+      <Grid xs={11} sm={11} md={9}>
+        <Grid className={headerContainer}>
           <Typography variant="h3" className={headerStyle}>
             Saved Properties and Landlords ({data.length})
           </Typography>
-        </Box>
+        </Grid>
 
         {data.length > 0 ? (
           <Grid container spacing={4} className={gridContainer}>
@@ -301,7 +292,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
         )}
-      </div>
+      </Grid>
     </div>
   );
 };
