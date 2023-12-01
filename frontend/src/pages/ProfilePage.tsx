@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useCallback } from 'react';
 import {
   Grid,
   Card,
@@ -10,8 +10,13 @@ import {
 } from '@material-ui/core';
 import { colors } from '../colors';
 import questionIcon from '../assets/question.svg';
+import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import { signOut } from '../utils/firebase';
+import ReviewComponent from '../components/Review/Review';
 import { useHistory } from 'react-router-dom';
+import { get } from '../utils/call';
+import axios from 'axios';
+import { createAuthHeaders, getUser } from '../utils/firebase';
 import defaultProfilePic from '../assets/cuapts-bear.png';
 import { useTitle } from '../utils';
 
@@ -27,12 +32,13 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   gridContainer: {
-    display: 'flex',
-    alignItems: 'flex-start',
     justifyContent: 'center',
     marginTop: '10px',
   },
   headerStyle: {
+    fontFamily: 'Work Sans',
+  },
+  reviewHeaderStyle: {
     fontFamily: 'Work Sans',
   },
   myProfileCard: {
@@ -115,6 +121,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     zIndex: 1000,
   },
+  reviewCardStyle: {
+    marginBottom: '15px',
+  },
 }));
 
 /**
@@ -132,6 +141,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     root,
     gridContainer,
     headerStyle,
+    reviewHeaderStyle,
     myProfileCard,
     questionButton,
     questionIconStyle,
@@ -140,13 +150,81 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     modalContainer,
     modalStyle,
     modalOverlay,
+    reviewCardStyle,
   } = useStyles();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
   const theme = useTheme();
   const isXsScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
+  const [approvedReviews, setApprovedReviews] = useState<ReviewWithId[]>([]);
+  const [pendingReviews, setPendingReviews] = useState<ReviewWithId[]>([]);
+  const [likedReviews, setLikedReviews] = useState<Likes>({});
+  const [likeStatuses, setLikeStatuses] = useState<Likes>({});
+  const [toggle, setToggle] = useState(false);
+
   useTitle('Profile');
+
+  useEffect(() => {
+    // Fetch approved reviews for the current user.
+    get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/APPROVED`, {
+      callback: setApprovedReviews,
+    });
+
+    // Fetch pending reviews for the current user.
+    get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/PENDING`, {
+      callback: setPendingReviews,
+    });
+  }, [user?.uid, toggle]);
+
+  //sorts reviews
+  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
+    let unsorted = arr;
+    return unsorted.sort((r1, r2) => {
+      const first = r1?.[property] === undefined ? 0 : r1?.[property];
+      const second = r2?.[property] === undefined ? 0 : r2?.[property];
+      // @ts-ignore: Object possibly null or undefined
+      return first < second ? 1 : -1;
+    });
+  }, []);
+
+  type Fields = keyof typeof approvedReviews[0];
+
+  const likeHelper = (dislike = false) => {
+    return async (reviewId: string) => {
+      setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
+      try {
+        if (!user) {
+          let user = await getUser(true);
+          setUser(user);
+        }
+        if (!user) {
+          throw new Error('Failed to login');
+        }
+
+        const defaultLikes = dislike ? 1 : 0;
+        const offsetLikes = dislike ? -1 : 1;
+        const token = await user.getIdToken(true);
+        const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
+        await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
+        setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
+        setApprovedReviews((reviews) =>
+          reviews.map((review) =>
+            review.id === reviewId
+              ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
+              : review
+          )
+        );
+      } catch (err) {
+        throw new Error('Error with liking review');
+      }
+      setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: false }));
+    };
+  };
+
+  const addLike = likeHelper(false);
+
+  const removeLike = likeHelper(true);
 
   /** This function opens the 'Who can view my profile?' modal **/
   const openModal = () => {
@@ -199,10 +277,13 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                     alt="User Profile"
                   ></img>
                 </div>
-                <h3 style={{ marginTop: '0', marginBottom: '4px' }}>{user?.displayName}</h3>
+                <h3 style={{ marginTop: '0', marginBottom: '4px', fontSize: '25px' }}>
+                  {user?.displayName}
+                </h3>
                 <h5
                   style={{
                     fontWeight: '400',
+                    fontSize: '15px',
                     marginTop: '0',
                     marginBottom: '24px',
                     color: colors.gray1,
@@ -217,11 +298,45 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
             </Card>
           </div>
         </Grid>
+
         <Grid item xs={11} sm={7} md={6}>
-          <h2 className={headerStyle}>My Reviews</h2>
-          <Card variant="outlined">
-            <CardContent></CardContent>
-          </Card>
+          <h2 className={reviewHeaderStyle}>Pending Reviews ({pendingReviews.length})</h2>
+          <Grid>
+            {sortReviews(pendingReviews, 'date').map((review, index) => (
+              <Grid item xs={12} key={index} className={reviewCardStyle}>
+                <ReviewComponent
+                  review={review}
+                  liked={likedReviews[review.id]}
+                  likeLoading={likeStatuses[review.id]}
+                  addLike={addLike}
+                  removeLike={removeLike}
+                  setToggle={setToggle}
+                  user={user}
+                  setUser={setUser}
+                  isLandlord={true}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <h2 className={reviewHeaderStyle}>Approved Reviews ({approvedReviews.length})</h2>
+          <Grid>
+            {sortReviews(approvedReviews, 'date').map((review, index) => (
+              <Grid item xs={12} key={index} className={reviewCardStyle}>
+                <ReviewComponent
+                  review={review}
+                  liked={likedReviews[review.id]}
+                  likeLoading={likeStatuses[review.id]}
+                  addLike={addLike}
+                  removeLike={removeLike}
+                  setToggle={setToggle}
+                  user={user}
+                  setUser={setUser}
+                  isLandlord={true}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
       </Grid>
 
