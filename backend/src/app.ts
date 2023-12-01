@@ -1,3 +1,11 @@
+/**
+ * This file contains the backend logic for handling API requests related to reviews, landlords, apartments,
+ * and user interactions. It utilizes Express.js for routing and Firebase for data storage.
+ * Ensure you have the necessary dependencies installed: express, cors, fuse.js, morgan, and @common/types/db-types.
+ * This file exports an Express app instance with defined routes for various functionalities.
+ * Make sure to set up Firebase configuration in 'firebase-config.ts'.
+ */
+
 import express, { Express, RequestHandler } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
@@ -17,40 +25,51 @@ import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 
+// Define Firebase collections
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 
+// Create an Express app instance
 const app: Express = express();
 
+// Middleware setup
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
+/**
+ * Endpoint to retrieve FAQs from the database.
+ * @route GET /api/faqs
+ */
 app.get('/api/faqs', async (_, res) => {
+  // Fetch FAQs from the 'faqs' collection
   const snapshot = await db.collection('faqs').get();
-
   const faqs: Faq[] = snapshot.docs.map((doc) => {
     const data = doc.data();
-    const faq: Faq = {
-      question: data.question,
-      answer: data.answer,
-    };
-    return faq;
+    return { question: data.question, answer: data.answer };
   });
-
   res.status(200).send(JSON.stringify(faqs));
 });
 
+/**
+ * Endpoint to submit a new review.
+ * @route POST /api/new-review
+ * @middleware authenticate - Ensures user authentication before submitting a review.
+ */
 app.post('/api/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
     const review = req.body as Review;
+
+    // Check for missing fields in the review
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
+
+    // Set review details in the database
     doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
     res.status(201).send(doc.id);
   } catch (err) {
@@ -59,23 +78,18 @@ app.post('/api/new-review', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * Endpoint to retrieve reviews based on ID type and status.
+ * @route GET /api/review/:idType/:id/:status
+ */
 app.get('/api/review/:idType/:id/:status', async (req, res) => {
   const { idType, id, status } = req.params;
-  const reviewDocs = (
-    await reviewCollection.where(`${idType}`, '==', id).where('status', '==', status).get()
-  ).docs;
-  const reviews: Review[] = reviewDocs.map((doc) => {
-    const data = doc.data();
-    const review = { ...data, date: data.date.toDate() } as ReviewInternal;
-    return { ...review, id: doc.id } as ReviewWithId;
-  });
-  res.status(200).send(JSON.stringify(reviews));
-});
-
-app.get('/api/review/:status', async (req, res) => {
-  const { status } = req.params;
-  const reviewDocs = (await reviewCollection.where('status', '==', status).get()).docs;
-  const reviews: Review[] = reviewDocs.map((doc) => {
+  // Fetch reviews based on ID type, ID, and status
+  const reviewDocs = await reviewCollection
+    .where(`${idType}`, '==', id)
+    .where('status', '==', status)
+    .get();
+  const reviews: ReviewWithId[] = reviewDocs.docs.map((doc) => {
     const data = doc.data();
     const review = { ...data, date: data.date.toDate() } as ReviewInternal;
     return { ...review, id: doc.id } as ReviewWithId;
@@ -84,9 +98,26 @@ app.get('/api/review/:status', async (req, res) => {
 });
 
 /**
- * Return list of reviews that user marked as helpful (like)
+ * Endpoint to retrieve reviews based on status.
+ * @route GET /api/review/:status
  */
-// TODO: uid param is unused here but when remove it encounter 304 status and req.user is null
+app.get('/api/review/:status', async (req, res) => {
+  const { status } = req.params;
+  // Fetch reviews based on status
+  const reviewDocs = await reviewCollection.where('status', '==', status).get();
+  const reviews: ReviewWithId[] = reviewDocs.docs.map((doc) => {
+    const data = doc.data();
+    const review = { ...data, date: data.date.toDate() } as ReviewInternal;
+    return { ...review, id: doc.id } as ReviewWithId;
+  });
+  res.status(200).send(JSON.stringify(reviews));
+});
+
+/**
+ * Endpoint to retrieve reviews marked as helpful by the user.
+ * @route GET /api/review/like/:uid
+ * @middleware authenticate - Ensures user authentication before fetching liked reviews.
+ */
 app.get('/api/review/like/:uid', authenticate, async (req, res) => {
   if (!req.user) throw new Error('not authenticated');
   const { uid } = req.user;
@@ -97,6 +128,7 @@ app.get('/api/review/like/:uid', authenticate, async (req, res) => {
     if (data) {
       const reviewIds = Object.keys(data);
       const matchingReviews: ReviewWithId[] = [];
+      // Fetch liked reviews from the database
       const querySnapshot = await reviewCollection
         .where(FieldPath.documentId(), 'in', reviewIds)
         .where('status', '==', 'APPROVED')
@@ -115,30 +147,40 @@ app.get('/api/review/like/:uid', authenticate, async (req, res) => {
 });
 
 /**
- * Takes in the location type in the URL and returns the number of reviews made forr that location
+ * Endpoint to retrieve the count of approved reviews for a specific location.
+ * @route GET /api/review/:location/count
  */
 app.get('/api/review/:location/count', async (req, res) => {
   const { location } = req.params;
-  const buildingsByLocation = (await buildingsCollection.where('area', '==', location).get()).docs;
-  // get IDs for buildings and filter reviews by this
-  const buildingIds = buildingsByLocation.map((doc) => doc.id);
-  const reviewDocs = (await reviewCollection.where('status', '==', 'APPROVED').get()).docs;
-  const reviews: Review[] = reviewDocs.map((doc) => {
+  // Fetch buildings in the specified location
+  const buildingsByLocation = await buildingsCollection.where('area', '==', location).get();
+  const buildingIds = buildingsByLocation.docs.map((doc) => doc.id);
+
+  // Fetch all approved reviews
+  const reviewDocs = await reviewCollection.where('status', '==', 'APPROVED').get();
+  const reviews: ReviewWithId[] = reviewDocs.docs.map((doc) => {
     const data = doc.data();
     const review = { ...data, date: data.date.toDate() } as ReviewInternal;
     return { ...review, id: doc.id } as ReviewWithId;
   });
-  // add the counts together after data is fetched
+
+  // Count the number of approved reviews for the specified location
   const approvedReviewCount = reviews.filter((review) =>
     buildingIds.includes(review.aptId ? review.aptId : '0')
   ).length;
+
   res.status(200).send(JSON.stringify({ count: approvedReviewCount }));
 });
 
+/**
+ * Endpoint to retrieve apartment details based on IDs.
+ * @route GET /api/apts/:ids
+ */
 app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
     const idsList = ids.split(',');
+    // Fetch apartment details based on IDs
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
         const snapshot = await buildingsCollection.doc(id).get();
@@ -154,10 +196,15 @@ app.get('/api/apts/:ids', async (req, res) => {
   }
 });
 
+/**
+ * Endpoint to retrieve details of a specific landlord.
+ * @route GET /api/landlord/:id
+ */
 app.get('/api/landlord/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const ref = landlordCollection.doc(id);
+    // Fetch details of the specified landlord
     const doc = await ref.get();
     if (!doc.exists) {
       throw new Error('Invalid id');
@@ -169,9 +216,14 @@ app.get('/api/landlord/:id', async (req, res) => {
   }
 });
 
+/**
+ * Endpoint to retrieve buildings associated with a specific landlord.
+ * @route GET /api/buildings/:landlordId
+ */
 app.get('/api/buildings/:landlordId', async (req, res) => {
   try {
     const { landlordId } = req.params;
+    // Fetch buildings associated with the specified landlord
     const buildingRefs = await buildingsCollection.where('landlordId', '==', landlordId).get();
     const buildings = buildingRefs.docs.map((doc) => doc.data() as Apartment);
     res.status(201).send(buildings);
@@ -180,6 +232,11 @@ app.get('/api/buildings/:landlordId', async (req, res) => {
   }
 });
 
+/**
+ * Helper function to fetch additional data for each building.
+ * @param buildings - Array of buildings.
+ * @returns Promise - Array of building data with additional details.
+ */
 const pageData = async (buildings: ApartmentWithId[]) =>
   Promise.all(
     buildings.map(async (buildingData) => {
@@ -188,10 +245,12 @@ const pageData = async (buildings: ApartmentWithId[]) =>
         throw new Error('Invalid landlordId');
       }
 
+      // Fetch approved reviews for the building
       const reviewList = await reviewCollection
         .where(`aptId`, '==', id)
         .where('status', '==', 'APPROVED')
         .get();
+      // Fetch details of the building's landlord
       const landlordDoc = await landlordCollection.doc(landlordId).get();
 
       const numReviews = reviewList.docs.length;
@@ -204,19 +263,28 @@ const pageData = async (buildings: ApartmentWithId[]) =>
     })
   );
 
+/**
+ * Endpoint to retrieve details of all buildings associated with a specific landlord.
+ * @route GET /api/buildings/all/:landlordId
+ */
 app.get('/api/buildings/all/:landlordId', async (req, res) => {
   const { landlordId } = req.params;
-  const buildingDocs = (await buildingsCollection.where('landlordId', '==', landlordId).get()).docs;
-  const buildings: ApartmentWithId[] = buildingDocs.map(
+  const buildingDocs = await buildingsCollection.where('landlordId', '==', landlordId).get();
+  const buildings: ApartmentWithId[] = buildingDocs.docs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
   res.status(200).send(JSON.stringify(await pageData(buildings)));
 });
 
+/**
+ * Endpoint to submit a new landlord.
+ * @route POST /api/new-landlord
+ */
 app.post('/api/new-landlord', async (req, res) => {
   try {
     const doc = landlordCollection.doc();
     const landlord: Landlord = req.body as Landlord;
+    // Set landlord details in the database
     doc.set(landlord);
     res.status(201).send(doc.id);
   } catch (err) {
@@ -225,20 +293,30 @@ app.post('/api/new-landlord', async (req, res) => {
   }
 });
 
+/**
+ * Helper function to check if an object is a landlord.
+ * @param obj - Object to be checked.
+ * @returns boolean - True if the object is a landlord, false otherwise.
+ */
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
+
+/**
+ * Endpoint to set data for the app, including landlords and apartments.
+ * @route POST /api/set-data
+ */
 app.post('/api/set-data', async (req, res) => {
   try {
-    const landlordDocs = (await landlordCollection.get()).docs;
-    const landlords: LandlordWithId[] = landlordDocs.map(
+    const landlordDocs = await landlordCollection.get();
+    const landlords: LandlordWithId[] = landlordDocs.docs.map(
       (landlord) => ({ id: landlord.id, ...landlord.data() } as LandlordWithId)
     );
-    const aptDocs = (await buildingsCollection.get()).docs;
-    const apts: ApartmentWithId[] = aptDocs.map(
+    const aptDocs = await buildingsCollection.get();
+    const apts: ApartmentWithId[] = aptDocs.docs.map(
       (apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId)
     );
+    // Set landlords and apartments in app settings
     app.set('landlords', landlords);
     app.set('apts', apts);
-
     res.status(204).send();
   } catch (err) {
     console.error(err);
@@ -246,6 +324,10 @@ app.post('/api/set-data', async (req, res) => {
   }
 });
 
+/**
+ * Endpoint to search for landlords and apartments based on a query.
+ * @route GET /api/search
+ */
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -260,6 +342,7 @@ app.get('/api/search', async (req, res) => {
     const results = fuse.search(query).slice(0, 5);
     const resultItems = results.map((result) => result.item);
 
+    // Assign labels to search results based on type (Landlord or Apartment)
     const resultsWithType: (LandlordWithLabel | ApartmentWithLabel)[] = resultItems.map((result) =>
       isLandlord(result)
         ? ({ label: 'LANDLORD', ...result } as LandlordWithLabel)

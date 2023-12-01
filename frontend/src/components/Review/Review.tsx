@@ -1,8 +1,10 @@
+// Importing necessary modules and components from Material-UI and other libraries
 import React, { useEffect, ReactElement, useState, useCallback } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PhotoCarousel from '../../components/PhotoCarousel/PhotoCarousel';
 
 import {
+  // Material-UI components
   Box,
   Card,
   CardActions,
@@ -20,6 +22,7 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
+
 import {
   DetailedRating,
   ReviewWithId,
@@ -35,6 +38,7 @@ import { getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import ReviewModal from '../../components/LeaveReview/ReviewModal';
 
+// Define the prop types for the component
 type Props = {
   readonly review: ReviewWithId;
   readonly liked: boolean;
@@ -49,6 +53,7 @@ type Props = {
   readonly showLabel: boolean;
 };
 
+// Define the styles for the component using Material-UI's makeStyles
 const useStyles = makeStyles(() => ({
   root: {
     borderRadius: '10px',
@@ -99,6 +104,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+// Define the main functional component
 const ReviewComponent = ({
   review,
   liked,
@@ -112,9 +118,16 @@ const ReviewComponent = ({
   showLabel,
   allowEdit,
 }: Props): ReactElement => {
+  // Set the duration for toast notifications
   const toastTime = 3500;
+
+  // Destructure properties from the review object
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
+
+  // Format the date using date-fns library
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
+
+  // Destructure styles from the useStyles hook
   const {
     root,
     expand,
@@ -127,6 +140,8 @@ const ReviewComponent = ({
     heartSpacing,
     apartmentIndicator,
   } = useStyles();
+
+  // State variables for handling expansion, apartment data, review modal, etc.
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
@@ -136,10 +151,12 @@ const ReviewComponent = ({
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Function to handle expand/collapse click
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
-  //Retreieving apartment data
+
+  // Retrieve apartment data when the review's aptId changes
   useEffect(() => {
     if (review.aptId !== null) {
       get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
@@ -148,6 +165,7 @@ const ReviewComponent = ({
     }
   }, [review]);
 
+  // Function to get an array of rating information from detailed ratings
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
       { feature: 'Location', rating: ratings.location },
@@ -159,6 +177,7 @@ const ReviewComponent = ({
     ];
   };
 
+  // Function to report abuse on a review
   const reportAbuseHanler = async (reviewId: string) => {
     if (user) {
       const endpoint = `/api/update-review-status/${reviewId}/PENDING`;
@@ -170,6 +189,7 @@ const ReviewComponent = ({
     }
   };
 
+  // Function to handle like/unlike of a review
   const likeHandler = async (id: string) => {
     if (user) {
       (liked ? removeLike : addLike)(id);
@@ -179,6 +199,7 @@ const ReviewComponent = ({
     }
   };
 
+  // Function to handle scrolling to the top of the page
   const handleLinkClick = () => {
     window.scrollTo({
       top: 0,
@@ -186,6 +207,7 @@ const ReviewComponent = ({
     });
   };
 
+  // Function to show a toast notification
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);
     setTimeout(() => {
@@ -193,10 +215,12 @@ const ReviewComponent = ({
     }, toastTime);
   };
 
+  // Function to show a sign-in error toast
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
   };
 
+  // Function to open the review modal
   const openReviewModal = async (initialValues: ReviewWithId) => {
     let user = await getUser(true);
     setUser(user);
@@ -207,10 +231,12 @@ const ReviewComponent = ({
     setReviewOpen(true);
   };
 
+  // Function to show a confirmation toast
   const showConfirmationToast = () => {
     showToast(setShowConfirmation);
   };
 
+  // Conditional rendering of modals based on landlordData and apt
   const Modals = landlordData && apt && (
     <>
       <ReviewModal
@@ -232,8 +258,9 @@ const ReviewComponent = ({
     </>
   );
 
+  // Function to handle editing of a review
   const handleEdit = (id: string) => {
-    //review popup modal
+    // Review popup modal
     let rev = {
       id: id,
       landlordId: review.landlordId,
@@ -248,6 +275,7 @@ const ReviewComponent = ({
     openReviewModal(rev);
   };
 
+  // Callback for when a landlord is not found
   const landlordNotFound = useCallback(() => {
     console.error('Landlord with id ' + review.landlordId + ' not found.');
   }, [review.landlordId]);
@@ -260,6 +288,7 @@ const ReviewComponent = ({
     });
   }, [review.landlordId, landlordNotFound]);
 
+  // Function to render the label for property or landlord
   const propertyLandlordLabel = () => {
     return (
       showLabel && (
@@ -286,6 +315,7 @@ const ReviewComponent = ({
     );
   };
 
+  // Render the main component
   return (
     <>
       <Card className={root} variant="outlined">
