@@ -99,9 +99,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
       if (user) {
         const token = await user.getIdToken(true);
         setToken(token);
-        const response = await axios.get(`/api/review/like/${user.uid}`, createAuthHeaders(token));
-        setHelpfulReviewsData(response.data);
 
+        get<ReviewWithId[]>(
+          `/api/review/like/${user.uid}`,
+          {
+            callback: setHelpfulReviewsData,
+          },
+          createAuthHeaders(token)
+        );
         get<CardData[]>(
           savedAPI,
           {
@@ -163,7 +168,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <div className={root}>
+      <Grid xs={11} sm={11} md={9}>
         <Box className={headerContainer}>
           <Typography variant="h3" className={headerStyle}>
             Saved Properties and Landlords ({savedAptsData.length})
@@ -195,7 +200,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                 );
               })}
             <Grid item xs={12} container justifyContent="center">
-              {savedAptsData.length >= toShow &&
+              {savedAptsData.length > defaultShow &&
                 (savedAptsData.length > toShow ? (
                   <Button
                     variant="outlined"
@@ -307,7 +312,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
         )}
-      </div>
+      </Grid>
     </div>
   );
 };
