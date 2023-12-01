@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { ReviewWithId } from '../../../common/types/db-types';
 type Fields = keyof ReviewWithId;
 

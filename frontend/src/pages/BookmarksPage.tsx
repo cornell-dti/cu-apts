@@ -1,10 +1,10 @@
-import React, { ReactElement, useEffect, useState, useCallback } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Grid, makeStyles, Typography, Box, Button } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
-import { createAuthHeaders, getUser, subscribeLikes } from '../utils/firebase';
+import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
 import DropDown from '../components/utils/DropDown';
 import { sortReviews } from '../utils/sortReviews';

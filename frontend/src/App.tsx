@@ -23,7 +23,6 @@ import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
 import { isAdmin } from './utils/adminTool';
-import { getUser } from './utils/firebase';
 
 const theme = createTheme({
   palette: {

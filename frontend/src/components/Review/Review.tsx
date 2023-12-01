@@ -1,4 +1,4 @@
-import React, { useEffect, ReactElement, useState } from 'react';
+import React, { useEffect, ReactElement, useState, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -173,17 +173,17 @@ const ReviewComponent = ({
     });
   };
 
+  const landlordNotFound = useCallback(() => {
+    console.error('Landlord with id ' + review.landlordId + ' not found.');
+  }, [review.landlordId]);
+
   // Fetch landlord data when the component mounts or when landlordId changes
   useEffect(() => {
     get<Landlord>(`/api/landlord/${review.landlordId}`, {
       callback: setLandlordData,
       errorHandler: landlordNotFound,
     });
-  }, [review.landlordId]);
-
-  const landlordNotFound = () => {
-    console.error('Landlord with id ' + review.landlordId + ' not found.');
-  };
+  }, [review.landlordId, landlordNotFound]);
 
   // Returns the label "Property:" or "Landlord:" with link depending on type of review and if isLandlord (is a landlord page)
   const propertyLandlordLabel = () => {

@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';

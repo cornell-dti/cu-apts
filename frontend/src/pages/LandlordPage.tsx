@@ -1,5 +1,5 @@
 import { Box, Button, Container, Grid, Hidden, makeStyles, Typography } from '@material-ui/core';
-import React, { ReactElement, useState, useEffect, useCallback } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
