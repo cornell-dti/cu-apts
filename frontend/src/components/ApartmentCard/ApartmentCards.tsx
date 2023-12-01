@@ -7,6 +7,8 @@ import { loadingLength } from '../../constants/HomeConsts';
 
 type Props = {
   data: CardData[];
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles({
@@ -31,7 +33,7 @@ const useStyles = makeStyles({
   },
 });
 
-const ApartmentCards = ({ data }: Props): ReactElement => {
+const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
 
   const [resultsToShow, setResultsToShow] = useState<number>(loadingLength);
@@ -60,6 +62,8 @@ const ApartmentCards = ({ data }: Props): ReactElement => {
                     numReviews={numReviews}
                     buildingData={buildingData}
                     company={company}
+                    user={user}
+                    setUser={setUser}
                   />
                 </Link>
               </Grid>

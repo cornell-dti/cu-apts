@@ -13,6 +13,8 @@ const useStyles = makeStyles({
 
 type Props = {
   API: string;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 type returnData = {
@@ -20,7 +22,7 @@ type returnData = {
   isEnded: boolean;
 };
 
-const ScrollingCards = ({ API }: Props): ReactElement => {
+const ScrollingCards = ({ API, user, setUser }: Props): ReactElement => {
   const [dataSize, setDataSize] = useState(loadingLength);
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const { loadingMsg } = useStyles();
@@ -39,7 +41,7 @@ const ScrollingCards = ({ API }: Props): ReactElement => {
 
   return (
     <>
-      <ApartmentCards data={data.buildingData} />
+      <ApartmentCards data={data.buildingData} user={user} setUser={setUser} />
       <Typography className={loadingMsg}>
         {!data.isEnded ? 'Loading more apartments...' : "There's no more apartments!"}
       </Typography>

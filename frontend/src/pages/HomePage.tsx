@@ -35,7 +35,12 @@ type returnData = {
   isEnded: boolean;
 };
 
-const HomePage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const HomePage = ({ user, setUser }: Props): ReactElement => {
   const classes = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -105,7 +110,7 @@ const HomePage = (): ReactElement => {
             </Typography>
             <LocationCards />
           </Box>
-          {!isMobile && <ApartmentCards data={data.buildingData} />}
+          {!isMobile && <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />}
         </Container>
       </Box>
     </>

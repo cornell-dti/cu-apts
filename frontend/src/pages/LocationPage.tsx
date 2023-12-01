@@ -14,7 +14,12 @@ interface Images {
   [location: string]: string;
 }
 
-const LocationPage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const LocationPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [data, setData] = useState<CardData[]>([]);
   const useStyles = makeStyles({
@@ -90,7 +95,7 @@ const LocationPage = (): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
-          <ApartmentCards data={data} />
+          <ApartmentCards user={user} setUser={setUser} data={data} />
         </Container>
       </Box>
     </>

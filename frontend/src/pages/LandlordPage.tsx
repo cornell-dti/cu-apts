@@ -1,4 +1,13 @@
-import { Box, Button, Container, Grid, Hidden, makeStyles, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  Hidden,
+  makeStyles,
+  Typography,
+  IconButton,
+} from '@material-ui/core';
 import React, { ReactElement, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
@@ -22,6 +31,8 @@ import { getAverageRating } from '../utils/average';
 import HeartRating from '../components/utils/HeartRating';
 import { colors } from '../colors';
 import { sortReviews } from '../utils/sortReviews';
+import savedIcon from '../assets/filled-large-saved-icon.png';
+import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
 
 export type RatingInfo = {
   feature: string;
@@ -100,6 +111,10 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [toggle, setToggle] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
+  const [isSaved, setIsSaved] = useState(false);
+  const [key, setKey] = useState(0);
   const {
     container,
     leaveReviewContainer,
@@ -233,6 +248,26 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const handleSaveToggle = async () => {
+    const newIsSaved = !isSaved;
+    try {
+      if (!user) {
+        let user = await getUser(true);
+        setUser(user);
+      }
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken(true);
+      const endpoint = newIsSaved ? '/api/add-saved-landlord' : '/api/remove-saved-landlord';
+      await axios.post(endpoint, { landlordId: landlordId }, createAuthHeaders(token));
+      setIsSaved((prevIsSaved) => !prevIsSaved);
+      setKey((prevKey) => prevKey + 1);
+    } catch (err) {
+      throw new Error(newIsSaved ? 'Error with saving landlord' : 'Error with unsaving landlord');
+    }
+  };
+
   const openReviewModal = async () => {
     let user = await getUser(true);
     setUser(user);
@@ -307,6 +342,19 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
+              <IconButton
+                onClick={handleSaveToggle}
+                style={{
+                  padding: 15,
+                }}
+              >
+                <img
+                  key={key}
+                  src={isSaved ? saved : unsaved}
+                  alt={isSaved ? 'Saved' : 'Unsaved'}
+                  style={{ width: '107px', height: '43px' }}
+                />
+              </IconButton>
               <Button
                 color="primary"
                 className={reviewButton}
@@ -396,6 +444,19 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
+              <IconButton
+                onClick={handleSaveToggle}
+                style={{
+                  padding: 15,
+                }}
+              >
+                <img
+                  key={key}
+                  src={isSaved ? saved : unsaved}
+                  alt={isSaved ? 'Saved' : 'Unsaved'}
+                  style={{ width: '107px', height: '43px' }}
+                />
+              </IconButton>
               <Button
                 style={{ borderRadius: 20, fontSize: '14px' }}
                 color="primary"
