@@ -412,8 +412,6 @@ app.put('/api/delete-review/:reviewDocId', async (req, res) => {
   }
 });
 
-app.put(' :reviewDocId/:newStatus', async (req, res) => {
-
 /**
  * Handles saving or removing saved apartments for a user in the database.
  *
@@ -513,7 +511,6 @@ app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
 app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
 
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
-  
   const { reviewDocId, newStatus } = req.params;
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
