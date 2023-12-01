@@ -504,6 +504,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       user={user}
                       setUser={setUser}
                       isLandlord={true}
+                      allowEdit={false}
                     />
                   </Grid>
                 ))}

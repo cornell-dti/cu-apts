@@ -1,4 +1,6 @@
 import React, { useEffect, ReactElement, useState } from 'react';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+
 import {
   Box,
   Card,
@@ -25,6 +27,7 @@ import ReviewHeader from './ReviewHeader';
 import { Link as RouterLink } from 'react-router-dom';
 import { getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
+import ReviewModal from '../../components/LeaveReview/ReviewModal';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -36,6 +39,7 @@ type Props = {
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly isLandlord: boolean;
+  readonly allowEdit: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -98,7 +102,9 @@ const ReviewComponent = ({
   user,
   setUser,
   isLandlord,
+  allowEdit,
 }: Props): ReactElement => {
+  const toastTime = 3500;
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const {
@@ -116,6 +122,8 @@ const ReviewComponent = ({
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [showSignInError, setShowSignInError] = useState(false);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -167,6 +175,32 @@ const ReviewComponent = ({
     });
   };
 
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
+    setTimeout(() => {
+      setState(false);
+    }, toastTime);
+  };
+
+  const showSignInErrorToast = () => {
+    showToast(setShowSignInError);
+  };
+
+  const openReviewModal = async () => {
+    let user = await getUser(true);
+    setUser(user);
+    if (!user) {
+      showSignInErrorToast();
+      return;
+    }
+    setReviewOpen(true);
+  };
+
+  const handleEdit = (id: string) => {
+    //review popup modal
+    openReviewModal();
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -195,6 +229,13 @@ const ReviewComponent = ({
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
+                  {allowEdit && (
+                    <Grid item>
+                      <IconButton aria-label="edit" onClick={() => handleEdit(review.id)}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Grid>
+                  )}
                 </Grid>
 
                 <Grid item>
