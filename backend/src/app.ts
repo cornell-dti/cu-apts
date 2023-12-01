@@ -506,7 +506,7 @@ app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
 
 app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
 
-app.get('/api/get-saved-apartments', authenticate, async (req, res) => {
+app.get('/api/saved-apartments', authenticate, async (req, res) => {
   if (!req.user) throw new Error('Not authenticated');
   const { uid } = req.user;
   const userRef = usersCollection.doc(uid);

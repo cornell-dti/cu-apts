@@ -70,8 +70,11 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   const [toShow, setToShow] = useState<number>(defaultShow);
 
+  // used for debugging, may be useful in the future
+  const [token, setToken] = useState<string>('');
+
   const handleViewAll = () => {
-    setToShow(toShow + (data.length - defaultShow));
+    setToShow(toShow + (savedAptsData.length - defaultShow));
   };
 
   const handleCollapse = () => {
@@ -87,26 +90,29 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   useTitle('Bookmarks');
 
-  const [data, setData] = useState<CardData[]>([]);
-  const savedAPI = '/api/location/West/';
-
-  useEffect(() => {
-    get<CardData[]>(savedAPI, {
-      callback: setData,
-    });
-  }, [savedAPI]);
+  const [savedAptsData, setsavedAptsData] = useState<CardData[]>([]);
+  const savedAPI = '/api/saved-apartments';
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
     const fetchLikedReviews = async () => {
       if (user) {
         const token = await user.getIdToken(true);
+        setToken(token);
         const response = await axios.get(`/api/review/like/${user.uid}`, createAuthHeaders(token));
         setHelpfulReviewsData(response.data);
+
+        get<CardData[]>(
+          savedAPI,
+          {
+            callback: setsavedAptsData,
+          },
+          createAuthHeaders(token)
+        );
       }
     };
     fetchLikedReviews();
-  }, [user, toggle]);
+  }, [user, toggle, savedAPI]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
@@ -160,14 +166,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
       <div className={root}>
         <Box className={headerContainer}>
           <Typography variant="h3" className={headerStyle}>
-            Saved Properties and Landlords ({data.length})
+            Saved Properties and Landlords ({savedAptsData.length})
           </Typography>
         </Box>
 
-        {data.length > 0 ? (
+        {savedAptsData.length > 0 ? (
           <Grid container spacing={4} className={gridContainer}>
-            {data &&
-              data.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
+            {savedAptsData &&
+              savedAptsData.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
                 const { id } = buildingData;
                 return (
                   <Grid item xs={12} md={4} key={index}>
@@ -189,8 +195,8 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                 );
               })}
             <Grid item xs={12} container justifyContent="center">
-              {data.length > 0 &&
-                (data.length > toShow ? (
+              {savedAptsData.length >= toShow &&
+                (savedAptsData.length > toShow ? (
                   <Button
                     variant="outlined"
                     color="secondary"

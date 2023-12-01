@@ -6,13 +6,13 @@ export type GetOptions<T> = {
   body?: any;
 };
 
-const get = <T>(route: string, options: GetOptions<T> = {}) => {
+const get = <T>(route: string, options: GetOptions<T> = {}, inputConfig?: AxiosRequestConfig) => {
   const { callback, errorHandler, body } = options;
   const config: AxiosRequestConfig = body && {
     data: body,
   };
   axios
-    .get<T>(route, config)
+    .get<T>(route, { ...config, ...inputConfig })
     .then((response) => {
       callback && callback(response.data);
     })
