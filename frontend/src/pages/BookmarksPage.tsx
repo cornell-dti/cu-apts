@@ -1,10 +1,13 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Grid, makeStyles } from '@material-ui/core';
+import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
 import { CardData } from '../App';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
+import { Link as RouterLink } from 'react-router-dom';
+import ApartmentCard from '../components/ApartmentCard/ApartmentCard';
 
 type Props = {
   user: firebase.User | null;
@@ -27,11 +30,12 @@ const useStyles = makeStyles((theme) => ({
   gridContainer: {
     display: 'flex',
     alignItems: 'flex-start',
-    justifyContent: 'center',
     marginTop: '10px',
   },
   headerStyle: {
     fontFamily: 'Work Sans',
+    fontWeight: 800,
+    marginTop: '1.6em',
   },
 }));
 
@@ -59,12 +63,37 @@ const BookmarksPage = ({ user }: Props): ReactElement => {
   return (
     <div className={background}>
       <div className={root}>
-        <h2 className={headerStyle}>Saved Properties and Landlords ({data.length})</h2>
-        <Grid container spacing={2} className={gridContainer}>
-          <ApartmentCards data={data} />
+        <Typography variant="h3" className={headerStyle}>
+          Saved Properties and Landlords ({data.length})
+        </Typography>
+        <Grid container spacing={4} className={gridContainer}>
+          {data &&
+            data.map(({ buildingData, numReviews, company }, index) => {
+              const { id } = buildingData;
+              return (
+                <Grid item xs={12} md={4} key={index}>
+                  <Link
+                    {...{
+                      to: `/apartment/${id}`,
+                      style: { textDecoration: 'none' },
+                      component: RouterLink,
+                    }}
+                  >
+                    <BookmarkAptCard
+                      key={index}
+                      numReviews={numReviews}
+                      buildingData={buildingData}
+                      company={company}
+                    />
+                  </Link>
+                </Grid>
+              );
+            })}
         </Grid>
 
-        <h2 className={headerStyle}>Reviews Marked Helpful</h2>
+        <Typography variant="h3" className={headerStyle}>
+          Reviews Marked Helpful
+        </Typography>
         <Grid container spacing={2} className={gridContainer}></Grid>
       </div>
     </div>
