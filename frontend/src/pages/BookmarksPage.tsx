@@ -1,7 +1,13 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Grid, makeStyles, Typography, Box, Button } from '@material-ui/core';
+import { Button, Grid, Link, makeStyles, Typography, Box } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
+import { CardData } from '../App';
+import { get } from '../utils/call';
+import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
+import { Link as RouterLink } from 'react-router-dom';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
@@ -24,18 +30,14 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     marginTop: '10px',
   },
-  root: {
-    minHeight: '80vh',
-    width: '75%',
-  },
   gridContainer: {
     display: 'flex',
     alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginTop: '10px',
+    marginBottom: '3em',
   },
   headerStyle: {
     fontFamily: 'Work Sans',
+    fontWeight: 800,
   },
   sortByButton: {
     background: '#E8E8E8',
@@ -44,9 +46,9 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: '5px',
     paddingLeft: '5px',
   },
-  reviewsHeaderContainer: {
-    marginTop: '16px',
-    marginBottom: '24px',
+  headerContainer: {
+    marginTop: '2em',
+    marginBottom: '2em',
   },
 }));
 
@@ -57,9 +59,20 @@ const useStyles = makeStyles((theme) => ({
  * @param user props.user - The current user, null if not logged in.
  * @returns BookmarksPage The BookmarksPage component.
  */
-
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, root, headerStyle, sortByButton, reviewsHeaderContainer } = useStyles();
+  const { background, headerStyle, sortByButton, headerContainer, gridContainer } = useStyles();
+  const defaultShow = 6;
+
+  const [toShow, setToShow] = useState<number>(defaultShow);
+
+  const handleViewAll = () => {
+    setToShow(toShow + (savedAptsData.length - defaultShow));
+  };
+
+  const handleCollapse = () => {
+    setToShow(defaultShow);
+  };
+
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [resultsToShow, setResultsToShow] = useState<number>(2);
@@ -69,17 +82,32 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   useTitle('Bookmarks');
 
+  const [savedAptsData, setsavedAptsData] = useState<CardData[]>([]);
+  const savedAPI = '/api/saved-apartments';
+
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
     const fetchLikedReviews = async () => {
       if (user) {
         const token = await user.getIdToken(true);
-        const response = await axios.get(`/api/review/like/${user.uid}`, createAuthHeaders(token));
-        setHelpfulReviewsData(response.data);
+        get<ReviewWithId[]>(
+          `/api/review/like/${user.uid}`,
+          {
+            callback: setHelpfulReviewsData,
+          },
+          createAuthHeaders(token)
+        );
+        get<CardData[]>(
+          savedAPI,
+          {
+            callback: setsavedAptsData,
+          },
+          createAuthHeaders(token)
+        );
       }
     };
     fetchLikedReviews();
-  }, [user, toggle]);
+  }, [user, toggle, savedAPI]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
@@ -130,47 +158,105 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <div className={root}>
-        <h2 className={headerStyle}>Saved Properties and Landlords</h2>
+      <Grid xs={11} sm={11} md={9}>
+        <Box className={headerContainer}>
+          <Typography variant="h3" className={headerStyle}>
+            Saved Properties and Landlords ({savedAptsData.length})
+          </Typography>
+        </Box>
 
-        <Grid item className={reviewsHeaderContainer} xs={12}>
-          <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item>
-              <h2 className={headerStyle}>Reviews Marked Helpful ({helpfulReviewsData.length})</h2>
+        {savedAptsData.length > 0 ? (
+          <Grid container spacing={4} className={gridContainer}>
+            {savedAptsData &&
+              savedAptsData.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
+                const { id } = buildingData;
+                return (
+                  <Grid item xs={12} md={4} key={index}>
+                    <Link
+                      {...{
+                        to: `/apartment/${id}`,
+                        style: { textDecoration: 'none' },
+                        component: RouterLink,
+                      }}
+                    >
+                      <BookmarkAptCard
+                        key={index}
+                        numReviews={numReviews}
+                        buildingData={buildingData}
+                        company={company}
+                      />
+                    </Link>
+                  </Grid>
+                );
+              })}
+            <Grid item xs={12} container justifyContent="center">
+              {savedAptsData.length > defaultShow &&
+                (savedAptsData.length > toShow ? (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleViewAll}
+                    endIcon={<KeyboardArrowDownIcon />}
+                  >
+                    View All
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleCollapse}
+                    endIcon={<KeyboardArrowUpIcon />}
+                  >
+                    Collapse
+                  </Button>
+                ))}
             </Grid>
+          </Grid>
+        ) : (
+          <Typography paragraph>You have not saved any apartments.</Typography>
+        )}
 
-            <Grid item>
-              <Grid container spacing={1} direction="row" alignItems="center">
-                <Grid item>
-                  <Typography>Sort by:</Typography>
-                </Grid>
-                <Grid item className={sortByButton}>
-                  <DropDown
-                    menuItems={[
-                      {
-                        item: 'Recent',
-                        callback: () => {
-                          setSortBy('date');
-                        },
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          className={headerContainer}
+        >
+          <Box>
+            <Typography variant="h3" className={headerStyle}>
+              Reviews Marked Helpful ({helpfulReviewsData.length})
+            </Typography>
+          </Box>
+
+          <Box>
+            <Grid container spacing={1} direction="row" alignItems="center">
+              <Grid item>
+                <Typography>Sort by:</Typography>
+              </Grid>
+              <Grid item className={sortByButton}>
+                <DropDown
+                  menuItems={[
+                    {
+                      item: 'Recent',
+                      callback: () => {
+                        setSortBy('date');
                       },
-                      {
-                        item: 'Helpful',
-                        callback: () => {
-                          setSortBy('likes');
-                        },
+                    },
+                    {
+                      item: 'Helpful',
+                      callback: () => {
+                        setSortBy('likes');
                       },
-                    ]}
-                  />
-                </Grid>
+                    },
+                  ]}
+                />
               </Grid>
             </Grid>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {helpfulReviewsData.length === 0 && (
-          <Grid item style={{ marginTop: '4px' }}>
-            <Typography>You have not marked any reviews helpful.</Typography>
-          </Grid>
+          <Typography paragraph>You have not marked any reviews helpful.</Typography>
         )}
 
         {helpfulReviewsData.length > 0 && (
@@ -216,7 +302,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             )}
           </Grid>
         )}
-      </div>
+      </Grid>
     </div>
   );
 };
