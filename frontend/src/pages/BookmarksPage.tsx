@@ -102,25 +102,26 @@ const BookmarksPage = ({ user }: Props): ReactElement => {
               );
             })}
           <Grid item xs={12} container justifyContent="center">
-            {data && data.length > toShow ? (
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleViewAll}
-                endIcon={<KeyboardArrowDownIcon />}
-              >
-                View All
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleCollapse}
-                endIcon={<KeyboardArrowUpIcon />}
-              >
-                Collapse
-              </Button>
-            )}
+            {data.length > 0 &&
+              (data.length > toShow ? (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleViewAll}
+                  endIcon={<KeyboardArrowDownIcon />}
+                >
+                  View All
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCollapse}
+                  endIcon={<KeyboardArrowUpIcon />}
+                >
+                  Collapse
+                </Button>
+              ))}
           </Grid>
         </Grid>
 
