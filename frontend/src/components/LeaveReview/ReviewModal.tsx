@@ -11,8 +11,8 @@ import {
   Typography,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
-import { DetailedRating, Review } from '../../../../common/types/db-types';
+import React, { Dispatch, SetStateAction, useReducer, useState, useEffect } from 'react';
+import { DetailedRating, Review, ReviewWithId } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
@@ -34,6 +34,7 @@ interface Props {
   aptId: string;
   aptName: string;
   user: firebase.User | null;
+  initialValues?: ReviewWithId;
 }
 
 interface FormData {
@@ -86,6 +87,23 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
+const convertReviewToFormData = (review: ReviewWithId): FormData => {
+  return {
+    overallRating: review.overallRating,
+    address: '',
+    ratings: {
+      location: review.detailedRatings.location,
+      safety: review.detailedRatings.safety,
+      value: review.detailedRatings.value,
+      maintenance: review.detailedRatings.maintenance,
+      communication: review.detailedRatings.communication,
+      conditions: review.detailedRatings.conditions,
+    },
+    localPhotos: [],
+    body: review.reviewText,
+  };
+};
+
 const ReviewModal = ({
   open,
   onClose,
@@ -96,12 +114,19 @@ const ReviewModal = ({
   aptId,
   aptName,
   user,
+  initialValues,
 }: Props) => {
-  const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [review, dispatch] = useReducer(
+    reducer,
+    initialValues ? convertReviewToFormData(initialValues) : defaultReview
+  );
+
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
+
+  useEffect(() => {}, [initialValues]);
 
   const updateOverall = () => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {

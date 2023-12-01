@@ -1,5 +1,6 @@
 import React, { useEffect, ReactElement, useState, useCallback } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import PhotoCarousel from '../../components/PhotoCarousel/PhotoCarousel';
 
 import {
   Box,
@@ -132,6 +133,8 @@ const ReviewComponent = ({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [landlordData, setLandlordData] = useState<Landlord>();
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -194,7 +197,7 @@ const ReviewComponent = ({
     showToast(setShowSignInError);
   };
 
-  const openReviewModal = async () => {
+  const openReviewModal = async (initialValues: ReviewWithId) => {
     let user = await getUser(true);
     setUser(user);
     if (!user) {
@@ -204,9 +207,45 @@ const ReviewComponent = ({
     setReviewOpen(true);
   };
 
+  const showConfirmationToast = () => {
+    showToast(setShowConfirmation);
+  };
+
+  const Modals = landlordData && apt && (
+    <>
+      <ReviewModal
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        setOpen={setReviewOpen}
+        landlordId={review.landlordId}
+        onSuccess={showConfirmationToast}
+        toastTime={toastTime}
+        aptId={review.aptId!}
+        aptName={apt.length > 0 ? apt[0].name : ''}
+        user={user}
+      />
+      <PhotoCarousel
+        photos={landlordData.photos}
+        open={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+      />
+    </>
+  );
+
   const handleEdit = (id: string) => {
     //review popup modal
-    openReviewModal();
+    let rev = {
+      id: id,
+      landlordId: review.landlordId,
+      aptId: review.aptId,
+      reviewText: review.reviewText,
+      detailedRatings: review.detailedRatings,
+      overallRating: review.overallRating,
+      photos: review.photos,
+      date: review.date,
+    };
+
+    openReviewModal(rev);
   };
 
   const landlordNotFound = useCallback(() => {
@@ -248,108 +287,111 @@ const ReviewComponent = ({
   };
 
   return (
-    <Card className={root} variant="outlined">
-      <Box minHeight="200px">
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid item container justifyContent="space-between">
-              <Grid item container justifyContent="space-between" className={bottomborder}>
-                <Grid container item spacing={1}>
-                  <Grid item className={heartSpacing}>
-                    <HeartRating value={overallRating} readOnly />
-                  </Grid>
-                  <Grid item>
-                    <IconButton
-                      className={clsx(expand, {
-                        [expandOpen]: expanded,
-                      })}
-                      onClick={handleExpandClick}
-                      aria-expanded={expanded}
-                      aria-label="show more"
-                      size="small"
-                    >
-                      <ExpandMoreIcon />
-                    </IconButton>
-                  </Grid>
-
-                  <Grid item style={{ marginLeft: 'auto' }}>
-                    <Typography className={dateText}>{formattedDate}</Typography>
-                  </Grid>
-                  {allowEdit && (
+    <>
+      <Card className={root} variant="outlined">
+        <Box minHeight="200px">
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item container justifyContent="space-between">
+                <Grid item container justifyContent="space-between" className={bottomborder}>
+                  <Grid container item spacing={1}>
+                    <Grid item className={heartSpacing}>
+                      <HeartRating value={overallRating} readOnly />
+                    </Grid>
                     <Grid item>
-                      <IconButton aria-label="edit" onClick={() => handleEdit(review.id)}>
-                        <MoreVertIcon />
+                      <IconButton
+                        className={clsx(expand, {
+                          [expandOpen]: expanded,
+                        })}
+                        onClick={handleExpandClick}
+                        aria-expanded={expanded}
+                        aria-label="show more"
+                        size="small"
+                      >
+                        <ExpandMoreIcon />
                       </IconButton>
                     </Grid>
-                  )}
-                </Grid>
 
-                <Grid item>
-                  <Collapse in={expanded} timeout="auto" unmountOnExit>
-                    <CardContent>
-                      <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
-                    </CardContent>
-                  </Collapse>
-                </Grid>
-              </Grid>
+                    <Grid item style={{ marginLeft: 'auto' }}>
+                      <Typography className={dateText}>{formattedDate}</Typography>
+                    </Grid>
+                    {allowEdit && (
+                      <Grid item style={{ marginTop: '-10px' }}>
+                        <IconButton aria-label="edit" onClick={() => handleEdit(review.id)}>
+                          <MoreVertIcon />
+                        </IconButton>
+                      </Grid>
+                    )}
+                  </Grid>
 
-              <Grid>
-                <Typography className={apartmentIndicator}>{propertyLandlordLabel()}</Typography>
-              </Grid>
-
-              <Grid item container alignContent="center">
-                <Typography>
-                  {expandedText ? reviewText : reviewText.substring(0, 500)}
-                  {!expandedText && reviewText.length > 500 && '...'}
-                  {reviewText.length > 500 ? (
-                    <Button className={button} onClick={() => setExpandedText(!expandedText)}>
-                      {expandedText ? 'Read Less' : 'Read More'}
-                    </Button>
-                  ) : null}
-                </Typography>
-              </Grid>
-              {photos.length > 0 && (
-                <Grid container>
-                  <Grid item className={photoRowStyle}>
-                    {photos.map((photo) => {
-                      return (
-                        <CardMedia
-                          component="img"
-                          alt="Apt image"
-                          image={photo}
-                          title="Apt image"
-                          className={photoStyle}
-                        />
-                      );
-                    })}
+                  <Grid item>
+                    <Collapse in={expanded} timeout="auto" unmountOnExit>
+                      <CardContent>
+                        <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
+                      </CardContent>
+                    </Collapse>
                   </Grid>
                 </Grid>
-              )}
+
+                <Grid>
+                  <Typography className={apartmentIndicator}>{propertyLandlordLabel()}</Typography>
+                </Grid>
+
+                <Grid item container alignContent="center">
+                  <Typography>
+                    {expandedText ? reviewText : reviewText.substring(0, 500)}
+                    {!expandedText && reviewText.length > 500 && '...'}
+                    {reviewText.length > 500 ? (
+                      <Button className={button} onClick={() => setExpandedText(!expandedText)}>
+                        {expandedText ? 'Read Less' : 'Read More'}
+                      </Button>
+                    ) : null}
+                  </Typography>
+                </Grid>
+                {photos.length > 0 && (
+                  <Grid container>
+                    <Grid item className={photoRowStyle}>
+                      {photos.map((photo) => {
+                        return (
+                          <CardMedia
+                            component="img"
+                            alt="Apt image"
+                            image={photo}
+                            title="Apt image"
+                            className={photoStyle}
+                          />
+                        );
+                      })}
+                    </Grid>
+                  </Grid>
+                )}
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Box>
+        <CardActions>
+          <Grid item container justifyContent="space-between">
+            <Grid item>
+              <Button
+                color={liked ? 'primary' : 'default'}
+                onClick={() => likeHandler(id)}
+                className={button}
+                size="small"
+                disabled={likeLoading}
+              >
+                Helpful {`(${likes || 0})`}
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
+                Report Abuse
+              </Button>
             </Grid>
           </Grid>
-        </CardContent>
-      </Box>
-      <CardActions>
-        <Grid item container justifyContent="space-between">
-          <Grid item>
-            <Button
-              color={liked ? 'primary' : 'default'}
-              onClick={() => likeHandler(id)}
-              className={button}
-              size="small"
-              disabled={likeLoading}
-            >
-              Helpful {`(${likes || 0})`}
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
-              Report Abuse
-            </Button>
-          </Grid>
-        </Grid>
-      </CardActions>
-    </Card>
+        </CardActions>
+      </Card>
+      {Modals}
+    </>
   );
 };
 
