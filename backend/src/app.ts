@@ -372,9 +372,9 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
 // Endpoint to update a review by its document ID
-app.put('/api/:reviewDocId/edit', async (req, res) => {
+app.put('/api/:reviewId/edit', async (req, res) => {
   try {
-    const { reviewDocId } = req.params; // Extract the review document ID from the request parameters
+    const { reviewId } = req.params; // Extract the review document ID from the request parameters
     const review = req.body as Review; // Get the review data from the request body and cast it to the "Review" type
 
     // Check if the required fields (overallRating and reviewText) are missing or invalid
@@ -382,13 +382,12 @@ app.put('/api/:reviewDocId/edit', async (req, res) => {
       res.status(401).send('Error: missing fields');
     }
 
+    const newReview = { ...review, date: new Date(review.date), status: 'PENDING' };
     // Update the review document in the database with the provided data
-    await reviewCollection
-      .doc(reviewDocId)
-      .update({ ...review, date: new Date(review.date), status: 'PENDING' });
+    await reviewCollection.doc(reviewId).update(newReview);
 
     // Send a success response with the updated review document ID
-    res.status(200).send(reviewDocId);
+    res.status(200).send(newReview);
   } catch (err) {
     // Handle any errors that may occur during the update process
     console.error(err);
@@ -397,12 +396,11 @@ app.put('/api/:reviewDocId/edit', async (req, res) => {
 });
 
 // Endpoint to delete a review by its document ID
-app.put('/api/delete-review/:reviewDocId', async (req, res) => {
-  const { reviewDocId } = req.params; // Extract the review document ID from the request parameters
+app.put('/api/delete-review/:reviewId', async (req, res) => {
+  const { reviewId } = req.params; // Extract the review document ID from the request parameters
   try {
     // Update the status of the review document to 'DELETED'
-    await reviewCollection.doc(reviewDocId).update({ status: 'DELETED' });
-
+    await reviewCollection.doc(reviewId).update({ status: 'DELETED' });
     // Send a success response
     res.status(200).send('Success');
   } catch (err) {
