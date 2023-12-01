@@ -324,6 +324,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setUser={setUser}
                   isLandlord={true}
                   allowEdit={true}
+                  showLabel={true}
                 />
               </Grid>
             ))}
