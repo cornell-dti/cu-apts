@@ -40,7 +40,7 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-  readonly isLandlord: boolean;
+  readonly showLabel: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -102,7 +102,7 @@ const ReviewComponent = ({
   setToggle,
   user,
   setUser,
-  isLandlord,
+  showLabel,
 }: Props): ReactElement => {
   const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
@@ -185,32 +185,29 @@ const ReviewComponent = ({
     });
   }, [review.landlordId, landlordNotFound]);
 
-  // Returns the label "Property:" or "Landlord:" with link depending on type of review and if isLandlord (is a landlord page)
   const propertyLandlordLabel = () => {
-    // First checks if isLandlord (only show label if in landlord page)
-    if (!isLandlord) {
-      return '';
-    }
     return (
-      <>
-        <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
-          {apt.length > 0 ? 'Property: ' : 'Landlord: '}
-        </Grid>
-        <Link
-          {...{
-            to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
-            style: {
-              color: 'black',
-              textDecoration: 'underline',
-              paddingBottom: '3px',
-            },
-            component: RouterLink,
-          }}
-          onClick={handleLinkClick}
-        >
-          {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
-        </Link>
-      </>
+      showLabel && (
+        <>
+          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
+            {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+          </Grid>
+          <Link
+            {...{
+              to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
+              style: {
+                color: 'black',
+                textDecoration: 'underline',
+                paddingBottom: '3px',
+              },
+              component: RouterLink,
+            }}
+            onClick={handleLinkClick}
+          >
+            {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+          </Link>
+        </>
+      )
     );
   };
 

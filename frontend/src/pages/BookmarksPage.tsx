@@ -189,7 +189,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       user={user}
                       setUser={setUser}
-                      isLandlord={true} //set to true to show review "Property: " and "Landlord: " labels
+                      showLabel={true}
                     />
                   </Grid>
                 ))}
