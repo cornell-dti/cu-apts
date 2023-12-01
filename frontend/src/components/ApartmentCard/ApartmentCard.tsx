@@ -112,6 +112,28 @@ const ApartmentCard = ({
     imgContainerMobile,
   } = useStyles();
 
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        if (user) {
+          const token = await user.getIdToken(true);
+          const response = await axios.post(
+            '/api/check-saved-apartment',
+            { apartmentId: id },
+            createAuthHeaders(token)
+          );
+          setIsSaved(response.data.result);
+          setKey((prevKey) => prevKey + 1);
+        } else {
+          setIsSaved(false);
+        }
+      } catch (err) {
+        throw new Error('Error with checking if apartment is saved');
+      }
+    };
+    checkIfSaved();
+  }, [user, setUser, id]);
+
   const handleSaveToggle = async (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();

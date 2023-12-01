@@ -193,6 +193,28 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     return subscribeLikes(setLikedReviews);
   }, []);
 
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        if (user) {
+          const token = await user.getIdToken(true);
+          const response = await axios.post(
+            '/api/check-saved-landlord',
+            { landlordId: landlordId },
+            createAuthHeaders(token)
+          );
+          setIsSaved(response.data.result);
+          setKey((prevKey) => prevKey + 1);
+        } else {
+          setIsSaved(false);
+        }
+      } catch (err) {
+        throw new Error('Error with checking if landlord is saved');
+      }
+    };
+    checkIfSaved();
+  }, [user, setUser, landlordId]);
+
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof reviewData[0];
 
