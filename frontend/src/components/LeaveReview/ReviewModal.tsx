@@ -126,8 +126,6 @@ const ReviewModal = ({
   const [ratingError, setRatingError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
 
-  useEffect(() => {}, [initialValues]);
-
   const updateOverall = () => {
     return (_: React.ChangeEvent<{}>, value: number | null) => {
       const rating = value || 0;
