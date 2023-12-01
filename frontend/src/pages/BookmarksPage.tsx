@@ -30,10 +30,6 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     marginTop: '10px',
   },
-  root: {
-    minHeight: '80vh',
-    width: '75%',
-  },
   gridContainer: {
     display: 'flex',
     alignItems: 'flex-start',
@@ -64,14 +60,10 @@ const useStyles = makeStyles((theme) => ({
  * @returns BookmarksPage The BookmarksPage component.
  */
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, root, headerStyle, sortByButton, headerContainer, gridContainer } =
-    useStyles();
+  const { background, headerStyle, sortByButton, headerContainer, gridContainer } = useStyles();
   const defaultShow = 6;
 
   const [toShow, setToShow] = useState<number>(defaultShow);
-
-  // used for debugging, may be useful in the future
-  const [token, setToken] = useState<string>('');
 
   const handleViewAll = () => {
     setToShow(toShow + (savedAptsData.length - defaultShow));
@@ -98,8 +90,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
     const fetchLikedReviews = async () => {
       if (user) {
         const token = await user.getIdToken(true);
-        setToken(token);
-
         get<ReviewWithId[]>(
           `/api/review/like/${user.uid}`,
           {
