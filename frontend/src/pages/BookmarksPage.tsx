@@ -1,13 +1,14 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
+import { Button, Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
 import { CardData } from '../App';
 import { get } from '../utils/call';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
 import { Link as RouterLink } from 'react-router-dom';
-import ApartmentCard from '../components/ApartmentCard/ApartmentCard';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import { loadingLength } from '../constants/HomeConsts';
 
 type Props = {
   user: firebase.User | null;
@@ -48,6 +49,17 @@ const useStyles = makeStyles((theme) => ({
  */
 const BookmarksPage = ({ user }: Props): ReactElement => {
   const { background, root, gridContainer, headerStyle } = useStyles();
+  const defaultShow = 6;
+
+  const [toShow, setToShow] = useState<number>(defaultShow);
+
+  const handleViewAll = () => {
+    setToShow(toShow + (data.length - defaultShow));
+  };
+
+  const handleCollapse = () => {
+    setToShow(defaultShow);
+  };
 
   useTitle('Bookmarks');
 
@@ -68,7 +80,7 @@ const BookmarksPage = ({ user }: Props): ReactElement => {
         </Typography>
         <Grid container spacing={4} className={gridContainer}>
           {data &&
-            data.map(({ buildingData, numReviews, company }, index) => {
+            data.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
               const { id } = buildingData;
               return (
                 <Grid item xs={12} md={4} key={index}>
@@ -89,6 +101,27 @@ const BookmarksPage = ({ user }: Props): ReactElement => {
                 </Grid>
               );
             })}
+          <Grid item xs={12} container justifyContent="center">
+            {data && data.length > toShow ? (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleViewAll}
+                endIcon={<KeyboardArrowDownIcon />}
+              >
+                View All
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleCollapse}
+                endIcon={<KeyboardArrowUpIcon />}
+              >
+                Collapse
+              </Button>
+            )}
+          </Grid>
         </Grid>
 
         <Typography variant="h3" className={headerStyle}>
