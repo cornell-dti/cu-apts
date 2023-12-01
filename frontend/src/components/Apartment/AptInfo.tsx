@@ -1,29 +1,33 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
-import { Card, CardContent, Grid } from '@material-ui/core';
+import { Box, Divider } from '@material-ui/core';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
 
 type Props = {
+  readonly landlordId: string | null;
   readonly landlord: string;
   readonly contact: string | null;
   readonly address: string | null;
   readonly buildings: CardData[];
 };
 
-export default function AptInfo({ landlord, contact, address, buildings }: Props): ReactElement {
+export default function AptInfo({
+  landlordId,
+  landlord,
+  contact,
+  address,
+  buildings,
+}: Props): ReactElement {
   return (
-    <Grid container>
-      <Grid item xs={12}>
-        <Card variant="outlined">
-          <CardContent>
-            <Info landlord={landlord} contact={contact!} address={address!} />
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12}>
-        <PropertyInfo title="Other Properties Owned" info={buildings} />
-      </Grid>
-    </Grid>
+    <Box border={1} borderColor="grey.300" borderRadius={10}>
+      <Box mx={2} mt={1}>
+        <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
+      </Box>
+      <Divider variant="middle" />
+      <Box mx={2} mb={1} mt={2}>
+        <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
+      </Box>
+    </Box>
   );
 }

@@ -8,6 +8,7 @@ import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
 import { get } from '../utils/call';
 import { loadingLength } from '../constants/HomeConsts';
+import { useTitle } from '../utils';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -39,6 +40,8 @@ const HomePage = (): ReactElement => {
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [drawerOpen] = useState<boolean>(false);
+
+  useTitle('Home');
 
   useEffect(() => {
     get<returnData>(`/api/page-data/home/${loadingLength}`, {

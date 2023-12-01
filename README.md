@@ -1,12 +1,11 @@
 # CU Apartments
 
-![CI Status](https://github.com/cornell-dti/cu-apts/workflows/CI/badge.svg)
-
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[Staging Site (currently no backend support)](https://cu-apts-staging.web.app/)
+[CUApts Production Site (Official)](https://www.cuapts.org/)
+[CUApts Staging Site (Developer's Update)](https://cuapts-staging.herokuapp.com/)
 
-_Last updated 12/17/2021_
+_Last updated 11/20/2023_
 
 ![CU Apartments splash](./screenshots/splash.png)
 
@@ -18,12 +17,25 @@ Helping the Cornell community at-large find reviews and information about housin
 
 You will need Node.js and Yarn installed on your development machine.
 
-To setup your environment, go into the root folder and run `yarn`. This installs the necessary
+To setup your environment, go into the root folder and run `yarn install`. This installs the necessary
 dependencies in each required Yarn workspace. Then, run `yarn start` to start a development server
 for frontend and backend in parallel. If you specifically want to run either the frontend or backend
-on its own, run `yarn workspace frontend start` or `yarn workspace backend start`.
+on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 
 ## Contributors
+
+### 2023-2024
+
+- **Tina Ou** - Product Manager
+- **Ella Krechmer** - Associate Product Manager
+- **Kevin Mei** - Product Marketing Manager
+- **Thuy (Sophia) Pham** - Technical Product Manager
+- **Clara Lee** - Designer
+- **Cyrus Irani** - Developer
+- **Ankit Lakkapragada** - Developer
+- **Jessica Han** - Developer
+- **Grace Sawatyanon** - Developer
+- **Miranda Luo** - Developer
 
 ### 2022-2023
 

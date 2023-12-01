@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import { getUser } from '../../../utils/firebase';
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
+import { getUser, signOut } from '../../../utils/firebase';
 
 import {
   AppBar,
@@ -25,6 +25,10 @@ import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
 import Autocomplete from '../../Home/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
+import defaultProfilePic from '../../../assets/cuapts-bear.png';
+import { ReactComponent as ProfileIcon } from '../../../assets/profile-icon.svg';
+import { ReactComponent as BookmarkIcon } from '../../../assets/bookmark.svg';
+import { ReactComponent as SignOutIcon } from '../../../assets/signout.svg';
 
 export type NavbarButton = {
   label: string;
@@ -72,7 +76,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     justifyContent: 'center',
     '&:hover': {
-      backgroundColor: 'red',
+      backgroundColor: 'transparent',
     },
   },
   adminButton: {
@@ -83,6 +87,14 @@ const useStyles = makeStyles(() => ({
     },
     marginRight: '100px',
     width: '120px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  adminButtonMobile: {
+    backgroundColor: 'grey',
+    color: 'white',
+    marginLeft: '10px',
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
     fontSize: '16px',
@@ -139,18 +151,62 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    // fontSize: 5,
     width: '100%',
     marginBottom: '5%',
   },
+  profileDropDownMenu: {
+    position: 'absolute',
+    right: '0',
+    top: '100%',
+    width: '14em',
+    color: 'black',
+    backgroundColor: 'white',
+    listStyle: 'none',
+    borderRadius: '10px',
+    boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.2)',
+    paddingBottom: '10%',
+    paddingTop: '10%',
+    paddingRight: '0',
+    paddingLeft: '0',
+    zIndex: 1000,
+  },
+  drawerProfileDropDown: {
+    position: 'absolute',
+    top: '100%',
+    width: '14em',
+    color: 'black',
+    backgroundColor: 'white',
+    listStyle: 'none',
+    borderRadius: '10px',
+    boxShadow: '0px 0px 5px rgba(0, 0, 0, 0.2)',
+    paddingBottom: '10%',
+    paddingTop: '10%',
+    paddingRight: '0',
+    paddingLeft: '0',
+  },
+  dropDownIcons: {
+    fill: colors.red1,
+    paddingRight: '0.8em',
+  },
+  dropDownButtons: {
+    fontFamily: 'Work Sans',
+    fontSize: '16px',
+    textTransform: 'none',
+    width: '95%',
+    paddingRight: '0',
+    justifyContent: 'flex-start',
+  },
 }));
 
+/** This function dictates whether a menu button(/menu drawer button) is red or not. It should be red when the user is on that page. */
 function GetButtonColor(lab: string) {
   const location = useLocation();
   return (location.pathname === '/' && lab.includes('Home')) ||
     ((location.pathname.includes('landlord') || location.pathname.includes('reviews')) &&
       lab.includes('Reviews')) ||
-    (location.pathname.includes('faq') && lab.includes('FAQ'))
+    (location.pathname.includes('faq') && lab.includes('FAQ')) ||
+    (location.pathname.includes('profile') && lab.includes('Profile')) ||
+    (location.pathname.includes('bookmarks') && lab.includes('Bookmarks'))
     ? 'secondary'
     : 'primary';
 }
@@ -172,6 +228,8 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
+  const [dropDownOpen, setDropDownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
   const {
     header,
     menuButton,
@@ -185,8 +243,13 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     menu,
     searchDrawer,
     adminButton,
+    adminButtonMobile,
     authButton,
     profileButton,
+    profileDropDownMenu,
+    drawerProfileDropDown,
+    dropDownIcons,
+    dropDownButtons,
   } = useStyles();
 
   const history = useHistory();
@@ -215,13 +278,38 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return () => window.removeEventListener('resize', handleResize);
   }, [drawerOpen]);
 
+  /** This sets the Profile button drop down menu to false (close) when user clicks outside */
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropDownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [dropDownOpen]);
+
+  /** This returns the drawer menu buttons */
   const getDrawerChoices = () => {
+    const profile: NavbarButton = {
+      label: 'Profile',
+      href: `/profile`,
+    };
+    const bookmarks: NavbarButton = {
+      label: 'Bookmarks',
+      href: `/bookmarks`,
+    };
+    //Sets headers data depending on whether menu drawer is open or not. If open, add profile and bookmarks page buttons.
+    const displayHeadersData =
+      drawerOpen && user ? [...headersData, profile, bookmarks] : headersData;
     return (
       <ThemeProvider theme={muiTheme}>
         <Grid className={searchDrawer}>
           <Autocomplete drawerOpen={drawerOpen} />
         </Grid>
-        {headersData.map(({ label, href }, index) => {
+        {displayHeadersData.map(({ label, href }, index) => {
           return (
             <Link component={RouterLink} to={href} color={GetButtonColor(label)} key={index}>
               <MenuItem key={index} className={drawerButton}>
@@ -237,9 +325,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     );
   };
 
-  const signInProfileButtonClick = async () => {
+  const signInProfileButtonClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     if (user) {
-      history.push(`/profile/${user.uid}`);
+      setDropDownOpen(!dropDownOpen);
       return;
     }
     let newUser = await getUser(true);
@@ -254,27 +343,90 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     }, 1000);
   });
 
-  /** This function returns a Sign In button or Profile (circular picture) depending on whether the user is signed in or not **/
+  /** This function navigates the user to the page depending on the dropdown button pressed */
+  const dropDownButtonClick = async (button: 'profile' | 'bookmarks' | 'signOut') => {
+    if (button === 'profile') {
+      history.push(`/profile`);
+    } else if (button === 'bookmarks') {
+      history.push(`/bookmarks`);
+    } else {
+      signOut();
+      history.push('/');
+      setDropDownOpen(false);
+    }
+    setDropDownOpen(false);
+  };
+
+  /** This function returns a Sign In button or Sign Out button or Profile (circular picture) depending on whether the user is signed in or not/drawer is open or not**/
   const signInButton = () => {
-    if (drawerOpen || buttonState === 'Sign In') {
+    if (buttonState === 'Sign In') {
       return (
         <Button onClick={signInProfileButtonClick} className={authButton}>
           {buttonState}
         </Button>
       );
+    } else if (drawerOpen) {
+      return (
+        <Button onClick={() => dropDownButtonClick('signOut')} className={authButton}>
+          Sign Out
+        </Button>
+      );
     } else {
       return (
-        <Button
-          onClick={signInProfileButtonClick}
-          style={{
-            height: '40px',
-            width: '0',
-            backgroundColor: 'transparent',
-            color: 'transparent',
-          }}
-        >
-          <img src={user?.photoURL || ''} className={profileButton} alt="User Profile" />
-        </Button>
+        <div>
+          <Button
+            onClick={signInProfileButtonClick}
+            style={{
+              height: '40px',
+              width: '0',
+              backgroundColor: 'transparent',
+              color: 'transparent',
+            }}
+          >
+            <img
+              src={user?.photoURL || defaultProfilePic}
+              className={profileButton}
+              alt="User Profile"
+            />
+            {dropDownOpen && (
+              <ul
+                className={drawerOpen ? drawerProfileDropDown : profileDropDownMenu}
+                ref={dropdownRef}
+              >
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('profile')}
+                  >
+                    <ProfileIcon className={dropDownIcons} />
+                    Profile
+                  </Button>
+                </li>
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('bookmarks')}
+                  >
+                    <BookmarkIcon className={dropDownIcons} />
+                    Bookmarks
+                  </Button>
+                </li>
+                <li>
+                  {' '}
+                  <Button
+                    className={dropDownButtons}
+                    onClick={() => dropDownButtonClick('signOut')}
+                  >
+                    <SignOutIcon className={dropDownIcons} />
+                    Sign Out
+                  </Button>
+                </li>
+              </ul>
+            )}
+          </Button>
+        </div>
       );
     }
   };
@@ -282,11 +434,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const getAdminButton = () => {
     return (
       <Button
-        {...{
-          to: '/admin',
-          component: RouterLink,
-          className: adminButton,
-        }}
+        to="/admin"
+        component={RouterLink}
+        className={isMobile ? adminButtonMobile : adminButton}
       >
         Admin
       </Button>
@@ -397,6 +547,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     return (
       <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
         <div>{homeLogo}</div>
+        {isAdmin(user) && getAdminButton()}
         <IconButton
           className={menuDrawer}
           style={{ position: 'absolute', right: '10px' }}
