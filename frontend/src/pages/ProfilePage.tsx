@@ -32,8 +32,6 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   gridContainer: {
-    display: 'flex',
-    alignItems: 'flex-start',
     justifyContent: 'center',
     marginTop: '10px',
   },
@@ -159,30 +157,25 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const theme = useTheme();
   const isXsScreen = useMediaQuery(theme.breakpoints.down('xs'));
 
-  const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
-  const [PendingReviewData, setPendingReviewData] = useState<ReviewWithId[]>([]);
-  const [sortBy, setSortBy] = useState<Fields>('date');
-  const [resultsToShow, setResultsToShow] = useState<number>(7);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [approvedReviews, setApprovedReviews] = useState<ReviewWithId[]>([]);
+  const [pendingReviews, setPendingReviews] = useState<ReviewWithId[]>([]);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
 
   useTitle('Profile');
 
-  // Fetch approved reviews for the current user.
   useEffect(() => {
+    // Fetch approved reviews for the current user.
     get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/APPROVED`, {
-      callback: setReviewData,
+      callback: setApprovedReviews,
     });
-  }, [user?.uid, showConfirmation, toggle]);
 
-  // Fetch pending reviews for the current user.
-  useEffect(() => {
+    // Fetch pending reviews for the current user.
     get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/PENDING`, {
-      callback: setPendingReviewData,
+      callback: setPendingReviews,
     });
-  }, [user?.uid, showConfirmation, toggle]);
+  }, [user?.uid, toggle]);
 
   //sorts reviews
   const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
@@ -195,7 +188,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     });
   }, []);
 
-  type Fields = keyof typeof reviewData[0];
+  type Fields = keyof typeof approvedReviews[0];
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -215,7 +208,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
         setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
-        setReviewData((reviews) =>
+        setApprovedReviews((reviews) =>
           reviews.map((review) =>
             review.id === reviewId
               ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
@@ -284,10 +277,13 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                     alt="User Profile"
                   ></img>
                 </div>
-                <h3 style={{ marginTop: '0', marginBottom: '4px' }}>{user?.displayName}</h3>
+                <h3 style={{ marginTop: '0', marginBottom: '4px', fontSize: '25px' }}>
+                  {user?.displayName}
+                </h3>
                 <h5
                   style={{
                     fontWeight: '400',
+                    fontSize: '15px',
                     marginTop: '0',
                     marginBottom: '24px',
                     color: colors.gray1,
@@ -304,52 +300,43 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
         </Grid>
 
         <Grid item xs={11} sm={7} md={6}>
-          <h2 className={reviewHeaderStyle}>Approved Reviews</h2>
-          <CardContent>
-            {/* calling review component for approved reviews, sorting through pending reviews */}
-            <Grid>
-              {sortReviews(reviewData, sortBy)
-                .slice(0, resultsToShow)
-                .map((review, index) => (
-                  <Grid item xs={12} key={index} className={reviewCardStyle}>
-                    <ReviewComponent
-                      review={review}
-                      liked={likedReviews[review.id]}
-                      likeLoading={likeStatuses[review.id]}
-                      addLike={addLike}
-                      removeLike={removeLike}
-                      setToggle={setToggle}
-                      user={user}
-                      setUser={setUser}
-                      isLandlord={true}
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-          </CardContent>
-          <h2 className={reviewHeaderStyle}>Pending Reviews</h2>
-          <CardContent>
-            {/* calling review component for pending reviews, sorting through pending reviews */}
-            <Grid>
-              {sortReviews(PendingReviewData, sortBy)
-                .slice(0, resultsToShow)
-                .map((review, index) => (
-                  <Grid item xs={12} key={index} className={reviewCardStyle}>
-                    <ReviewComponent
-                      review={review}
-                      liked={likedReviews[review.id]}
-                      likeLoading={likeStatuses[review.id]}
-                      addLike={addLike}
-                      removeLike={removeLike}
-                      setToggle={setToggle}
-                      user={user}
-                      setUser={setUser}
-                      isLandlord={true}
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-          </CardContent>
+          <h2 className={reviewHeaderStyle}>Pending Reviews ({pendingReviews.length})</h2>
+          <Grid>
+            {sortReviews(pendingReviews, 'date').map((review, index) => (
+              <Grid item xs={12} key={index} className={reviewCardStyle}>
+                <ReviewComponent
+                  review={review}
+                  liked={likedReviews[review.id]}
+                  likeLoading={likeStatuses[review.id]}
+                  addLike={addLike}
+                  removeLike={removeLike}
+                  setToggle={setToggle}
+                  user={user}
+                  setUser={setUser}
+                  isLandlord={true}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <h2 className={reviewHeaderStyle}>Approved Reviews ({approvedReviews.length})</h2>
+          <Grid>
+            {sortReviews(approvedReviews, 'date').map((review, index) => (
+              <Grid item xs={12} key={index} className={reviewCardStyle}>
+                <ReviewComponent
+                  review={review}
+                  liked={likedReviews[review.id]}
+                  likeLoading={likeStatuses[review.id]}
+                  addLike={addLike}
+                  removeLike={removeLike}
+                  setToggle={setToggle}
+                  user={user}
+                  setUser={setUser}
+                  isLandlord={true}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
       </Grid>
 
