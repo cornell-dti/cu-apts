@@ -8,8 +8,11 @@ import { colors } from '../../colors';
 type Props = React.ComponentProps<typeof Rating>;
 
 const StyledRating = withStyles({
+  iconEmpty: {
+    color: colors.red1,
+  },
   iconFilled: {
-    color: colors.red2,
+    color: colors.red1,
   },
 })(Rating);
 
@@ -18,8 +21,8 @@ const HeartRating = (props: Props) => {
     <StyledRating
       {...props}
       defaultValue={0}
-      icon={<FavoriteIcon />}
-      emptyIcon={<FavoriteBorderIcon />}
+      icon={<FavoriteIcon fontSize={props.size} />}
+      emptyIcon={<FavoriteBorderIcon fontSize={props.size} />}
     />
   );
 };

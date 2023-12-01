@@ -13,7 +13,7 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
-import { db, FieldValue } from './firebase-config';
+import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 
@@ -21,6 +21,7 @@ const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
+const usersCollection = db.collection('users');
 
 const app: Express = express();
 
@@ -80,6 +81,35 @@ app.get('/api/review/:status', async (req, res) => {
     return { ...review, id: doc.id } as ReviewWithId;
   });
   res.status(200).send(JSON.stringify(reviews));
+});
+
+/**
+ * Return list of reviews that user marked as helpful (like)
+ */
+app.get('/api/review/like', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('not authenticated');
+  const { uid } = req.user;
+  const likesDoc = await likesCollection.doc(uid).get();
+
+  if (likesDoc.exists) {
+    const data = likesDoc.data();
+    if (data) {
+      const reviewIds = Object.keys(data);
+      const matchingReviews: ReviewWithId[] = [];
+      const querySnapshot = await reviewCollection
+        .where(FieldPath.documentId(), 'in', reviewIds)
+        .where('status', '==', 'APPROVED')
+        .get();
+      querySnapshot.forEach((doc) => {
+        const reviewData = doc.data();
+        matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
+      });
+      res.status(200).send(JSON.stringify(matchingReviews));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
 });
 
 /**
@@ -261,18 +291,40 @@ app.get('/api/search-results', async (req, res) => {
   }
 });
 
+/*
+ * assumption, what you return for a given page may be different
+ * currently, we are assuming 'home' as a potential input and a default case for everything else for the page
+ * for the home case, we are returning the top (size) apartments, top being having the most reviews
+ */
 app.get('/api/page-data/:page/:size', async (req, res) => {
-  const { size } = req.params;
-  const collection = buildingsCollection.limit(Number(size));
-  const buildingDocs = (await collection.get()).docs;
+  const { page, size } = req.params;
+  let buildingDocs;
+  let buildingData;
+
+  if (page !== 'home') {
+    // we only limit on size off the bat if we are not the homepage
+    buildingDocs = (await buildingsCollection.limit(Number(size)).get()).docs;
+  } else {
+    buildingDocs = (await buildingsCollection.get()).docs;
+  }
+
   const buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
 
+  if (page === 'home') {
+    const buildingReviewCounts = (await pageData(buildings)).map((elem) => [elem.numReviews, elem]);
+    buildingReviewCounts.sort().reverse();
+    buildingData = buildingReviewCounts.splice(0, Number(size)).map((elem) => elem[1]);
+  } else {
+    buildingData = await pageData(buildings);
+  }
+
   const returnData = JSON.stringify({
-    buildingData: await pageData(buildings),
+    buildingData,
     isEnded: buildings.length < Number(size),
   });
+
   res.status(200).send(returnData);
 });
 
@@ -318,6 +370,104 @@ const likeHandler =
 app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
+
+/**
+ * Handles saving or removing saved apartments for a user in the database.
+ *
+ * @param add - If true, the apartment is added to the user's saved list. If false, it is removed.
+ */
+const saveApartmentHandler =
+  (add = true): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('Not authenticated');
+      const { uid } = req.user;
+      const { apartmentId } = req.body;
+      if (!apartmentId) throw new Error('Must specify apartment');
+      const userRef = usersCollection.doc(uid);
+      if (!userRef) {
+        throw new Error('User data not found');
+      }
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        if (!userDoc.exists) {
+          t.set(userRef, { apartments: [] });
+        }
+        const userApartments = userDoc.data()?.apartments || [];
+
+        if (add) {
+          if (!userApartments.includes(apartmentId)) {
+            userApartments.push(apartmentId);
+          }
+        } else {
+          const index = userApartments.indexOf(apartmentId);
+          if (index !== -1) {
+            userApartments.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { apartments: userApartments });
+      });
+
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
+/**
+ * Handles saving or removing saved landlords for a user in the database.
+ *
+ * @param add - If true, the landlord is added to the user's saved list. If false, it is removed.
+ */
+const saveLandlordHandler =
+  (add = true): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('Not authenticated');
+      const { uid } = req.user;
+      const { landlordId } = req.body;
+      if (!landlordId) throw new Error('Must specify landlord');
+      const userRef = usersCollection.doc(uid);
+      if (!userRef) {
+        throw new Error('User data not found');
+      }
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        if (!userDoc.exists) {
+          t.set(userRef, { landlords: [] });
+        }
+        const userLandlords = userDoc.data()?.landlords || [];
+
+        if (add) {
+          if (!userLandlords.includes(landlordId)) {
+            userLandlords.push(landlordId);
+          }
+        } else {
+          const index = userLandlords.indexOf(landlordId);
+          if (index !== -1) {
+            userLandlords.splice(index, 1);
+          }
+        }
+
+        t.update(userRef, { landlords: userLandlords });
+      });
+
+      res.status(200).send(JSON.stringify({ result: 'Success' }));
+    } catch (err) {
+      console.error(err);
+      res.status(400).send('Error');
+    }
+  };
+
+app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
+
+app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
+
+app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
+
+app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
 
 app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
   const { reviewDocId, newStatus } = req.params;

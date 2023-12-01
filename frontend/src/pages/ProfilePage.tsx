@@ -17,6 +17,8 @@ import { useHistory } from 'react-router-dom';
 import { get } from '../utils/call';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
+import defaultProfilePic from '../assets/cuapts-bear.png';
+import { useTitle } from '../utils';
 
 type Props = {
   user: firebase.User | null;
@@ -166,6 +168,8 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
 
+  useTitle('Profile');
+
   // Fetch approved reviews for the current user.
   useEffect(() => {
     get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/APPROVED`, {
@@ -225,9 +229,6 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     };
   };
 
-  console.log(reviewData.length);
-  console.log(PendingReviewData.length);
-
   const addLike = likeHelper(false);
 
   const removeLike = likeHelper(true);
@@ -277,7 +278,11 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   />
                 </button>
                 <div>
-                  <img src={user?.photoURL || ''} className={userImage} alt="User Profile"></img>
+                  <img
+                    src={user?.photoURL || defaultProfilePic}
+                    className={userImage}
+                    alt="User Profile"
+                  ></img>
                 </div>
                 <h3 style={{ marginTop: '0', marginBottom: '4px' }}>{user?.displayName}</h3>
                 <h5
