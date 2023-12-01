@@ -38,6 +38,7 @@ import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
+import { sortReviews } from '../utils/sortReviews';
 
 type Props = {
   user: firebase.User | null;
@@ -262,16 +263,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       return { feature, rating };
     });
   };
-
-  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
-    let unsorted = arr;
-    return unsorted.sort((r1, r2) => {
-      const first = r1?.[property] === undefined ? 0 : r1?.[property];
-      const second = r2?.[property] === undefined ? 0 : r2?.[property];
-      // @ts-ignore: Object possibly null or undefined
-      return first < second ? 1 : -1;
-    });
-  }, []);
 
   type Fields = keyof typeof reviewData[0];
 
@@ -629,7 +620,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                     .map((review, index) => (
                       <Grid item xs={12} key={index}>
                         <ReviewComponent
-                          isLandlord={review.landlordId != null} // Make sure this is correct
+                          isLandlord={false}
                           review={review}
                           liked={likedReviews[review.id]}
                           likeLoading={likeStatuses[review.id]}

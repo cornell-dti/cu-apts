@@ -185,50 +185,33 @@ const ReviewComponent = ({
     console.error('Landlord with id ' + review.landlordId + ' not found.');
   };
 
-  const propertyLandlordLink = () => {
-    if (apt.length > 0 && isLandlord) {
-      return (
-        <>
-          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
-          <Link
-            {...{
-              to: `/apartment/${review.aptId}`,
-              style: {
-                color: 'black',
-                textDecoration: 'underline',
-                paddingBottom: '3px',
-              },
-              component: RouterLink,
-            }}
-            onClick={handleLinkClick}
-          >
-            {apt[0].name}
-          </Link>
-        </>
-      );
-    } else if (isLandlord) {
-      return (
-        <>
-          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Landlord:</Grid>{' '}
-          <Link
-            {...{
-              to: `/landlord/${review.landlordId}`,
-              style: {
-                color: 'black',
-                textDecoration: 'underline',
-                paddingBottom: '3px',
-              },
-              component: RouterLink,
-            }}
-            onClick={handleLinkClick}
-          >
-            {landlordData ? landlordData.name : ''}
-          </Link>
-        </>
-      );
-    } else {
+  // Returns the label "Property:" or "Landlord:" with link depending on type of review and if isLandlord (is a landlord page)
+  const propertyLandlordLabel = () => {
+    // First checks if isLandlord (only show label if in landlord page)
+    if (!isLandlord) {
       return '';
     }
+    return (
+      <>
+        <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
+          {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+        </Grid>
+        <Link
+          {...{
+            to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
+            style: {
+              color: 'black',
+              textDecoration: 'underline',
+              paddingBottom: '3px',
+            },
+            component: RouterLink,
+          }}
+          onClick={handleLinkClick}
+        >
+          {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+        </Link>
+      </>
+    );
   };
 
   return (
@@ -270,10 +253,8 @@ const ReviewComponent = ({
                 </Grid>
               </Grid>
 
-              {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
-
               <Grid>
-                <Typography className={apartmentIndicator}>{propertyLandlordLink()}</Typography>
+                <Typography className={apartmentIndicator}>{propertyLandlordLabel()}</Typography>
               </Grid>
 
               <Grid item container alignContent="center">

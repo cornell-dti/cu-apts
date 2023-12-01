@@ -21,6 +21,7 @@ import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
 import HeartRating from '../components/utils/HeartRating';
 import { colors } from '../colors';
+import { sortReviews } from '../utils/sortReviews';
 
 export type RatingInfo = {
   feature: string;
@@ -175,17 +176,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   // Subscribe to liked reviews using Firebase
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
-  }, []);
-
-  // Function to sort reviews based on a specific property
-  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
-    let unsorted = arr;
-    return unsorted.sort((r1, r2) => {
-      const first = r1?.[property] === undefined ? 0 : r1?.[property];
-      const second = r2?.[property] === undefined ? 0 : r2?.[property];
-      // @ts-ignore: Object possibly null or undefined
-      return first < second ? 1 : -1;
-    });
   }, []);
 
   // Define the type of the properties used for sorting reviews
