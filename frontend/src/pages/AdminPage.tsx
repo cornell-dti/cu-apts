@@ -1,10 +1,11 @@
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
 import { ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
+import { sortReviews } from '../utils/sortReviews';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -56,17 +57,6 @@ const AdminPage = (): ReactElement => {
       });
     });
   }, [toggle]);
-
-  type Fields = keyof ReviewWithId;
-  const sortReviews = useCallback((arr: ReviewWithId[], property: Fields) => {
-    let unsorted = arr;
-    return unsorted.sort((r1, r2) => {
-      const first = r1?.[property] === undefined ? 0 : r1?.[property];
-      const second = r2?.[property] === undefined ? 0 : r2?.[property];
-      // @ts-ignore: Object possibly null or undefined
-      return first < second ? 1 : -1;
-    });
-  }, []);
 
   const pieChartData = [
     ['Location', 'Review Count'],

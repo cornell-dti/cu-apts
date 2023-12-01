@@ -1,4 +1,4 @@
-import React, { useEffect, ReactElement, useState } from 'react';
+import React, { useEffect, ReactElement, useState, useCallback } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import {
@@ -19,7 +19,12 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
-import { DetailedRating, ReviewWithId, ApartmentWithId } from '../../../../common/types/db-types';
+import {
+  DetailedRating,
+  ReviewWithId,
+  ApartmentWithId,
+  Landlord,
+} from '../../../../common/types/db-types';
 import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
@@ -40,6 +45,7 @@ type Props = {
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly isLandlord: boolean;
   readonly allowEdit: boolean;
+  readonly showLabel: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -102,6 +108,7 @@ const ReviewComponent = ({
   user,
   setUser,
   isLandlord,
+  showLabel,
   allowEdit,
 }: Props): ReactElement => {
   const toastTime = 3500;
@@ -124,6 +131,7 @@ const ReviewComponent = ({
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
+  const [landlordData, setLandlordData] = useState<Landlord>();
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -201,6 +209,44 @@ const ReviewComponent = ({
     openReviewModal();
   };
 
+  const landlordNotFound = useCallback(() => {
+    console.error('Landlord with id ' + review.landlordId + ' not found.');
+  }, [review.landlordId]);
+
+  // Fetch landlord data when the component mounts or when landlordId changes
+  useEffect(() => {
+    get<Landlord>(`/api/landlord/${review.landlordId}`, {
+      callback: setLandlordData,
+      errorHandler: landlordNotFound,
+    });
+  }, [review.landlordId, landlordNotFound]);
+
+  const propertyLandlordLabel = () => {
+    return (
+      showLabel && (
+        <>
+          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
+            {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+          </Grid>
+          <Link
+            {...{
+              to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
+              style: {
+                color: 'black',
+                textDecoration: 'underline',
+                paddingBottom: '3px',
+              },
+              component: RouterLink,
+            }}
+            onClick={handleLinkClick}
+          >
+            {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+          </Link>
+        </>
+      )
+    );
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -247,32 +293,8 @@ const ReviewComponent = ({
                 </Grid>
               </Grid>
 
-              {/* Checking to see if apt length is greater than 0 and the page is a landlord page */}
-
               <Grid>
-                <Typography className={apartmentIndicator}>
-                  {apt.length > 0 && isLandlord ? (
-                    <>
-                      <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>Property:</Grid>{' '}
-                      <Link
-                        {...{
-                          to: `/apartment/${review.aptId}`,
-                          style: {
-                            color: 'black',
-                            textDecoration: 'underline',
-                            paddingBottom: '3px',
-                          },
-                          component: RouterLink,
-                        }}
-                        onClick={handleLinkClick}
-                      >
-                        {apt[0].name}
-                      </Link>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                </Typography>
+                <Typography className={apartmentIndicator}>{propertyLandlordLabel()}</Typography>
               </Grid>
 
               <Grid item container alignContent="center">
