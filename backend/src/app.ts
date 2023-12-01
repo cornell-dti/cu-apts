@@ -320,7 +320,7 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
 // Endpoint to update a review by its document ID
-app.put('/api/edit-review/:reviewDocId', async (req, res) => {
+app.put('/api/:reviewDocId/edit', async (req, res) => {
   try {
     const { reviewDocId } = req.params; // Extract the review document ID from the request parameters
     const review = req.body as Review; // Get the review data from the request body and cast it to the "Review" type
@@ -336,11 +336,11 @@ app.put('/api/edit-review/:reviewDocId', async (req, res) => {
       .update({ ...review, date: new Date(review.date), status: 'PENDING' });
 
     // Send a success response with the updated review document ID
-    res.status(201).send(reviewDocId);
+    res.status(200).send(reviewDocId);
   } catch (err) {
     // Handle any errors that may occur during the update process
     console.error(err);
-    res.status(401).send('Error');
+    res.status(400).send('Error');
   }
 });
 
