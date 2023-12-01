@@ -566,6 +566,24 @@ app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
 
 app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
 
+app.get('/api/saved-apartments', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const { uid } = req.user;
+  const userRef = usersCollection.doc(uid);
+  const userDoc = await userRef.get();
+  const userApartmentsAsStrings: string[] = userDoc.data()?.apartments || [];
+  const userApartments = await Promise.all(
+    userApartmentsAsStrings.map((bid) => buildingsCollection.doc(bid).get())
+  );
+
+  const buildings: ApartmentWithId[] = userApartments.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+
+  const data = JSON.stringify(await pageData(buildings));
+  res.status(200).send(data);
+});
+
 app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
 
 app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
