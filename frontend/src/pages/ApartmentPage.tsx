@@ -39,6 +39,8 @@ import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
+import savedIcon from '../assets/filled-large-saved-icon.png';
+import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
 
 type Props = {
   user: firebase.User | null;
@@ -147,6 +149,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(true);
   const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
+  const [isSaved, setIsSaved] = useState(false);
+  const [key, setKey] = useState(0);
 
   // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
@@ -317,6 +323,23 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const handleSaveToggle = async () => {
+    const newIsSaved = !isSaved;
+    try {
+      const user = await getUser(true);
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken(true);
+      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
+      await axios.post(endpoint, { apartmentId: aptId }, createAuthHeaders(token));
+      setIsSaved((prevIsSaved) => !prevIsSaved);
+      setKey((prevKey) => prevKey + 1);
+    } catch (err) {
+      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
+    }
+  };
+
   const openReviewModal = async () => {
     let user = await getUser(true);
     setUser(user);
@@ -377,6 +400,19 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
+            <IconButton
+              onClick={handleSaveToggle}
+              style={{
+                padding: 15,
+              }}
+            >
+              <img
+                key={key}
+                src={isSaved ? saved : unsaved}
+                alt={isSaved ? 'Saved' : 'Unsaved'}
+                style={{ width: '107px', height: '43px' }}
+              />
+            </IconButton>
             <Button
               color="primary"
               className={reviewButton}
@@ -485,6 +521,19 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
             <Grid item>
+              <IconButton
+                onClick={handleSaveToggle}
+                style={{
+                  padding: 15,
+                }}
+              >
+                <img
+                  key={key}
+                  src={isSaved ? saved : unsaved}
+                  alt={isSaved ? 'Saved' : 'Unsaved'}
+                  style={{ width: '107px', height: '43px' }}
+                />
+              </IconButton>
               <Button
                 style={{ borderRadius: 20, fontSize: '14px' }}
                 color="primary"

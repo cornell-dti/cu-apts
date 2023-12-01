@@ -13,6 +13,8 @@ import {
 } from '@material-ui/core';
 import savedIcon from '../../assets/filled-saved-icon.png';
 import unsavedIcon from '../../assets/unfilled-saved-icon.png';
+import axios from 'axios';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
@@ -102,9 +104,11 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
     imgContainerMobile,
   } = useStyles();
 
-  const handleSaveToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSaveToggle = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     event.preventDefault(); // Prevent the default behavior
+    const newIsSaved = !isSaved;
+    const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
     setIsSaved((prevIsSaved) => !prevIsSaved);
     setKey((prevKey) => prevKey + 1);
   };
