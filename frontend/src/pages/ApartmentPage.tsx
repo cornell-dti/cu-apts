@@ -543,7 +543,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         )}
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item style={{ marginTop: '-20px' }}>
+            <Grid item style={{ marginTop: '-10px' }}>
               <IconButton
                 disableRipple
                 onClick={handleSaveToggle}

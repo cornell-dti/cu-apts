@@ -199,7 +199,7 @@ const ApartmentCard = ({
                   disableRipple
                   onClick={handleSaveToggle}
                   style={{
-                    padding: isMobile ? 0 : 30,
+                    padding: isMobile ? 10 : 30,
                     marginLeft: 'auto', // This pushes the icon to the right
                     backgroundColor: 'transparent',
                   }}
