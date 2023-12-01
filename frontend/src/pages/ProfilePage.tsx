@@ -301,6 +301,8 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   user={user}
                   setUser={setUser}
+                  isLandlord={true}
+                  allowEdit={true}
                   showLabel={true}
                 />
               </Grid>
@@ -320,6 +322,8 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   user={user}
                   setUser={setUser}
+                  isLandlord={true}
+                  allowEdit={true}
                   showLabel={true}
                 />
               </Grid>

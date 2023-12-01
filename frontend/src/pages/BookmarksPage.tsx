@@ -276,6 +276,8 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       user={user}
                       setUser={setUser}
                       showLabel={true}
+                      isLandlord={false}
+                      allowEdit={false}
                     />
                   </Grid>
                 ))}

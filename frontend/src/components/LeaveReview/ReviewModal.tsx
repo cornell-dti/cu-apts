@@ -1,3 +1,4 @@
+// Import necessary dependencies and components
 import {
   Button,
   Dialog,
@@ -11,8 +12,8 @@ import {
   Typography,
 } from '@material-ui/core';
 import axios from 'axios';
-import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
-import { DetailedRating, Review } from '../../../../common/types/db-types';
+import React, { Dispatch, SetStateAction, useReducer, useState, useEffect } from 'react';
+import { DetailedRating, Review, ReviewWithId } from '../../../../common/types/db-types';
 import { splitArr } from '../../utils';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
@@ -20,10 +21,12 @@ import { includesProfanity } from '../../utils/profanity';
 import Toast from './Toast';
 import styles from './ReviewModal.module.scss';
 
+// Constants
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
 const REVIEW_PHOTO_MAX_MB = 10;
 
+// Props interface
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -34,8 +37,10 @@ interface Props {
   aptId: string;
   aptName: string;
   user: firebase.User | null;
+  initialValues?: ReviewWithId;
 }
 
+// Form data interface
 interface FormData {
   overallRating: number;
   address: string;
@@ -44,6 +49,7 @@ interface FormData {
   body: string;
 }
 
+// Default form data
 const defaultReview: FormData = {
   overallRating: 0,
   address: '',
@@ -59,6 +65,7 @@ const defaultReview: FormData = {
   body: '',
 };
 
+// Reducer actions
 type Action =
   | { type: 'updateOverall'; rating: number }
   | { type: 'updateAddress'; address: string }
@@ -67,6 +74,7 @@ type Action =
   | { type: 'updateBody'; body: string }
   | { type: 'reset' };
 
+// Reducer function
 const reducer = (state: FormData, action: Action): FormData => {
   switch (action.type) {
     case 'updateOverall':
@@ -86,6 +94,25 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
+// Function to convert review data to form data
+const convertReviewToFormData = (review: ReviewWithId): FormData => {
+  return {
+    overallRating: review.overallRating,
+    address: '',
+    ratings: {
+      location: review.detailedRatings.location,
+      safety: review.detailedRatings.safety,
+      value: review.detailedRatings.value,
+      maintenance: review.detailedRatings.maintenance,
+      communication: review.detailedRatings.communication,
+      conditions: review.detailedRatings.conditions,
+    },
+    localPhotos: [],
+    body: review.reviewText,
+  };
+};
+
+// ReviewModal component
 const ReviewModal = ({
   open,
   onClose,
@@ -96,8 +123,13 @@ const ReviewModal = ({
   aptId,
   aptName,
   user,
+  initialValues,
 }: Props) => {
-  const [review, dispatch] = useReducer(reducer, defaultReview);
+  const [review, dispatch] = useReducer(
+    reducer,
+    initialValues ? convertReviewToFormData(initialValues) : defaultReview
+  );
+
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
@@ -152,7 +184,6 @@ const ReviewModal = ({
       overallRating,
       photos,
       reviewText: body,
-      //added userId to the data
       userId: user?.uid,
     };
   };
@@ -204,8 +235,6 @@ const ReviewModal = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Leave a Review{aptName.length > 0 && `: ${aptName}`}</DialogTitle>
       <DialogContent>
-        {/* This div padding prevents the scrollbar from displaying unnecessarily */}
-
         <div>
           {showError && (
             <Toast
@@ -225,15 +254,6 @@ const ReviewModal = ({
               {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
             <div className={styles.div}></div>
-            {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
-              <TextField
-                fullWidth
-                autoFocus
-                label="Property Address (optional)"
-                value={review.address}
-                onChange={updateAddress}
-              />
-            </Grid> */}
             <Grid container item>
               <Grid container spacing={1} justifyContent="center">
                 <ReviewRating
