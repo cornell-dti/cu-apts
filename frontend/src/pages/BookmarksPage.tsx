@@ -14,6 +14,7 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
 import { sortReviews } from '../utils/sortReviews';
 import SortByButton from '../components/Bookmarks/SortByButton';
+import { AptSortField, sortApartments } from '../utils/sortApartments';
 
 type Props = {
   user: firebase.User | null;
@@ -88,7 +89,8 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
   const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
-  // const [sortAptsBy, setSortAptsBy] = useState<Fields>('date');
+  // handle sort (either number of reviews or average rate)
+  const [sortAptsBy, setSortAptsBy] = useState<AptSortField>('numReviews');
 
   // handle toggle
   const handleViewAll = () => {
@@ -97,8 +99,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const handleCollapse = () => {
     setAptsToShow(defaultShow);
   };
-
-  // handle sort
 
   /**** Helpful reviews ****/
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
@@ -125,7 +125,11 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         get<CardData[]>(
           savedAPI,
           {
-            callback: setSavedAptsData,
+            callback: (data) => {
+              sortApartments(data, sortAptsBy).then((res) => {
+                setSavedAptsData(res);
+              });
+            },
           },
           createAuthHeaders(token)
         );
@@ -183,7 +187,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <Grid xs={11} sm={11} md={9}>
+      <Grid item xs={11} sm={11} md={9}>
         <Box
           display="flex"
           justifyContent="space-between"
@@ -200,15 +204,21 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             <SortByButton
               menuItems={[
                 {
-                  item: 'Recent',
+                  item: 'Review Count',
                   callback: () => {
-                    setSortBy('date');
+                    setSortAptsBy('numReviews');
+                    sortApartments(savedAptsData, 'numReviews').then((res) => {
+                      setSavedAptsData(res);
+                    });
                   },
                 },
                 {
-                  item: 'Helpful',
+                  item: 'Rating',
                   callback: () => {
-                    setSortBy('likes');
+                    setSortAptsBy('overallRating');
+                    sortApartments(savedAptsData, 'overallRating').then((res) => {
+                      setSavedAptsData(res);
+                    });
                   },
                 },
               ]}
@@ -242,7 +252,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                     </Grid>
                   );
                 })}
-            <Grid item xs={12} container justifyContent="center">
+            <Grid item xs={12} justifyContent="center">
               {savedAptsData.length > defaultShow &&
                 (savedAptsData.length > aptsToShow ? (
                   <ToggleButton

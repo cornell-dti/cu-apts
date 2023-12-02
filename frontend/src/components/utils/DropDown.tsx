@@ -21,7 +21,7 @@ const useStyles = makeStyles({
 
 export default function BasicMenu({ menuItems }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('Recent');
+  const [selected, setSelected] = useState<string>(menuItems[0].item);
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
