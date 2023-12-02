@@ -9,7 +9,12 @@ import {
   makeStyles,
   Typography,
   useMediaQuery,
+  IconButton,
 } from '@material-ui/core';
+import savedIcon from '../../assets/filled-saved-icon.png';
+import unsavedIcon from '../../assets/unfilled-saved-icon.png';
+import axios from 'axios';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
 import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
@@ -19,6 +24,8 @@ type Props = {
   buildingData: ApartmentWithId;
   numReviews: number;
   company?: string;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 const useStyles = makeStyles({
@@ -77,12 +84,21 @@ const useStyles = makeStyles({
  * @param {string} [props.company] - The company associated with the apartment (optional).
  * @returns {ReactElement} ApartmentCard component.
  */
-const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactElement => {
+const ApartmentCard = ({
+  buildingData,
+  numReviews,
+  company,
+  user,
+  setUser,
+}: Props): ReactElement => {
   const { id, name, photos } = buildingData;
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const isMobile = useMediaQuery('(max-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
+  const [isSaved, setIsSaved] = useState(false);
 
   const {
     imgStyle,
@@ -94,6 +110,48 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
     textStyle,
     imgContainerMobile,
   } = useStyles();
+
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        if (user) {
+          const token = await user.getIdToken(true);
+          const response = await axios.post(
+            '/api/check-saved-apartment',
+            { apartmentId: id },
+            createAuthHeaders(token)
+          );
+          setIsSaved(response.data.result);
+        } else {
+          setIsSaved(false);
+        }
+      } catch (err) {
+        throw new Error('Error with checking if apartment is saved');
+      }
+    };
+    checkIfSaved();
+  }, [user, setUser, id]);
+
+  const handleSaveToggle = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    const newIsSaved = !isSaved;
+    try {
+      if (!user) {
+        let user = await getUser(true);
+        setUser(user);
+      }
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken(true);
+      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
+      await axios.post(endpoint, { apartmentId: id }, createAuthHeaders(token));
+      setIsSaved((prevIsSaved) => !prevIsSaved);
+    } catch (err) {
+      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
+    }
+  };
 
   useEffect(() => {
     // Fetches approved reviews for the current apartment.
@@ -125,14 +183,35 @@ const ApartmentCard = ({ buildingData, numReviews, company }: Props): ReactEleme
         )}
         <Grid item sm={8} md={10} className={marginTxt}>
           <CardContent>
-            <Grid container>
-              <Typography
-                variant="h5"
-                className={aptNameTxt}
-                style={{ fontSize: isMobile ? '20px' : '25px' }}
-              >
-                {name}
-              </Typography>
+            <Grid container direction="row" alignItems="center">
+              <Grid item style={{ flex: 1 }}>
+                <Typography
+                  variant="h5"
+                  className={aptNameTxt}
+                  style={{ fontSize: isMobile ? '20px' : '25px' }}
+                >
+                  {name}
+                </Typography>
+              </Grid>
+              {/* Add saved and unsaved icons on the right side */}
+              <Grid item>
+                <IconButton
+                  disableRipple
+                  onClick={handleSaveToggle}
+                  style={{
+                    padding: isMobile ? 10 : 30,
+                    marginLeft: 'auto', // This pushes the icon to the right
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <img
+                    src={isSaved ? saved : unsaved}
+                    alt={isSaved ? 'Saved' : 'Unsaved'}
+                    style={{ width: '25.2', height: '32.4px' }}
+                  />
+                </IconButton>
+              </Grid>
+
               {company && (
                 <Grid container item justifyContent="space-between">
                   <Grid>
