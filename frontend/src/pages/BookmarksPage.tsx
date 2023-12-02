@@ -136,7 +136,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
       }
     };
     fetchLikedReviews();
-  }, [user, toggle, savedAPI]);
+  }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
