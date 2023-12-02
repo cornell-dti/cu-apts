@@ -13,22 +13,26 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
 } from '@common/types/db-types';
+// Import Firebase configuration and types
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 
+// Collections in the Firestore database
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 
+// Middleware setup
 const app: Express = express();
 
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
 
+// API endpoint to get FAQs
 app.get('/api/faqs', async (_, res) => {
   const snapshot = await db.collection('faqs').get();
 
@@ -44,6 +48,7 @@ app.get('/api/faqs', async (_, res) => {
   res.status(200).send(JSON.stringify(faqs));
 });
 
+// API endpoint to post a new review
 app.post('/api/new-review', authenticate, async (req, res) => {
   try {
     const doc = reviewCollection.doc();
@@ -59,6 +64,7 @@ app.post('/api/new-review', authenticate, async (req, res) => {
   }
 });
 
+// API endpoint to get reviews by ID, type and status
 app.get('/api/review/:idType/:id/:status', async (req, res) => {
   const { idType, id, status } = req.params;
   const reviewDocs = (
@@ -135,10 +141,12 @@ app.get('/api/review/:location/count', async (req, res) => {
   res.status(200).send(JSON.stringify({ count: approvedReviewCount }));
 });
 
+// API endpoint to get apartments by a list of IDs
 app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
     const idsList = ids.split(',');
+    // Fetching each apartment from the database and returning an array of apartment objects
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
         const snapshot = await buildingsCollection.doc(id).get();
@@ -154,6 +162,7 @@ app.get('/api/apts/:ids', async (req, res) => {
   }
 });
 
+// API endpoint to get a specific landlord by ID
 app.get('/api/landlord/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -169,6 +178,7 @@ app.get('/api/landlord/:id', async (req, res) => {
   }
 });
 
+// API endpoint to get all buildings associated with a particular landlord
 app.get('/api/buildings/:landlordId', async (req, res) => {
   try {
     const { landlordId } = req.params;
@@ -180,6 +190,7 @@ app.get('/api/buildings/:landlordId', async (req, res) => {
   }
 });
 
+// Function to process data for a list of buildings
 const pageData = async (buildings: ApartmentWithId[]) =>
   Promise.all(
     buildings.map(async (buildingData) => {
@@ -502,6 +513,7 @@ const saveLandlordHandler =
     }
   };
 
+// Function to check if a user has an apartment saved or not
 const checkSavedApartment = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -530,6 +542,7 @@ const checkSavedApartment = (): RequestHandler => async (req, res) => {
   }
 };
 
+// Function to check if a user has an landlord saved or not
 const checkSavedLandlord = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
