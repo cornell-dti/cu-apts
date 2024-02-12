@@ -39,6 +39,8 @@ import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
+import savedIcon from '../assets/filled-large-saved-icon.png';
+import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
 
 type Props = {
   user: firebase.User | null;
@@ -147,6 +149,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(true);
   const [resultsToShow, setResultsToShow] = useState<number>(reviewData.length);
+  const saved = savedIcon;
+  const unsaved = unsavedIcon;
+  const [isSaved, setIsSaved] = useState(false);
 
   // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
@@ -253,6 +258,27 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [apt]);
 
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        if (user) {
+          const token = await user.getIdToken(true);
+          const response = await axios.post(
+            '/api/check-saved-apartment',
+            { apartmentId: aptId },
+            createAuthHeaders(token)
+          );
+          setIsSaved(response.data.result);
+        } else {
+          setIsSaved(false);
+        }
+      } catch (err) {
+        throw new Error('Error with checking if apartment is saved');
+      }
+    };
+    checkIfSaved();
+  }, [user, setUser, aptId]);
+
   const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
     const features = ['location', 'safety', 'value', 'maintenance', 'communication', 'conditions'];
     return features.map((feature) => {
@@ -317,6 +343,25 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const removeLike = likeHelper(true);
 
+  const handleSaveToggle = async () => {
+    const newIsSaved = !isSaved;
+    try {
+      if (!user) {
+        let user = await getUser(true);
+        setUser(user);
+      }
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken(true);
+      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
+      await axios.post(endpoint, { apartmentId: aptId }, createAuthHeaders(token));
+      setIsSaved((prevIsSaved) => !prevIsSaved);
+    } catch (err) {
+      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
+    }
+  };
+
   const openReviewModal = async () => {
     let user = await getUser(true);
     setUser(user);
@@ -377,6 +422,20 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
+            <IconButton
+              disableRipple
+              onClick={handleSaveToggle}
+              style={{
+                padding: 15,
+                backgroundColor: 'transparent',
+              }}
+            >
+              <img
+                src={isSaved ? saved : unsaved}
+                alt={isSaved ? 'Saved' : 'Unsaved'}
+                style={{ width: '107px', height: '43px' }}
+              />
+            </IconButton>
             <Button
               color="primary"
               className={reviewButton}
@@ -484,7 +543,21 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         )}
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item>
+            <Grid item style={{ marginTop: '-10px' }}>
+              <IconButton
+                disableRipple
+                onClick={handleSaveToggle}
+                style={{
+                  padding: 5,
+                  backgroundColor: 'transparent',
+                }}
+              >
+                <img
+                  src={isSaved ? saved : unsaved}
+                  alt={isSaved ? 'Saved' : 'Unsaved'}
+                  style={{ width: '107px', height: '43px' }}
+                />
+              </IconButton>
               <Button
                 style={{ borderRadius: 20, fontSize: '14px' }}
                 color="primary"

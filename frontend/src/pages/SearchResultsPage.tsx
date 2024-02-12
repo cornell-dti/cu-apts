@@ -14,7 +14,12 @@ const useStyles = makeStyles({
   },
 });
 
-const SearchResultsPage = (): ReactElement => {
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const { searchText } = useStyles();
   const location = useLocation();
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
@@ -34,7 +39,7 @@ const SearchResultsPage = (): ReactElement => {
       <Typography className={searchText} style={{ fontSize: isMobile ? '20px' : '30px' }}>
         Search results for "{query}"
       </Typography>
-      <ApartmentCards data={searchResults} />
+      <ApartmentCards user={user} setUser={setUser} data={searchResults} />
     </Container>
   );
 };
