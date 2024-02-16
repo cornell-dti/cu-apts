@@ -45,7 +45,6 @@ const useStyles = makeStyles({
  * @param {CardData[]} props.data - The data of apartments.
  * @returns {ReactElement} ApartmentCards component.
  */
-
 const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
 
