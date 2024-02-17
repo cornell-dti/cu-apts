@@ -2,6 +2,7 @@ import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../../colors';
+import defaultProfilePic from '../../../assets/red-heart.png';
 
 const useStyles = makeStyles(() => ({
   footer: {
@@ -43,6 +44,13 @@ const Footer = (): ReactElement => {
         direction="column"
       >
         <Grid item xl={12}>
+          <Grid container alignItems="baseline" justifyContent="center">
+            <Typography>
+              Made with<img src={defaultProfilePic} width="26"></img>by Cornell Digital Tech and
+              Innovation
+            </Typography>
+          </Grid>
+          <Grid container alignItems="center" justifyContent="center"></Grid>
           <Grid container alignItems="center" justifyContent="center">
             <Grid item>
               <Typography className={text}>Want to get in touch? </Typography>
