@@ -71,18 +71,16 @@ const useStyles = makeStyles({
 });
 
 /**
- * ApartmentCard Component
+ * ApartmentCards Component
  *
- * This component displays a card containing information about a specific apartment,
- * including its name, address, average rating, number of reviews, and a sample review.
- * The card is responsive and adjusts its layout based on the screen size.
+ * This component displays ApartmentCard components of the data. It also shows
+ * a 'Show more' button if there is more data than the loadingLength constant.
+ * The component is responsive and adjusts its layout based on the screen size.
  *
  * @component
  * @param {Object} props - Component properties.
- * @param {ApartmentWithId} props.buildingData - The data for the apartment.
- * @param {number} props.numReviews - The number of reviews for the apartment.
- * @param {string} [props.company] - The company associated with the apartment (optional).
- * @returns {ReactElement} ApartmentCard component.
+ * @param {CardData[]} props.data - The data of apartments.
+ * @returns {ReactElement} ApartmentCards component.
  */
 const ApartmentCard = ({
   buildingData,
