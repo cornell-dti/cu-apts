@@ -7143,10 +7143,10 @@
     "@google-cloud/firestore" "^4.5.0"
     "@google-cloud/storage" "^5.3.0"
 
-"firebase-tools@^12.9.1":
-  "integrity" "sha512-t/oTgGnGm3sLT3wR80B7hY6vdAs6rTlZMsmnZGsP+GeKtVzaB5KHEwLbkZuRXtqij9f35IfkQm2a4TKjKY6xUQ=="
-  "resolved" "https://registry.npmjs.org/firebase-tools/-/firebase-tools-12.9.1.tgz"
-  "version" "12.9.1"
+"firebase-tools@12.9.0":
+  "integrity" "sha512-HkKlO3UxL7p4O6gESwpGkTecL7dmncKyhXeuKMRhKUWLMOfeiyMpHftIZlhlqDO+wKmRzQKOpLFHlqIaMv5T+A=="
+  "resolved" "https://registry.npmjs.org/firebase-tools/-/firebase-tools-12.9.0.tgz"
+  "version" "12.9.0"
   dependencies:
     "@google-cloud/pubsub" "^3.0.1"
     "abort-controller" "^3.0.0"
