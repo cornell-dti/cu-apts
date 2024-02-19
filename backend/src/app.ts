@@ -194,15 +194,17 @@ app.get('/api/buildings/:landlordId', async (req, res) => {
 const pageData = async (buildings: ApartmentWithId[]) =>
   Promise.all(
     buildings.map(async (buildingData) => {
-      const { id, landlordId } = buildingData;
-      if (landlordId === null) {
-        throw new Error('Invalid landlordId');
+      const { id } = buildingData;
+      let { landlordId } = buildingData;
+      if (landlordId == null || landlordId === '') {
+        landlordId = '-1';
       }
 
       const reviewList = await reviewCollection
         .where(`aptId`, '==', id)
         .where('status', '==', 'APPROVED')
         .get();
+
       const landlordDoc = await landlordCollection.doc(landlordId).get();
 
       const numReviews = reviewList.docs.length;
