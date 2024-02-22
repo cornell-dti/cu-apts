@@ -192,12 +192,6 @@ const ReviewComponent = ({
           <Link
             {...{
               to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
-              style: {
-                textDecoration: 'none',
-                display: 'inline-block',
-                width: '100%',
-                paddingLeft: '3px',
-              },
               component: RouterLink,
             }}
             onClick={handleLinkClick}
