@@ -189,22 +189,25 @@ const ReviewComponent = ({
     return (
       showLabel && (
         <>
-          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
-            {apt.length > 0 ? 'Property: ' : 'Landlord: '}
-          </Grid>
           <Link
             {...{
               to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
               style: {
-                color: 'black',
-                textDecoration: 'underline',
-                paddingBottom: '3px',
+                textDecoration: 'none',
+                display: 'inline-block',
+                width: '100%',
+                paddingLeft: '3px',
               },
               component: RouterLink,
             }}
             onClick={handleLinkClick}
           >
-            {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+            <Button>
+              <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+              </Grid>
+              {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+            </Button>
           </Link>
         </>
       )
