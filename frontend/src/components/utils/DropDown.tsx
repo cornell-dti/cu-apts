@@ -21,7 +21,7 @@ const useStyles = makeStyles({
 
 export default function BasicMenu({ menuItems }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('Recent');
+  const [selected, setSelected] = useState<string>(menuItems[0].item || '-');
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -42,9 +42,6 @@ export default function BasicMenu({ menuItems }: Props) {
   return (
     <div>
       <Button
-        style={{
-          borderRadius: isMobile ? 10 : 0,
-        }}
         id="basic-button"
         aria-controls="basic-menu"
         aria-haspopup="true"
