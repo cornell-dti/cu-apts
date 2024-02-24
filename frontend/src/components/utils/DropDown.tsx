@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
   item: string;
@@ -50,6 +52,7 @@ export default function BasicMenu({ menuItems }: Props) {
         className={button}
       >
         {selected}
+        <SvgIcon component={ArrowDropDownIcon} />
       </Button>
       <Menu
         id="basic-menu"
@@ -64,6 +67,7 @@ export default function BasicMenu({ menuItems }: Props) {
           const { item, callback } = menuItem;
           return (
             <MenuItem
+              key={item}
               onClick={() => {
                 setSelected(item);
                 handleClose();
