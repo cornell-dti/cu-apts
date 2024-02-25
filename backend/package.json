@@ -4,9 +4,10 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "add_buildings": "ts-node scripts/add_buildings.ts",
-    "add_landlords": "ts-node scripts/add_landlords.ts",
-    "add_reviews": "ts-node scripts/add_reviews_nodups.ts",
+    "add_buildings": "env-cmd -f ../.env.dev ts-node scripts/add_buildings.ts",
+    "add_landlords": "env-cmd -f ../.env.dev ts-node scripts/add_landlords.ts",
+    "add_reviews": "env-cmd -f ../.env.dev ts-node scripts/add_reviews_nodups.ts",
+    "add_url": "env-cmd -f ../.env.dev ts-node scripts/add_urlnames.ts",
     "build": "tsc",
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
