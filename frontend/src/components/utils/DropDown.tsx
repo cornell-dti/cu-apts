@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import {
+  RadioButtonChecked,
+  RadioButtonUnchecked,
+  ArrowDropDown,
+  ArrowDropUp,
+} from '@material-ui/icons';
 import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
@@ -52,7 +57,7 @@ export default function BasicMenu({ menuItems }: Props) {
         className={button}
       >
         {selected}
-        <SvgIcon component={ArrowDropDownIcon} />
+        <SvgIcon component={open ? ArrowDropUp : ArrowDropDown} />
       </Button>
       <Menu
         id="basic-menu"
@@ -74,6 +79,11 @@ export default function BasicMenu({ menuItems }: Props) {
                 callback();
               }}
             >
+              <SvgIcon
+                component={menuItem.item === selected ? RadioButtonChecked : RadioButtonUnchecked}
+                fontSize="small"
+                style={{ paddingRight: '1rem' }}
+              />
               {item}
             </MenuItem>
           );

@@ -16,19 +16,9 @@ const sortApartments = (arr: CardData[], property: Fields, orderLowToHigh: boole
   if (property === 'originalOrder') {
     return orderLowToHigh ? clonedArr.reverse() : clonedArr;
   }
-  // Object.keys(originalIndex).forEach(key => {
-  //     let value = originalIndex[key];
-  //     console.log(key, value);
-  //   });
   return clonedArr.sort((r1, r2) => {
     let first, second;
 
-    // if(property === 'originalOrder'){
-    //     //negative to reverse direction
-    //     //(since high to low means smaller original index first)
-    //     first = -originalIndex[r1.buildingData.id];
-    //     second = -originalIndex[r2.buildingData.id];
-    // }
     //if property is a key of ApartmentWithId, then sort by that property using r1?.buildingData[property]
     if (property in r1.buildingData) {
       const prop = property as keyof ApartmentWithId;

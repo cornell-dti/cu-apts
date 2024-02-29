@@ -79,63 +79,38 @@ const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
             <DropDown
               menuItems={[
                 {
-                  item: 'Relevance',
+                  item: 'Recommended',
                   callback: () => {
                     setSortBy('originalOrder');
-                  },
-                },
-                {
-                  item: 'Date Added',
-                  callback: () => {
-                    setSortBy('id');
-                  },
-                },
-                {
-                  item: 'Name',
-                  callback: () => {
-                    setSortBy('name');
-                  },
-                },
-                {
-                  item: 'Address',
-                  callback: () => {
-                    setSortBy('address');
-                  },
-                },
-                {
-                  item: 'LandlordID',
-                  callback: () => {
-                    setSortBy('landlordId');
-                  },
-                },
-                {
-                  item: 'Avg Price',
-                  callback: () => {
-                    setSortBy('avgPrice');
-                  },
-                },
-                {
-                  item: 'Avg Rating',
-                  callback: () => {
-                    setSortBy('avgRating');
-                  },
-                },
-              ]}
-            />
-          </Grid>
-          <Grid item className={sortByButton}>
-            <DropDown
-              menuItems={[
-                {
-                  item: '⬇ High To Low',
-                  callback: () => {
                     setOrderLowToHigh(false);
                   },
                 },
                 {
-                  item: '⬆ Low to High',
+                  item: 'Lowest Price',
                   callback: () => {
+                    setSortBy('avgPrice');
                     setOrderLowToHigh(true);
+                  },
+                },
+                {
+                  item: 'Highest Price',
+                  callback: () => {
+                    setSortBy('avgPrice');
+                    setOrderLowToHigh(false);
+                  },
+                },
+                {
+                  item: 'Lowest Rating',
+                  callback: () => {
+                    setSortBy('avgRating');
+                    setOrderLowToHigh(true);
+                  },
+                },
+                {
+                  item: 'Highest Rating',
+                  callback: () => {
+                    setSortBy('avgRating');
+                    setOrderLowToHigh(false);
                   },
                 },
               ]}
