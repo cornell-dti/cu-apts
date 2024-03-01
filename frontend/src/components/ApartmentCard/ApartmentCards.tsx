@@ -46,8 +46,10 @@ const useStyles = makeStyles({
 /**
  * ApartmentCards Component
  *
- * This component displays ApartmentCard components of the data. It also shows
- * a 'Show more' button if there is more data than the loadingLength constant.
+ * @remarks
+ * This component displays ApartmentCard components of the data.
+ * It also shows a 'Show more' button if there is more data than the loadingLength constant.
+ * It also has a dropdown to sort the apartments based on different properties, such as price and rating.
  * The component is responsive and adjusts its layout based on the screen size.
  *
  * @component
