@@ -9,6 +9,8 @@ type MenuElement = {
 
 type Props = {
   menuItems: MenuElement[];
+  defaultValue?: string;
+  className?: string;
 };
 
 const useStyles = makeStyles({
@@ -19,9 +21,9 @@ const useStyles = makeStyles({
   },
 });
 
-export default function BasicMenu({ menuItems }: Props) {
+export default function BasicMenu({ menuItems, defaultValue, className }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('Recent');
+  const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : 'Recent');
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -50,7 +52,7 @@ export default function BasicMenu({ menuItems }: Props) {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className={button}
+        className={className || button}
       >
         {selected}
       </Button>

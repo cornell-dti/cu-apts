@@ -24,6 +24,7 @@ import { get } from '../../utils/call';
 import { Link as RouterLink } from 'react-router-dom';
 import ReviewHeader from '../Review/ReviewHeader';
 import axios from 'axios';
+import getPriceRange from '../../utils/priceRange';
 
 /**
  * Component Props for AdminReviewComponent.
@@ -54,6 +55,12 @@ const useStyles = makeStyles(() => ({
   dateText: {
     color: colors.gray1,
   },
+  bedroomsPriceText: {
+    marginTop: '10px',
+    marginBottom: '10px',
+    display: 'flex',
+    gap: '30px',
+  },
   ratingInfo: {
     marginTop: '10px',
     marginBottom: '30px',
@@ -80,9 +87,9 @@ const useStyles = makeStyles(() => ({
  * @returns The rendered component.
  */
 const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): ReactElement => {
-  const { detailedRatings, overallRating, date, reviewText, photos } = review;
+  const { detailedRatings, overallRating, bedrooms, price, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
-  const { root, dateText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
+  const { root, dateText, bedroomsPriceText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlord, setLandlord] = useState<Landlord>();
 
@@ -165,6 +172,18 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
 
               <Grid item>
                 <Typography className={dateText}>{formattedDate}</Typography>
+              </Grid>
+
+              <Grid item xs={12} className={bedroomsPriceText}>
+                {bedrooms > 0 && (
+                  <Typography style={{ fontWeight: '600' }}>Bedroom(s): {bedrooms}</Typography>
+                )}
+                {price > 0 && (
+                  <Typography style={{ fontWeight: '600' }}>
+                    {' '}
+                    Price: {getPriceRange(price) || 0}
+                  </Typography>
+                )}
               </Grid>
 
               <Grid item xs={12} className={ratingInfo}>
