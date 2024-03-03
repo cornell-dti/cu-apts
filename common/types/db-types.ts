@@ -52,6 +52,8 @@ export type Apartment = {
   readonly numBeds: number | null;
   readonly photos: readonly string[]; // can be empty
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
+  readonly latitude: number;
+  readonly longtitude: number;
 };
 
 export type ApartmentWithId = Apartment & Id;
