@@ -226,6 +226,30 @@ const reducer = (state: FormData, action: Action): FormData => {
   }
 };
 
+/**
+ * ReviewModal Component
+ *
+ * This component displays a modal for users to input information for their review about a specific apartment.
+ * This includes the bedroom(s), price per person, overall rating, detailed ratings (location, safety, maintenance,
+ * conditions), review text/body, pictures (up to 3 pictures). The information that is required are: overall experience
+ * and review text/body, all other information are optional.
+ * The submit button will add the review to the database and set the status as PENDING until an admin approves it.
+ * The modal is responsive for all screen sizes and mobile display.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {boolean} props.open – The boolean for whether the modal is open or not.
+ * @param props.onClose – The function to be called when the modal is closed.
+ * @param props.setOpen – The function to set the modal open.
+ * @param {string} props.landlordId – The landlord ID of the apartment that is being reviewed.
+ * @param props.onSuccess – The function to be called when the review has been successfully submitted.
+ * @param {number} props.toastTime – The time in milliseconds which the review successfully submitted toast is shown.
+ * @param {string} props.aptId – The Apartment ID of the apartment being reviewed.
+ * @param {string} props.aptName – The name of the apartment being reviewed.
+ * @param props.user – The current user, null if not logged in.
+ * @returns
+ */
+
 const ReviewModal = ({
   open,
   onClose,
