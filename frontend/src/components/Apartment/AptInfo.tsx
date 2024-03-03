@@ -12,7 +12,7 @@ type Props = {
   readonly address: string | null;
   readonly buildings: CardData[];
   readonly latitude?: number;
-  readonly longtitude?: number;
+  readonly longitude?: number;
 };
 
 export default function AptInfo({
@@ -22,14 +22,14 @@ export default function AptInfo({
   address,
   buildings,
   latitude = 0,
-  longtitude = 0,
+  longitude = 0,
 }: Props): ReactElement {
   return (
     <div>
       <Box border={1} borderColor="grey.300" borderRadius={10}>
         <APIProvider apiKey={'TODO: mapAPI'}>
-          <Map defaultCenter={{ lat: latitude, lng: longtitude }} defaultZoom={10}>
-            <Marker position={{ lat: latitude, lng: longtitude }} />
+          <Map defaultCenter={{ lat: latitude, lng: longitude }} defaultZoom={10}>
+            <Marker position={{ lat: latitude, lng: longitude }} />
           </Map>
         </APIProvider>
       </Box>
