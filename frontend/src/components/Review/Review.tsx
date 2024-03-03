@@ -185,6 +185,17 @@ const ReviewComponent = ({
     });
   }, [review.landlordId, landlordNotFound]);
 
+  /**
+   * `propertyLandLordLabel - A button redirecting to property/landlord page
+   *
+   * @remarks
+   * This button component is displayed on review cards (seen in bookmarks,
+   * profile, landlord page) to redirect users to the property/landlord page
+   * corresponding to that specific review.
+   *
+   * @returns A button/label that links to the property/landlord page
+   * corresponding to that specific review.
+   */
   const propertyLandlordLabel = () => {
     return (
       showLabel && (
