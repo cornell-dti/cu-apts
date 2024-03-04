@@ -207,11 +207,15 @@ const ReviewComponent = ({
             }}
             onClick={handleLinkClick}
           >
-            <Button>
-              <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+            <Button style={{ textTransform: 'none' }}>
+              <Grid>
+                <Typography style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                  {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+                </Typography>
               </Grid>
-              {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+              <Typography>
+                {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+              </Typography>
             </Button>
           </Link>
         </>
