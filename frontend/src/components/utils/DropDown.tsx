@@ -24,15 +24,10 @@
  * @param {MenuElement[]} props.menuItems - An array of menu items, each containing an item name and a callback function.
  * @returns {JSX.Element} The rendered dropdown component.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import {
-  RadioButtonChecked,
-  RadioButtonUnchecked,
-  ArrowDropDown,
-  ArrowDropUp,
-} from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
@@ -98,11 +93,6 @@ export default function DropDown({ menuItems }: Props) {
                 callback();
               }}
             >
-              <SvgIcon
-                component={menuItem.item === selected ? RadioButtonChecked : RadioButtonUnchecked}
-                fontSize="small"
-                style={{ paddingRight: '1rem' }}
-              />
               {item}
             </MenuItem>
           );
