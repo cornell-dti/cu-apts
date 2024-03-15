@@ -792,11 +792,11 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) =>
               <div class="content">
                   <p>Hello ${userDisplayName},</p>
                   <p>Thank you for your patience. Your review ${
-                    aptName ? `for ${  aptName}` : ''
+                    aptName ? `for ${aptName}` : ''
                   } has been approved!</p>
                   <p>Your Review Summary:</p>
-                    ${reviewDate ? `<li><b>Date: </b>${  reviewDate  }</li>` : ''}
-                    ${reviewText ? `<li><b>Text: </b>${  reviewText  }</li>` : ''}
+                    ${reviewDate ? `<li><b>Date: </b>${reviewDate}</li>` : ''}
+                    ${reviewText ? `<li><b>Text: </b>${reviewText}</li>` : ''}
                   <br/>
                   <p><b>We greatly appreciate your review!<b></p>
               </div>
