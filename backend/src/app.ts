@@ -20,6 +20,7 @@ import nodemailer from 'nodemailer';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
+import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
 
@@ -637,9 +638,30 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
 // These endpoints allow for adding and removing landlords to/from a user's saved list.
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
 
-// Endpoint to update the status of a review
-app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+/**
+ * Endpoint to update the status of a review.
+ * Sends an email to the user if the review is approved.
+ *
+ * Permissions:
+ * User must be an admin to update a review to approved, declined, or deleted
+ * However, all users can update a review from approved to pending
+ *
+ * @param reviewDocId - The document ID of the review to update
+ * @param newStatus - The new status to set for the review
+ *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', or 'DELETED'
+ * @returns status 200 if successfully updates status,
+ *                 400 if the new status is invalid,
+ *                 403 if user is unauthorized,
+ *                 500 if an error occurs
+ */
+app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
+  const { uid, email } = req.user;
+  if (newStatus !== 'PENDING' && !(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
     // Validating if the new status is within the allowed list
@@ -647,12 +669,14 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) =>
       res.status(400).send('Invalid status type');
       return;
     }
+    const reviewDoc = reviewCollection.doc(reviewDocId);
+    const currentStatus = (await reviewDoc.get()).data()?.status || '';
     // Updating the review's status in Firestore
-    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    await reviewDoc.update({ status: newStatus });
     res.status(200).send('Success'); // Sending a success response
     /* If firebase successfully updates status to approved, then send an email
       to the review's creator to inform them that their review has been approved */
-    if (newStatus === 'APPROVED') {
+    if (newStatus === 'APPROVED' && currentStatus !== 'APPROVED') {
       // get user id
       const reviewData = (await reviewCollection.doc(reviewDocId).get()).data();
       const userId = reviewData?.userId;

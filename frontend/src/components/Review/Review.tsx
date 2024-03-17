@@ -146,7 +146,7 @@ const ReviewComponent = ({
     ];
   };
 
-  const reportAbuseHanler = async (reviewId: string) => {
+  const reportAbuseHandler = async (reviewId: string) => {
     if (user) {
       const endpoint = `/api/update-review-status/${reviewId}/PENDING`;
       await axios.put(endpoint);
@@ -300,7 +300,7 @@ const ReviewComponent = ({
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
+            <Button onClick={() => reportAbuseHandler(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>
