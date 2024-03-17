@@ -18,6 +18,7 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 import ApartmentHeader from '../components/Apartment/Header';
 import AptInfo from '../components/Apartment/AptInfo';
+import MapInfo from '../components/Apartment/MapInfo';
 import { get } from '../utils/call';
 import {
   Landlord,
@@ -601,6 +602,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+        Location
+      </Typography>
+      <MapInfo
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+      />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Landlord
       </Typography>

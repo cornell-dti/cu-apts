@@ -48,6 +48,8 @@ const formatBuilding = ({
   area: getAreaType(area),
   latitude,
   longitude,
+  walkTime: 0,
+  driveTime: 0,
 });
 
 const makeBuilding = async (apartmentWithId: ApartmentWithId) => {

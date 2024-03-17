@@ -3,7 +3,6 @@ import Info from './Info';
 import { Box, Divider } from '@material-ui/core';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 type Props = {
   readonly landlordId: string | null;
@@ -25,24 +24,14 @@ export default function AptInfo({
   longitude = 0,
 }: Props): ReactElement {
   return (
-    <div>
-      <Box border={1} borderColor="grey.300" borderRadius={10}>
-        <APIProvider apiKey={'TODO: mapAPI'}>
-          <Map defaultCenter={{ lat: latitude, lng: longitude }} defaultZoom={10}>
-            <Marker position={{ lat: latitude, lng: longitude }} />
-          </Map>
-        </APIProvider>
+    <Box border={1} borderColor="grey.300" borderRadius={10}>
+      <Box mx={2} mt={1}>
+        <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
       </Box>
       <Divider variant="middle" />
-      <Box border={1} borderColor="grey.300" borderRadius={10}>
-        <Box mx={2} mt={1}>
-          <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
-        </Box>
-        <Divider variant="middle" />
-        <Box mx={2} mb={1} mt={2}>
-          <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
-        </Box>
+      <Box mx={2} mb={1} mt={2}>
+        <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
       </Box>
-    </div>
+    </Box>
   );
 }

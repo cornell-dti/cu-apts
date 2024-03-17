@@ -1702,6 +1702,13 @@
     stream-events "^1.0.1"
     xdg-basedir "^4.0.0"
 
+"@googlemaps/js-api-loader@^1.13.8":
+  version "1.16.6"
+  resolved "https://registry.yarnpkg.com/@googlemaps/js-api-loader/-/js-api-loader-1.16.6.tgz#c89970c94b55796d51746c092f0e52953994a171"
+  integrity sha512-V8p5W9DbPQx74jWUmyYJOerhiB4C+MHekaO0ZRmc6lrOYrvY7+syLhzOWpp55kqSPeNb+qbC2h8i69aLIX6krQ==
+  dependencies:
+    fast-deep-equal "^3.1.3"
+
 "@grpc/grpc-js@^1.0.0", "@grpc/grpc-js@^1.3.2", "@grpc/grpc-js@~1.4.0":
   version "1.4.5"
   resolved "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.4.5.tgz"
@@ -1972,6 +1979,11 @@
     "@types/node" "*"
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
+
+"@mapbox/point-geometry@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/point-geometry/-/point-geometry-0.1.0.tgz#8a83f9335c7860effa2eeeca254332aa0aeed8f2"
+  integrity sha512-6j56HdLTwWGO0fJPlrZtdU/B13q8Uwmo18Ck2GnGgN9PCFyKTZ3UbXeEdRFh18i9XQ92eH2VdtpJHpBD3aripQ==
 
 "@material-ui/core@^4.11.3":
   version "4.12.3"
@@ -2491,6 +2503,13 @@
   dependencies:
     "@types/minimatch" "*"
     "@types/node" "*"
+
+"@types/google-map-react@^2.1.10":
+  version "2.1.10"
+  resolved "https://registry.yarnpkg.com/@types/google-map-react/-/google-map-react-2.1.10.tgz#197a2f520563e0291bc311f151e05ec34b665cf7"
+  integrity sha512-8/0UllZS7tF08WNBRPQlSJCkETvz3e3sZoPxzDaWkj2iV5dmFSnOKXVtoeKo8dLZSe+RkLn479t1wj6nXmLLSA==
+  dependencies:
+    "@types/react" "*"
 
 "@types/google.maps@^3.54.10":
   version "3.55.3"
@@ -5942,7 +5961,7 @@ event-target-shim@^5.0.0:
   resolved "https://registry.npmjs.org/event-target-shim/-/event-target-shim-5.0.1.tgz"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
 
-eventemitter3@^4.0.0:
+eventemitter3@^4.0.0, eventemitter3@^4.0.4:
   version "4.0.7"
   resolved "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
@@ -6759,6 +6778,16 @@ google-gax@^2.24.1:
     proto3-json-serializer "^0.1.5"
     protobufjs "6.11.2"
     retry-request "^4.0.0"
+
+google-map-react@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/google-map-react/-/google-map-react-2.2.1.tgz#54c45899966fb0000e04cde2d5ca44ad728bdba6"
+  integrity sha512-Dg8aexf5rNSmywj0XKQ5m4RNzVcWwKEM2BGDj5aPChD0um8ZRjB5Upcb/yg/i0oG1aES29asQ5+6BHVgrK5xGA==
+  dependencies:
+    "@googlemaps/js-api-loader" "^1.13.8"
+    "@mapbox/point-geometry" "^0.1.0"
+    eventemitter3 "^4.0.4"
+    prop-types "^15.7.2"
 
 google-p12-pem@^3.0.3:
   version "3.1.2"

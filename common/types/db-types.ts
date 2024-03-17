@@ -54,6 +54,8 @@ export type Apartment = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
   readonly latitude: number;
   readonly longitude: number;
+  readonly walkTime: number;
+  readonly driveTime: number;
 };
 
 export type ApartmentWithId = Apartment & Id;
