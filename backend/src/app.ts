@@ -639,6 +639,8 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
 
 /**
+ * update-review-status
+ *
  * Endpoint to update the status of a review.
  * Sends an email to the user if the review is approved.
  *
@@ -651,6 +653,7 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
  *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', or 'DELETED'
  * @returns status 200 if successfully updates status,
  *                 400 if the new status is invalid,
+ *                 401 if authentication fails,
  *                 403 if user is unauthorized,
  *                 500 if an error occurs
  */
@@ -658,6 +661,7 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   if (!req.user) throw new Error('Not authenticated');
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
   const { uid, email } = req.user;
+  // Checking if the user is authorized to update the review's status
   if (newStatus !== 'PENDING' && !(email && admins.includes(email))) {
     res.status(403).send('Unauthorized');
     return;
