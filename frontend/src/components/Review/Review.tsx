@@ -28,7 +28,7 @@ import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
 import { Link as RouterLink } from 'react-router-dom';
-import { getUser } from '../../utils/firebase';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 
 type Props = {
@@ -147,9 +147,10 @@ const ReviewComponent = ({
   };
 
   const reportAbuseHandler = async (reviewId: string) => {
+    const endpoint = `/api/update-review-status/${review.id}/PENDING`;
     if (user) {
-      const endpoint = `/api/update-review-status/${reviewId}/PENDING`;
-      await axios.put(endpoint);
+      const token = await user.getIdToken(true);
+      await axios.put(endpoint, {}, createAuthHeaders(token));
       setToggle((cur) => !cur);
     } else {
       let user = await getUser(true);
