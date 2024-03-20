@@ -3,7 +3,7 @@ import { Box, Grid, Typography } from '@material-ui/core';
 import GoogleMapReact from 'google-map-react';
 import walkIcon from '../../assets/walk-icon.svg';
 import driveIcon from '../../assets/drive-icon.svg';
-import aptIcon from '../../assets/fluent_location-12-filled.svg';
+import aptIcon from '../../assets/location-pin.png';
 import { config } from 'dotenv';
 
 config();
@@ -30,6 +30,22 @@ const Marker = ({ src }: markerProp) => (
   />
 );
 
+/**
+ * `MapInfo` Component - Displays map and location information of an apartment.
+ *
+ * @remarks
+ * This component is used in the ApartmentPage to display the map and location
+ * information of each apartment, including its location on Google Map, address,
+ * and time required for walking/driving to campus. It uses
+ * Material-UI components for consistent styling.
+ *
+ * @param Props - Contains:
+ *   - `address`: The address of the apartment.
+ *   - `latitude`: The latitude of the apartment location.
+ *   - `longitude`: The longitude of the apartment location.
+ *   - `walkTime`: The walk time from the apartment to campus.
+ *   - `driveTime`: The drive time from the apartment to campus.
+ */
 export default function MapInfo({
   address,
   latitude = 0,
@@ -37,7 +53,6 @@ export default function MapInfo({
   walkTime = 0,
   driveTime = 0,
 }: Props): ReactElement {
-  console.log(process.env.GOOGLE_MAP_API_KEY);
   return (
     <Box border={1} borderColor="grey.300" borderRadius={10} mb={3}>
       <Box mx={3} my={3}>
