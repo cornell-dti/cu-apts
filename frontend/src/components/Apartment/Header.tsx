@@ -12,7 +12,7 @@ import {
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
-import defaultIcon from '../../assets/default_icon.png';
+import { ReactComponent as DefaultIcon } from '../../assets/default_icon.svg';
 import { colors } from '../../colors';
 
 type Props = {
@@ -32,8 +32,17 @@ const GlobalCss = withStyles({
 
 const useStyles = makeStyles((theme) => ({
   media: {
-    height: '400px',
+    height: '352px',
     backgroundBlendMode: 'darken',
+    position: 'relative',
+  },
+  overlayContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  mediaGradient: {
+    height: '100%',
+    background: 'linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent)',
     position: 'relative',
   },
   mobileMedia: {
@@ -49,7 +58,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     display: 'flex',
     alignItems: 'center',
-    height: '30%',
+    minHeight: '40%',
   },
   mobileHeaderInfoContainer: {
     bottom: '0',
@@ -61,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
     height: 'auto',
     width: '100%',
     paddingTop: '10px',
-    paddingBottom: '10px',
+    paddingBottom: '20px',
   },
   logo: {
     height: '86px',
@@ -137,6 +146,10 @@ const useStyles = makeStyles((theme) => ({
   },
   logoGrid: {
     marginRight: '1em',
+    flex: '0 0 auto',
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   logoGridMobile: {
     display: 'flex',
@@ -148,12 +161,12 @@ const useStyles = makeStyles((theme) => ({
 const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
   const { name, address, photos } = apartment;
   const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  const icon = defaultIcon;
   const photoLink = photos.length > 0 ? photos[0] : defaultHeader;
 
   const {
     media,
+    overlayContainer,
+    mediaGradient,
     mobileMedia,
     headerInfoContainer,
     mobileHeaderInfoContainer,
@@ -178,17 +191,13 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
   }, []);
 
   const headerContent = (
-    <Grid
-      container
-      className={!isMobile ? headerInfoContainer : mobileHeaderInfoContainer}
-      style={
-        photos.length > 0
-          ? { backgroundColor: 'rgba(0, 0, 0, 0.45)' }
-          : { backgroundColor: 'rgba(0, 0, 0, 0.15)' }
-      }
-    >
+    <Grid container className={!isMobile ? headerInfoContainer : mobileHeaderInfoContainer}>
       <Grid item xs={!isMobile ? 12 : 3} md={1} className={!isMobile ? logoGrid : logoGridMobile}>
-        <Avatar src={icon} alt={name} className={!isMobile ? logo : mobileLogo} />
+        <DefaultIcon
+          className={!isMobile ? logo : mobileLogo}
+          aria-label={name}
+          color={photos.length > 0 ? 'rgba(185, 70, 48, 0.8)' : 'rgb(185, 70, 48)'}
+        />
       </Grid>
       <Grid item xs={!isMobile ? 6 : 9} className={!isMobile ? headerSection : mobileHeaderSection}>
         <CardHeader
@@ -216,15 +225,19 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
             disableRipple
             disabled={photos.length === 0}
           >
-            <CardMedia className={!isMobile ? media : mobileMedia} image={photoLink}>
-              {!isMobile ? (
-                <Grid item xs={12}>
-                  {headerContent}
-                </Grid>
-              ) : (
-                headerContent
-              )}
-            </CardMedia>
+            <div className={!isMobile ? overlayContainer : ''}>
+              <CardMedia className={!isMobile ? media : mobileMedia} image={photoLink}>
+                <div className={photos.length > 0 ? mediaGradient : ''}>
+                  {!isMobile ? (
+                    <Grid item xs={12}>
+                      {headerContent}
+                    </Grid>
+                  ) : (
+                    headerContent
+                  )}
+                </div>
+              </CardMedia>
+            </div>
           </ButtonBase>
         </Grid>
       </>
