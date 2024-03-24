@@ -209,10 +209,21 @@ const pageData = async (buildings: ApartmentWithId[]) =>
 
       const numReviews = reviewList.docs.length;
       const company = landlordDoc.data()?.name;
+      // calculate average rating using overall rating of the reviews
+      const avgRating =
+        reviewList.docs.reduce((acc, curr) => acc + curr.data().overallRating, 0) /
+        Math.max(numReviews, 1);
+      // calculate average price using price category of the reviews, excluding reviews with price 0
+      const reviewsWithPrice = reviewList.docs.filter((review) => review.data().price > 0);
+      const avgPrice =
+        reviewsWithPrice.reduce((acc, curr) => acc + curr.data().price, 0) /
+        Math.max(reviewsWithPrice.length, 1);
       return {
         buildingData,
         numReviews,
         company,
+        avgRating,
+        avgPrice,
       };
     })
   );

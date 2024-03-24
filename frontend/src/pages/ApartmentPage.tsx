@@ -573,7 +573,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 <Grid item>
                   <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
                 </Grid>
-                <Grid item>
+                <Grid item className={sortByButton}>
                   <DropDown
                     menuItems={[
                       {
