@@ -33,6 +33,18 @@ const useStyles = makeStyles({
   },
 });
 
+/**
+ * ApartmentCards Component
+ *
+ * This component displays ApartmentCard components of the data. It also shows
+ * a 'Show more' button if there is more data than the loadingLength constant.
+ * The component is responsive and adjusts its layout based on the screen size.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {CardData[]} props.data - The data of apartments.
+ * @returns {ReactElement} ApartmentCards component.
+ */
 const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
 
