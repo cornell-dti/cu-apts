@@ -1,7 +1,33 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * DropDown Component
+ *
+ * @remarks
+ * A dropdown component that displays a button and a menu with selectable items.
+ * The component uses Material-UI components for consistent styling.
+ *
+ * @component
+ * @example
+ * ```typescript
+ * const menuItems = [
+ *   { item: 'Price', callback: () => setSortBy('avgPrice')},
+ *   { item: 'Rating', callback: () => setSortBy('avgRating')},
+ *   { item: 'Date Added', callback: () => setSortBy('id')},
+ * ];
+ *
+ * function App() {
+ *   return (
+ *     <DropDown menuItems={menuItems} />
+ *   );
+ * }
+ *```
+ * @param {Object} props - The props of the component.
+ * @param {MenuElement[]} props.menuItems - An array of menu items, each containing an item name and a callback function.
+ * @returns {JSX.Element} The rendered dropdown component.
+ */
+import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
@@ -21,11 +47,10 @@ const useStyles = makeStyles({
   },
 });
 
-export default function BasicMenu({ menuItems }: Props) {
+export default function DropDown({ menuItems }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selected, setSelected] = useState<string>(menuItems[0].item || '-');
   const { button } = useStyles();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,12 +59,6 @@ export default function BasicMenu({ menuItems }: Props) {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   return (
     <div>
@@ -52,7 +71,7 @@ export default function BasicMenu({ menuItems }: Props) {
         className={button}
       >
         {selected}
-        <SvgIcon component={ArrowDropDownIcon} />
+        <SvgIcon component={open ? ArrowDropUp : ArrowDropDown} />
       </Button>
       <Menu
         id="basic-menu"
