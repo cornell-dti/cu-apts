@@ -12,7 +12,7 @@ import {
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
-import defaultIcon from '../../assets/default_icon.png';
+import { ReactComponent as DefaultIcon } from '../../assets/default_icon.svg';
 import { colors } from '../../colors';
 
 type Props = {
@@ -147,7 +147,7 @@ const useStyles = makeStyles((theme) => ({
 
 const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
   const { name, profilePhoto, photos } = landlord;
-  const icon = profilePhoto ? profilePhoto : defaultIcon;
+  const icon = profilePhoto ? profilePhoto : DefaultIcon;
   const photoLink = photos.length ? photos[0] : defaultHeader;
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -180,7 +180,11 @@ const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
             <Grid item xs={12}>
               <Grid container className={styles.HeaderRow}>
                 <Grid item xs={12} md={1} className={logoGrid}>
-                  <Avatar src={icon} alt={name} className={logo} />
+                  <DefaultIcon
+                    className={logo}
+                    aria-label={name}
+                    color={photos.length > 0 ? colors.red1Transparent : colors.red1}
+                  />
                 </Grid>
                 <Grid className={headerSection}>
                   <CardHeader title={name} className={landlordName} disableTypography={true} />
@@ -218,7 +222,11 @@ const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
           <CardMedia className={mobileMedia} image={photoLink}>
             <Grid container alignItems="center" className={headerSection}>
               <Grid item xs={6}>
-                <Avatar src={icon} alt={name} className={mobileLogo} />
+                <DefaultIcon
+                  className={mobileLogo}
+                  aria-label={name}
+                  color={photos.length > 0 ? colors.red1Transparent : colors.red1}
+                />
               </Grid>
               <Grid item xs={6}>
                 <CardHeader title={name} className={mobileLandlordName} disableTypography={true} />
