@@ -161,8 +161,9 @@ const useStyles = makeStyles((theme) => ({
 /**
  * ApartmentHeader Component
  *
- * This component represents a header with an apartment image, apartment name, apartment adress, and icon seen on each apartment page.
- * When clicking on the header, handleClick will be called. The component is responsive for all screen sizes and mobile display.
+ * This component represents a header with an apartment photo, apartment name, apartment adress, and icon seen on each apartment page.
+ * When clicking on the header, handleClick will be called if the apartment has more than zero photos. The component is responsive for
+ * all screen sizes and mobile display.
  *
  * @component
  * @param props - The props for the ApartmentHeader component.
