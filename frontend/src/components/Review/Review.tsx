@@ -185,26 +185,38 @@ const ReviewComponent = ({
     });
   }, [review.landlordId, landlordNotFound]);
 
+  /**
+   * `propertyLandLordLabel - A button redirecting to property/landlord page
+   *
+   * @remarks
+   * This button component is displayed on review cards (seen in bookmarks,
+   * profile, landlord page) to redirect users to the property/landlord page
+   * corresponding to that specific review.
+   *
+   * @returns A button/label that links to the property/landlord page
+   * corresponding to that specific review.
+   */
   const propertyLandlordLabel = () => {
     return (
       showLabel && (
         <>
-          <Grid style={{ fontWeight: 'bold', marginRight: '5px' }}>
-            {apt.length > 0 ? 'Property: ' : 'Landlord: '}
-          </Grid>
           <Link
             {...{
               to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
-              style: {
-                color: 'black',
-                textDecoration: 'underline',
-                paddingBottom: '3px',
-              },
               component: RouterLink,
             }}
             onClick={handleLinkClick}
           >
-            {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+            <Button style={{ textTransform: 'none' }}>
+              <Grid>
+                <Typography style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                  {apt.length > 0 ? 'Property: ' : 'Landlord: '}
+                </Typography>
+              </Grid>
+              <Typography>
+                {apt.length > 0 ? apt[0].name : landlordData ? landlordData.name : ''}
+              </Typography>
+            </Button>
           </Link>
         </>
       )
