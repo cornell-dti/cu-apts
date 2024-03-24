@@ -11,10 +11,10 @@ interface Props {
 const ReviewRating = ({ name, label, onChange }: Props) => {
   return (
     <Grid container justifyContent="flex-start" alignItems="center" item xs={12} md={6}>
-      <Grid container justifyContent="flex-start" alignItems="center" item xs={12} sm={3} md={4}>
+      <Grid item>
         <HeartRating name={name} onChange={onChange} />
       </Grid>
-      <Grid container justifyContent="flex-start" alignItems="center" item xs={12} sm={5} md={6}>
+      <Grid item style={{ marginLeft: '25px' }}>
         <FormLabel>{label}</FormLabel>
       </Grid>
     </Grid>

@@ -11,6 +11,7 @@ import {
   IconButton,
   Collapse,
   Link,
+  useMediaQuery,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
@@ -30,6 +31,9 @@ import ReviewHeader from './ReviewHeader';
 import { Link as RouterLink } from 'react-router-dom';
 import { getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
+import getPriceRange from '../../utils/priceRange';
+import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
+import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -69,7 +73,9 @@ const useStyles = makeStyles(() => ({
   dateText: {
     color: colors.gray1,
   },
-  heartSpacing: {
+  reviewHeader: {
+    display: 'flex',
+    alignItems: 'center',
     marginBottom: '10px',
   },
   button: {
@@ -91,6 +97,18 @@ const useStyles = makeStyles(() => ({
     paddingTop: '2%',
     paddingLeft: '0.6%',
   },
+  bedroomsPrice: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  bedroomsPriceText: {
+    fontWeight: 600,
+  },
+  bedPriceIcon: {
+    width: '21px',
+    height: '21px',
+  },
 }));
 
 const ReviewComponent = ({
@@ -104,7 +122,8 @@ const ReviewComponent = ({
   setUser,
   showLabel,
 }: Props): ReactElement => {
-  const { id, detailedRatings, overallRating, date, reviewText, likes, photos } = review;
+  const { id, detailedRatings, overallRating, date, bedrooms, price, reviewText, likes, photos } =
+    review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const {
     root,
@@ -115,13 +134,17 @@ const ReviewComponent = ({
     photoStyle,
     photoRowStyle,
     bottomborder,
-    heartSpacing,
+    reviewHeader,
     apartmentIndicator,
+    bedroomsPrice,
+    bedPriceIcon,
+    bedroomsPriceText,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlordData, setLandlordData] = useState<Landlord>();
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -211,6 +234,33 @@ const ReviewComponent = ({
     );
   };
 
+  const bedroomsPriceLabel = () => {
+    return (
+      <Grid item className={bedroomsPrice} style={isMobile ? { width: '100%' } : {}}>
+        {bedrooms > 0 && (
+          <div
+            className={bedroomsPrice}
+            style={isMobile ? { marginLeft: '0' } : { marginLeft: '30px' }}
+          >
+            <BedIcon className={bedPriceIcon} />
+            <Typography className={bedroomsPriceText}>
+              {bedrooms} {bedrooms == 1 ? 'Bedroom' : 'Bedrooms'}
+            </Typography>
+          </div>
+        )}
+        {price > 0 && (
+          <div
+            className={bedroomsPrice}
+            style={isMobile ? { marginLeft: 'auto' } : { marginLeft: '30px' }}
+          >
+            <MoneyIcon className={bedPriceIcon} />
+            <Typography className={bedroomsPriceText}> {getPriceRange(price) || 0}</Typography>
+          </div>
+        )}
+      </Grid>
+    );
+  };
+
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -218,8 +268,8 @@ const ReviewComponent = ({
           <Grid container spacing={2}>
             <Grid item container justifyContent="space-between">
               <Grid item container justifyContent="space-between" className={bottomborder}>
-                <Grid container item spacing={1}>
-                  <Grid item className={heartSpacing}>
+                <Grid container item spacing={1} className={reviewHeader}>
+                  <Grid item>
                     <HeartRating value={overallRating} readOnly />
                   </Grid>
                   <Grid item>
@@ -236,11 +286,13 @@ const ReviewComponent = ({
                     </IconButton>
                   </Grid>
 
+                  {!isMobile && bedroomsPriceLabel()}
+
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
                 </Grid>
-
+                {isMobile && bedroomsPriceLabel()}
                 <Grid item>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>

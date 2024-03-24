@@ -19,6 +19,8 @@ export type Review = {
   readonly date: Date;
   readonly detailedRatings: DetailedRating;
   readonly landlordId: string;
+  readonly bedrooms: number;
+  readonly price: number;
   readonly overallRating: number;
   readonly photos: readonly string[];
   readonly reviewText: string;
