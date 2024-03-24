@@ -12,8 +12,9 @@ import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
-import DropDown from '../components/utils/DropDown';
 import { sortReviews } from '../utils/sortReviews';
+import SortByButton from '../components/Bookmarks/SortByButton';
+import { AptSortField, sortApartments } from '../utils/sortApartments';
 
 type Props = {
   user: firebase.User | null;
@@ -39,18 +40,37 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Work Sans',
     fontWeight: 800,
   },
-  sortByButton: {
-    background: '#E8E8E8',
-    border: 'none',
-    borderRadius: '10px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
-  },
   headerContainer: {
     marginTop: '2em',
     marginBottom: '2em',
   },
 }));
+
+const ToggleButton = ({
+  text,
+  callback,
+  icon,
+}: {
+  text: string;
+  callback: () => void;
+  icon: React.ReactElement;
+}) => {
+  return (
+    <Button
+      style={{
+        backgroundColor: 'white',
+        borderRadius: '9px',
+        textTransform: 'initial',
+      }}
+      variant="outlined"
+      color="secondary"
+      onClick={callback}
+      endIcon={icon}
+    >
+      {text}
+    </Button>
+  );
+};
 
 /**
  * Bookmarks Page
@@ -60,30 +80,33 @@ const useStyles = makeStyles((theme) => ({
  * @returns BookmarksPage The BookmarksPage component.
  */
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, headerStyle, sortByButton, headerContainer, gridContainer } = useStyles();
+  const { background, headerStyle, headerContainer, gridContainer } = useStyles();
+  useTitle('Bookmarks');
+
+  /**** Saved apartments ****/
   const defaultShow = 6;
+  const savedAPI = '/api/saved-apartments';
 
-  const [toShow, setToShow] = useState<number>(defaultShow);
+  const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
+  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
+  // handle sort (either number of reviews or average rate)
+  const [sortAptsBy, setSortAptsBy] = useState<AptSortField>('numReviews');
 
+  // handle toggle
   const handleViewAll = () => {
-    setToShow(toShow + (savedAptsData.length - defaultShow));
+    setAptsToShow(aptsToShow + (savedAptsData.length - defaultShow));
   };
-
   const handleCollapse = () => {
-    setToShow(defaultShow);
+    setAptsToShow(defaultShow);
   };
 
+  /**** Helpful reviews ****/
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [resultsToShow, setResultsToShow] = useState<number>(2);
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
-  const [showMoreLessState, setShowMoreLessState] = useState<String>('Show More');
-
-  useTitle('Bookmarks');
-
-  const [savedAptsData, setsavedAptsData] = useState<CardData[]>([]);
-  const savedAPI = '/api/saved-apartments';
+  const [showMoreLessState, setShowMoreLessState] = useState<string>('Show More');
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
@@ -97,17 +120,23 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           },
           createAuthHeaders(token)
         );
+
+        // this is here so we can get the token when it's fetched and not cause an unauthorized error
         get<CardData[]>(
           savedAPI,
           {
-            callback: setsavedAptsData,
+            callback: (data) => {
+              sortApartments(data, sortAptsBy).then((res) => {
+                setSavedAptsData(res);
+              });
+            },
           },
           createAuthHeaders(token)
         );
       }
     };
     fetchLikedReviews();
-  }, [user, toggle, savedAPI]);
+  }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
@@ -158,57 +187,85 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <Grid xs={11} sm={11} md={9}>
-        <Box className={headerContainer}>
-          <Typography variant="h3" className={headerStyle}>
-            Saved Properties and Landlords ({savedAptsData.length})
-          </Typography>
+      <Grid item xs={11} sm={11} md={9}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          className={headerContainer}
+        >
+          <Box>
+            <Typography variant="h3" className={headerStyle}>
+              Saved Properties and Landlords ({savedAptsData.length})
+            </Typography>
+          </Box>
+
+          <Box>
+            <SortByButton
+              menuItems={[
+                {
+                  item: 'Review Count',
+                  callback: () => {
+                    setSortAptsBy('numReviews');
+                    sortApartments(savedAptsData, 'numReviews').then((res) => {
+                      setSavedAptsData(res);
+                    });
+                  },
+                },
+                {
+                  item: 'Rating',
+                  callback: () => {
+                    setSortAptsBy('overallRating');
+                    sortApartments(savedAptsData, 'overallRating').then((res) => {
+                      setSavedAptsData(res);
+                    });
+                  },
+                },
+              ]}
+            />
+          </Box>
         </Box>
 
         {savedAptsData.length > 0 ? (
           <Grid container spacing={4} className={gridContainer}>
             {savedAptsData &&
-              savedAptsData.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
-                const { id } = buildingData;
-                return (
-                  <Grid item xs={12} md={4} key={index}>
-                    <Link
-                      {...{
-                        to: `/apartment/${id}`,
-                        style: { textDecoration: 'none' },
-                        component: RouterLink,
-                      }}
-                    >
-                      <BookmarkAptCard
-                        key={index}
-                        numReviews={numReviews}
-                        buildingData={buildingData}
-                        company={company}
-                      />
-                    </Link>
-                  </Grid>
-                );
-              })}
-            <Grid item xs={12} container justifyContent="center">
+              savedAptsData
+                .slice(0, aptsToShow)
+                .map(({ buildingData, numReviews, company }, index) => {
+                  const { id } = buildingData;
+                  return (
+                    <Grid item xs={12} md={4} key={index}>
+                      <Link
+                        {...{
+                          to: `/apartment/${id}`,
+                          style: { textDecoration: 'none' },
+                          component: RouterLink,
+                        }}
+                      >
+                        <BookmarkAptCard
+                          key={index}
+                          numReviews={numReviews}
+                          buildingData={buildingData}
+                          company={company}
+                        />
+                      </Link>
+                    </Grid>
+                  );
+                })}
+            <Grid item xs={12} justifyContent="center">
               {savedAptsData.length > defaultShow &&
-                (savedAptsData.length > toShow ? (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleViewAll}
-                    endIcon={<KeyboardArrowDownIcon />}
-                  >
-                    View All
-                  </Button>
+                (savedAptsData.length > aptsToShow ? (
+                  <ToggleButton
+                    text="View All"
+                    callback={handleViewAll}
+                    icon={<KeyboardArrowDownIcon />}
+                  />
                 ) : (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleCollapse}
-                    endIcon={<KeyboardArrowUpIcon />}
-                  >
-                    Collapse
-                  </Button>
+                  <ToggleButton
+                    text="Collapse"
+                    callback={handleCollapse}
+                    icon={<KeyboardArrowUpIcon />}
+                  />
                 ))}
             </Grid>
           </Grid>
@@ -229,29 +286,22 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           </Box>
 
           <Box>
-            <Grid container spacing={1} direction="row" alignItems="center">
-              <Grid item>
-                <Typography>Sort by:</Typography>
-              </Grid>
-              <Grid item className={sortByButton}>
-                <DropDown
-                  menuItems={[
-                    {
-                      item: 'Recent',
-                      callback: () => {
-                        setSortBy('date');
-                      },
-                    },
-                    {
-                      item: 'Helpful',
-                      callback: () => {
-                        setSortBy('likes');
-                      },
-                    },
-                  ]}
-                />
-              </Grid>
-            </Grid>
+            <SortByButton
+              menuItems={[
+                {
+                  item: 'Recent',
+                  callback: () => {
+                    setSortBy('date');
+                  },
+                },
+                {
+                  item: 'Helpful',
+                  callback: () => {
+                    setSortBy('likes');
+                  },
+                },
+              ]}
+            />
           </Box>
         </Box>
 
@@ -283,20 +333,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             {helpfulReviewsData.length > 2 && (
               <Box textAlign="center">
                 <Grid item style={{ padding: '30px' }}>
-                  <Button
-                    style={{
-                      backgroundColor: 'white',
-                      border: '1px solid #A3A3A3',
-                      borderRadius: '9px',
-                      width: '10em',
-                      textTransform: 'initial',
-                    }}
-                    variant="contained"
-                    disableElevation
-                    onClick={handleShowMoreLess}
-                  >
-                    {showMoreLessState}
-                  </Button>
+                  <ToggleButton
+                    text={showMoreLessState}
+                    callback={handleShowMoreLess}
+                    icon={
+                      showMoreLessState === 'Show More' ? (
+                        <KeyboardArrowDownIcon />
+                      ) : (
+                        <KeyboardArrowUpIcon />
+                      )
+                    }
+                  />
                 </Grid>
               </Box>
             )}
