@@ -18,19 +18,19 @@ const locationData: LocationCardData[] = [
     location: 'West',
   },
   {
-    photo: DowntownImg,
-    location: 'Downtown',
-  },
-  {
     photo: NorthImg,
     location: 'North',
+  },
+  {
+    photo: DowntownImg,
+    location: 'Downtown',
   },
 ];
 
 const LocationCards = (): ReactElement => {
   const data = locationData;
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={5}>
       {data &&
         data.map(({ photo, location }, index) => {
           return (
