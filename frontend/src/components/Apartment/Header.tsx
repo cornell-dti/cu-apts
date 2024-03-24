@@ -196,7 +196,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
         <DefaultIcon
           className={!isMobile ? logo : mobileLogo}
           aria-label={name}
-          color={photos.length > 0 ? 'rgba(185, 70, 48, 0.8)' : 'rgb(185, 70, 48)'}
+          color={photos.length > 0 ? colors.red1Transparent : colors.red1}
         />
       </Grid>
       <Grid item xs={!isMobile ? 6 : 9} className={!isMobile ? headerSection : mobileHeaderSection}>
