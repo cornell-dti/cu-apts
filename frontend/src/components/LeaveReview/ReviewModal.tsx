@@ -101,6 +101,7 @@ const useStyle = makeStyles({
     marginTop: '10px',
     marginBottom: '10px',
     width: '80px',
+    marginRight: '15px',
   },
   hollowRedButton: {
     minWidth: '80px',
@@ -742,6 +743,7 @@ const ReviewModal = ({
           disableElevation
           onClick={onCloseClearPhotos}
           className={hollowRedButton}
+          style={{ marginLeft: '15px' }}
         >
           Cancel
         </Button>
