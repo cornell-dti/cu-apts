@@ -10,6 +10,8 @@ import {
   Typography,
   useMediaQuery,
   IconButton,
+  Link,
+  Button,
 } from '@material-ui/core';
 import savedIcon from '../../assets/filled-saved-icon.png';
 import unsavedIcon from '../../assets/unfilled-saved-icon.png';
@@ -19,6 +21,7 @@ import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types
 import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
 import { colors } from '../../colors';
+import { Link as RouterLink } from 'react-router-dom';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -31,9 +34,10 @@ type Props = {
 const useStyles = makeStyles({
   root: {
     borderRadius: '10px',
-    '&:hover': {
-      background: colors.red5,
-    },
+  },
+  redHighlight: {
+    borderRadius: '10px',
+    background: colors.red5,
   },
   imgStyle: {
     borderRadius: '12%',
@@ -68,13 +72,20 @@ const useStyles = makeStyles({
   imgContainerMobile: {
     borderRadius: '10px',
   },
+  landlordButton: {
+    textTransform: 'none',
+    '&.Mui-disabled': {
+      color: 'inherit',
+    },
+  },
 });
 
 /**
  * ApartmentCard Component
  *
  * This component displays a card containing information about a specific apartment,
- * including its name, address, average rating, number of reviews, and a sample review.
+ * including its name, landlord, address, average rating, number of reviews, and a sample review.
+ * The landlord button redirects users to the landlord page.
  * The card is responsive and adjusts its layout based on the screen size.
  *
  * @component
@@ -99,6 +110,7 @@ const ApartmentCard = ({
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const {
     imgStyle,
@@ -106,9 +118,11 @@ const ApartmentCard = ({
     aptNameTxt,
     marginTxt,
     root,
+    redHighlight,
     reviewNum,
     textStyle,
     imgContainerMobile,
+    landlordButton,
   } = useStyles();
 
   useEffect(() => {
@@ -160,8 +174,47 @@ const ApartmentCard = ({
     });
   }, [id]);
 
+  //  Function which returns the apartment's "Landlord: " label
+  const landlordLabel = () => {
+    return (
+      <Grid item style={{ width: '285px', display: 'flex' }}>
+        <Link
+          {...{
+            to: `/landlord/${buildingData.landlordId}`,
+            style: { textDecoration: 'none', display: 'inline-block', width: '100%' },
+            component: RouterLink,
+          }}
+        >
+          <Button
+            className={landlordButton}
+            size="small"
+            onMouseEnter={() => setIsHovered(false)}
+            onMouseLeave={() => setIsHovered(true)}
+          >
+            <Typography
+              variant="subtitle1"
+              className={aptNameTxt}
+              style={{ fontSize: isMobile ? '15px' : '20px', marginRight: '6px' }}
+            >
+              Landlord:
+            </Typography>
+
+            <Typography variant="subtitle1" style={{ fontSize: isMobile ? '15px' : '20px' }}>
+              {company && company.length > 14 ? `${company.slice(0, 14)}...` : company}
+            </Typography>
+          </Button>
+        </Link>
+      </Grid>
+    );
+  };
+
   return (
-    <Card className={root} variant="outlined">
+    <Card
+      className={isHovered ? redHighlight : root}
+      variant="outlined"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <Grid container direction="row" alignItems="center">
         {!isMobile && (
           <Grid item xs={11} sm={4} md={2}>
@@ -193,6 +246,9 @@ const ApartmentCard = ({
                   {name}
                 </Typography>
               </Grid>
+
+              {!isMobile && landlordLabel()}
+
               {/* Add saved and unsaved icons on the right side */}
               <Grid item>
                 <IconButton
@@ -200,6 +256,7 @@ const ApartmentCard = ({
                   onClick={handleSaveToggle}
                   style={{
                     padding: isMobile ? 10 : 30,
+                    paddingLeft: 10,
                     marginLeft: 'auto', // This pushes the icon to the right
                     backgroundColor: 'transparent',
                   }}
@@ -211,6 +268,8 @@ const ApartmentCard = ({
                   />
                 </IconButton>
               </Grid>
+
+              {isMobile && landlordLabel()}
 
               {company && (
                 <Grid container item justifyContent="space-between">

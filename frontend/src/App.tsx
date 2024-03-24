@@ -80,6 +80,8 @@ export type CardData = {
   buildingData: ApartmentWithId;
   numReviews: number;
   company?: string;
+  avgRating?: number;
+  avgPrice?: number;
 };
 
 export type LocationCardData = {
