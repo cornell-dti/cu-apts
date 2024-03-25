@@ -15,9 +15,11 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.6",
     "@types/uuid": "^8.3.0",
+    "@vis.gl/react-google-maps": "^0.7.1",
     "axios": "^0.21.0",
     "date-fns": "^2.19.0",
     "font-awesome": "^4.7.0",
+    "google-map-react": "^2.2.1",
     "material-ui-search-bar": "^1.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -51,5 +53,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/google-map-react": "^2.1.10"
   }
 }

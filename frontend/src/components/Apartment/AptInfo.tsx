@@ -10,6 +10,8 @@ type Props = {
   readonly contact: string | null;
   readonly address: string | null;
   readonly buildings: CardData[];
+  readonly latitude?: number;
+  readonly longitude?: number;
 };
 
 export default function AptInfo({
@@ -18,6 +20,8 @@ export default function AptInfo({
   contact,
   address,
   buildings,
+  latitude = 0,
+  longitude = 0,
 }: Props): ReactElement {
   return (
     <Box border={1} borderColor="grey.300" borderRadius={10}>
