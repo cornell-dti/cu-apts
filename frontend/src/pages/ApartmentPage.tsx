@@ -598,6 +598,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
     </>
   );
+
   const InfoSection = landlordData && (
     <Grid item xs={12}>
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
@@ -609,6 +610,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         contact={landlordData.contact}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
       />
     </Grid>
   );
