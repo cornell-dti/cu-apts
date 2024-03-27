@@ -24,6 +24,7 @@ import { get } from '../../utils/call';
 import { Link as RouterLink } from 'react-router-dom';
 import ReviewHeader from '../Review/ReviewHeader';
 import axios from 'axios';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 
 /**
  * Component Props for AdminReviewComponent.
@@ -122,8 +123,12 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
    */
   const changeStatus = async (newStatus: string) => {
     const endpoint = `/api/update-review-status/${review.id}/${newStatus}`;
-    await axios.put(endpoint);
-    setToggle((cur) => !cur);
+    let user = await getUser(true);
+    if (user) {
+      const token = await user.getIdToken(true);
+      await axios.put(endpoint, {}, createAuthHeaders(token));
+      setToggle((cur) => !cur);
+    }
   };
 
   return (

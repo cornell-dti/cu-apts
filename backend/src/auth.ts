@@ -1,7 +1,13 @@
 import { RequestHandler } from 'express';
 import { auth } from './firebase-config';
 
-// Middleware to authenticate API requests
+/**
+ * Middleware to authenticate API requests.
+ * Requires the authorization header to be passed as input to the api request.
+ * Ex: await axios.put(endpoint, {}, createAuthHeaders(token));
+ * @returns status 401 if the token is invalid, not present, syntax is invalid, domain is invalid,
+ *          or calls next if the token is valid
+ */
 const authenticate: RequestHandler = async (req, res, next) => {
   try {
     const { authorization } = req.headers; // Extract the authorization header from the request
