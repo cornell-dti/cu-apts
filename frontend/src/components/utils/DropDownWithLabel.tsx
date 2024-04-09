@@ -2,6 +2,14 @@
  * A dropdown component with a label.
  *
  * @component
+ *
+ * @param {string} label - The label for the dropdown.
+ * @param {MenuElement[]} menuItems - An array of menu items, each containing an item name and a callback function.
+ * @param {React.CSSProperties} [labelStyle] - The style of the label.
+ * @param {boolean} isMobile - Whether the dropdown is being displayed on a mobile device.
+ *
+ * @returns {JSX.Element} The rendered dropdown component.
+ *
  * @example
  * // Usage:
  * const menuItems = [
