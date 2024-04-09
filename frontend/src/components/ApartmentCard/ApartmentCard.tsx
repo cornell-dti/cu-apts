@@ -224,7 +224,7 @@ const ApartmentCard = ({
         direction="row"
         alignItems="flex-start"
         justifyContent="space-between"
-        style={{ padding: '1rem' }}
+        style={{ padding: '1.5rem' }}
         spacing={2}
       >
         {/* Left Grid Element (Image) */}
@@ -253,7 +253,7 @@ const ApartmentCard = ({
                   variant="h5"
                   className={aptNameTxt}
                   style={{
-                    fontSize: isMobile ? '18px' : '25px',
+                    fontSize: isMobile ? '18px' : '29px',
                     fontWeight: 700,
                     lineHeight: isMobile ? 'normal' : '36px',
                   }}
