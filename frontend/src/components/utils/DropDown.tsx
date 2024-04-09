@@ -27,8 +27,22 @@
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import SvgIcon from '@material-ui/core/SvgIcon';
+
+const expandArrow = (direction: boolean) => {
+  return (
+    <div style={{ paddingLeft: '10px', transform: direction ? 'rotate(180deg)' : 'none' }}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="12"
+        viewBox="0 0 20 12"
+        fill="none"
+      >
+        <path d="M1 1L10 10L19 1" stroke="black" strokeWidth="2" />
+      </svg>
+    </div>
+  );
+};
 
 type MenuElement = {
   item: string;
@@ -37,6 +51,7 @@ type MenuElement = {
 
 type Props = {
   menuItems: MenuElement[];
+  isMobile?: boolean;
 };
 
 const useStyles = makeStyles({
@@ -47,7 +62,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function DropDown({ menuItems }: Props) {
+export default function DropDown({ menuItems, isMobile }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selected, setSelected] = useState<string>(menuItems[0].item || '-');
   const { button } = useStyles();
@@ -69,9 +84,21 @@ export default function DropDown({ menuItems }: Props) {
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
         className={button}
+        style={{
+          textTransform: 'none',
+          fontSize: '22px',
+          lineHeight: 'normal',
+          fontWeight: 'normal',
+          height: '51px',
+          paddingLeft: '18px',
+          paddingRight: '18px',
+          borderRadius: '10px',
+          backgroundColor: '#E8E8E8',
+          scale: isMobile ? '0.75' : '1',
+        }}
       >
         {selected}
-        <SvgIcon component={open ? ArrowDropUp : ArrowDropDown} />
+        {expandArrow(open)}
       </Button>
       <Menu
         id="basic-menu"

@@ -1,12 +1,12 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import ApartmentCard from './ApartmentCard';
-import { Grid, Link, makeStyles, Button, Typography } from '@material-ui/core';
+import { Grid, Link, makeStyles, Button } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
 import { loadingLength } from '../../constants/HomeConsts';
-import DropDown from '../utils/DropDown';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import { sortApartments } from '../../utils/sortApartments';
+import DropDownWithLabel from '../utils/DropDownWithLabel';
 
 type Props = {
   data: CardData[];
@@ -34,13 +34,6 @@ const useStyles = makeStyles({
     borderRight: 'none',
     borderBottom: 'none',
   },
-  sortByButton: {
-    background: '#E8E8E8',
-    border: 'none',
-    borderRadius: '10px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
-  },
 });
 
 /**
@@ -58,13 +51,23 @@ const useStyles = makeStyles({
  * @returns {ReactElement} ApartmentCards component.
  */
 const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
-  const { boundingBox, showMoreButton, horizontalLine, sortByButton } = useStyles();
-
+  const { boundingBox, showMoreButton, horizontalLine } = useStyles();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [resultsToShow, setResultsToShow] = useState<number>(loadingLength);
 
   const handleShowMore = () => {
     setResultsToShow(resultsToShow + loadingLength);
   };
+
+  // Handle resizing of the window depending on mobile and if it is clicked.
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   type Fields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
   const [sortBy, setSortBy] = useState<Fields>('originalOrder');
@@ -73,52 +76,47 @@ const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
   return (
     <>
       <Grid item style={{ marginRight: '8px' }}>
-        <Grid container spacing={1} direction="row" alignItems="center" justifyContent="flex-end">
-          <Grid item>
-            <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
-          </Grid>
-          <Grid item className={sortByButton}>
-            <DropDown
-              menuItems={[
-                {
-                  item: 'Recommended',
-                  callback: () => {
-                    setSortBy('originalOrder');
-                    setOrderLowToHigh(false);
-                  },
-                },
-                {
-                  item: 'Lowest Price',
-                  callback: () => {
-                    setSortBy('avgPrice');
-                    setOrderLowToHigh(true);
-                  },
-                },
-                {
-                  item: 'Highest Price',
-                  callback: () => {
-                    setSortBy('avgPrice');
-                    setOrderLowToHigh(false);
-                  },
-                },
-                {
-                  item: 'Lowest Rating',
-                  callback: () => {
-                    setSortBy('avgRating');
-                    setOrderLowToHigh(true);
-                  },
-                },
-                {
-                  item: 'Highest Rating',
-                  callback: () => {
-                    setSortBy('avgRating');
-                    setOrderLowToHigh(false);
-                  },
-                },
-              ]}
-            />
-          </Grid>
-        </Grid>
+        <DropDownWithLabel
+          label="Sort by"
+          menuItems={[
+            {
+              item: 'Recommended',
+              callback: () => {
+                setSortBy('originalOrder');
+                setOrderLowToHigh(false);
+              },
+            },
+            {
+              item: 'Lowest Price',
+              callback: () => {
+                setSortBy('avgPrice');
+                setOrderLowToHigh(true);
+              },
+            },
+            {
+              item: 'Highest Price',
+              callback: () => {
+                setSortBy('avgPrice');
+                setOrderLowToHigh(false);
+              },
+            },
+            {
+              item: 'Lowest Rating',
+              callback: () => {
+                setSortBy('avgRating');
+                setOrderLowToHigh(true);
+              },
+            },
+            {
+              item: 'Highest Rating',
+              callback: () => {
+                setSortBy('avgRating');
+                setOrderLowToHigh(false);
+              },
+            },
+          ]}
+          isMobile={isMobile}
+        />
       </Grid>
       <Grid container spacing={3} className={boundingBox}>
         {data &&
