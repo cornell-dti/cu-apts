@@ -41,7 +41,7 @@ const useStyles = makeStyles({
   },
   imgStyle: {
     borderRadius: '12%',
-    padding: '17px',
+    margin: '17px',
   },
   aptNameTxt: {
     fontWeight: 800,
@@ -56,14 +56,11 @@ const useStyles = makeStyles({
     fontSize: '18px',
   },
   textStyle: {
-    maxWidth: '100%',
     display: '-webkit-box',
     WebkitBoxOrient: 'vertical',
     WebkitLineClamp: 3,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    marginLeft: '3px',
-    marginRight: '5px',
   },
   imgMobile: {
     borderRadius: '10px',
@@ -76,6 +73,13 @@ const useStyles = makeStyles({
     textTransform: 'none',
     '&.Mui-disabled': {
       color: 'inherit',
+    },
+  },
+  saveRibbonIcon: {
+    marginLeft: 'auto',
+    padding: 0,
+    '&:hover': {
+      backgroundColor: 'transparent',
     },
   },
 });
@@ -177,7 +181,7 @@ const ApartmentCard = ({
   //  Function which returns the apartment's "Landlord: " label
   const landlordLabel = () => {
     return (
-      <Grid item style={{ width: '285px', display: 'flex' }}>
+      <Grid item style={{ display: 'flex' }}>
         <Link
           {...{
             to: `/landlord/${buildingData.landlordId}`,
@@ -215,89 +219,156 @@ const ApartmentCard = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Grid container direction="row" alignItems="center">
-        {!isMobile && (
-          <Grid item xs={11} sm={4} md={2}>
-            <CardMedia className={imgStyle} image={img} component="img" title={name} />
-          </Grid>
-        )}
-        {isMobile && (
-          <Grid container direction="row" alignItems="center" justifyContent="center">
-            <Grid item xs={11} sm={4} md={2} className={imgContainerMobile}>
-              <CardMedia
-                className={imgMobile}
-                style={{ height: isMobile ? '160px' : '480px' }}
-                image={img}
-                component="img"
-                title={name}
-              />
-            </Grid>
-          </Grid>
-        )}
-        <Grid item sm={8} md={10} className={marginTxt}>
-          <CardContent>
-            <Grid container direction="row" alignItems="center">
-              <Grid item style={{ flex: 1 }}>
+      <Grid
+        container
+        direction="row"
+        alignItems="flex-start"
+        justifyContent="space-between"
+        style={{ padding: '1rem' }}
+        spacing={2}
+      >
+        {/* Left Grid Element (Image) */}
+        <Grid item xs={isMobile ? 12 : true}>
+          <CardMedia
+            image={img}
+            component="img"
+            title={name}
+            style={{
+              aspectRatio: isMobile ? '2' : '1',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              borderRadius: '6px',
+            }}
+          />
+        </Grid>
+        {/* Right Grid Elements (Title, Text, Etc...) */}
+        <Grid item xs={isMobile ? 12 : 9} container direction="column">
+          {/* First Row Elements (Title, Subtitle, Landlord Button, Save Ribbon) */}
+          <Grid item container direction="row" justifyContent="space-between">
+            {/* Title and Subtitle in a Column */}
+            <Grid item direction="column" alignItems="stretch" xs={isMobile ? 'auto' : true}>
+              {/* Title Element */}
+              <Grid item>
                 <Typography
                   variant="h5"
                   className={aptNameTxt}
-                  style={{ fontSize: isMobile ? '20px' : '25px' }}
+                  style={{
+                    fontSize: isMobile ? '18px' : '25px',
+                    fontWeight: 700,
+                    lineHeight: isMobile ? 'normal' : '36px',
+                  }}
                 >
                   {name}
                 </Typography>
               </Grid>
-
-              {!isMobile && landlordLabel()}
-
-              {/* Add saved and unsaved icons on the right side */}
-              <Grid item>
-                <IconButton
-                  disableRipple
-                  onClick={handleSaveToggle}
-                  style={{
-                    padding: isMobile ? 10 : 30,
-                    paddingLeft: 10,
-                    marginLeft: 'auto', // This pushes the icon to the right
-                    backgroundColor: 'transparent',
-                  }}
-                >
-                  <img
-                    src={isSaved ? saved : unsaved}
-                    alt={isSaved ? 'Saved' : 'Unsaved'}
-                    style={{ width: '25.2', height: '32.4px' }}
-                  />
-                </IconButton>
-              </Grid>
-
-              {isMobile && landlordLabel()}
-
+              {/* Subtitle Element */}
               {company && (
-                <Grid container item justifyContent="space-between">
-                  <Grid>
-                    <Typography
-                      variant="subtitle1"
-                      style={{ fontSize: isMobile ? '15px' : '20px' }}
-                    >
-                      {buildingData.address}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              )}
-              <Grid container direction="row" alignItems="center">
-                <HeartRating value={getAverageRating(reviewList)} precision={0.5} readOnly />
-                <Typography variant="h6" className={reviewNum}>
-                  {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
-                </Typography>
-              </Grid>
-              {!isMobile && (
-                <Grid>
-                  <Typography variant="subtitle1" className={textStyle}>
-                    {sampleReview}
+                <Grid item>
+                  <Typography
+                    style={{
+                      fontSize: isMobile ? '10px' : '20px',
+                      fontWeight: 400,
+                      lineHeight: isMobile ? 'normal' : '32px',
+                    }}
+                  >
+                    {buildingData.address}
                   </Typography>
                 </Grid>
               )}
             </Grid>
-          </CardContent>
+            {/* Landlord Button and Save Ribbon in a Row*/}
+            {!isMobile && (
+              <Grid item>
+                <Grid container direction="row" alignItems="center">
+                  {landlordLabel()}
+
+                  {/* Add saved and unsaved icons on the right side */}
+                  <Grid item>
+                    <IconButton disableRipple onClick={handleSaveToggle} className="saveRibbonIcon">
+                      <img
+                        src={isSaved ? saved : unsaved}
+                        alt={isSaved ? 'Saved' : 'Unsaved'}
+                        style={{
+                          width: '25.2px',
+                          height: '32.4px',
+                          objectPosition: 'center',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+            )}
+            {/* Mobile Version of Rating (inline with title and subtitle on mobile) */}
+            {isMobile && (
+              <Grid
+                item
+                xs={true}
+                container
+                direction="row"
+                alignItems="flex-start"
+                justifyContent={'flex-end'}
+                style={{ paddingTop: '4px' }}
+              >
+                <HeartRating
+                  value={getAverageRating(reviewList)}
+                  precision={0.5}
+                  readOnly
+                  fontSize={'12px'}
+                />
+                <Typography
+                  variant="h6"
+                  className={reviewNum}
+                  style={{ fontSize: '10px', lineHeight: 'normal' }}
+                >
+                  {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
+          {/* Desktop Version of Rating (below title and subtitle on desktop) */}
+          {!isMobile && (
+            <Grid
+              item
+              xs={12}
+              container
+              direction="row"
+              alignItems="flex-start"
+              justifyContent={'flex-start'}
+              style={{ paddingTop: '10px' }}
+            >
+              <HeartRating
+                value={getAverageRating(reviewList)}
+                precision={0.5}
+                readOnly
+                size="medium"
+              />
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: isMobile ? '10px' : '18px', lineHeight: 'normal' }}
+              >
+                {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
+              </Typography>
+            </Grid>
+          )}
+          {/* Sample Review */}
+          {!isMobile && (
+            <Grid item alignItems="center">
+              <Typography
+                style={{
+                  fontSize: '18.25px',
+                  fontWeight: 400,
+                  lineHeight: '32px',
+                  paddingTop: '20px',
+                }}
+                className={textStyle}
+              >
+                {sampleReview}
+              </Typography>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Card>
