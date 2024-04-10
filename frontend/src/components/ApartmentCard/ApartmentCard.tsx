@@ -3,7 +3,6 @@ import { get } from '../../utils/call';
 import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import {
   Card,
-  CardContent,
   CardMedia,
   Grid,
   makeStyles,
@@ -13,8 +12,8 @@ import {
   Link,
   Button,
 } from '@material-ui/core';
-import savedIcon from '../../assets/filled-saved-icon.png';
-import unsavedIcon from '../../assets/unfilled-saved-icon.png';
+import savedIcon from '../../assets/saved-icon-filled.svg';
+import unsavedIcon from '../../assets/saved-icon-unfilled.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
@@ -115,19 +114,9 @@ const ApartmentCard = ({
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [savedIsHovered, setSavedIsHovered] = useState(false);
 
-  const {
-    imgStyle,
-    imgMobile,
-    aptNameTxt,
-    marginTxt,
-    root,
-    redHighlight,
-    reviewNum,
-    textStyle,
-    imgContainerMobile,
-    landlordButton,
-  } = useStyles();
+  const { aptNameTxt, root, redHighlight, reviewNum, textStyle, landlordButton } = useStyles();
 
   useEffect(() => {
     const checkIfSaved = async () => {
@@ -284,13 +273,18 @@ const ApartmentCard = ({
 
                   {/* Add saved and unsaved icons on the right side */}
                   <Grid item>
-                    <IconButton disableRipple onClick={handleSaveToggle} className="saveRibbonIcon">
+                    <IconButton
+                      disableRipple
+                      onClick={handleSaveToggle}
+                      onMouseEnter={() => setSavedIsHovered(true)}
+                      onMouseLeave={() => setSavedIsHovered(false)}
+                      className="saveRibbonIcon"
+                    >
                       <img
-                        src={isSaved ? saved : unsaved}
+                        src={savedIsHovered ? saved : isSaved ? saved : unsaved}
                         alt={isSaved ? 'Saved' : 'Unsaved'}
                         style={{
-                          width: '25.2px',
-                          height: '32.4px',
+                          height: '24px',
                           objectPosition: 'center',
                           objectFit: 'cover',
                         }}
