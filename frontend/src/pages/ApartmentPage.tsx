@@ -42,6 +42,7 @@ import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/filled-large-saved-icon.png';
 import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import MapModal from '../components/Apartment/MapModal';
 
 type Props = {
   user: firebase.User | null;
@@ -135,6 +136,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
@@ -375,6 +377,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const Modals = landlordData && apt && (
     <>
+      <MapModal
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        setOpen={setMapOpen}
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+      />
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
@@ -602,7 +614,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12}>
-      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+      <Typography variant="h3" style={{ fontSize: '33px', fontWeight: 600, marginBottom: '14px' }}>
         Location
       </Typography>
       <MapInfo
@@ -611,8 +623,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         latitude={apt!.latitude}
         walkTime={apt!.walkTime}
         driveTime={apt!.driveTime}
+        handleClick={() => setMapOpen(true)}
       />
-      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+      <Typography variant="h3" style={{ fontSize: '33px', fontWeight: 600, marginBottom: '14px' }}>
         Landlord
       </Typography>
       <AptInfo
