@@ -27,19 +27,18 @@
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import ArrowDownSrc from '../../assets/dropdown-arrow-down.svg';
 
 const expandArrow = (direction: boolean) => {
   return (
-    <div style={{ paddingLeft: '10px', transform: direction ? 'rotate(180deg)' : 'none' }}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="12"
-        viewBox="0 0 20 12"
-        fill="none"
-      >
-        <path d="M1 1L10 10L19 1" stroke="black" strokeWidth="2" />
-      </svg>
+    <div
+      style={{
+        padding: '0 0 0 10px',
+        transform: direction ? 'scaleY(-1)' : 'none',
+        transition: 'all 0.5s ease',
+      }}
+    >
+      <img src={ArrowDownSrc} alt="⬇" />
     </div>
   );
 };
