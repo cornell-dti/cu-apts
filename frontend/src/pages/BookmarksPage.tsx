@@ -14,6 +14,7 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
 import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import { AptSortField, sortApartments } from '../utils/sortApartments';
 
 type Props = {
   user: firebase.User | null;
@@ -45,6 +46,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const ToggleButton = ({
+  text,
+  callback,
+  icon,
+}: {
+  text: string;
+  callback: () => void;
+  icon: React.ReactElement;
+}) => {
+  return (
+    <Button
+      style={{
+        backgroundColor: 'white',
+        borderRadius: '9px',
+        textTransform: 'initial',
+      }}
+      variant="outlined"
+      color="secondary"
+      onClick={callback}
+      endIcon={icon}
+    >
+      {text}
+    </Button>
+  );
+};
+
 /**
  * Bookmarks Page
  * This component represents the Bookmarks page. It displays the user's saved properties and landlords, and their reviews marked helpful.
@@ -55,17 +82,22 @@ const useStyles = makeStyles((theme) => ({
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const { background, headerStyle, headerContainer, gridContainer } = useStyles();
   const defaultShow = 6;
+  const savedAPI = '/api/saved-apartments';
 
-  const [toShow, setToShow] = useState<number>(defaultShow);
+  const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
+  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
+  // handle sort (either number of reviews or average rate)
+  const [sortAptsBy, setSortAptsBy] = useState<AptSortField>('numReviews');
 
+  // handle toggle
   const handleViewAll = () => {
-    setToShow(toShow + (savedAptsData.length - defaultShow));
+    setAptsToShow(aptsToShow + (savedAptsData.length - defaultShow));
   };
-
   const handleCollapse = () => {
-    setToShow(defaultShow);
+    setAptsToShow(defaultShow);
   };
 
+  /**** Helpful reviews ****/
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
   const [sortBy, setSortBy] = useState<Fields>('date');
   const [resultsToShow, setResultsToShow] = useState<number>(2);
@@ -98,17 +130,23 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           },
           createAuthHeaders(token)
         );
+
+        // this is here so we can get the token when it's fetched and not cause an unauthorized error
         get<CardData[]>(
           savedAPI,
           {
-            callback: setsavedAptsData,
+            callback: (data) => {
+              sortApartments(data, sortAptsBy).then((res) => {
+                setSavedAptsData(res);
+              });
+            },
           },
           createAuthHeaders(token)
         );
       }
     };
     fetchLikedReviews();
-  }, [user, toggle, savedAPI]);
+  }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
@@ -159,57 +197,87 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <Grid xs={11} sm={11} md={9}>
-        <Box className={headerContainer}>
-          <Typography variant="h3" className={headerStyle}>
-            Saved Properties and Landlords ({savedAptsData.length})
-          </Typography>
+      <Grid item xs={11} sm={11} md={9}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          className={headerContainer}
+        >
+          <Box>
+            <Typography variant="h3" className={headerStyle}>
+              Saved Properties and Landlords ({savedAptsData.length})
+            </Typography>
+          </Box>
+
+          <Box>
+            <DropDownWithLabel
+              label="Sort by"
+              menuItems={[
+                {
+                  item: 'Review Count',
+                  callback: () => {
+                    setSortAptsBy('numReviews');
+                    sortApartments(savedAptsData, 'numReviews').then((res) => {
+                      setSavedAptsData(res);
+                    });
+                  },
+                },
+                {
+                  item: 'Rating',
+                  callback: () => {
+                    setSortAptsBy('overallRating');
+                    sortApartments(savedAptsData, 'overallRating').then((res) => {
+                      setSavedAptsData(res);
+                    });
+                  },
+                },
+              ]}
+              isMobile={isMobile}
+            />
+          </Box>
         </Box>
 
         {savedAptsData.length > 0 ? (
           <Grid container spacing={4} className={gridContainer}>
             {savedAptsData &&
-              savedAptsData.slice(0, toShow).map(({ buildingData, numReviews, company }, index) => {
-                const { id } = buildingData;
-                return (
-                  <Grid item xs={12} md={4} key={index}>
-                    <Link
-                      {...{
-                        to: `/apartment/${id}`,
-                        style: { textDecoration: 'none' },
-                        component: RouterLink,
-                      }}
-                    >
-                      <BookmarkAptCard
-                        key={index}
-                        numReviews={numReviews}
-                        buildingData={buildingData}
-                        company={company}
-                      />
-                    </Link>
-                  </Grid>
-                );
-              })}
-            <Grid item xs={12} container justifyContent="center">
+              savedAptsData
+                .slice(0, aptsToShow)
+                .map(({ buildingData, numReviews, company }, index) => {
+                  const { id } = buildingData;
+                  return (
+                    <Grid item xs={12} md={4} key={index}>
+                      <Link
+                        {...{
+                          to: `/apartment/${id}`,
+                          style: { textDecoration: 'none' },
+                          component: RouterLink,
+                        }}
+                      >
+                        <BookmarkAptCard
+                          key={index}
+                          numReviews={numReviews}
+                          buildingData={buildingData}
+                          company={company}
+                        />
+                      </Link>
+                    </Grid>
+                  );
+                })}
+            <Grid item xs={12} justifyContent="center">
               {savedAptsData.length > defaultShow &&
-                (savedAptsData.length > toShow ? (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleViewAll}
-                    endIcon={<KeyboardArrowDownIcon />}
-                  >
-                    View All
-                  </Button>
+                (savedAptsData.length > aptsToShow ? (
+                  <ToggleButton
+                    text="View All"
+                    callback={handleViewAll}
+                    icon={<KeyboardArrowDownIcon />}
+                  />
                 ) : (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleCollapse}
-                    endIcon={<KeyboardArrowUpIcon />}
-                  >
-                    Collapse
-                  </Button>
+                  <ToggleButton
+                    text="Collapse"
+                    callback={handleCollapse}
+                    icon={<KeyboardArrowUpIcon />}
+                  />
                 ))}
             </Grid>
           </Grid>
@@ -303,20 +371,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             {helpfulReviewsData.length > 2 && (
               <Box textAlign="center">
                 <Grid item style={{ padding: '30px' }}>
-                  <Button
-                    style={{
-                      backgroundColor: 'white',
-                      border: '1px solid #A3A3A3',
-                      borderRadius: '9px',
-                      width: '10em',
-                      textTransform: 'initial',
-                    }}
-                    variant="contained"
-                    disableElevation
-                    onClick={handleShowMoreLess}
-                  >
-                    {showMoreLessState}
-                  </Button>
+                  <ToggleButton
+                    text={showMoreLessState}
+                    callback={handleShowMoreLess}
+                    icon={
+                      showMoreLessState === 'Show More' ? (
+                        <KeyboardArrowDownIcon />
+                      ) : (
+                        <KeyboardArrowUpIcon />
+                      )
+                    }
+                  />
                 </Grid>
               </Box>
             )}
