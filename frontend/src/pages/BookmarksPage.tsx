@@ -12,8 +12,8 @@ import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
-import DropDown from '../components/utils/DropDown';
 import { sortReviews } from '../utils/sortReviews';
+import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 type Props = {
   user: firebase.User | null;
@@ -39,13 +39,6 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Work Sans',
     fontWeight: 800,
   },
-  sortByButton: {
-    background: '#E8E8E8',
-    border: 'none',
-    borderRadius: '10px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
-  },
   headerContainer: {
     marginTop: '2em',
     marginBottom: '2em',
@@ -60,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
  * @returns BookmarksPage The BookmarksPage component.
  */
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, headerStyle, sortByButton, headerContainer, gridContainer } = useStyles();
+  const { background, headerStyle, headerContainer, gridContainer } = useStyles();
   const defaultShow = 6;
 
   const [toShow, setToShow] = useState<number>(defaultShow);
@@ -79,6 +72,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
   const [showMoreLessState, setShowMoreLessState] = useState<String>('Show More');
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useTitle('Bookmarks');
 
@@ -228,32 +229,51 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             </Typography>
           </Box>
 
-          <Box>
-            <Grid container spacing={1} direction="row" alignItems="center">
-              <Grid item>
-                <Typography>Sort by:</Typography>
-              </Grid>
-              <Grid item className={sortByButton}>
-                <DropDown
-                  menuItems={[
-                    {
-                      item: 'Recent',
-                      callback: () => {
-                        setSortBy('date');
-                      },
+          {!isMobile && (
+            <Box>
+              <DropDownWithLabel
+                label="Sort by"
+                menuItems={[
+                  {
+                    item: 'Recent',
+                    callback: () => {
+                      setSortBy('date');
                     },
-                    {
-                      item: 'Helpful',
-                      callback: () => {
-                        setSortBy('likes');
-                      },
+                  },
+                  {
+                    item: 'Helpful',
+                    callback: () => {
+                      setSortBy('likes');
                     },
-                  ]}
-                />
-              </Grid>
-            </Grid>
-          </Box>
+                  },
+                ]}
+                isMobile={isMobile}
+              />
+            </Box>
+          )}
         </Box>
+        {isMobile && (
+          <Box>
+            <DropDownWithLabel
+              label="Sort by"
+              menuItems={[
+                {
+                  item: 'Recent',
+                  callback: () => {
+                    setSortBy('date');
+                  },
+                },
+                {
+                  item: 'Helpful',
+                  callback: () => {
+                    setSortBy('likes');
+                  },
+                },
+              ]}
+              isMobile={isMobile}
+            />
+          </Box>
+        )}
 
         {helpfulReviewsData.length === 0 && (
           <Typography paragraph>You have not marked any reviews helpful.</Typography>
