@@ -122,6 +122,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     zIndex: 1000,
   },
+  // Create space between list of apartment cards
   reviewCardStyle: {
     marginBottom: '15px',
   },
@@ -157,7 +158,6 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const history = useHistory();
   const theme = useTheme();
   const isXsScreen = useMediaQuery(theme.breakpoints.down('xs'));
-
   const [approvedReviews, setApprovedReviews] = useState<ReviewWithId[]>([]);
   const [pendingReviews, setPendingReviews] = useState<ReviewWithId[]>([]);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
@@ -290,6 +290,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
         <Grid item xs={11} sm={7} md={6}>
           <h2 className={reviewHeaderStyle}>Pending Reviews ({pendingReviews.length})</h2>
           <Grid>
+            {/* Maps list of pending reviews and calls Review Component with fields for each user*/}
             {sortReviews(pendingReviews, 'date').map((review, index) => (
               <Grid item xs={12} key={index} className={reviewCardStyle}>
                 <ReviewComponent
@@ -309,6 +310,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
 
           <h2 className={reviewHeaderStyle}>Approved Reviews ({approvedReviews.length})</h2>
           <Grid>
+            {/* Maps list of approved reviews and calls Review Component with fields for each user*/}
             {sortReviews(approvedReviews, 'date').map((review, index) => (
               <Grid item xs={12} key={index} className={reviewCardStyle}>
                 <ReviewComponent
