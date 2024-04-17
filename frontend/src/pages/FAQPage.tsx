@@ -28,7 +28,7 @@ const FAQPage = (): ReactElement => {
     pageBackground: {
       backgroundColor: colors.gray3,
       padding: isMobile ? '32px 29px 0' : '96px 150px 0',
-      minHeight: 'calc(100vh - 96px)',
+      minHeight: 'calc(120vh - 96px)',
     },
     title: {
       color: colors.black,
