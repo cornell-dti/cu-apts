@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
   item: string;
@@ -21,7 +23,7 @@ const useStyles = makeStyles({
 
 export default function BasicMenu({ menuItems }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('Recent');
+  const [selected, setSelected] = useState<string>(menuItems[0].item || '-');
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -42,9 +44,6 @@ export default function BasicMenu({ menuItems }: Props) {
   return (
     <div>
       <Button
-        style={{
-          borderRadius: isMobile ? 10 : 0,
-        }}
         id="basic-button"
         aria-controls="basic-menu"
         aria-haspopup="true"
@@ -53,6 +52,7 @@ export default function BasicMenu({ menuItems }: Props) {
         className={button}
       >
         {selected}
+        <SvgIcon component={ArrowDropDownIcon} />
       </Button>
       <Menu
         id="basic-menu"
@@ -67,6 +67,7 @@ export default function BasicMenu({ menuItems }: Props) {
           const { item, callback } = menuItem;
           return (
             <MenuItem
+              key={item}
               onClick={() => {
                 setSelected(item);
                 handleClose();
