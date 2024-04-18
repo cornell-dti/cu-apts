@@ -44,13 +44,14 @@ const DropDownWithLabel: React.FC<DropDownWithLabelProps> = ({
 }) => {
   return (
     <div>
-      <Grid container spacing={0} direction="row" alignItems="center" justifyContent="flex-end">
+      <Grid container direction="row" alignItems="center" justifyContent="flex-end" wrap="nowrap">
         <Grid item>
           <Typography
             variant="body1"
             style={{
               fontSize: isMobile ? '15px' : '23.157px',
               paddingRight: isMobile ? '0px' : '11px',
+              whiteSpace: 'nowrap',
               ...labelStyle,
             }}
           >

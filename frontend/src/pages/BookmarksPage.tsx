@@ -14,7 +14,7 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
 import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
-import { AptSortField, sortApartments } from '../utils/sortApartments';
+import { AptSortFields, sortApartments } from '../utils/sortApartments';
 
 type Props = {
   user: firebase.User | null;
@@ -87,7 +87,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
   const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
   // handle sort (either number of reviews or average rate)
-  const [sortAptsBy, setSortAptsBy] = useState<AptSortField>('numReviews');
+  const [sortAptsBy, setSortAptsBy] = useState<AptSortFields>('numReviews');
 
   // handle toggle
   const handleViewAll = () => {
@@ -103,7 +103,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [resultsToShow, setResultsToShow] = useState<number>(2);
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
-  const [showMoreLessState, setShowMoreLessState] = useState<String>('Show More');
+  const [showMoreLessState, setShowMoreLessState] = useState<string>('Show More');
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
@@ -114,9 +114,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   }, []);
 
   useTitle('Bookmarks');
-
-  const [savedAptsData, setsavedAptsData] = useState<CardData[]>([]);
-  const savedAPI = '/api/saved-apartments';
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
@@ -136,9 +133,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           savedAPI,
           {
             callback: (data) => {
-              sortApartments(data, sortAptsBy).then((res) => {
-                setSavedAptsData(res);
-              });
+              setSavedAptsData(data);
             },
           },
           createAuthHeaders(token)
@@ -200,6 +195,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
       <Grid item xs={11} sm={11} md={9}>
         <Box
           display="flex"
+          flexDirection={isMobile ? 'column' : 'row'}
           justifyContent="space-between"
           alignItems="center"
           className={headerContainer}
@@ -218,18 +214,12 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                   item: 'Review Count',
                   callback: () => {
                     setSortAptsBy('numReviews');
-                    sortApartments(savedAptsData, 'numReviews').then((res) => {
-                      setSavedAptsData(res);
-                    });
                   },
                 },
                 {
                   item: 'Rating',
                   callback: () => {
-                    setSortAptsBy('overallRating');
-                    sortApartments(savedAptsData, 'overallRating').then((res) => {
-                      setSavedAptsData(res);
-                    });
+                    setSortAptsBy('avgRating');
                   },
                 },
               ]}
@@ -241,7 +231,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         {savedAptsData.length > 0 ? (
           <Grid container spacing={4} className={gridContainer}>
             {savedAptsData &&
-              savedAptsData
+              sortApartments(savedAptsData, sortAptsBy, false)
                 .slice(0, aptsToShow)
                 .map(({ buildingData, numReviews, company }, index) => {
                   const { id } = buildingData;
@@ -264,7 +254,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                     </Grid>
                   );
                 })}
-            <Grid item xs={12} justifyContent="center">
+            <Grid item container xs={12} justifyContent="center">
               {savedAptsData.length > defaultShow &&
                 (savedAptsData.length > aptsToShow ? (
                   <ToggleButton
@@ -287,6 +277,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
         <Box
           display="flex"
+          flexDirection={isMobile ? 'column' : 'row'}
           justifyContent="space-between"
           alignItems="center"
           className={headerContainer}
@@ -297,30 +288,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
             </Typography>
           </Box>
 
-          {!isMobile && (
-            <Box>
-              <DropDownWithLabel
-                label="Sort by"
-                menuItems={[
-                  {
-                    item: 'Recent',
-                    callback: () => {
-                      setSortBy('date');
-                    },
-                  },
-                  {
-                    item: 'Helpful',
-                    callback: () => {
-                      setSortBy('likes');
-                    },
-                  },
-                ]}
-                isMobile={isMobile}
-              />
-            </Box>
-          )}
-        </Box>
-        {isMobile && (
           <Box>
             <DropDownWithLabel
               label="Sort by"
@@ -341,7 +308,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
               isMobile={isMobile}
             />
           </Box>
-        )}
+        </Box>
 
         {helpfulReviewsData.length === 0 && (
           <Typography paragraph>You have not marked any reviews helpful.</Typography>

@@ -1,6 +1,6 @@
 import { CardData } from '../App';
 import { ApartmentWithId } from '../../../common/types/db-types';
-type Fields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
+export type AptSortFields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
 
 /**
  * Sort apartments based on a specific property.
@@ -10,7 +10,7 @@ type Fields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
  * @returns CardData[] – a sorted shallow copy of the array of CardData objects
  */
 
-const sortApartments = (arr: CardData[], property: Fields, orderLowToHigh: boolean) => {
+const sortApartments = (arr: CardData[], property: AptSortFields, orderLowToHigh: boolean) => {
   // clone array to ensure we can keep the original indexes.
   let clonedArr: CardData[] = arr.slice();
   if (property === 'originalOrder') {

@@ -94,6 +94,7 @@ export default function DropDown({ menuItems, isMobile }: Props) {
           borderRadius: '10px',
           backgroundColor: '#E8E8E8',
           scale: isMobile ? '0.75' : '1',
+          whiteSpace: 'nowrap',
         }}
       >
         {selected}
