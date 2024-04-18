@@ -37,6 +37,7 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 - **Grace Sawatyanon** - Developer
 - **Miranda Luo** - Developer
 - **Kea-Roy Ong** - Developer
+- **Casper Liao** - Developer
 
 ### 2022-2023
 
