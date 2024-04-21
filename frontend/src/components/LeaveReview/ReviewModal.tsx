@@ -18,7 +18,6 @@ import {
 import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState, useRef, useEffect } from 'react';
 import { DetailedRating, Review } from '../../../../common/types/db-types';
-import { splitArr } from '../../utils';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
@@ -79,6 +78,9 @@ const useStyle = makeStyles({
     textAlign: 'left',
     position: 'absolute',
     zIndex: 1,
+    display: 'flex',
+    justifyContent: 'left',
+    paddingLeft: '25px',
   },
   expandMoreIcon: {
     right: '10px',
@@ -499,6 +501,7 @@ const ReviewModal = ({
                   }))}
                   defaultValue="Select"
                   className={dropDownStyle}
+                  icon={false}
                 />
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
@@ -534,6 +537,7 @@ const ReviewModal = ({
                   }))}
                   defaultValue="Select"
                   className={dropDownStyle}
+                  icon={false}
                 />
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>

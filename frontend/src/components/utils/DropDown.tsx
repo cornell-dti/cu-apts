@@ -13,6 +13,7 @@ type Props = {
   menuItems: MenuElement[];
   defaultValue?: string;
   className?: string;
+  icon?: boolean;
 };
 
 const useStyles = makeStyles({
@@ -23,7 +24,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function BasicMenu({ menuItems, defaultValue, className }: Props) {
+export default function BasicMenu({ menuItems, defaultValue, className, icon }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : 'Recent');
   const { button } = useStyles();
@@ -54,7 +55,7 @@ export default function BasicMenu({ menuItems, defaultValue, className }: Props)
         className={className || button}
       >
         {selected}
-        <SvgIcon component={ArrowDropDownIcon} />
+        {icon != false && <SvgIcon component={ArrowDropDownIcon} />}
       </Button>
       <Menu
         id="basic-menu"

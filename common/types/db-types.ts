@@ -26,8 +26,6 @@ export type Review = {
   readonly reviewText: string;
   readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'DELETED';
   readonly userId?: string | null;
-  readonly price?: number;
-  readonly bedrooms?: number;
 };
 
 export type ReviewWithId = Review & Id;
