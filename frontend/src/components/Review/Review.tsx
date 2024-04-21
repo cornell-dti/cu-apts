@@ -29,7 +29,7 @@ import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
 import { Link as RouterLink } from 'react-router-dom';
-import { getUser } from '../../utils/firebase';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
@@ -169,10 +169,11 @@ const ReviewComponent = ({
     ];
   };
 
-  const reportAbuseHanler = async (reviewId: string) => {
+  const reportAbuseHandler = async (reviewId: string) => {
+    const endpoint = `/api/update-review-status/${review.id}/PENDING`;
     if (user) {
-      const endpoint = `/api/update-review-status/${reviewId}/PENDING`;
-      await axios.put(endpoint);
+      const token = await user.getIdToken(true);
+      await axios.put(endpoint, {}, createAuthHeaders(token));
       setToggle((cur) => !cur);
     } else {
       let user = await getUser(true);
@@ -352,7 +353,7 @@ const ReviewComponent = ({
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={() => reportAbuseHanler(review.id)} className={button} size="small">
+            <Button onClick={() => reportAbuseHandler(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>
