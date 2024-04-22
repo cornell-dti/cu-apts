@@ -62,3 +62,11 @@ export type ApartmentWithLabel = ApartmentWithId & { readonly label: 'APARTMENT'
 export type LandlordOrApartmentWithLabel = LandlordWithLabel | ApartmentWithLabel;
 
 export type Likes = StringSet;
+
+export type CantFindApartment = {
+  readonly date: Date;
+  readonly name: string;
+  readonly address: string;
+  readonly photos: readonly string[];
+  readonly userId?: string | null;
+};

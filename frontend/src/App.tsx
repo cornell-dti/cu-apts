@@ -13,6 +13,8 @@ import NavBar, { NavbarButton } from './components/utils/NavBar';
 import NotFoundPage from './pages/NotFoundPage';
 import { ApartmentWithId } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
+import ContactModal from './components/utils/Footer/ContactModal';
+import { ModalProvider } from './components/utils/Footer/ContactModalContext';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
@@ -105,50 +107,53 @@ const App = (): ReactElement => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Router>
-        <NavBar headersData={headersData} user={user} setUser={setUser} />
-        <div className="root">
-          <Switch>
-            <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
+      <ModalProvider>
+        <Router>
+          <NavBar headersData={headersData} user={user} setUser={setUser} />
+          <div className="root">
+            <Switch>
+              <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
 
-            <Route exact path="/faq" component={FAQPage} />
-            <Route
-              exact
-              path="/reviews"
-              component={() => <ReviewPage user={user} setUser={setUser} />}
-            />
+              <Route exact path="/faq" component={FAQPage} />
+              <Route
+                exact
+                path="/reviews"
+                component={() => <ReviewPage user={user} setUser={setUser} />}
+              />
 
-            <Route exact path="/policies" component={Policies} />
-            <Route
-              path="/location/:location"
-              component={() => <LocationPage user={user} setUser={setUser} />}
-            />
-            <Route
-              path="/landlord/:landlordId"
-              component={() => <LandlordPage user={user} setUser={setUser} />}
-            />
-            <Route
-              path="/profile"
-              component={() => <ProfilePage user={user} setUser={setUser} />}
-            />
-            <Route
-              path="/bookmarks"
-              component={() => <BookmarksPage user={user} setUser={setUser} />}
-            />
-            <Route
-              path="/apartment/:aptId"
-              component={() => <ApartmentPage user={user} setUser={setUser} />}
-            />
-            <Route exact path="/notfound" component={NotFoundPage} />
-            <Route
-              path="/search"
-              component={() => <SearchResultsPage user={user} setUser={setUser} />}
-            />
-            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
-          </Switch>
-        </div>
-        <Footer />
-      </Router>
+              <Route exact path="/policies" component={Policies} />
+              <Route
+                path="/location/:location"
+                component={() => <LocationPage user={user} setUser={setUser} />}
+              />
+              <Route
+                path="/landlord/:landlordId"
+                component={() => <LandlordPage user={user} setUser={setUser} />}
+              />
+              <Route
+                path="/profile"
+                component={() => <ProfilePage user={user} setUser={setUser} />}
+              />
+              <Route
+                path="/bookmarks"
+                component={() => <BookmarksPage user={user} setUser={setUser} />}
+              />
+              <Route
+                path="/apartment/:aptId"
+                component={() => <ApartmentPage user={user} setUser={setUser} />}
+              />
+              <Route exact path="/notfound" component={NotFoundPage} />
+              <Route
+                path="/search"
+                component={() => <SearchResultsPage user={user} setUser={setUser} />}
+              />
+              {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
+            </Switch>
+          </div>
+          <Footer />
+          <ContactModal user={user} />
+        </Router>
+      </ModalProvider>
     </ThemeProvider>
   );
 };

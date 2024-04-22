@@ -9,7 +9,7 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { colors } from '../colors';
-import questionIcon from '../assets/question.svg';
+import questionIcon from '../assets/questionCircle.svg';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import { signOut } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';

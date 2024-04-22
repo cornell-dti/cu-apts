@@ -6,13 +6,8 @@ import {
   DialogTitle,
   Grid,
   TextField,
-  Input,
-  FormLabel,
   Typography,
   makeStyles,
-  IconButton,
-  CardMedia,
-  Icon,
   useMediaQuery,
 } from '@material-ui/core';
 import axios from 'axios';
@@ -21,13 +16,14 @@ import { DetailedRating, Review } from '../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
-import Toast from './Toast';
+import Toast from '../utils/Toast';
 import styles from './ReviewModal.module.scss';
 import DropDown from '../utils/DropDown';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { ReactComponent as XIcon } from '../../assets/xIcon.svg';
 import { colors } from '../../colors';
 import getPriceRange from '../../utils/priceRange';
+import UploadPhotos from '../utils/UploadPhotos';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
@@ -115,55 +111,6 @@ const useStyle = makeStyles({
     color: colors.red1,
     '&:hover': {
       backgroundColor: 'rgba(0,0,0,0.1)',
-      opacity: 0.8,
-    },
-  },
-  disabledButton: {
-    minWidth: '80px',
-    height: '35px',
-    borderRadius: '30px',
-    border: '2px solid',
-    borderColor: '#ced4da',
-    backgroundColor: 'transparent',
-    color: '#ced4da',
-    pointerEvents: 'none',
-    cursor: 'default',
-  },
-  photoHover: {
-    backgroundColor: 'black',
-    position: 'absolute',
-    borderRadius: '6px',
-    height: '100%',
-    width: '100%',
-  },
-  photosContainer: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-  },
-  photoRemoveButton: {
-    fill: 'white',
-    cursor: 'pointer',
-    display: 'none',
-    position: 'absolute',
-    zIndex: 1,
-  },
-  photoAndButton: {
-    position: 'relative',
-    borderRadius: '6px',
-    '&:hover $photoRemoveButton': {
-      display: 'block',
-    },
-    '&:hover $photo': {
-      opacity: 0.8,
-    },
-  },
-  photo: {
-    position: 'absolute',
-    height: '100%',
-    width: '100%',
-    borderRadius: '6px',
-    '&:hover': {
       opacity: 0.8,
     },
   },
@@ -284,12 +231,6 @@ const ReviewModal = ({
     promptList,
     submitButton,
     hollowRedButton,
-    disabledButton,
-    photo,
-    photoHover,
-    photosContainer,
-    photoRemoveButton,
-    photoAndButton,
   } = useStyle();
 
   const updateBedrooms = (bedrooms: number) => {
@@ -644,98 +585,15 @@ const ReviewModal = ({
                 </Grid>
               )}
             </Grid>
-
-            <Grid
-              container
-              item
-              justifyContent="space-between"
-              spacing={3}
-              style={{ paddingTop: '0', paddingBottom: '0' }}
-            >
-              <Grid item>
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}
-                >
-                  <FormLabel>Upload Pictures: </FormLabel>
-                  <FormLabel style={{ fontSize: '13px', color: colors.gray2, paddingTop: '8px' }}>
-                    {`Reviewers may upload up to ${REVIEW_PHOTOS_LIMIT} photos. Max photo size of ${REVIEW_PHOTO_MAX_MB}MB`}
-                  </FormLabel>
-                </div>
-              </Grid>
-              <Grid item>
-                <Button
-                  component={'label'}
-                  variant="contained"
-                  disableElevation
-                  className={
-                    review.localPhotos.length >= REVIEW_PHOTOS_LIMIT
-                      ? disabledButton
-                      : hollowRedButton
-                  }
-                >
-                  Choose File(s)
-                  <Input
-                    style={{ display: 'none' }}
-                    id="upload"
-                    type="file"
-                    inputProps={{ multiple: true, accept: 'image/*' }}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      updatePhotos(event);
-                      setAddedPhoto(!addedPhoto);
-                    }}
-                    disabled={review.localPhotos.length >= REVIEW_PHOTOS_LIMIT}
-                  />
-                </Button>
-              </Grid>
-            </Grid>
-            <Grid item>
-              {review.localPhotos.length > 0 && (
-                <Grid
-                  item
-                  className={photosContainer}
-                  style={isMobile ? { flexDirection: 'column' } : { flexDirection: 'row' }}
-                >
-                  {review.localPhotos.map((p, index) => {
-                    return (
-                      <div
-                        className={photoAndButton}
-                        style={
-                          !isMobile
-                            ? { width: '148px', height: '103px' }
-                            : { width: '70vw', height: '180px' }
-                        }
-                      >
-                        <div className={photoHover} />
-                        <CardMedia
-                          component="img"
-                          alt="Apt image"
-                          image={URL.createObjectURL(p)}
-                          title="Apt image"
-                          className={photo}
-                        />
-                        <IconButton
-                          onClick={() => removePhoto(index)}
-                          style={
-                            !isMobile
-                              ? { position: 'absolute', right: '2px' }
-                              : { position: 'absolute', right: '10px', top: '10px' }
-                          }
-                        >
-                          <XIcon
-                            className={photoRemoveButton}
-                            style={
-                              !isMobile
-                                ? { minWidth: '12px', minHeight: '12px' }
-                                : { minWidth: '30px', minHeight: '30px' }
-                            }
-                          />
-                        </IconButton>
-                      </div>
-                    );
-                  })}
-                </Grid>
-              )}
-            </Grid>
+            <UploadPhotos
+              photosLimit={REVIEW_PHOTOS_LIMIT}
+              photoMaxMB={REVIEW_PHOTO_MAX_MB}
+              photos={review.localPhotos}
+              onPhotosChange={updatePhotos}
+              removePhoto={removePhoto}
+              addedPhoto={addedPhoto}
+              setAddedPhoto={setAddedPhoto}
+            />
           </Grid>
         </div>
       </DialogContent>
