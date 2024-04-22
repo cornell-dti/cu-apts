@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import SvgIcon from '@material-ui/core/SvgIcon';
 
 type MenuElement = {
   item: string;
@@ -9,6 +11,9 @@ type MenuElement = {
 
 type Props = {
   menuItems: MenuElement[];
+  defaultValue?: string;
+  className?: string;
+  icon?: boolean;
 };
 
 const useStyles = makeStyles({
@@ -19,9 +24,9 @@ const useStyles = makeStyles({
   },
 });
 
-export default function BasicMenu({ menuItems }: Props) {
+export default function BasicMenu({ menuItems, defaultValue, className, icon }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>('Recent');
+  const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : 'Recent');
   const { button } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -42,17 +47,15 @@ export default function BasicMenu({ menuItems }: Props) {
   return (
     <div>
       <Button
-        style={{
-          borderRadius: isMobile ? 10 : 0,
-        }}
         id="basic-button"
         aria-controls="basic-menu"
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className={button}
+        className={className || button}
       >
         {selected}
+        {icon != false && <SvgIcon component={ArrowDropDownIcon} />}
       </Button>
       <Menu
         id="basic-menu"
@@ -67,6 +70,7 @@ export default function BasicMenu({ menuItems }: Props) {
           const { item, callback } = menuItem;
           return (
             <MenuItem
+              key={item}
               onClick={() => {
                 setSelected(item);
                 handleClose();

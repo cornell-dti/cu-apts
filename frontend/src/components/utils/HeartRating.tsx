@@ -9,10 +9,10 @@ type Props = React.ComponentProps<typeof Rating> & { fontSize?: number | string 
 
 const StyledRating = withStyles({
   iconEmpty: {
-    color: colors.red1,
+    color: colors.red2,
   },
   iconFilled: {
-    color: colors.red1,
+    color: colors.red2,
   },
 })(Rating);
 
