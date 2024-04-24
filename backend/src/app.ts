@@ -12,6 +12,8 @@ import {
   LandlordWithLabel,
   ApartmentWithLabel,
   ApartmentWithId,
+  CantFindApartmentForm,
+  QuestionForm,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -34,6 +36,8 @@ const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
+const pendingBuildingsCollection = db.collection('pendingBuildings');
+const contactQuestionsCollection = db.collection('contactQuestions');
 
 // Middleware setup
 const app: Express = express();
@@ -858,6 +862,38 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   } catch (err) {
     console.log(err);
     res.status(500).send('Error'); // Handling any errors
+  }
+});
+
+// API endpoint to submit a "Can't Find Your Apartment?" form.
+app.post('/api/add-pending-building', authenticate, async (req, res) => {
+  try {
+    const doc = pendingBuildingsCollection.doc();
+    const apartment = req.body as CantFindApartmentForm;
+    if (apartment.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...apartment, date: new Date(apartment.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+// API endpoint to submit a "Ask Us A Question" form.
+app.post('/api/add-contact-question', authenticate, async (req, res) => {
+  try {
+    const doc = contactQuestionsCollection.doc();
+    const question = req.body as QuestionForm;
+    if (question.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...question, date: new Date(question.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
   }
 });
 

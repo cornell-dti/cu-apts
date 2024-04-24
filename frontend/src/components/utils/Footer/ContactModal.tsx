@@ -9,19 +9,23 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import axios from 'axios';
+import Toast from '../Toast';
 import { colors } from '../../../colors';
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { useModal } from './ContactModalContext';
 import apartmentIcon from '../../../assets/apartmentIcon.svg';
 import questionMarkIcon from '../../../assets/questionMark.svg';
 import UploadPhotos from '../UploadPhotos';
-import { CantFindApartment } from '../../../../../common/types/db-types';
+import { CantFindApartmentForm } from '../../../../../common/types/db-types';
+import { QuestionForm } from '../../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../../utils/firebase';
 import { includesProfanity } from '../../../utils/profanity';
-import axios from 'axios';
+import { ReactComponent as XIcon } from '../../../assets/xIcon.svg';
 
 const PHOTOS_LIMIT = 3;
 const PHOTO_MAX_MB = 10;
+const TOAST_TIME = 3500;
 
 interface Props {
   user: firebase.User | null;
@@ -41,10 +45,16 @@ const useStyles = makeStyles((theme) => ({
   },
   bodyText: {
     fontSize: '18px',
-    // padding: '16px 0 16px 0',
     margin: '22px 0 22px 0',
   },
-  //  Contact modal
+  xButton: {
+    fill: colors.black,
+    cursor: 'pointer',
+    position: 'absolute',
+    right: '32px',
+    top: '33px',
+  },
+
   optionGrid: {
     display: 'flex',
     flexDirection: 'column',
@@ -78,7 +88,6 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: '16px',
   },
 
-  //  Can't find your apartment modal
   hollowRedButton: {
     minWidth: '80px',
     height: '35px',
@@ -94,12 +103,11 @@ const useStyles = makeStyles((theme) => ({
   },
   submitButton: {
     borderRadius: '30px',
-    marginTop: '10px',
-    marginBottom: '10px',
     width: '80px',
   },
 }));
 
+//  Can't Find Your Apartment Modal Data
 interface CantFindApartmentFormData {
   name: string;
   address: string;
@@ -118,7 +126,7 @@ type apartmentFormAction =
   | { type: 'updatePhotos'; photos: File[] }
   | { type: 'reset' };
 
-const reducer = (
+const apartmentReducer = (
   state: CantFindApartmentFormData,
   action: apartmentFormAction
 ): CantFindApartmentFormData => {
@@ -131,6 +139,40 @@ const reducer = (
       return { ...state, localPhotos: action.photos ? [...action.photos] : [] };
     case 'reset':
       return defaultApartmentForm;
+    default:
+      throw new Error('invalid action type');
+  }
+};
+
+//  Question Modal Data
+interface QuestionFormData {
+  name: string;
+  email: string;
+  msg: string;
+}
+
+const defaultQuestionForm: QuestionFormData = {
+  name: '',
+  email: '',
+  msg: '',
+};
+
+type questionFormAction =
+  | { type: 'updateQuestionName'; name: string }
+  | { type: 'updateQuestionEmail'; email: string }
+  | { type: 'updateQuestionMsg'; msg: string }
+  | { type: 'reset' };
+
+const questionReducer = (state: QuestionFormData, action: questionFormAction): QuestionFormData => {
+  switch (action.type) {
+    case 'updateQuestionName':
+      return { ...state, name: action.name };
+    case 'updateQuestionEmail':
+      return { ...state, email: action.email };
+    case 'updateQuestionMsg':
+      return { ...state, msg: action.msg };
+    case 'reset':
+      return defaultQuestionForm;
     default:
       throw new Error('invalid action type');
   }
@@ -149,18 +191,32 @@ const reducer = (
 
 const ContactModal = ({ user }: Props) => {
   const { modalOpen, closeModal } = useModal();
-  const [currModal, setCurrModal] = useState('contact');
-  const [apartmentForm, dispatch] = useReducer(reducer, defaultApartmentForm);
-  const [emptyTextError, setEmptyTextError] = useState(false);
-  const [includesProfanityError, setIncludesProfanityError] = useState(false);
-  const [addedPhoto, setAddedPhoto] = useState(false);
-  const [sending, setSending] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [currModal, setCurrModal] = useState('contact');
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [sending, setSending] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState('');
+  const [showError, setShowError] = useState(false);
+
+  //  Can't Find Your Apartment Modal
+  const [apartmentForm, apartmentDispatch] = useReducer(apartmentReducer, defaultApartmentForm);
+  const [addedPhoto, setAddedPhoto] = useState(false);
+  const [emptyNameError, setEmptyNameError] = useState(false);
+  const [nameProfanityError, setNameProfanityError] = useState(false);
+  const [addressProfanityError, setAddressProfanityError] = useState(false);
+
+  //  Question Modal
+  const [questionForm, questionDispatch] = useReducer(questionReducer, defaultQuestionForm);
+  const [emptyEmailError, setEmptyEmailError] = useState(false);
+  const [emptyMsgError, setEmptyMsgError] = useState(false);
+  const [msgProfanityError, setMsgProfanityError] = useState(false);
 
   const {
     divider,
     modalStyle,
     bodyText,
+    xButton,
     optionGrid,
     optionButton,
     optionText,
@@ -169,12 +225,60 @@ const ContactModal = ({ user }: Props) => {
     submitButton,
   } = useStyles();
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const updateScrollPosition = () => {
+      if (modalRef.current) {
+        const { scrollHeight, clientHeight } = modalRef.current;
+        const maxScrollTop = scrollHeight - clientHeight;
+        modalRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+      }
+    };
+    const timer = setTimeout(updateScrollPosition, 100);
+    return () => clearTimeout(timer);
+  }, [addedPhoto]);
+
+  const clearPhotosAndErrors = () => {
+    apartmentDispatch({ type: 'updatePhotos', photos: [] });
+    // Clear apartment errors
+    setNameProfanityError(false);
+    setAddressProfanityError(false);
+    setEmptyNameError(false);
+
+    //  Clear question errors
+    setEmptyEmailError(false);
+    setEmptyMsgError(false);
+    setMsgProfanityError(false);
+  };
+
+  //  Can't Find Your Apartment Modal Constants/Functions
+  const apartmentFormDataToReview = async ({
+    name,
+    address,
+    localPhotos,
+  }: CantFindApartmentFormData): Promise<CantFindApartmentForm> => {
+    const photos = await Promise.all(localPhotos.map(uploadFile));
+    return {
+      date: new Date(),
+      name: name,
+      address: address,
+      photos,
+      userId: user?.uid,
+    };
+  };
+
   const updateApartmentName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updateApartmentName', name: event.target.value });
+    apartmentDispatch({ type: 'updateApartmentName', name: event.target.value });
   };
 
   const updateApartmentAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: 'updateApartmentAddress', address: event.target.value });
+    apartmentDispatch({ type: 'updateApartmentAddress', address: event.target.value });
   };
 
   const updateApartmentPhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,93 +296,146 @@ const ContactModal = ({ user }: Props) => {
       console.log(`File ${bigPhoto.name} exceeds max size of ${PHOTO_MAX_MB}`);
       return;
     }
-    dispatch({ type: 'updatePhotos', photos: [...apartmentForm.localPhotos, ...newFiles] });
+    apartmentDispatch({
+      type: 'updatePhotos',
+      photos: [...apartmentForm.localPhotos, ...newFiles],
+    });
   };
 
   const removePhoto = (index: number) => {
     const newPhotos = apartmentForm.localPhotos.filter((_, photoIndex) => index !== photoIndex);
-    dispatch({ type: 'updatePhotos', photos: newPhotos });
+    apartmentDispatch({ type: 'updatePhotos', photos: newPhotos });
   };
 
-  useEffect(() => {
-    const updateScrollPosition = () => {
-      if (modalRef.current) {
-        const { scrollHeight, clientHeight } = modalRef.current;
-        const maxScrollTop = scrollHeight - clientHeight;
-        modalRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
-      }
-    };
-    const timer = setTimeout(updateScrollPosition, 100);
-    return () => clearTimeout(timer);
-  }, [addedPhoto]);
-
-  const onBackClearPhotos = () => {
-    dispatch({ type: 'updatePhotos', photos: [] });
-    setCurrModal('contact');
-  };
-
-  const formDataToReview = async ({
+  //  Question Modal Constants/Functions
+  const questionFormDataToReview = async ({
     name,
-    address,
-    localPhotos,
-  }: CantFindApartmentFormData): Promise<CantFindApartment> => {
-    const photos = await Promise.all(localPhotos.map(uploadFile));
+    email,
+    msg,
+  }: QuestionFormData): Promise<QuestionForm> => {
     return {
       date: new Date(),
       name: name,
-      address: address,
-      photos,
+      email: email,
+      msg: msg,
       userId: user?.uid,
     };
   };
 
-  const onSubmit = async () => {
-    // try {
-    //   setSending(true);
-    //   const token = await user!.getIdToken(true);
-    //   const data = await formDataToReview(apartmentForm);
-    //   if (
-    //     data.name === '' ||
-    //     includesProfanity(data.name) ||
-    //     includesProfanity(data.address)
-    //   ) {
-    //     data.name === '' ? setEmptyTextError(true) : setEmptyTextError(false);
-    //     includesProfanity(data.name)
-    //       ? setIncludesProfanityError(true)
-    //       : setIncludesProfanityError(false);
-    //     includesProfanity(data.address)
-    //       ? setIncludesProfanityError(true)
-    //       : setIncludesProfanityError(false);
-    //     if (modalRef.current) {
-    //       modalRef.current.scrollTop = 0;
-    //     }
-    //     return;
-    //   }
-    //   const res = await axios.post('/api/new-review', data, createAuthHeaders(token));
-    //   if (res.status !== 201) {
-    //     throw new Error('Failed to submit review');
-    //   }
-    //   closeModal();
-    //   dispatch({ type: 'reset' });
-    //   onSuccess();
-    // } catch (err) {
-    //   console.log(err);
-    //   console.log('Failed to submit form');
-    //   setShowError(true);
-    //   setTimeout(() => {
-    //     setShowError(false);
-    //   }, toastTime);
-    // } finally {
-    //   setSending(false);
-    // }
+  const updateQuestionName = (event: React.ChangeEvent<HTMLInputElement>) => {
+    questionDispatch({ type: 'updateQuestionName', name: event.target.value });
+  };
+
+  const updateQuestionEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
+    questionDispatch({ type: 'updateQuestionEmail', email: event.target.value });
+  };
+
+  const updateQuestionMsg = (event: React.ChangeEvent<HTMLInputElement>) => {
+    questionDispatch({ type: 'updateQuestionMsg', msg: event.target.value });
+  };
+
+  // Toast
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
+    setTimeout(() => {
+      setState(false);
+    }, TOAST_TIME);
+  };
+  const showConfirmationToast = (type: string) => {
+    setConfirmationType(type);
+    showToast(setShowConfirmation);
+  };
+
+  //  onSubmit functions for each modal
+  const onApartmentSubmit = async () => {
+    try {
+      setSending(true);
+      const token = await user!.getIdToken(true);
+      const data = await apartmentFormDataToReview(apartmentForm);
+      if (data.name === '' || includesProfanity(data.name) || includesProfanity(data.address)) {
+        data.name === '' ? setEmptyNameError(true) : setEmptyNameError(false);
+        includesProfanity(data.name) ? setNameProfanityError(true) : setNameProfanityError(false);
+        includesProfanity(data.address)
+          ? setAddressProfanityError(true)
+          : setAddressProfanityError(false);
+        if (modalRef.current) {
+          modalRef.current.scrollTop = 0;
+        }
+        return;
+      }
+      const res = await axios.post('/api/add-pending-building', data, createAuthHeaders(token));
+      if (res.status !== 201) {
+        throw new Error('Failed to submit form');
+      }
+      closeModal();
+      clearPhotosAndErrors();
+      apartmentDispatch({ type: 'reset' });
+      showConfirmationToast('apartment');
+    } catch (err) {
+      console.log(err);
+      console.log('Failed to submit form');
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, TOAST_TIME);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const onQuestionSubmit = async () => {
+    console.log('on question submit');
+    try {
+      setSending(true);
+      const token = await user!.getIdToken(true);
+      const data = await questionFormDataToReview(questionForm);
+      if (data.name === '' || data.email === '' || data.msg === '' || includesProfanity(data.msg)) {
+        data.name === '' ? setEmptyNameError(true) : setEmptyNameError(false);
+        data.email === '' ? setEmptyEmailError(true) : setEmptyEmailError(false);
+        data.msg === '' ? setEmptyMsgError(true) : setEmptyMsgError(false);
+        includesProfanity(data.msg) ? setMsgProfanityError(true) : setMsgProfanityError(false);
+        if (modalRef.current) {
+          modalRef.current.scrollTop = 0;
+        }
+        return;
+      }
+      const res = await axios.post('/api/add-contact-question', data, createAuthHeaders(token));
+      if (res.status !== 201) {
+        throw new Error('Failed to submit form');
+      }
+      closeModal();
+      clearPhotosAndErrors();
+      questionDispatch({ type: 'reset' });
+      showConfirmationToast('question');
+    } catch (err) {
+      console.log(err);
+      console.log('Failed to submit form');
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, TOAST_TIME);
+    } finally {
+      setSending(false);
+    }
   };
 
   //  Contact Us Modal
-
   const contactModal = (
     <>
       <DialogTitle style={{ padding: '0' }}>
         <h3 style={{ margin: '0' }}>Contact Us</h3>
+        <XIcon
+          className={xButton}
+          style={
+            !isMobile
+              ? { minWidth: '26px', minHeight: '26px' }
+              : { minWidth: '30px', minHeight: '30px' }
+          }
+          onClick={() => {
+            clearPhotosAndErrors();
+            closeModal();
+          }}
+        />
       </DialogTitle>
       <DialogContent style={{ padding: '0' }}>
         <Typography className={bodyText}>Choose from the following:</Typography>
@@ -320,11 +477,22 @@ const ContactModal = ({ user }: Props) => {
   );
 
   //  Can't Find Your Apartment? Modal
-
   const cantFindApartmentModal = (
     <>
       <DialogTitle style={{ padding: '0' }}>
         <h3 style={{ margin: '0' }}>Can't Find Your Apartment?</h3>
+        <XIcon
+          className={xButton}
+          style={
+            !isMobile
+              ? { minWidth: '26px', minHeight: '26px' }
+              : { minWidth: '30px', minHeight: '30px' }
+          }
+          onClick={() => {
+            clearPhotosAndErrors();
+            closeModal();
+          }}
+        />
       </DialogTitle>
       <DialogContent style={{ padding: '0' }}>
         <Typography className={bodyText}>
@@ -337,16 +505,14 @@ const ContactModal = ({ user }: Props) => {
         </Typography>
         <TextField
           required={true}
-          error={emptyTextError || includesProfanityError}
+          error={emptyNameError || nameProfanityError}
           fullWidth
           id="name"
           rows={1}
           placeholder="e.g. Collegetown Plaza, Dryden South"
           helperText={
-            (emptyTextError ? ' This field is required' : '') +
-            (includesProfanityError
-              ? ' This contains profanity. Please edit it and try again.'
-              : '')
+            (emptyNameError ? ' This field is required' : '') +
+            (nameProfanityError ? ' This contains profanity. Please edit it and try again.' : '')
           }
           onChange={updateApartmentName}
           style={{ margin: '0' }}
@@ -358,13 +524,13 @@ const ContactModal = ({ user }: Props) => {
           Address
         </Typography>
         <TextField
-          error={includesProfanityError}
+          error={addressProfanityError}
           fullWidth
-          id="name"
+          id="address"
           rows={1}
           placeholder="e.g. 111 Dryden Rd"
           helperText={
-            includesProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
+            addressProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
           }
           onChange={updateApartmentAddress}
           style={{ margin: '0', marginBottom: '30px' }}
@@ -382,65 +548,171 @@ const ContactModal = ({ user }: Props) => {
           setAddedPhoto={setAddedPhoto}
         />
       </DialogContent>
-      <DialogActions
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignContent: 'center',
-          padding: '22px 0px 0px 0px',
-        }}
-      >
-        <Button
-          variant="contained"
-          disableElevation
-          onClick={onBackClearPhotos}
-          className={hollowRedButton}
-        >
-          Back
-        </Button>
-
-        <Button
-          color="primary"
-          variant="contained"
-          disableElevation
-          onClick={onSubmit}
-          disabled={sending}
-          className={submitButton}
-        >
-          Submit
-        </Button>
-      </DialogActions>
     </>
   );
 
-  //  Ask Us a Question Modal
+  //  Question Modal
   const questionModal = (
     <>
       <DialogTitle style={{ padding: '0' }}>
         <h3 style={{ margin: '0' }}>Ask Us a Question</h3>
+        <XIcon
+          className={xButton}
+          style={
+            !isMobile
+              ? { minWidth: '26px', minHeight: '26px' }
+              : { minWidth: '30px', minHeight: '30px' }
+          }
+          onClick={() => {
+            clearPhotosAndErrors();
+            closeModal();
+          }}
+        />
       </DialogTitle>
       <DialogContent style={{ padding: '0' }}>
         <Typography className={bodyText}>
           Want to get in touch with our team? Write your message below and we’ll get back to you as
           soon as we can.
         </Typography>
+        <div className={divider}></div>
+
+        <Typography className={bodyText} style={{ marginBottom: '0' }}>
+          Name
+        </Typography>
+        <TextField
+          required={true}
+          error={emptyNameError}
+          fullWidth
+          id="name"
+          rows={1}
+          helperText={emptyNameError ? ' This field is required' : ''}
+          onChange={updateQuestionName}
+          style={{ margin: '0' }}
+          InputProps={{
+            style: { fontSize: '13px' },
+          }}
+        />
+
+        <Typography className={bodyText} style={{ marginBottom: '0' }}>
+          Cornell Email
+        </Typography>
+        <TextField
+          error={emptyEmailError}
+          fullWidth
+          id="email"
+          rows={1}
+          helperText={emptyEmailError ? ' This field is required' : ''}
+          onChange={updateQuestionEmail}
+          style={{ margin: '0', marginBottom: '30px' }}
+          InputProps={{
+            style: { fontSize: '13px' },
+          }}
+        />
+
+        <Typography className={bodyText} style={{ marginBottom: '0' }}>
+          Leave a Note
+        </Typography>
+        <TextField
+          error={emptyMsgError || msgProfanityError}
+          fullWidth
+          id="message"
+          rows={1}
+          helperText={
+            (emptyMsgError ? ' This field is required' : '') +
+            (msgProfanityError ? ' This contains profanity. Please edit it and try again.' : '')
+          }
+          onChange={updateQuestionMsg}
+          style={{ margin: '0', marginBottom: '30px' }}
+          InputProps={{
+            style: { fontSize: '13px' },
+          }}
+        />
       </DialogContent>
     </>
   );
 
   return (
-    <Dialog
-      open={modalOpen}
-      onClose={closeModal}
-      onExited={() => setCurrModal('contact')}
-      fullWidth
-      maxWidth="md"
-      classes={{ paper: modalStyle }}
-    >
-      {currModal == 'contact' && contactModal}
-      {currModal == 'apartment' && cantFindApartmentModal}
-      {currModal == 'question' && questionModal}
-    </Dialog>
+    <>
+      {showConfirmation && (
+        <Toast
+          isOpen={showConfirmation}
+          severity="success"
+          message={
+            confirmationType === 'apartment'
+              ? 'Form submitted! Your apartment information will be reviewed by the admin.'
+              : confirmationType === 'question'
+              ? 'Question submitted! The admin will be notified.'
+              : ''
+          }
+          time={TOAST_TIME}
+        />
+      )}
+      <Dialog
+        open={modalOpen}
+        onClose={() => {
+          clearPhotosAndErrors();
+          closeModal();
+        }}
+        onExited={() => setCurrModal('contact')}
+        fullWidth
+        maxWidth="md"
+        classes={{ paper: modalStyle }}
+      >
+        {showError && (
+          <Toast
+            isOpen={true}
+            severity="error"
+            message="Error submitting form. Please try again."
+            time={TOAST_TIME}
+          />
+        )}
+        {currModal === 'contact' && contactModal}
+        {currModal === 'apartment' && cantFindApartmentModal}
+        {currModal === 'question' && questionModal}
+
+        {currModal != 'contact' && (
+          <DialogActions
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignContent: 'center',
+              height: 'auto',
+              margin: '22px 0 0 0',
+              padding: '0',
+            }}
+          >
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={() => {
+                clearPhotosAndErrors();
+                setCurrModal('contact');
+              }}
+              className={hollowRedButton}
+            >
+              Back
+            </Button>
+
+            <Button
+              color="primary"
+              variant="contained"
+              disableElevation
+              onClick={
+                currModal === 'apartment'
+                  ? onApartmentSubmit
+                  : currModal === 'question'
+                  ? onQuestionSubmit
+                  : () => {}
+              }
+              disabled={sending}
+              className={submitButton}
+            >
+              Submit
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog>
+    </>
   );
 };
 

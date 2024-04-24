@@ -57,6 +57,7 @@ const useStyle = makeStyles({
     display: 'flex',
     gap: '12px',
     alignItems: 'center',
+    marginTop: '10px',
   },
   photoRemoveButton: {
     fill: 'white',
@@ -142,7 +143,14 @@ export default function UploadPhotos({
         <Grid item>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <FormLabel>Upload Pictures: </FormLabel>
-            <FormLabel style={{ fontSize: '13px', color: colors.gray2, paddingTop: '8px' }}>
+            <FormLabel
+              style={{
+                fontSize: '13px',
+                color: colors.gray2,
+                paddingTop: '8px',
+                marginBottom: '0 !important',
+              }}
+            >
               {`Reviewers may upload up to ${photosLimit} photos. Max photo size of ${photoMaxMB}MB`}
             </FormLabel>
           </div>

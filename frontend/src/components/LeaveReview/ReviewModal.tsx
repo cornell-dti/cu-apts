@@ -585,16 +585,16 @@ const ReviewModal = ({
                 </Grid>
               )}
             </Grid>
-            <UploadPhotos
-              photosLimit={REVIEW_PHOTOS_LIMIT}
-              photoMaxMB={REVIEW_PHOTO_MAX_MB}
-              photos={review.localPhotos}
-              onPhotosChange={updatePhotos}
-              removePhoto={removePhoto}
-              addedPhoto={addedPhoto}
-              setAddedPhoto={setAddedPhoto}
-            />
           </Grid>
+          <UploadPhotos
+            photosLimit={REVIEW_PHOTOS_LIMIT}
+            photoMaxMB={REVIEW_PHOTO_MAX_MB}
+            photos={review.localPhotos}
+            onPhotosChange={updatePhotos}
+            removePhoto={removePhoto}
+            addedPhoto={addedPhoto}
+            setAddedPhoto={setAddedPhoto}
+          />
         </div>
       </DialogContent>
       <DialogActions
