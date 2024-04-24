@@ -287,16 +287,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     }
   };
 
-  const openReviewModal = async () => {
-    let user = await getUser(true);
-    setUser(user);
-    if (!user) {
-      showSignInErrorToast();
-      return;
-    }
-    setReviewOpen(true);
-  };
-
   // Define a component 'Modals' conditionally based on landlordData existence
   const Modals = landlordData && (
     <>
@@ -375,7 +365,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                   style={{ width: '107px', height: '43px' }}
                 />
               </IconButton>
-              <Button
+              {/* <Button
                 color="primary"
                 className={reviewButton}
                 variant="contained"
@@ -383,7 +373,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 onClick={openReviewModal}
               >
                 Leave a Review
-              </Button>
+              </Button> */}
             </Grid>
             <Grid item>
               <Grid container spacing={1} direction="row" alignItems="center">
@@ -478,15 +468,6 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                   style={{ width: '107px', height: '43px' }}
                 />
               </IconButton>
-              <Button
-                style={{ borderRadius: 20, fontSize: '14px' }}
-                color="primary"
-                variant="contained"
-                disableElevation
-                onClick={openReviewModal}
-              >
-                Leave a Review
-              </Button>
             </Grid>
             <Grid item style={{ marginRight: '8px' }}>
               <Grid container spacing={1} direction="row" alignItems="center">

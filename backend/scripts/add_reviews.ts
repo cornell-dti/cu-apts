@@ -19,6 +19,8 @@ const formatReview = (data: any): Review => ({
   aptId: data.aptId.toString(),
   reviewText: data.reviewText,
   overallRating: data.overallRating,
+  bedrooms: data.bedrooms,
+  price: data.price,
   detailedRatings: {
     location: data['detailedRatings.location'],
     safety: data['detailedRatings.safety'],
