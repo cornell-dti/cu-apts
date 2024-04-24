@@ -27,21 +27,21 @@ const FAQPage = (): ReactElement => {
   const useStyles = makeStyles(() => ({
     pageBackground: {
       backgroundColor: colors.gray3,
-      padding: isMobile ? '32px 29px 0' : '96px 150px 0',
+      padding: isMobile ? '24px 34px 0' : '96px 135px 0',
       minHeight: 'calc(120vh - 96px)',
     },
     title: {
       color: colors.black,
-      fontSize: isMobile ? '18px' : '48px',
+      fontSize: isMobile ? '18px' : '42px',
       fontWeight: 600,
       lineHeight: isMobile ? '28px' : '60px',
-      marginBottom: isMobile ? '1px' : '24px',
+      marginBottom: isMobile ? '1px' : '20px',
     },
     subtitle: {
       color: colors.black,
-      fontSize: isMobile ? '12px' : '22px',
+      fontSize: isMobile ? '12px' : '20px',
       fontWeight: 400,
-      lineHeight: isMobile ? '16px' : '32px',
+      lineHeight: isMobile ? '16px' : '28px',
       marginBottom: isMobile ? '24px' : '32px',
     },
     squareButton: {
@@ -50,21 +50,19 @@ const FAQPage = (): ReactElement => {
       '&:hover': {
         backgroundColor: colors.darkred,
       },
-      // marginLeft: '10px',
-      // width: '120px',
-      padding: isMobile ? '8px 12px' : '10px 20px',
+      padding: isMobile ? '8px 12px' : '8px 18px',
       fontFamily: 'Work Sans, sans-serif',
       fontWeight: 600,
-      fontSize: isMobile ? '12px' : '18px',
+      fontSize: isMobile ? '12px' : '16px',
       borderRadius: '10px',
-      lineHeight: isMobile ? '16px' : '28px',
+      lineHeight: isMobile ? '16px' : '26px',
     },
     sideBar: {
       backgroundColor: colors.white,
       padding: '20px',
       borderRadius: '8px',
-      width: isMobile ? 'auto' : '310px',
-      height: isMobile ? '124px' : '240px',
+      width: isMobile ? 'auto' : '275px',
+      height: isMobile ? '200px' : 'fit-content',
       marginLeft: isMobile ? '0' : '48px',
       '@media only screen and (max-width: 960px)': {
         marginLeft: '0',
@@ -73,15 +71,15 @@ const FAQPage = (): ReactElement => {
       marginTop: isMobile ? '16px' : '0',
     },
     sideBarTitle: {
-      fontSize: isMobile ? '10px' : '22px',
+      fontSize: isMobile ? '10px' : '20px',
       fontWeight: 600,
-      lineHeight: isMobile ? '14px' : '32px',
+      lineHeight: isMobile ? '14px' : '26px',
       paddingBottom: '6px',
     },
     sideBarBlurb: {
-      fontSize: isMobile ? '10px' : '18px',
+      fontSize: isMobile ? '10px' : '16px',
       fontWeight: 400,
-      lineHeight: isMobile ? '14px' : '28px',
+      lineHeight: isMobile ? '14px' : '25px',
       paddingBottom: '18px',
     },
   }));
