@@ -388,6 +388,28 @@ app.get('/api/location/:loc', async (req, res) => {
   res.status(200).send(data);
 });
 
+app.get('/api/pending-buildings/:status', async (req, res) => {
+  const { status } = req.params;
+  const apartmentDocs = (await pendingBuildingsCollection.where('status', '==', status).get()).docs;
+  const apartments: CantFindApartmentForm[] = apartmentDocs.map((doc) => {
+    const data = doc.data();
+    const apartment = { ...data, date: data.date.toDate() } as CantFindApartmentForm;
+    return { ...apartment, id: doc.id } as CantFindApartmentForm;
+  });
+  res.status(200).send(JSON.stringify(apartments));
+});
+
+app.get('/api/contact-questions/:status', async (req, res) => {
+  const { status } = req.params;
+  const questionDocs = (await contactQuestionsCollection.where('status', '==', status).get()).docs;
+  const questions: QuestionForm[] = questionDocs.map((doc) => {
+    const data = doc.data();
+    const question = { ...data, date: data.date.toDate() } as QuestionForm;
+    return { ...question, id: doc.id } as QuestionForm;
+  });
+  res.status(200).send(JSON.stringify(questions));
+});
+
 const likeHandler =
   (dislike = false): RequestHandler =>
   async (req, res) => {
