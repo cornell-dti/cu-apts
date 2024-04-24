@@ -1,26 +1,63 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useRef } from 'react';
 import { Box, Grid, IconButton, Typography, makeStyles } from '@material-ui/core';
 import GoogleMapReact from 'google-map-react';
 import aptIcon from '../../assets/location-pin.svg';
+import schoolIcon from '../../assets/school-pin.svg';
 import expandIcon from '../../assets/expand-button.svg';
-import distanceIcon from '../../assets/ph_map-pin-fill.svg';
+import recenterIcon from '../../assets/recenter-icon.svg';
+import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
 import { Marker } from './Marker';
 
 config();
 
-type Props = {
+export type BaseProps = {
   readonly address: string | null;
   readonly latitude?: number;
   readonly longitude?: number;
   readonly walkTime?: number;
   readonly driveTime?: number;
-  handleClick: () => void;
 };
 
-type distanceProp = {
+type MapInfoProps = BaseProps & {
+  handleClick: () => void;
+  isMobile: boolean;
+};
+
+export type distanceProps = {
   location: string;
   walkDistance: number;
+};
+
+const WalkDistanceInfo = ({ location, walkDistance }: distanceProps) => {
+  return (
+    <div>
+      <Grid
+        container
+        justifyContent="space-between"
+        alignItems="center"
+        style={{ marginTop: '5px' }}
+      >
+        <Grid item>
+          <Grid container alignItems="center" spacing={1}>
+            <Grid item>
+              <img src={blackPinIcon} alt={'black-pin-icon'} />
+            </Grid>
+            <Grid item>
+              <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
+                {location}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item>
+          <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
+            {walkDistance} min walk
+          </Typography>
+        </Grid>
+      </Grid>
+    </div>
+  );
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -54,6 +91,17 @@ const useStyles = makeStyles((theme) => ({
     background: 'rgba(255, 255, 255, 0.70)',
     boxShadow: '2px 4px 4px 0px rgba(0, 0, 0, 0.10)',
   },
+  recenterButton: {
+    position: 'absolute',
+    top: '13px',
+    right: '13px',
+    padding: '9px',
+    width: '39px',
+    height: '39px',
+    borderRadius: '4px',
+    background: 'rgba(255, 255, 255, 0.70)',
+    boxShadow: '2px 4px 4px 0px rgba(0, 0, 0, 0.10)',
+  },
 }));
 
 /**
@@ -77,37 +125,35 @@ export default function MapInfo({
   longitude = 0,
   walkTime = 0,
   handleClick,
-}: Props): ReactElement {
-  const { outerMapDiv, innerMapDiv, mapExpandButton } = useStyles();
+  isMobile,
+}: MapInfoProps): ReactElement {
+  const { outerMapDiv, innerMapDiv, mapExpandButton, recenterButton } = useStyles();
+  const mapRef = useRef<google.maps.Map | null>(null);
 
-  const WalkDistanceInfo = ({ location, walkDistance }: distanceProp) => {
-    return (
-      <div>
-        <Grid
-          container
-          justifyContent="space-between"
-          alignItems="center"
-          style={{ marginTop: '5px' }}
-        >
-          <Grid item>
-            <Grid container alignItems="center" spacing={1}>
-              <Grid item>
-                <img src={distanceIcon} alt={'distance-icon'} />
-              </Grid>
-              <Grid item>
-                <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
-                  {location}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item>
-            <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
-              {walkDistance} min walk
-            </Typography>
-          </Grid>
-        </Grid>
-      </div>
+  const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
+    mapRef.current = map;
+  };
+
+  const handleRecenter = () => {
+    if (mapRef.current) {
+      mapRef.current.setCenter({ lat: latitude, lng: longitude });
+      mapRef.current.setZoom(16);
+    }
+  };
+
+  const expandOrRecenter = (isMobile: boolean) => {
+    return isMobile ? (
+      <IconButton disableRipple className={recenterButton} onClick={handleRecenter}>
+        <img
+          src={recenterIcon}
+          alt={'recenter-icon'}
+          style={{ width: '21.4px', height: '21.4px' }}
+        />
+      </IconButton>
+    ) : (
+      <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
+        <img src={expandIcon} alt={'expand-icon'} style={{ width: '21.4px', height: '21.4px' }} />
+      </IconButton>
     );
   };
 
@@ -117,6 +163,8 @@ export default function MapInfo({
         <div className={outerMapDiv}>
           <div className={innerMapDiv}>
             <GoogleMapReact
+              onGoogleApiLoaded={handleApiLoaded}
+              yesIWantToUseGoogleMapApiInternals
               bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API_KEY || 'can not find api' }}
               defaultCenter={{ lat: latitude, lng: longitude }}
               defaultZoom={16}
@@ -130,36 +178,39 @@ export default function MapInfo({
               <Marker
                 lat={42.44455308325643}
                 lng={-76.48360496778704}
-                src={aptIcon}
+                src={schoolIcon}
                 altText="Engineering Quad icon"
               />
               <Marker
                 lat={42.449014547431425}
                 lng={-76.48413980587392}
-                src={aptIcon}
+                src={schoolIcon}
                 altText="Arts Quad icon"
               />
               <Marker
                 lat={42.446768276610875}
                 lng={-76.48505175766948}
-                src={aptIcon}
+                src={schoolIcon}
                 altText="Ho Plaza icon"
               />
               <Marker
                 lat={42.448929851009716}
                 lng={-76.47804712490351}
-                src={aptIcon}
+                src={schoolIcon}
                 altText="Ag Quad icon"
               />
             </GoogleMapReact>
           </div>
-          <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
-            <img
-              src={expandIcon}
-              alt={'expand-icon'}
-              style={{ width: '21.4px', height: '21.4px' }}
-            />
-          </IconButton>
+          {expandOrRecenter(isMobile)}
+          {!isMobile && (
+            <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
+              <img
+                src={expandIcon}
+                alt={'expand-icon'}
+                style={{ width: '21.4px', height: '21.4px' }}
+              />
+            </IconButton>
+          )}
         </div>
         <Box>
           <Box my={1.5}>
@@ -179,7 +230,7 @@ export default function MapInfo({
             <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
               Distance from Campus
             </Typography>
-            <WalkDistanceInfo location={'Enginering Quad'} walkDistance={walkTime} />
+            <WalkDistanceInfo location={'Engineering Quad'} walkDistance={walkTime} />
             <WalkDistanceInfo location={'Ho Plaza'} walkDistance={walkTime} />
             <WalkDistanceInfo location={'Ag Quad'} walkDistance={walkTime} />
           </Box>

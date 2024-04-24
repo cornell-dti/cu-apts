@@ -378,6 +378,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const Modals = landlordData && apt && (
     <>
       <MapModal
+        aptName={apt!.name}
         open={mapOpen}
         onClose={() => setMapOpen(false)}
         setOpen={setMapOpen}
@@ -614,7 +615,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12}>
-      <Typography variant="h3" style={{ fontSize: '33px', fontWeight: 600, marginBottom: '14px' }}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Location
       </Typography>
       <MapInfo
@@ -624,8 +625,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         walkTime={apt!.walkTime}
         driveTime={apt!.driveTime}
         handleClick={() => setMapOpen(true)}
+        isMobile={isMobile}
       />
-      <Typography variant="h3" style={{ fontSize: '33px', fontWeight: 600, marginBottom: '14px' }}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Landlord
       </Typography>
       <AptInfo

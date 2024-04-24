@@ -13,15 +13,38 @@ import GoogleMapReact from 'google-map-react';
 import walkIcon from '../../assets/walk-icon.svg';
 import driveIcon from '../../assets/drive-icon.svg';
 import aptIcon from '../../assets/location-pin.svg';
+import schoolIcon from '../../assets/school-pin.svg';
 import recenterIcon from '../../assets/recenter-icon.svg';
 import closeMapIcon from '../../assets/close-map-icon.svg';
 import { Marker } from './Marker';
-import React, { Dispatch, SetStateAction } from 'react';
+import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
+import React, { Dispatch, SetStateAction, useRef } from 'react';
+import { BaseProps, distanceProps } from './MapInfo';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
     borderRadius: '13.895px',
     maxWidth: '100%',
+    overflow: 'hidden',
+  },
+  outerMapDiv: {
+    height: '450px',
+    width: '100%',
+    borderRadius: '12.764px',
+    overflow: 'hidden',
+    outline: 'none',
+    position: 'relative',
+  },
+  innerMapDiv: {
+    height: '500px',
+    width: '100%',
+    borderRadius: '12.764px',
+    overflow: 'hidden',
+    outline: 'none',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%,-50%)',
   },
   recenterButton: {
     position: 'absolute',
@@ -36,16 +59,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-type Props = {
+interface MapModalProps extends BaseProps {
+  aptName: string;
   open: boolean;
   onClose: () => void;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  readonly address: string | null;
-  readonly latitude?: number;
-  readonly longitude?: number;
-  readonly walkTime?: number;
-  readonly driveTime?: number;
-};
+}
 
 /**
  * `MapModal` Component - Displays map and location information of an apartment
@@ -65,6 +84,7 @@ type Props = {
  *   - `driveTime`: The drive time from the apartment to Cornell ladmarks.
  */
 const MapModal = ({
+  aptName,
   open,
   onClose,
   setOpen,
@@ -73,8 +93,78 @@ const MapModal = ({
   longitude = 0,
   walkTime = 0,
   driveTime = 0,
-}: Props) => {
-  const { paper, recenterButton } = useStyles();
+}: MapModalProps) => {
+  const { paper, outerMapDiv, innerMapDiv, recenterButton } = useStyles();
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
+    mapRef.current = map;
+  };
+
+  const handleRecenter = () => {
+    if (mapRef.current) {
+      mapRef.current.setCenter({ lat: latitude, lng: longitude });
+      mapRef.current.setZoom(16);
+    }
+  };
+
+  const IconAndText = ({
+    icon,
+    altText,
+    distance,
+  }: {
+    icon: string;
+    altText: string;
+    distance: number;
+  }) => {
+    return (
+      <Grid container alignItems="center" spacing={1}>
+        <Grid item>
+          <img src={icon} alt={altText} />
+        </Grid>
+        <Grid item>
+          <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
+            {distance} min
+          </Typography>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  const DistanceInfo = ({
+    location,
+    walkDistance,
+    driveDistance,
+  }: distanceProps & { driveDistance: number }) => {
+    return (
+      <Grid
+        container
+        justifyContent="space-between"
+        alignItems="flex-start"
+        style={{ width: '100%', height: '30px' }}
+      >
+        <Grid item>
+          <Grid container alignItems="center" spacing={1} style={{ width: '200px' }}>
+            <Grid item>
+              <img src={blackPinIcon} alt={'black-pin-icon'} />
+            </Grid>
+            <Grid item>
+              <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
+                {location}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item>
+          <IconAndText icon={walkIcon} altText={'walk-icon'} distance={walkDistance} />
+        </Grid>
+        <Grid item>
+          <IconAndText icon={driveIcon} altText={'drive-icon'} distance={driveDistance} />
+        </Grid>
+      </Grid>
+    );
+  };
+
   return (
     <Dialog
       open={open}
@@ -82,30 +172,35 @@ const MapModal = ({
       PaperProps={{
         className: paper,
       }}
+      maxWidth="sm"
     >
-      <Box style={{ margin: '29.777px', width: '934px', height: '744px' }}>
-        <DialogTitle style={{ padding: 0, margin: 0 }}>
+      <Box style={{ margin: '33px', width: '933px', height: '800px', padding: '0px' }}>
+        <DialogTitle style={{ padding: 0, margin: 0, height: '30px' }}>
           <Grid
             container
             justifyContent="space-between"
-            alignItems="center"
-            style={{ marginTop: '5px' }}
+            alignItems="flex-start"
+            style={{ height: '30px' }}
           >
             <Grid item>
               <Typography
                 variant="h6"
-                style={{ fontWeight: 600, fontSize: '23px', lineHeight: '36px' }}
+                style={{ fontWeight: 600, fontSize: '23px', lineHeight: '30px' }}
               >
-                {address}
+                {aptName}
               </Typography>
             </Grid>
             <Grid item>
-              <DialogActions>
-                <IconButton onClick={() => setOpen(false)} disableRipple>
+              <DialogActions style={{ padding: 0, margin: 0 }}>
+                <IconButton
+                  onClick={() => setOpen(false)}
+                  disableRipple
+                  style={{ height: '30px', padding: 0, margin: 0 }}
+                >
                   <img
                     src={closeMapIcon}
-                    alt={'recenter-icon'}
-                    style={{ width: '21.4px', height: '21.4px' }}
+                    alt={'close-icon'}
+                    style={{ width: '26.9px', height: '26.9px' }}
                   />
                 </IconButton>
               </DialogActions>
@@ -113,36 +208,16 @@ const MapModal = ({
           </Grid>
         </DialogTitle>
 
-        <DialogContent style={{ padding: 0 }}>
-          <Box style={{}}>
-            <div
-              style={{
-                height: '450px',
-                width: '934px',
-                borderRadius: '12.764px',
-                overflow: 'hidden',
-                outline: 'none',
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  height: '500px',
-                  width: '934px',
-                  borderRadius: '12.764px',
-                  overflow: 'hidden',
-                  outline: 'none',
-                  position: 'absolute',
-                  borderColor: '1px solid red',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%,-50%)',
-                }}
-              >
+        <DialogContent style={{ padding: 0, marginTop: '22.23px', overflow: 'hidden' }}>
+          <Box style={{ width: '934px', height: '600px', padding: 0, margin: 0 }}>
+            <div className={outerMapDiv}>
+              <div className={innerMapDiv}>
                 <GoogleMapReact
                   bootstrapURLKeys={{
                     key: process.env.REACT_APP_MAPS_API_KEY || 'can not find api',
                   }}
+                  onGoogleApiLoaded={handleApiLoaded}
+                  yesIWantToUseGoogleMapApiInternals
                   defaultCenter={{ lat: latitude, lng: longitude }}
                   defaultZoom={16}
                   options={{
@@ -154,30 +229,30 @@ const MapModal = ({
                   <Marker
                     lat={42.44455308325643}
                     lng={-76.48360496778704}
-                    src={aptIcon}
+                    src={schoolIcon}
                     altText="Engineering Quad icon"
                   />
                   <Marker
                     lat={42.449014547431425}
                     lng={-76.48413980587392}
-                    src={aptIcon}
+                    src={schoolIcon}
                     altText="Arts Quad icon"
                   />
                   <Marker
                     lat={42.446768276610875}
                     lng={-76.48505175766948}
-                    src={aptIcon}
+                    src={schoolIcon}
                     altText="Ho Plaza icon"
                   />
                   <Marker
                     lat={42.448929851009716}
                     lng={-76.47804712490351}
-                    src={aptIcon}
+                    src={schoolIcon}
                     altText="Ag Quad icon"
                   />
                 </GoogleMapReact>
               </div>
-              <IconButton disableRipple className={recenterButton}>
+              <IconButton disableRipple className={recenterButton} onClick={handleRecenter}>
                 <img
                   src={recenterIcon}
                   alt={'recenter-icon'}
@@ -185,36 +260,55 @@ const MapModal = ({
                 />
               </IconButton>
             </div>
-            <Box>
-              <Box mt={1.5}>
+
+            <Grid
+              container
+              justifyContent="space-between"
+              alignItems="flex-start"
+              style={{ marginTop: '22.3px', marginBottom: '0px' }}
+            >
+              <Grid item>
                 <Typography variant="h6" style={{ fontWeight: 600, fontSize: '20px' }}>
                   {address}
                 </Typography>
-              </Box>
-              <Box>
-                <Typography variant="h6" style={{ fontWeight: 400, fontSize: '18px' }}>
-                  Distance from Campus
-                </Typography>
-                <Grid container justifyContent="flex-start" spacing={1}>
-                  <Grid item>
-                    <img src={walkIcon} alt={'walk-icon'} />
-                  </Grid>
-                  <Grid item>
-                    <Typography variant="h6" style={{ fontWeight: 400, fontSize: '18px' }}>
-                      {walkTime} min
-                    </Typography>
-                  </Grid>
-                  <Grid item style={{ marginLeft: '8px' }}>
-                    <img src={driveIcon} alt={'drive-icon'} />
-                  </Grid>
-                  <Grid item>
-                    <Typography variant="h6" style={{ fontWeight: 400, fontSize: '18px' }}>
-                      {driveTime} min
-                    </Typography>
-                  </Grid>
+              </Grid>
+              <Grid item style={{ width: '45%' }}>
+                <Grid
+                  container
+                  direction="column"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
+                  style={{ paddingTop: '0px' }}
+                >
+                  <Typography
+                    variant="h6"
+                    style={{
+                      fontWeight: 600,
+                      fontSize: '18px',
+                      lineHeight: '28px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Distance from Campus
+                  </Typography>
+                  <DistanceInfo
+                    location={'Engineering Quad'}
+                    walkDistance={walkTime}
+                    driveDistance={driveTime}
+                  />
+                  <DistanceInfo
+                    location={'Ho Plaza'}
+                    walkDistance={walkTime}
+                    driveDistance={driveTime}
+                  />
+                  <DistanceInfo
+                    location={'Ag Quad'}
+                    walkDistance={walkTime}
+                    driveDistance={driveTime}
+                  />
                 </Grid>
-              </Box>
-            </Box>
+              </Grid>
+            </Grid>
           </Box>
         </DialogContent>
       </Box>
