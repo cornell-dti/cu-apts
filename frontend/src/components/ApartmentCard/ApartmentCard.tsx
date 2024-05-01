@@ -42,6 +42,8 @@ const useStyles = makeStyles({
   imgStyle: {
     borderRadius: '12%',
     padding: '17px',
+    width: '205px',
+    height: '205px',
   },
   aptNameTxt: {
     fontWeight: 800,

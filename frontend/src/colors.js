@@ -1,5 +1,6 @@
 export const colors = {
   red1: '#B94630',
+  red1Transparent: 'rgba(185, 70, 48, 0.8)',
   red2: '#EB5757',
   red3: '#E8725C',
   red4: '#FFCFC7',
