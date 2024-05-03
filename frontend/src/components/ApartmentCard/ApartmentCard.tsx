@@ -38,16 +38,8 @@ const useStyles = makeStyles({
     borderRadius: '10px',
     background: colors.red5,
   },
-  imgStyle: {
-    borderRadius: '12%',
-    margin: '17px',
-  },
   aptNameTxt: {
     fontWeight: 800,
-  },
-  marginTxt: {
-    paddingBottom: '-10px',
-    paddingLeft: '20px',
   },
   reviewNum: {
     fontWeight: 700,
@@ -60,13 +52,6 @@ const useStyles = makeStyles({
     WebkitLineClamp: 3,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  imgMobile: {
-    borderRadius: '10px',
-    marginTop: '13px',
-  },
-  imgContainerMobile: {
-    borderRadius: '10px',
   },
   landlordButton: {
     textTransform: 'none',
@@ -116,7 +101,8 @@ const ApartmentCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
 
-  const { aptNameTxt, root, redHighlight, reviewNum, textStyle, landlordButton } = useStyles();
+  const { aptNameTxt, root, redHighlight, reviewNum, textStyle, landlordButton, saveRibbonIcon } =
+    useStyles();
 
   useEffect(() => {
     const checkIfSaved = async () => {
@@ -278,7 +264,7 @@ const ApartmentCard = ({
                       onClick={handleSaveToggle}
                       onMouseEnter={() => setSavedIsHovered(true)}
                       onMouseLeave={() => setSavedIsHovered(false)}
-                      className="saveRibbonIcon"
+                      className={saveRibbonIcon}
                     >
                       <img
                         src={savedIsHovered ? saved : isSaved ? saved : unsaved}
