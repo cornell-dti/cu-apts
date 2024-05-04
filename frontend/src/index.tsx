@@ -5,13 +5,16 @@ import './components/FAQ/CollapsibleFAQ.module.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 // Probably put this value in .env file
 axios.defaults.baseURL = process.env.REACT_APP_BASE_URL;
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <App />
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );
