@@ -99,9 +99,9 @@ export default function DropDown({ menuItems, isMobile, defaultValue, className,
         style={isMobile ? { scale: '0.75' } : {}}
       >
         {selected}
-        {icon == undefined
+        {icon === undefined
           ? expandArrow(open)
-          : icon == true && <SvgIcon component={ArrowDropDownIcon} />}
+          : icon === true && <SvgIcon component={ArrowDropDownIcon} />}
       </Button>
       <Menu
         id="basic-menu"

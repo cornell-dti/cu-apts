@@ -12,7 +12,6 @@ import {
   makeStyles,
   IconButton,
   CardMedia,
-  Icon,
   useMediaQuery,
 } from '@material-ui/core';
 import axios from 'axios';
