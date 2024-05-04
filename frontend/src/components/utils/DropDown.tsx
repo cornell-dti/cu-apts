@@ -25,7 +25,8 @@
  * @returns {JSX.Element} The rendered dropdown component.
  */
 import React, { useState } from 'react';
-import { Button, Menu, MenuItem } from '@material-ui/core';
+import { Button, Menu, MenuItem, SvgIcon } from '@material-ui/core';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { makeStyles } from '@material-ui/styles';
 import ArrowDownSrc from '../../assets/dropdown-arrow-down.svg';
 
@@ -51,19 +52,31 @@ type MenuElement = {
 type Props = {
   menuItems: MenuElement[];
   isMobile?: boolean;
+  defaultValue?: string;
+  className?: string;
+  icon?: boolean;
 };
 
 const useStyles = makeStyles({
   button: {
-    minWidth: '64px',
-    backgroundColor: '#e8e8e8',
-    borderColor: '#e8e8e8',
+    borderColor: '#E8E8E8',
+    textTransform: 'none',
+    fontSize: '22px',
+    lineHeight: 'normal',
+    fontWeight: 'normal',
+    height: '51px',
+    paddingLeft: '18px',
+    paddingRight: '18px',
+    borderRadius: '10px',
+    backgroundColor: '#E8E8E8',
+    scale: '1',
+    whiteSpace: 'nowrap',
   },
 });
 
-export default function DropDown({ menuItems, isMobile }: Props) {
+export default function DropDown({ menuItems, isMobile, defaultValue, className, icon }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>(menuItems[0].item || '-');
+  const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : menuItems[0].item);
   const { button } = useStyles();
 
   const open = Boolean(anchorEl);
@@ -82,23 +95,13 @@ export default function DropDown({ menuItems, isMobile }: Props) {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className={button}
-        style={{
-          textTransform: 'none',
-          fontSize: '22px',
-          lineHeight: 'normal',
-          fontWeight: 'normal',
-          height: '51px',
-          paddingLeft: '18px',
-          paddingRight: '18px',
-          borderRadius: '10px',
-          backgroundColor: '#E8E8E8',
-          scale: isMobile ? '0.75' : '1',
-          whiteSpace: 'nowrap',
-        }}
+        className={className || button}
+        style={isMobile ? { scale: '0.75' } : {}}
       >
         {selected}
-        {expandArrow(open)}
+        {icon == undefined
+          ? expandArrow(open)
+          : icon == true && <SvgIcon component={ArrowDropDownIcon} />}
       </Button>
       <Menu
         id="basic-menu"
