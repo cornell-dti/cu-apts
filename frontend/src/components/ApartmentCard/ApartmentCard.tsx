@@ -60,10 +60,14 @@ const useStyles = makeStyles({
     },
   },
   saveRibbonIcon: {
-    marginLeft: 'auto',
-    padding: 0,
+    width: '40px',
+    height: '24px',
+    objectPosition: 'center',
+    objectFit: 'cover',
+    transition: 'scale 0.2s',
     '&:hover': {
       backgroundColor: 'transparent',
+      scale: 0.9,
     },
   },
 });
@@ -267,13 +271,8 @@ const ApartmentCard = ({
                       className={saveRibbonIcon}
                     >
                       <img
-                        src={savedIsHovered ? saved : isSaved ? saved : unsaved}
+                        src={savedIsHovered || isSaved ? saved : unsaved}
                         alt={isSaved ? 'Saved' : 'Unsaved'}
-                        style={{
-                          height: '24px',
-                          objectPosition: 'center',
-                          objectFit: 'cover',
-                        }}
                       />
                     </IconButton>
                   </Grid>
