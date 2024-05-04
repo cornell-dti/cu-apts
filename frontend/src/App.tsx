@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import './App.scss';
-import { Route, Switch, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
@@ -95,7 +95,7 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
-  const { pathname } = useLocation();
+
   useEffect(() => {
     const setData = async () => {
       await axios.post('/api/set-data');
@@ -105,45 +105,50 @@ const App = (): ReactElement => {
 
   return (
     <ThemeProvider theme={theme}>
-      <NavBar headersData={headersData} user={user} setUser={setUser} />
-      <div className="root">
-        <Switch>
-          <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
+      <Router>
+        <NavBar headersData={headersData} user={user} setUser={setUser} />
+        <div className="root">
+          <Switch>
+            <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
 
-          <Route exact path="/faq" component={FAQPage} />
-          <Route
-            exact
-            path="/reviews"
-            component={() => <ReviewPage user={user} setUser={setUser} />}
-          />
+            <Route exact path="/faq" component={FAQPage} />
+            <Route
+              exact
+              path="/reviews"
+              component={() => <ReviewPage user={user} setUser={setUser} />}
+            />
 
-          <Route exact path="/policies" component={Policies} />
-          <Route
-            path="/location/:location"
-            component={() => <LocationPage user={user} setUser={setUser} />}
-          />
-          <Route
-            path="/landlord/:landlordId"
-            component={() => <LandlordPage user={user} setUser={setUser} />}
-          />
-          <Route path="/profile" component={() => <ProfilePage user={user} setUser={setUser} />} />
-          <Route
-            path="/bookmarks"
-            component={() => <BookmarksPage user={user} setUser={setUser} />}
-          />
-          <Route
-            path="/apartment/:aptId"
-            component={() => <ApartmentPage user={user} setUser={setUser} />}
-          />
-          <Route exact path="/notfound" component={NotFoundPage} />
-          <Route
-            path="/search"
-            component={() => <SearchResultsPage user={user} setUser={setUser} />}
-          />
-          {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
-        </Switch>
-      </div>
-      {pathname !== '/faq' && <Footer />}
+            <Route exact path="/policies" component={Policies} />
+            <Route
+              path="/location/:location"
+              component={() => <LocationPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/landlord/:landlordId"
+              component={() => <LandlordPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/profile"
+              component={() => <ProfilePage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/bookmarks"
+              component={() => <BookmarksPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/apartment/:aptId"
+              component={() => <ApartmentPage user={user} setUser={setUser} />}
+            />
+            <Route exact path="/notfound" component={NotFoundPage} />
+            <Route
+              path="/search"
+              component={() => <SearchResultsPage user={user} setUser={setUser} />}
+            />
+            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
+          </Switch>
+        </div>
+        <Footer />
+      </Router>
     </ThemeProvider>
   );
 };
