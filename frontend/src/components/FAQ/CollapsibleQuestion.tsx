@@ -133,15 +133,21 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
       <Accordion
         variant="outlined"
         square
-        className={isMobile ? questionContainerMobile : questionContainer}
+        className={questionContainer}
+        style={isMobile ? { marginBottom: '8px!important' as '8px', padding: '0' } : {}}
       >
         <AccordionSummary
           expandIcon={
             <ExpandMoreIcon fontSize={isMobile ? 'small' : 'medium'} htmlColor={colors.red1} />
           }
-          className={isMobile ? summaryMobile : summary}
+          className={summary}
+          style={isMobile ? { padding: '0 10px' } : {}}
         >
-          <Typography variant="body1" className={isMobile ? questionTitleMobile : questionTitle}>
+          <Typography
+            variant="body1"
+            className={questionTitle}
+            style={isMobile ? { fontSize: '10px', lineHeight: '14px' } : {}}
+          >
             {question}
           </Typography>
         </AccordionSummary>
@@ -149,7 +155,8 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
           <Typography
             gutterBottom
             variant="body2"
-            className={isMobile ? answerBlurbMobile : answerBlurb}
+            className={answerBlurb}
+            style={isMobile ? { fontSize: '10px', lineHeight: '14px' } : {}}
           >
             {answer}
           </Typography>
