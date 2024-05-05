@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     fontWeight: 400,
   },
   rentingBox: {
-    marginTop: '2em',
+    marginTop: '1.75em',
     marginBottom: '2em',
   },
   rentingText: {
@@ -94,15 +94,16 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
         </Container>
       </Box>
 
-      <Box>
+      <Box marginLeft="5.5vw" marginRight="5.5vw">
         <Container maxWidth="lg">
           <Box textAlign="center" className={classes.rentingBox}>
             <Typography
               variant="h2"
               style={{
                 fontSize: isMobile ? '21px' : '35px',
-                fontWeight: isMobile ? 650 : 500,
+                fontWeight: isMobile ? 650 : 600,
                 marginTop: isMobile ? '-15px' : '0px',
+                letterSpacing: '0.72px',
               }}
               className={classes.rentingText}
             >

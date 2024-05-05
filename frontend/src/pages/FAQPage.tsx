@@ -11,6 +11,123 @@ export type FAQ = {
   answer: string;
 };
 
+const useStyles = makeStyles(() => ({
+  pageBackground: {
+    backgroundColor: colors.gray3,
+    padding: '96px 135px 0',
+    minHeight: 'calc(120vh - 96px)',
+  },
+  title: {
+    color: colors.black,
+    fontSize: '42px',
+    fontWeight: 600,
+    lineHeight: '60px',
+    marginBottom: '20px',
+  },
+  subtitle: {
+    color: colors.black,
+    fontSize: '20px',
+    fontWeight: 400,
+    lineHeight: '28px',
+    marginBottom: '32px',
+  },
+  squareButton: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: colors.red7, // dark-red color on Figma
+    },
+    padding: '8px 18px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 600,
+    fontSize: '16px',
+    borderRadius: '10px',
+    lineHeight: '26px',
+  },
+  sideBar: {
+    backgroundColor: colors.white,
+    padding: '20px',
+    borderRadius: '8px',
+    width: '275px',
+    height: 'fit-content',
+    marginLeft: '48px',
+    '@media only screen and (max-width: 960px)': {
+      marginLeft: '0',
+    },
+    border: '1px solid' + colors.gray5,
+    marginTop: '0',
+  },
+  sideBarTitle: {
+    fontSize: '20px',
+    fontWeight: 600,
+    lineHeight: '26px',
+    paddingBottom: '6px',
+  },
+  sideBarBlurb: {
+    fontSize: '16px',
+    fontWeight: 400,
+    lineHeight: '25px',
+    paddingBottom: '18px',
+  },
+  pageBackgroundMobile: {
+    backgroundColor: colors.gray3,
+    padding: '24px 34px 0',
+    minHeight: 'calc(120vh - 96px)',
+  },
+  titleMobile: {
+    color: colors.black,
+    fontSize: '18px',
+    fontWeight: 600,
+    lineHeight: '28px',
+    marginBottom: '1px',
+  },
+  subtitleMobile: {
+    color: colors.black,
+    fontSize: '12px',
+    fontWeight: 400,
+    lineHeight: '16px',
+    marginBottom: '24px',
+  },
+  squareButtonMobile: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: colors.red7, // dark-red color on Figma
+    },
+    padding: '8px 12px',
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 600,
+    fontSize: '12px',
+    borderRadius: '10px',
+    lineHeight: '16px',
+  },
+  sideBarMobile: {
+    backgroundColor: colors.white,
+    padding: '20px',
+    borderRadius: '8px',
+    width: 'auto',
+    height: '200px',
+    marginLeft: '0',
+    '@media only screen and (max-width: 960px)': {
+      marginLeft: '0',
+    },
+    border: '1px solid' + colors.gray5,
+    marginTop: '16px',
+  },
+  sideBarTitleMobile: {
+    fontSize: '10px',
+    fontWeight: 600,
+    lineHeight: '14px',
+    paddingBottom: '6px',
+  },
+  sideBarBlurbMobile: {
+    fontSize: '10px',
+    fontWeight: 400,
+    lineHeight: '14px',
+    paddingBottom: '18px',
+  },
+}));
+
 /**
  * FAQPage Component
  *
@@ -27,59 +144,58 @@ const FAQPage = (): ReactElement => {
   const useStyles = makeStyles(() => ({
     pageBackground: {
       backgroundColor: colors.gray3,
-      padding: isMobile ? '24px 34px 0' : '96px 135px 0',
+      padding: '96px 135px 0',
       minHeight: 'calc(120vh - 96px)',
     },
     title: {
       color: colors.black,
-      fontSize: isMobile ? '18px' : '42px',
+      fontSize: '42px',
       fontWeight: 600,
-      lineHeight: isMobile ? '28px' : '60px',
-      marginBottom: isMobile ? '1px' : '20px',
+      lineHeight: '60px',
+      marginBottom: '20px',
     },
     subtitle: {
       color: colors.black,
-      fontSize: isMobile ? '12px' : '20px',
+      fontSize: '20px',
       fontWeight: 400,
-      lineHeight: isMobile ? '16px' : '28px',
-      marginBottom: isMobile ? '24px' : '32px',
+      lineHeight: '28px',
+      marginBottom: '32px',
     },
     squareButton: {
       backgroundColor: colors.red1,
       color: 'white',
       '&:hover': {
-        backgroundColor: colors.darkred,
+        backgroundColor: colors.red7, //dark-red on figma
       },
-      padding: isMobile ? '8px 12px' : '8px 18px',
-      fontFamily: 'Work Sans, sans-serif',
+      padding: '8px 18px',
       fontWeight: 600,
-      fontSize: isMobile ? '12px' : '16px',
+      fontSize: '16px',
       borderRadius: '10px',
-      lineHeight: isMobile ? '16px' : '26px',
+      lineHeight: '26px',
     },
     sideBar: {
       backgroundColor: colors.white,
       padding: '20px',
       borderRadius: '8px',
-      width: isMobile ? 'auto' : '275px',
-      height: isMobile ? '200px' : 'fit-content',
-      marginLeft: isMobile ? '0' : '48px',
+      width: '275px',
+      height: 'fit-content',
+      marginLeft: '48px',
       '@media only screen and (max-width: 960px)': {
         marginLeft: '0',
       },
       border: '1px solid' + colors.gray5,
-      marginTop: isMobile ? '16px' : '0',
+      marginTop: '0',
     },
     sideBarTitle: {
-      fontSize: isMobile ? '10px' : '20px',
+      fontSize: '20px',
       fontWeight: 600,
-      lineHeight: isMobile ? '14px' : '26px',
+      lineHeight: '26px',
       paddingBottom: '6px',
     },
     sideBarBlurb: {
-      fontSize: isMobile ? '10px' : '16px',
+      fontSize: '16px',
       fontWeight: 400,
-      lineHeight: isMobile ? '14px' : '25px',
+      lineHeight: '25px',
       paddingBottom: '18px',
     },
   }));
@@ -102,17 +218,25 @@ const FAQPage = (): ReactElement => {
   }, []);
 
   return (
-    <div className={pageBackground}>
+    <div className={pageBackground} style={isMobile ? { padding: '24px 34px 0' } : {}}>
       <Grid container direction="column" alignItems="stretch">
         {/* Title */}
         <Grid item xs={12}>
-          <Typography variant="h1" className={title}>
+          <Typography
+            variant="h1"
+            className={title}
+            style={isMobile ? { fontSize: '18px', lineHeight: '28px', marginBottom: '1px' } : {}}
+          >
             Frequently Asked Questions
           </Typography>
         </Grid>
         {/* Subtitle */}
         <Grid item xs={12} md={8}>
-          <Typography variant="subtitle1" className={subtitle}>
+          <Typography
+            variant="subtitle1"
+            className={subtitle}
+            style={isMobile ? { fontSize: '12px', lineHeight: '16px', marginBottom: '24px' } : {}}
+          >
             Finding off-campus housing can be a daunting process. To assist you in your search,
             we've compiled answers to some of our most frequently asked questions.
           </Typography>
@@ -141,14 +265,31 @@ const FAQPage = (): ReactElement => {
           </Grid>
         </Grid>
         {isMobile && (
-          <Grid item xs={12} className={sideBar}>
-            <Typography variant="h1" className={sideBarTitle}>
+          <Grid
+            item
+            xs={12}
+            className={sideBar}
+            style={{ width: 'auto', height: '200px', marginLeft: '0', marginTop: '16px' }}
+          >
+            <Typography
+              variant="h1"
+              className={sideBarTitle}
+              style={{ fontSize: '10px', lineHeight: '14px' }}
+            >
               Still have questions?
             </Typography>
-            <Typography variant="body1" className={sideBarBlurb}>
+            <Typography
+              variant="body1"
+              className={sideBarBlurb}
+              style={{ fontSize: '10px', lineHeight: '14px' }}
+            >
               Can't find the answer you're looking for? Feel free to reach out to our team.
             </Typography>
-            <Button href="mailto:hello@cornelldti.org" className={squareButton}>
+            <Button
+              href="mailto:hello@cornelldti.org"
+              className={squareButton}
+              style={{ padding: '8px 12px', fontSize: '12px', lineHeight: '16px' }}
+            >
               Get In Touch
             </Button>
           </Grid>
