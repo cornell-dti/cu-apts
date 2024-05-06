@@ -627,7 +627,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
-                <Grid item style={{ paddingBottom: isMobile ? 0 : '26px', marginRight: '8px' }}>
+                <Grid
+                  item
+                  style={{
+                    paddingBottom: isMobile ? 0 : '10px',
+                    marginRight: '8px',
+                    marginTop: '-5px',
+                  }}
+                >
                   {!isMobile && (
                     <DropDownWithLabel
                       label="Sort by"

@@ -43,26 +43,31 @@ const DropDownWithLabel: React.FC<DropDownWithLabelProps> = ({
   isMobile,
 }) => {
   return (
-    <div>
-      <Grid container direction="row" alignItems="center" justifyContent="flex-end" wrap="nowrap">
-        <Grid item>
-          <Typography
-            variant="body1"
-            style={{
-              fontSize: isMobile ? '15px' : '23.157px',
-              paddingRight: isMobile ? '0px' : '11px',
-              whiteSpace: 'nowrap',
-              ...labelStyle,
-            }}
-          >
-            {label}
-          </Typography>
-        </Grid>
-        <Grid item>
-          <DropDown menuItems={menuItems} isMobile={isMobile} />
-        </Grid>
+    <Grid
+      container
+      direction="row"
+      alignItems="center"
+      justifyContent="flex-end"
+      wrap="nowrap"
+      spacing={0}
+    >
+      <Grid item>
+        <Typography
+          variant="body1"
+          style={{
+            fontSize: '18px',
+            paddingRight: '10px',
+            whiteSpace: 'nowrap',
+            ...labelStyle,
+          }}
+        >
+          {label}
+        </Typography>
       </Grid>
-    </div>
+      <Grid item>
+        <DropDown menuItems={menuItems} isMobile={isMobile} />
+      </Grid>
+    </Grid>
   );
 };
 

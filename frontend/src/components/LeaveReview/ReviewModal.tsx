@@ -65,14 +65,16 @@ const useStyle = makeStyles({
     alignItems: 'center',
   },
   dropDownStyle: {
-    fontWeight: 600, //
-    width: '100%', //
-    height: '100%', //
-    top: '0', //
-    left: '0', //
-    textTransform: 'none', //
-    fontSize: '18px', //
-    position: 'absolute', //
+    fontWeight: 600,
+    width: '100%',
+    height: '100%',
+    top: '0',
+    left: '0',
+    textTransform: 'none',
+    fontSize: '18px',
+    position: 'absolute',
+    justifyContent: 'flex-start',
+    paddingLeft: '20px',
   },
   expandMoreIcon: {
     right: '10px',

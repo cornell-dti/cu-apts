@@ -50,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
   },
   leaveReviewContainer: {
     marginTop: '16px',
-    marginBottom: '24px',
   },
   horizontalLine: {
     borderTop: '1px solid #C4C4C4',

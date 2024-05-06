@@ -39,7 +39,7 @@ const expandArrow = (direction: boolean) => {
         transition: 'all 0.5s ease',
       }}
     >
-      <img src={ArrowDownSrc} alt="⬇" />
+      <img src={ArrowDownSrc} alt="⬇" height="10" />
     </div>
   );
 };
@@ -61,12 +61,10 @@ const useStyles = makeStyles({
   button: {
     borderColor: '#E8E8E8',
     textTransform: 'none',
-    fontSize: '22px',
+    fontSize: '18px',
     lineHeight: 'normal',
     fontWeight: 'normal',
-    height: '51px',
-    paddingLeft: '18px',
-    paddingRight: '18px',
+    height: '44px',
     borderRadius: '10px',
     backgroundColor: '#E8E8E8',
     scale: '1',
@@ -96,7 +94,6 @@ export default function DropDown({ menuItems, isMobile, defaultValue, className,
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
         className={className || button}
-        style={isMobile ? { scale: '0.75' } : {}}
       >
         {selected}
         {icon === undefined
