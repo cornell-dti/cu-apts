@@ -25,6 +25,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * AdminPage Component
+ *
+ * This component represents a page that only authorized admins can view. The page displays information about reviews, allows admins
+ * to approve or decline reviews. The page also displays contact information from the contact modals ("Can't Find Your Apartment" form
+ * and "Ask Us a Question" form).
+ *
+ * @returns The rendered AdminPage component.
+ */
 const AdminPage = (): ReactElement => {
   const [selectedTab, setSelectedTab] = useState('Reviews');
 
