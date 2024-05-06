@@ -4,11 +4,13 @@ import {
   makeStyles,
   Grid,
   Container,
-  Drawer,
   List,
   ListItem,
   ListItemText,
-  Divider,
+  AppBar,
+  Toolbar,
+  Tabs,
+  Tab,
 } from '@material-ui/core';
 import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
@@ -219,21 +221,19 @@ const AdminPage = (): ReactElement => {
 
   return (
     <div>
-      <Drawer variant="permanent" anchor="left">
-        <List>
-          {['Reviews', 'Contact'].map((text, index) => (
-            <ListItem
-              button
-              key={text}
-              selected={selectedTab === text}
-              onClick={() => setSelectedTab(text)}
-            >
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-      </Drawer>
+      <AppBar position="static" elevation={0}>
+        <Toolbar>
+          <Tabs
+            value={selectedTab}
+            onChange={(event, newValue) => setSelectedTab(newValue)}
+            aria-label="navigation tabs"
+            variant="fullWidth"
+          >
+            <Tab label="Reviews" value="Reviews" />
+            <Tab label="Contact" value="Contact" />
+          </Tabs>
+        </Toolbar>
+      </AppBar>
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}

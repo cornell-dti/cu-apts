@@ -5,6 +5,7 @@ import { useTitle } from '../utils';
 import { Button, Grid, Typography, makeStyles } from '@material-ui/core';
 import { get } from '../utils/call';
 import { colors } from '../colors';
+import { useModal } from '../components/utils/Footer/ContactModalContext';
 
 export type FAQ = {
   question: string;
@@ -141,6 +142,7 @@ const useStyles = makeStyles(() => ({
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState<FAQ[]>([]);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const { openModal } = useModal();
   const useStyles = makeStyles(() => ({
     pageBackground: {
       backgroundColor: colors.gray3,
@@ -257,7 +259,7 @@ const FAQPage = (): ReactElement => {
                 <Typography variant="body1" className={sideBarBlurb}>
                   Can't find the answer you're looking for? Feel free to reach out to our team.
                 </Typography>
-                <Button href="mailto:hello@cornelldti.org" className={squareButton}>
+                <Button onClick={openModal} className={squareButton}>
                   Get In Touch
                 </Button>
               </Grid>
@@ -286,7 +288,7 @@ const FAQPage = (): ReactElement => {
               Can't find the answer you're looking for? Feel free to reach out to our team.
             </Typography>
             <Button
-              href="mailto:hello@cornelldti.org"
+              onClick={openModal}
               className={squareButton}
               style={{ padding: '8px 12px', fontSize: '12px', lineHeight: '16px' }}
             >
