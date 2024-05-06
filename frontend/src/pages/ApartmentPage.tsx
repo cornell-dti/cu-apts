@@ -386,7 +386,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={landlordData.photos}
+        photos={apt.photos}
         open={carouselOpen}
         onClose={() => setCarouselOpen(false)}
       />
