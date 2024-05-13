@@ -1,9 +1,12 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import ApartmentCard from './ApartmentCard';
 import { Grid, Link, makeStyles, Button } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
 import { loadingLength } from '../../constants/HomeConsts';
+import { ApartmentWithId } from '../../../../common/types/db-types';
+import { sortApartments } from '../../utils/sortApartments';
+import DropDownWithLabel from '../utils/DropDownWithLabel';
 
 type Props = {
   data: CardData[];
@@ -36,8 +39,10 @@ const useStyles = makeStyles({
 /**
  * ApartmentCards Component
  *
- * This component displays ApartmentCard components of the data. It also shows
- * a 'Show more' button if there is more data than the loadingLength constant.
+ * @remarks
+ * This component displays ApartmentCard components of the data.
+ * It also shows a 'Show more' button if there is more data than the loadingLength constant.
+ * It also has a dropdown to sort the apartments based on different properties, such as price and rating.
  * The component is responsive and adjusts its layout based on the screen size.
  *
  * @component
@@ -47,40 +52,99 @@ const useStyles = makeStyles({
  */
 const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
-
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [resultsToShow, setResultsToShow] = useState<number>(loadingLength);
 
   const handleShowMore = () => {
     setResultsToShow(resultsToShow + loadingLength);
   };
 
+  // Handle resizing of the window depending on mobile and if it is clicked.
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  type Fields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
+  const [sortBy, setSortBy] = useState<Fields>('originalOrder');
+  const [orderLowToHigh, setOrderLowToHigh] = useState<boolean>(false);
+
   return (
     <>
+      <Grid item style={{ marginRight: '8px' }}>
+        <DropDownWithLabel
+          label="Sort by"
+          menuItems={[
+            {
+              item: 'Recommended',
+              callback: () => {
+                setSortBy('originalOrder');
+                setOrderLowToHigh(false);
+              },
+            },
+            {
+              item: 'Lowest Price',
+              callback: () => {
+                setSortBy('avgPrice');
+                setOrderLowToHigh(true);
+              },
+            },
+            {
+              item: 'Highest Price',
+              callback: () => {
+                setSortBy('avgPrice');
+                setOrderLowToHigh(false);
+              },
+            },
+            {
+              item: 'Lowest Rating',
+              callback: () => {
+                setSortBy('avgRating');
+                setOrderLowToHigh(true);
+              },
+            },
+            {
+              item: 'Highest Rating',
+              callback: () => {
+                setSortBy('avgRating');
+                setOrderLowToHigh(false);
+              },
+            },
+          ]}
+          isMobile={isMobile}
+        />
+      </Grid>
       <Grid container spacing={3} className={boundingBox}>
         {data &&
-          data.slice(0, resultsToShow).map(({ buildingData, numReviews, company }, index) => {
-            const { id } = buildingData;
-            return (
-              <Grid item md={12} key={index}>
-                <Link
-                  {...{
-                    to: `/apartment/${id}`,
-                    style: { textDecoration: 'none' },
-                    component: RouterLink,
-                  }}
-                >
-                  <ApartmentCard
-                    key={index}
-                    numReviews={numReviews}
-                    buildingData={buildingData}
-                    company={company}
-                    user={user}
-                    setUser={setUser}
-                  />
-                </Link>
-              </Grid>
-            );
-          })}
+          sortApartments(data, sortBy, orderLowToHigh)
+            .slice(0, resultsToShow)
+            .map(({ buildingData, numReviews, company }, index) => {
+              const { id } = buildingData;
+              return (
+                <Grid item md={12} key={index}>
+                  <Link
+                    {...{
+                      to: `/apartment/${id}`,
+                      style: { textDecoration: 'none' },
+                      component: RouterLink,
+                    }}
+                  >
+                    <ApartmentCard
+                      key={index}
+                      numReviews={numReviews}
+                      buildingData={buildingData}
+                      company={company}
+                      user={user}
+                      setUser={setUser}
+                    />
+                  </Link>
+                </Grid>
+              );
+            })}
 
         {data && data.length > resultsToShow && (
           <>

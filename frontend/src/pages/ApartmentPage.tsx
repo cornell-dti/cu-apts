@@ -31,7 +31,6 @@ import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
-import DropDown from '../components/utils/DropDown';
 import { useParams } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 import HeartRating from '../components/utils/HeartRating';
@@ -43,6 +42,7 @@ import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/filled-large-saved-icon.png';
 import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
 import MapModal from '../components/Apartment/MapModal';
+import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 type Props = {
   user: firebase.User | null;
@@ -55,13 +55,6 @@ export type RatingInfo = {
 };
 
 const useStyles = makeStyles((theme) => ({
-  sortByButton: {
-    background: '#E8E8E8',
-    border: 'none',
-    borderRadius: '10px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
-  },
   reviewButton: {
     borderRadius: '30px',
     marginTop: '10px',
@@ -171,7 +164,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   };
 
   const {
-    sortByButton,
     reviewButton,
     aptRating,
     heartRating,
@@ -557,21 +549,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         )}
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item style={{ marginTop: '-10px' }}>
-              <IconButton
-                disableRipple
-                onClick={handleSaveToggle}
-                style={{
-                  padding: 5,
-                  backgroundColor: 'transparent',
-                }}
-              >
-                <img
-                  src={isSaved ? saved : unsaved}
-                  alt={isSaved ? 'Saved' : 'Unsaved'}
-                  style={{ width: '107px', height: '43px' }}
-                />
-              </IconButton>
+            <Grid item>
               <Button
                 style={{ borderRadius: 20, fontSize: '14px' }}
                 color="primary"
@@ -582,30 +560,25 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 Leave a Review
               </Button>
             </Grid>
-            <Grid item style={{ marginRight: '8px' }}>
-              <Grid container spacing={1} direction="row" alignItems="center">
-                <Grid item>
-                  <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
-                </Grid>
-                <Grid item className={sortByButton}>
-                  <DropDown
-                    menuItems={[
-                      {
-                        item: 'Recent',
-                        callback: () => {
-                          setSortBy('date');
-                        },
-                      },
-                      {
-                        item: 'Helpful',
-                        callback: () => {
-                          setSortBy('likes');
-                        },
-                      },
-                    ]}
-                  />
-                </Grid>
-              </Grid>
+            <Grid item>
+              <DropDownWithLabel
+                label="Sort by"
+                menuItems={[
+                  {
+                    item: 'Recent',
+                    callback: () => {
+                      setSortBy('date');
+                    },
+                  },
+                  {
+                    item: 'Helpful',
+                    callback: () => {
+                      setSortBy('likes');
+                    },
+                  },
+                ]}
+                isMobile={isMobile}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -682,39 +655,36 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             )}
 
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
-              <Grid item xs={12} sm={8}>
-                {!isMobile && (
-                  <Grid
-                    container
-                    spacing={1}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    style={{ paddingBottom: '10px' }}
-                  >
-                    <Grid item>
-                      <Typography>Sort by:</Typography>
-                    </Grid>
-                    <Grid item className={sortByButton}>
-                      <DropDown
-                        menuItems={[
-                          {
-                            item: 'Recent',
-                            callback: () => {
-                              setSortBy('date');
-                            },
+              <Grid item xs={12} sm={8} justifyContent="flex-end">
+                <Grid
+                  item
+                  style={{
+                    paddingBottom: isMobile ? 0 : '10px',
+                    marginRight: '8px',
+                    marginTop: '-5px',
+                  }}
+                >
+                  {!isMobile && (
+                    <DropDownWithLabel
+                      label="Sort by"
+                      menuItems={[
+                        {
+                          item: 'Recent',
+                          callback: () => {
+                            setSortBy('date');
                           },
-                          {
-                            item: 'Helpful',
-                            callback: () => {
-                              setSortBy('likes');
-                            },
+                        },
+                        {
+                          item: 'Helpful',
+                          callback: () => {
+                            setSortBy('likes');
                           },
-                        ]}
-                      />
-                    </Grid>
-                  </Grid>
-                )}
+                        },
+                      ]}
+                      isMobile={isMobile}
+                    />
+                  )}
+                </Grid>
 
                 <Grid container item spacing={3}>
                   {sortReviews(reviewData, sortBy)
