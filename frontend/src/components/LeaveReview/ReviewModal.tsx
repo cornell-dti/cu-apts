@@ -73,6 +73,7 @@ const useStyle = makeStyles({
     textTransform: 'none',
     fontSize: '18px',
     position: 'absolute',
+    borderRadius: '50px',
     justifyContent: 'flex-start',
     paddingLeft: '20px',
   },
