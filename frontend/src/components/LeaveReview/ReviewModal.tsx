@@ -65,18 +65,14 @@ const useStyle = makeStyles({
     fontWeight: 600,
     width: '100%',
     height: '100%',
-    borderRadius: '50px !important',
-    backgroundColor: 'transparent',
     top: '0',
     left: '0',
     textTransform: 'none',
     fontSize: '18px',
-    textAlign: 'left',
     position: 'absolute',
-    zIndex: 1,
-    display: 'flex',
-    justifyContent: 'left',
-    paddingLeft: '25px',
+    borderRadius: '50px',
+    justifyContent: 'flex-start',
+    paddingLeft: '20px',
   },
   expandMoreIcon: {
     right: '10px',
@@ -456,7 +452,7 @@ const ReviewModal = ({
               spacing={1}
               direction="row"
               alignItems="center"
-              justifyContent="flex-start"
+              justifyContent={isMobile ? 'flex-start' : 'flex-end'}
             >
               <Grid
                 item

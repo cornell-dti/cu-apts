@@ -1,8 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Menu, MenuItem } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+/**
+ * DropDown Component
+ *
+ * @remarks
+ * A dropdown component that displays a button and a menu with selectable items.
+ * The component uses Material-UI components for consistent styling.
+ *
+ * @component
+ * @example
+ * ```typescript
+ * const menuItems = [
+ *   { item: 'Price', callback: () => setSortBy('avgPrice')},
+ *   { item: 'Rating', callback: () => setSortBy('avgRating')},
+ *   { item: 'Date Added', callback: () => setSortBy('id')},
+ * ];
+ *
+ * function App() {
+ *   return (
+ *     <DropDown menuItems={menuItems} />
+ *   );
+ * }
+ *```
+ * @param {Object} props - The props of the component.
+ * @param {MenuElement[]} props.menuItems - An array of menu items, each containing an item name and a callback function.
+ * @returns {JSX.Element} The rendered dropdown component.
+ */
+import React, { useState } from 'react';
+import { Button, Menu, MenuItem, SvgIcon } from '@material-ui/core';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import SvgIcon from '@material-ui/core/SvgIcon';
+import { makeStyles } from '@material-ui/styles';
+import ArrowDownSrc from '../../assets/dropdown-arrow-down.svg';
+
+const expandArrow = (direction: boolean) => {
+  return (
+    <div
+      style={{
+        padding: '0 0 0 10px',
+        transform: direction ? 'scaleY(-1)' : 'none',
+        transition: 'all 0.5s ease',
+      }}
+    >
+      <img src={ArrowDownSrc} alt="⬇" height="10" />
+    </div>
+  );
+};
 
 type MenuElement = {
   item: string;
@@ -11,6 +51,7 @@ type MenuElement = {
 
 type Props = {
   menuItems: MenuElement[];
+  isMobile?: boolean;
   defaultValue?: string;
   className?: string;
   icon?: boolean;
@@ -18,17 +59,23 @@ type Props = {
 
 const useStyles = makeStyles({
   button: {
-    minWidth: '64px',
-    backgroundColor: '#e8e8e8',
-    borderColor: '#e8e8e8',
+    borderColor: '#E8E8E8',
+    textTransform: 'none',
+    fontSize: '18px',
+    lineHeight: 'normal',
+    fontWeight: 'normal',
+    height: '44px',
+    borderRadius: '10px',
+    backgroundColor: '#E8E8E8',
+    scale: '1',
+    whiteSpace: 'nowrap',
   },
 });
 
-export default function BasicMenu({ menuItems, defaultValue, className, icon }: Props) {
+export default function DropDown({ menuItems, isMobile, defaultValue, className, icon }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : 'Recent');
+  const [selected, setSelected] = useState<string>(defaultValue ? defaultValue : menuItems[0].item);
   const { button } = useStyles();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -37,12 +84,6 @@ export default function BasicMenu({ menuItems, defaultValue, className, icon }: 
   const handleClose = () => {
     setAnchorEl(null);
   };
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 600);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   return (
     <div>
@@ -55,7 +96,9 @@ export default function BasicMenu({ menuItems, defaultValue, className, icon }: 
         className={className || button}
       >
         {selected}
-        {icon != false && <SvgIcon component={ArrowDropDownIcon} />}
+        {icon === undefined
+          ? expandArrow(open)
+          : icon === true && <SvgIcon component={ArrowDropDownIcon} />}
       </Button>
       <Menu
         id="basic-menu"

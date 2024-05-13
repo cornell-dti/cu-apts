@@ -24,7 +24,6 @@ import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
 import { createAuthHeaders, subscribeLikes, getUser } from '../utils/firebase';
-import DropDown from '../components/utils/DropDown';
 import NotFoundPage from './NotFoundPage';
 import { CardData } from '../App';
 import { getAverageRating } from '../utils/average';
@@ -33,6 +32,7 @@ import { colors } from '../colors';
 import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/filled-large-saved-icon.png';
 import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 export type RatingInfo = {
   feature: string;
@@ -50,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
   },
   leaveReviewContainer: {
     marginTop: '16px',
-    marginBottom: '24px',
   },
   horizontalLine: {
     borderTop: '1px solid #C4C4C4',
@@ -71,13 +70,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '30px',
     marginTop: '10px',
     marginBottom: '10px',
-  },
-  sortByButton: {
-    background: '#E8E8E8',
-    border: 'none',
-    borderRadius: '10px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
   },
 }));
 
@@ -114,15 +106,8 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
-  const {
-    container,
-    leaveReviewContainer,
-    horizontalLine,
-    heartRating,
-    aptRating,
-    reviewButton,
-    sortByButton,
-  } = useStyles();
+  const { container, leaveReviewContainer, horizontalLine, heartRating, aptRating, reviewButton } =
+    useStyles();
 
   // useEffect hook to control the number of results to show based on screen size and reviewData length
   useEffect(() => {
@@ -287,6 +272,16 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     }
   };
 
+  const openReviewModal = async () => {
+    let user = await getUser(true);
+    setUser(user);
+    if (!user) {
+      showSignInErrorToast();
+      return;
+    }
+    setReviewOpen(true);
+  };
+
   // Define a component 'Modals' conditionally based on landlordData existence
   const Modals = landlordData && (
     <>
@@ -365,7 +360,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                   style={{ width: '107px', height: '43px' }}
                 />
               </IconButton>
-              {/* <Button
+              <Button
                 color="primary"
                 className={reviewButton}
                 variant="contained"
@@ -373,32 +368,27 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 onClick={openReviewModal}
               >
                 Leave a Review
-              </Button> */}
+              </Button>
             </Grid>
-            <Grid item>
-              <Grid container spacing={1} direction="row" alignItems="center">
-                <Grid item>
-                  <Typography>Sort by:</Typography>
-                </Grid>
-                <Grid item className={sortByButton}>
-                  <DropDown
-                    menuItems={[
-                      {
-                        item: 'Recent',
-                        callback: () => {
-                          setSortBy('date');
-                        },
-                      },
-                      {
-                        item: 'Helpful',
-                        callback: () => {
-                          setSortBy('likes');
-                        },
-                      },
-                    ]}
-                  />
-                </Grid>
-              </Grid>
+            <Grid item style={{ marginRight: '8px' }}>
+              <DropDownWithLabel
+                label="Sort by"
+                menuItems={[
+                  {
+                    item: 'Recent',
+                    callback: () => {
+                      setSortBy('date');
+                    },
+                  },
+                  {
+                    item: 'Helpful',
+                    callback: () => {
+                      setSortBy('likes');
+                    },
+                  },
+                ]}
+                isMobile={isMobile}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -453,46 +443,36 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         </Grid>
         <Grid item className={leaveReviewContainer} xs={12}>
           <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-            <Grid item style={{ marginTop: '-10px' }}>
-              <IconButton
-                disableRipple
-                onClick={handleSaveToggle}
-                style={{
-                  padding: 5,
-                  backgroundColor: 'transparent',
-                }}
+            <Grid item>
+              <Button
+                style={{ borderRadius: 20, fontSize: '14px' }}
+                color="primary"
+                variant="contained"
+                disableElevation
+                onClick={openReviewModal}
               >
-                <img
-                  src={isSaved ? saved : unsaved}
-                  alt={isSaved ? 'Saved' : 'Unsaved'}
-                  style={{ width: '107px', height: '43px' }}
-                />
-              </IconButton>
+                Leave a Review
+              </Button>
             </Grid>
-            <Grid item style={{ marginRight: '8px' }}>
-              <Grid container spacing={1} direction="row" alignItems="center">
-                <Grid item>
-                  <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
-                </Grid>
-                <Grid item>
-                  <DropDown
-                    menuItems={[
-                      {
-                        item: 'Recent',
-                        callback: () => {
-                          setSortBy('date');
-                        },
-                      },
-                      {
-                        item: 'Helpful',
-                        callback: () => {
-                          setSortBy('likes');
-                        },
-                      },
-                    ]}
-                  />
-                </Grid>
-              </Grid>
+            <Grid item>
+              <DropDownWithLabel
+                label="Sort by"
+                menuItems={[
+                  {
+                    item: 'Recent',
+                    callback: () => {
+                      setSortBy('date');
+                    },
+                  },
+                  {
+                    item: 'Helpful',
+                    callback: () => {
+                      setSortBy('likes');
+                    },
+                  },
+                ]}
+                isMobile={isMobile}
+              />
             </Grid>
           </Grid>
         </Grid>
