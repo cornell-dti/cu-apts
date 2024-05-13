@@ -400,7 +400,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={landlordData.photos}
+        photos={apt.photos}
         open={carouselOpen}
         onClose={() => setCarouselOpen(false)}
       />
@@ -587,7 +587,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 <Grid item>
                   <Typography style={{ fontSize: '15px' }}>Sort by:</Typography>
                 </Grid>
-                <Grid item>
+                <Grid item className={sortByButton}>
                   <DropDown
                     menuItems={[
                       {

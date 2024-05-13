@@ -14,9 +14,19 @@ import {
   ApartmentWithId,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
+import { auth } from 'firebase-admin';
+import { Timestamp } from '@firebase/firestore-types';
+import nodemailer from 'nodemailer';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
+import { admins } from '../../frontend/src/constants/HomeConsts';
+
+// Imports for email sending
+
+// Email environment variables
+const cuaptsEmail = process.env.CUAPTS_EMAIL;
+const cuaptsEmailPassword = process.env.CUAPTS_EMAIL_APP_PASSWORD;
 
 // Collections in the Firestore database
 const reviewCollection = db.collection('reviews');
@@ -209,10 +219,21 @@ const pageData = async (buildings: ApartmentWithId[]) =>
 
       const numReviews = reviewList.docs.length;
       const company = landlordDoc.data()?.name;
+      // calculate average rating using overall rating of the reviews
+      const avgRating =
+        reviewList.docs.reduce((acc, curr) => acc + curr.data().overallRating, 0) /
+        Math.max(numReviews, 1);
+      // calculate average price using price category of the reviews, excluding reviews with price 0
+      const reviewsWithPrice = reviewList.docs.filter((review) => review.data().price > 0);
+      const avgPrice =
+        reviewsWithPrice.reduce((acc, curr) => acc + curr.data().price, 0) /
+        Math.max(reviewsWithPrice.length, 1);
       return {
         buildingData,
         numReviews,
         company,
+        avgRating,
+        avgPrice,
       };
     })
   );
@@ -628,9 +649,34 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
 // These endpoints allow for adding and removing landlords to/from a user's saved list.
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
 
-// Endpoint to update the status of a review
-app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) => {
+/**
+ * update-review-status
+ *
+ * Endpoint to update the status of a review.
+ * Sends an email to the user if the review is approved.
+ *
+ * Permissions:
+ * User must be an admin to update a review to approved, declined, or deleted
+ * However, all users can update a review from approved to pending
+ *
+ * @param reviewDocId - The document ID of the review to update
+ * @param newStatus - The new status to set for the review
+ *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', or 'DELETED'
+ * @returns status 200 if successfully updates status,
+ *                 400 if the new status is invalid,
+ *                 401 if authentication fails,
+ *                 403 if user is unauthorized,
+ *                 500 if an error occurs
+ */
+app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
+  const { uid, email } = req.user;
+  // Checking if the user is authorized to update the review's status
+  if (newStatus !== 'PENDING' && !(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
     // Validating if the new status is within the allowed list
@@ -638,9 +684,177 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', async (req, res) =>
       res.status(400).send('Invalid status type');
       return;
     }
+    const reviewDoc = reviewCollection.doc(reviewDocId);
+    const currentStatus = (await reviewDoc.get()).data()?.status || '';
     // Updating the review's status in Firestore
-    await reviewCollection.doc(reviewDocId).update({ status: newStatus });
+    await reviewDoc.update({ status: newStatus });
     res.status(200).send('Success'); // Sending a success response
+    /* If firebase successfully updates status to approved, then send an email
+      to the review's creator to inform them that their review has been approved */
+    if (newStatus === 'APPROVED' && currentStatus !== 'APPROVED') {
+      // get user id
+      const reviewData = (await reviewCollection.doc(reviewDocId).get()).data();
+      const userId = reviewData?.userId;
+      // get user information from user id
+      const userRecord = await auth().getUser(userId);
+      // get user information and apartment and review information
+      const userEmail = userRecord?.email;
+      const userDisplayName = userRecord?.displayName || '';
+      const aptId = reviewData?.aptId;
+      const aptData = aptId ? (await buildingsCollection.doc(aptId).get()).data() : {};
+      const aptName: string = aptData?.name;
+      const reviewText: string = reviewData?.reviewText;
+      const reviewDateObj: Timestamp = reviewData?.date;
+      const reviewDate: string = reviewDateObj ? reviewDateObj.toDate().toDateString() : '';
+      // Create a transporter object with email service provider's SMTP settings
+      if (!cuaptsEmail || !cuaptsEmailPassword) {
+        throw new Error('Host email or password not found');
+      }
+      if (!userEmail) {
+        throw new Error('User email not found');
+      }
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          type: 'login',
+          user: cuaptsEmail,
+          pass: cuaptsEmailPassword, // App password generated from Gmail
+        },
+      });
+
+      // Define the email options,
+      // Note: we can check cuaptsemail sent folder to check if it was sent
+      const mailOptions = {
+        from: {
+          name: 'The CUApts Team',
+          address: cuaptsEmail,
+        },
+        to: userEmail, // The user's email address
+        subject: `[CUApts Review Status Update] Your Review Has Been Approved!`,
+        html: `<head>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+          <style>
+            
+            /* Reset styles */
+            body, body * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family: "Work Sans", Arial, sans-serif;
+                line-height: 1.6;
+            }
+            /* Logo styles*/
+            .logoWithText {
+                display: flex;
+                align-items: baseline;
+                justify-content: center;
+                margin-bottom: 10px;
+                color: #333;
+                font-weight: 600;
+                line-height: 32px;
+            }
+            .logoWithText svg {
+                height: 32px;
+                width: 32px;
+                fill: none;
+            }
+            /* Container styles */
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #fff;
+            }
+            /* Header styles */
+            .header {
+                text-align: center;
+                margin-bottom: 20px;
+                padding: 10px 0;
+                border-bottom: 1px solid lightgrey;
+
+            }
+            .header>h1 {
+                color: white;
+                background-color: #EB5757;
+                border-radius: 5px;
+            }
+            /* Content styles */
+            .content {
+                margin-bottom: 20px;
+            }
+            /* Footer styles */
+            .footer {
+                text-align: center;
+                color: #777;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+              <div class="header">
+                <div class="logoWithText">
+                  <svg width="33" height="59" viewBox="0 0 33 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M30.1317 57.4054H19.8154C19.4554 57.4054 19.1641 57.0382 19.1641 56.5845V11.9039C19.1641 11.4502 19.4554 11.083 19.8154 11.083H30.1317C30.4917 11.083 30.783 11.4502 30.783 11.9039V56.5869C30.783 57.0382 30.4917 57.4054 30.1317 57.4054Z" fill="#B94630"/>
+                    <path d="M24.726 26.8236C25.7548 26.8236 26.5888 25.9897 26.5888 24.9609C26.5888 23.9321 25.7548 23.0981 24.726 23.0981C23.6973 23.0981 22.8633 23.9321 22.8633 24.9609C22.8633 25.9897 23.6973 26.8236 24.726 26.8236Z" fill="white"/>
+                    <path d="M21.4312 15.9414C22.235 15.9414 22.8867 15.3516 22.8867 14.6241C22.8867 13.8966 22.235 13.3069 21.4312 13.3069C20.6273 13.3069 19.9756 13.8966 19.9756 14.6241C19.9756 15.3516 20.6273 15.9414 21.4312 15.9414Z" fill="white"/>
+                    <path d="M22.8877 14.6245H19.9746V20.8095H22.8877V14.6245Z" fill="white"/>
+                    <path d="M24.8999 15.9414C25.7038 15.9414 26.3555 15.3516 26.3555 14.6241C26.3555 13.8966 25.7038 13.3069 24.8999 13.3069C24.096 13.3069 23.4443 13.8966 23.4443 14.6241C23.4443 15.3516 24.096 15.9414 24.8999 15.9414Z" fill="white"/>
+                    <path d="M26.3574 14.6245H23.4443V20.8095H26.3574V14.6245Z" fill="white"/>
+                    <path d="M28.3716 15.9414C29.1755 15.9414 29.8272 15.3516 29.8272 14.6241C29.8272 13.8966 29.1755 13.3069 28.3716 13.3069C27.5677 13.3069 26.916 13.8966 26.916 14.6241C26.916 15.3516 27.5677 15.9414 28.3716 15.9414Z" fill="white"/>
+                    <path d="M29.8281 14.6245H26.915V20.8095H29.8281V14.6245Z" fill="white"/>
+                    <path d="M31.5844 10.5876C31.8412 11.0182 31.5332 11.5649 31.0319 11.5684L18.8563 11.6532C18.3389 11.6568 18.0258 11.0829 18.3089 10.6498L24.7023 0.869119C24.9646 0.467801 25.5567 0.480005 25.8022 0.891791L31.5844 10.5876Z" fill="#B94630"/>
+                    <rect x="1.2549" y="29.0589" width="23.8431" height="29.0588" rx="2.23529" fill="#B94630" stroke="white" stroke-width="1.4902"/>
+                    <rect x="4.98047" y="33.5295" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="10.9414" y="33.5295" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="16.9023" y="33.5295" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="4.98047" y="39.4902" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="10.9414" y="39.4902" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="16.9023" y="39.4902" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="4.98047" y="45.4509" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="10.9414" y="45.4509" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="16.9023" y="45.4509" width="3.72549" height="3.72549" fill="white"/>
+                    <rect x="10.9414" y="51.4119" width="3.72549" height="5.96078" fill="white"/>
+                  </svg>
+                  <h1>CUAPTS</h1>
+                </div>      
+                <h1>🎉 Review Approved! 🎉</h1>
+              </div>
+              <div class="content">
+                  <p>Hello ${userDisplayName},</p>
+                  <p>Thank you for your patience. Your review ${
+                    aptName ? `for ${aptName}` : ''
+                  } has been approved!</p>
+                  <p>Your Review Summary:</p>
+                    ${reviewDate ? `<li><b>Date: </b>${reviewDate}</li>` : ''}
+                    ${reviewText ? `<li><b>Text: </b>${reviewText}</li>` : ''}
+                  <br/>
+                  <p><b>We greatly appreciate your review!<b></p>
+              </div>
+              <div class="footer">
+                  <p>This is a notification email from CUApts (https://www.cuapts.org/).</p>
+              </div>
+          </div>
+        </body>`,
+      };
+
+      // Send the email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log('Error sending email:', error);
+        } else {
+          console.log('Email sent:', info.response);
+        }
+      });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).send('Error'); // Handling any errors
