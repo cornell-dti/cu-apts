@@ -107,7 +107,7 @@ const App = (): ReactElement => {
 
   return (
     <ThemeProvider theme={theme}>
-      <ModalProvider>
+      <ModalProvider user={user} setUser={setUser}>
         <NavBar headersData={headersData} user={user} setUser={setUser} />
         <div className="root">
           <Switch>

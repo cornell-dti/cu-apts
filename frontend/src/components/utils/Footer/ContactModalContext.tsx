@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { getUser } from '../../../utils/firebase';
+import Toast from '../Toast';
 
 interface ModalContextType {
   modalOpen: boolean;
@@ -26,6 +28,8 @@ const useModal = (): ModalContextType => {
 
 interface Props {
   children: ReactNode;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 }
 
 /**
@@ -38,10 +42,25 @@ interface Props {
  * @param children – Child components that will receive access to the modal state
  * @returns
  */
-const ModalProvider = ({ children }: Props) => {
+const ModalProvider = ({ children, user, setUser }: Props) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const toastTime = 3500;
 
-  const openModal = () => setModalOpen(true);
+  const openModal = async () => {
+    let user = await getUser(true);
+    setUser(user);
+    if (!user) {
+      <Toast
+        isOpen={true}
+        severity="error"
+        message="Error: Please sign in with a Cornell email."
+        time={toastTime}
+      />;
+      return;
+    }
+    setModalOpen(true);
+  };
+
   const closeModal = () => setModalOpen(false);
 
   return (
