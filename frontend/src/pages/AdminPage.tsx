@@ -1,6 +1,18 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Typography, makeStyles, Grid, Container } from '@material-ui/core';
-import { ReviewWithId } from '../../../common/types/db-types';
+import {
+  Typography,
+  makeStyles,
+  Grid,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  AppBar,
+  Toolbar,
+  Tabs,
+  Tab,
+} from '@material-ui/core';
+import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
@@ -13,7 +25,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * AdminPage Component
+ *
+ * This component represents a page that only authorized admins can view. The page displays information about reviews, allows admins
+ * to approve or decline reviews. The page also displays contact information from the contact modals ("Can't Find Your Apartment" form
+ * and "Ask Us a Question" form).
+ *
+ * @returns The rendered AdminPage component.
+ */
 const AdminPage = (): ReactElement => {
+  const [selectedTab, setSelectedTab] = useState('Reviews');
+
   const [pendingData, setPendingData] = useState<ReviewWithId[]>([]);
   const [declinedData, setDeclinedData] = useState<ReviewWithId[]>([]);
   const [approvedData, setApprovedData] = useState<ReviewWithId[]>([]);
@@ -24,6 +47,9 @@ const AdminPage = (): ReactElement => {
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
   const [toggle, setToggle] = useState(false);
+
+  const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
+  const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
 
   const { container } = useStyles();
 
@@ -66,7 +92,31 @@ const AdminPage = (): ReactElement => {
     ['North', northReviewCount.count],
   ];
 
-  return (
+  useEffect(() => {
+    const apartmentTypes = new Map<
+      string,
+      React.Dispatch<React.SetStateAction<CantFindApartmentForm[]>>
+    >([['PENDING', setPendingApartmentData]]);
+    apartmentTypes.forEach((cllbck, apartmentType) => {
+      get<CantFindApartmentForm[]>(`/api/pending-buildings/${apartmentType}`, {
+        callback: cllbck,
+      });
+    });
+  }, [toggle]);
+
+  useEffect(() => {
+    const questionTypes = new Map<string, React.Dispatch<React.SetStateAction<QuestionForm[]>>>([
+      ['PENDING', setPendingContactQuestions],
+    ]);
+    questionTypes.forEach((cllbck, questionType) => {
+      get<QuestionForm[]>(`/api/contact-questions/${questionType}`, {
+        callback: cllbck,
+      });
+    });
+  }, [toggle]);
+
+  //  Reviews tab
+  const reviews = (
     <Container className={container}>
       <Grid container spacing={5} justifyContent="center">
         <Grid container>
@@ -133,6 +183,70 @@ const AdminPage = (): ReactElement => {
         </Grid>
       </Grid>
     </Container>
+  );
+
+  //  Contact tab
+  const contact = (
+    <Container className={container}>
+      <Grid container>
+        <Typography variant="h3" style={{ margin: '10px' }}>
+          <strong>Pending "Can't Find Your Apartment" Data ({pendingApartment.length})</strong>
+        </Typography>
+        {[...pendingApartment]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map((apartment, index) => (
+            <ListItem key={index}>
+              <List>
+                <ListItemText>Date: {apartment.date}</ListItemText>
+                <ListItemText>Apartment name: {apartment.name}</ListItemText>
+                <ListItemText>Apartment Address: {apartment.address}</ListItemText>
+                <ListItemText>Photos: {apartment.photos}</ListItemText>
+              </List>
+            </ListItem>
+          ))}
+      </Grid>
+
+      <Grid container>
+        <Grid item xs={12} sm={12}>
+          <Typography variant="h3" style={{ margin: '10px' }}>
+            <strong>Contact Questions ({pendingContactQuestions.length})</strong>
+          </Typography>
+          {[...pendingContactQuestions]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((question, index) => (
+              <ListItem key={index}>
+                <List>
+                  <ListItemText>Date: {question.date}</ListItemText>
+                  <ListItemText>User name: {question.name}</ListItemText>
+                  <ListItemText>Cornell Email: {question.email}</ListItemText>
+                  <ListItemText>Msg: {question.msg}</ListItemText>
+                </List>
+              </ListItem>
+            ))}
+        </Grid>
+      </Grid>
+    </Container>
+  );
+
+  return (
+    <div>
+      <AppBar position="static" elevation={0}>
+        <Toolbar>
+          <Tabs
+            value={selectedTab}
+            onChange={(event, newValue) => setSelectedTab(newValue)}
+            aria-label="navigation tabs"
+            variant="fullWidth"
+          >
+            <Tab label="Reviews" value="Reviews" />
+            <Tab label="Contact" value="Contact" />
+          </Tabs>
+        </Toolbar>
+      </AppBar>
+
+      {selectedTab === 'Reviews' && reviews}
+      {selectedTab === 'Contact' && contact}
+    </div>
   );
 };
 

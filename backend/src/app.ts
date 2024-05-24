@@ -12,6 +12,8 @@ import {
   LandlordWithLabel,
   ApartmentWithLabel,
   ApartmentWithId,
+  CantFindApartmentForm,
+  QuestionForm,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -34,6 +36,8 @@ const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
+const pendingBuildingsCollection = db.collection('pendingBuildings');
+const contactQuestionsCollection = db.collection('contactQuestions');
 
 // Middleware setup
 const app: Express = express();
@@ -382,6 +386,28 @@ app.get('/api/location/:loc', async (req, res) => {
 
   const data = JSON.stringify(await pageData(buildings));
   res.status(200).send(data);
+});
+
+app.get('/api/pending-buildings/:status', async (req, res) => {
+  const { status } = req.params;
+  const apartmentDocs = (await pendingBuildingsCollection.where('status', '==', status).get()).docs;
+  const apartments: CantFindApartmentForm[] = apartmentDocs.map((doc) => {
+    const data = doc.data();
+    const apartment = { ...data, date: data.date.toDate() } as CantFindApartmentForm;
+    return { ...apartment, id: doc.id } as CantFindApartmentForm;
+  });
+  res.status(200).send(JSON.stringify(apartments));
+});
+
+app.get('/api/contact-questions/:status', async (req, res) => {
+  const { status } = req.params;
+  const questionDocs = (await contactQuestionsCollection.where('status', '==', status).get()).docs;
+  const questions: QuestionForm[] = questionDocs.map((doc) => {
+    const data = doc.data();
+    const question = { ...data, date: data.date.toDate() } as QuestionForm;
+    return { ...question, id: doc.id } as QuestionForm;
+  });
+  res.status(200).send(JSON.stringify(questions));
 });
 
 const likeHandler =
@@ -858,6 +884,38 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   } catch (err) {
     console.log(err);
     res.status(500).send('Error'); // Handling any errors
+  }
+});
+
+// API endpoint to submit a "Can't Find Your Apartment?" form.
+app.post('/api/add-pending-building', authenticate, async (req, res) => {
+  try {
+    const doc = pendingBuildingsCollection.doc();
+    const apartment = req.body as CantFindApartmentForm;
+    if (apartment.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...apartment, date: new Date(apartment.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+// API endpoint to submit a "Ask Us A Question" form.
+app.post('/api/add-contact-question', authenticate, async (req, res) => {
+  try {
+    const doc = contactQuestionsCollection.doc();
+    const question = req.body as QuestionForm;
+    if (question.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...question, date: new Date(question.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
   }
 });
 

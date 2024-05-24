@@ -2,6 +2,7 @@ import { Grid, Link, makeStyles, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../../colors';
+import { useModal } from './ContactModalContext';
 
 const useStyles = makeStyles(() => ({
   footer: {
@@ -33,6 +34,8 @@ const useStyles = makeStyles(() => ({
 }));
 const Footer = (): ReactElement => {
   const { footer, link, text } = useStyles();
+  const { openModal } = useModal();
+
   return (
     <footer>
       <Grid
@@ -48,10 +51,8 @@ const Footer = (): ReactElement => {
               <Typography className={text}>Want to get in touch? </Typography>
             </Grid>
             <Grid item>
-              <Typography className={text}>
-                <Link className={link} href="mailto:hello@cornelldti.org">
-                  Contact us!
-                </Link>
+              <Typography onClick={openModal} className={link} style={{ cursor: 'pointer' }}>
+                Contact Us!
               </Typography>
             </Grid>
           </Grid>

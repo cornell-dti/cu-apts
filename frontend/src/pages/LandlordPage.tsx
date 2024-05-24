@@ -19,7 +19,7 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import { Landlord } from '../../../common/types/db-types';
-import Toast from '../components/LeaveReview/Toast';
+import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
