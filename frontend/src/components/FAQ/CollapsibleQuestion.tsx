@@ -117,17 +117,7 @@ export default function CollapsableQuestion({ answer, question }: Props): ReactE
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const {
-    questionTitle,
-    answerBlurb,
-    questionContainer,
-    summary,
-    details,
-    questionTitleMobile,
-    answerBlurbMobile,
-    questionContainerMobile,
-    summaryMobile,
-  } = useStyles(isMobile);
+  const { questionTitle, answerBlurb, questionContainer, summary, details } = useStyles(isMobile);
   return (
     <Grid item>
       <Accordion
