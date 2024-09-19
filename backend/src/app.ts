@@ -78,6 +78,24 @@ app.post('/api/new-review', authenticate, async (req, res) => {
   }
 });
 
+// API endpoint to edit review by id
+app.post('/api/edit-review/:id', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('not authenticated');
+  const { id } = req.params;
+  try {
+    const reviewDoc = reviewCollection.doc(id); // specific doc for the id
+    const review = req.body as Review;
+    if (review.overallRating === 0 || review.reviewText === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    reviewDoc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
+    res.status(201).send(id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
 // API endpoint to get reviews by ID, type and status
 app.get('/api/review/:idType/:id/:status', async (req, res) => {
   const { idType, id, status } = req.params;
