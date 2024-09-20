@@ -79,20 +79,50 @@ app.post('/api/new-review', authenticate, async (req, res) => {
 });
 
 // API endpoint to edit review by id
-app.post('/api/edit-review/:id', authenticate, async (req, res) => {
-  if (!req.user) throw new Error('not authenticated');
-  const { id } = req.params;
+app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const { reviewId } = req.params;
   try {
-    const reviewDoc = reviewCollection.doc(id); // specific doc for the id
-    const review = req.body as Review;
-    if (review.overallRating === 0 || review.reviewText === '') {
-      res.status(401).send('Error: missing fields');
+    const reviewDoc = reviewCollection.doc(reviewId); // specific doc for the id
+    const reviewData = (await reviewDoc.get()).data();
+    if (!reviewData?.userId || reviewData.userId !== req.user.uid) {
+      res.status(401).send('Error: user is not the review owner. not authorized');
+      return;
     }
-    reviewDoc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
-    res.status(201).send(id);
+    const updatedReview = req.body as Review;
+    if (updatedReview.overallRating === 0 || updatedReview.reviewText === '') {
+      res.status(401).send('Error: missing fields');
+      return;
+    }
+    reviewDoc
+      .update({ ...updatedReview, date: new Date(updatedReview.date), likes: 0, status: 'PENDING' })
+      .then(() => {
+        res.status(201).send(reviewId);
+      });
   } catch (err) {
     console.error(err);
     res.status(401).send('Error');
+  }
+});
+
+// API endpoint to get a specific review by its specific review ID
+app.get('/api/review-by-id/:reviewId', async (req, res) => {
+  const { reviewId } = req.params; // Extract the review ID from the request parameters
+  try {
+    const reviewDoc = await reviewCollection.doc(reviewId).get(); // Get the review document from Firestore
+    if (!reviewDoc.exists) {
+      res.status(404).send('Review not found'); // If the document does not exist, return a 404 error
+      return;
+    }
+    const data = reviewDoc.data();
+    const review = { ...data, date: data?.date.toDate() } as ReviewInternal; // Convert the Firestore Timestamp to a Date object
+    const reviewWithId = { ...review, id: reviewDoc.id } as ReviewWithId; // Add the document ID to the review data
+    res.status(200).send(JSON.stringify(reviewWithId)); // Return the review data as a JSON response
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving review'); // Handle any errors that occur during the process
   }
 });
 
@@ -458,30 +488,6 @@ const likeHandler =
 app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
-
-// Endpoint to update a review by its document ID
-app.put('/api/:reviewId/edit', async (req, res) => {
-  try {
-    const { reviewId } = req.params; // Extract the review document ID from the request parameters
-    const review = req.body as Review; // Get the review data from the request body and cast it to the "Review" type
-
-    // Check if the required fields (overallRating and reviewText) are missing or invalid
-    if (review.overallRating === 0 || review.reviewText === '') {
-      res.status(401).send('Error: missing fields');
-    }
-
-    const newReview = { ...review, date: new Date(review.date), status: 'PENDING' };
-    // Update the review document in the database with the provided data
-    await reviewCollection.doc(reviewId).update(newReview);
-
-    // Send a success response with the updated review document ID
-    res.status(200).send(newReview);
-  } catch (err) {
-    // Handle any errors that may occur during the update process
-    console.error(err);
-    res.status(400).send('Error');
-  }
-});
 
 // Endpoint to delete a review by its document ID
 app.put('/api/delete-review/:reviewId', async (req, res) => {
