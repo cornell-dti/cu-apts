@@ -294,6 +294,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
             {sortReviews(pendingReviews, 'date').map((review, index) => (
               <Grid item xs={12} key={index} className={reviewCardStyle}>
                 <ReviewComponent
+                  key={review.id}
                   review={review}
                   liked={likedReviews[review.id]}
                   likeLoading={likeStatuses[review.id]}

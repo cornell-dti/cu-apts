@@ -658,23 +658,25 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
 
                 <Grid container item spacing={3}>
-                  {sortReviews(reviewData, sortBy)
-                    .slice(0, resultsToShow)
-                    .map((review, index) => (
-                      <Grid item xs={12} key={index}>
-                        <ReviewComponent
-                          showLabel={false}
-                          review={review}
-                          liked={likedReviews[review.id]}
-                          likeLoading={likeStatuses[review.id]}
-                          addLike={addLike}
-                          removeLike={removeLike}
-                          setToggle={setToggle}
-                          user={user}
-                          setUser={setUser}
-                        />
-                      </Grid>
-                    ))}
+                  {reviewData &&
+                    sortReviews(reviewData, sortBy)
+                      .slice(0, resultsToShow)
+                      .map((review, index) => (
+                        <Grid item xs={12} key={index}>
+                          <ReviewComponent
+                            key={review.id}
+                            showLabel={false}
+                            review={review}
+                            liked={likedReviews[review.id]}
+                            likeLoading={likeStatuses[review.id]}
+                            addLike={addLike}
+                            removeLike={removeLike}
+                            setToggle={setToggle}
+                            user={user}
+                            setUser={setUser}
+                          />
+                        </Grid>
+                      ))}
                 </Grid>
               </Grid>
 

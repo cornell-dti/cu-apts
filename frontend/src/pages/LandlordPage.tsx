@@ -528,6 +528,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 .map((review, index) => (
                   <Grid item xs={12} key={index}>
                     <ReviewComponent
+                      key={review.id}
                       review={review}
                       liked={likedReviews[review.id]}
                       likeLoading={likeStatuses[review.id]}
