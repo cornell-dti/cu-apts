@@ -29,6 +29,8 @@ import axios from 'axios';
 import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
+import ReviewModal from '../LeaveReview/ReviewModal';
+import Toast from '../utils/Toast';
 import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
@@ -123,9 +125,8 @@ const ReviewComponent = ({
   setUser,
   showLabel,
 }: Props): ReactElement => {
-  const { id, detailedRatings, overallRating, date, bedrooms, price, reviewText, likes, photos } =
-    review;
-  const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
+  const [reviewData, setReviewData] = useState<ReviewWithId>(review);
+  const formattedDate = format(new Date(reviewData.date), 'MMM dd, yyyy').toUpperCase();
   const {
     root,
     expand,
@@ -145,19 +146,64 @@ const ReviewComponent = ({
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlordData, setLandlordData] = useState<Landlord>();
+  const [reviewOpen, setReviewOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const toastTime = 3500;
+  // Function to display a toast message and hide it after a certain time
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
+    setTimeout(() => {
+      setState(false);
+    }, toastTime);
+  };
 
+  const onSuccessfulEdit = () => {
+    get<ReviewWithId>(`/api/review-by-id/${reviewData.id}`, {
+      callback: (updatedReview: ReviewWithId) => {
+        // Update the review state with the new data
+        setReviewData(updatedReview);
+        setToggle((cur) => !cur);
+      },
+    });
+    showToast(setShowEditSuccessConfirmation);
+  };
+
+  const Modals = (
+    <>
+      {showEditSuccessConfirmation && (
+        <Toast
+          isOpen={showEditSuccessConfirmation}
+          severity="success"
+          message="Review successfully edited! Your updated review is now pending approval from the admin."
+          time={toastTime}
+        />
+      )}
+      <ReviewModal
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        setOpen={setReviewOpen}
+        landlordId={reviewData.landlordId}
+        onSuccess={onSuccessfulEdit}
+        toastTime={toastTime}
+        aptId={reviewData.aptId ?? ''}
+        aptName={apt?.[0]?.name ?? ''}
+        user={user}
+        initialReview={reviewData}
+      />
+    </>
+  );
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
-  //Retreieving apartment data
+  //Retrieving apartment data
   useEffect(() => {
-    if (review.aptId !== null) {
-      get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
+    if (reviewData.aptId !== null) {
+      get<ApartmentWithId[]>(`/api/apts/${reviewData.aptId}`, {
         callback: setApt,
       });
     }
-  }, [review]);
+  }, [reviewData]);
 
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
@@ -170,8 +216,16 @@ const ReviewComponent = ({
     ];
   };
 
+  // Open review modal
+  const openReviewModal = async () => {
+    if (!user) {
+      return;
+    }
+    setReviewOpen(true);
+  };
+
   const reportAbuseHandler = async (reviewId: string) => {
-    const endpoint = `/api/update-review-status/${review.id}/PENDING`;
+    const endpoint = `/api/update-review-status/${reviewData.id}/PENDING`;
     if (user) {
       const token = await user.getIdToken(true);
       await axios.put(endpoint, {}, createAuthHeaders(token));
@@ -199,16 +253,16 @@ const ReviewComponent = ({
   };
 
   const landlordNotFound = useCallback(() => {
-    console.error('Landlord with id ' + review.landlordId + ' not found.');
-  }, [review.landlordId]);
+    console.error('Landlord with id ' + reviewData.landlordId + ' not found.');
+  }, [reviewData.landlordId]);
 
   // Fetch landlord data when the component mounts or when landlordId changes
   useEffect(() => {
-    get<Landlord>(`/api/landlord/${review.landlordId}`, {
+    get<Landlord>(`/api/landlord/${reviewData.landlordId}`, {
       callback: setLandlordData,
       errorHandler: landlordNotFound,
     });
-  }, [review.landlordId, landlordNotFound]);
+  }, [reviewData.landlordId, landlordNotFound]);
 
   const propertyLandlordLabel = () => {
     return (
@@ -219,7 +273,10 @@ const ReviewComponent = ({
           </Grid>
           <Link
             {...{
-              to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
+              to:
+                apt.length > 0
+                  ? `/apartment/${reviewData.aptId}`
+                  : `/landlord/${reviewData.landlordId}`,
               style: {
                 color: 'black',
                 textDecoration: 'underline',
@@ -239,24 +296,27 @@ const ReviewComponent = ({
   const bedroomsPriceLabel = () => {
     return (
       <Grid item className={bedroomsPrice} style={isMobile ? { width: '100%' } : {}}>
-        {bedrooms > 0 && (
+        {reviewData.bedrooms > 0 && (
           <div
             className={bedroomsPrice}
             style={isMobile ? { marginLeft: '0' } : { marginLeft: '30px' }}
           >
             <BedIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
-              {bedrooms} {bedrooms == 1 ? 'Bedroom' : 'Bedrooms'}
+              {reviewData.bedrooms} {reviewData.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
             </Typography>
           </div>
         )}
-        {price > 0 && (
+        {reviewData.price > 0 && (
           <div
             className={bedroomsPrice}
             style={isMobile ? { marginLeft: 'auto' } : { marginLeft: '30px' }}
           >
             <MoneyIcon className={bedPriceIcon} />
-            <Typography className={bedroomsPriceText}> {getPriceRange(price) || 0}</Typography>
+            <Typography className={bedroomsPriceText}>
+              {' '}
+              {getPriceRange(reviewData.price) || 0}
+            </Typography>
           </div>
         )}
       </Grid>
@@ -272,7 +332,7 @@ const ReviewComponent = ({
               <Grid item container justifyContent="space-between" className={bottomborder}>
                 <Grid container item spacing={1} className={reviewHeader}>
                   <Grid item>
-                    <HeartRating value={overallRating} readOnly />
+                    <HeartRating value={reviewData.overallRating} readOnly />
                   </Grid>
                   <Grid item>
                     <IconButton
@@ -293,12 +353,19 @@ const ReviewComponent = ({
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
+                  {user && reviewData.userId && user.uid === reviewData.userId && (
+                    <Grid item>
+                      <IconButton onClick={() => openReviewModal()}>
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Grid>
+                  )}
                 </Grid>
                 {isMobile && bedroomsPriceLabel()}
                 <Grid item>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
-                      <ReviewHeader aveRatingInfo={getRatingInfo(detailedRatings)} />
+                      <ReviewHeader aveRatingInfo={getRatingInfo(reviewData.detailedRatings)} />
                     </CardContent>
                   </Collapse>
                 </Grid>
@@ -310,19 +377,19 @@ const ReviewComponent = ({
 
               <Grid item container alignContent="center">
                 <Typography>
-                  {expandedText ? reviewText : reviewText.substring(0, 500)}
-                  {!expandedText && reviewText.length > 500 && '...'}
-                  {reviewText.length > 500 ? (
+                  {expandedText ? reviewData.reviewText : reviewData.reviewText.substring(0, 500)}
+                  {!expandedText && reviewData.reviewText.length > 500 && '...'}
+                  {reviewData.reviewText.length > 500 ? (
                     <Button className={button} onClick={() => setExpandedText(!expandedText)}>
                       {expandedText ? 'Read Less' : 'Read More'}
                     </Button>
                   ) : null}
                 </Typography>
               </Grid>
-              {photos.length > 0 && (
+              {reviewData.photos.length > 0 && (
                 <Grid container>
                   <Grid item className={photoRowStyle}>
-                    {photos.map((photo) => {
+                    {reviewData.photos.map((photo) => {
                       return (
                         <CardMedia
                           component="img"
@@ -345,21 +412,26 @@ const ReviewComponent = ({
           <Grid item>
             <Button
               color={liked ? 'primary' : 'default'}
-              onClick={() => likeHandler(id)}
+              onClick={() => likeHandler(reviewData.id)}
               className={button}
               size="small"
               disabled={likeLoading}
             >
-              Helpful {`(${likes || 0})`}
+              Helpful {`(${reviewData.likes || 0})`}
             </Button>
           </Grid>
           <Grid item>
-            <Button onClick={() => reportAbuseHandler(review.id)} className={button} size="small">
+            <Button
+              onClick={() => reportAbuseHandler(reviewData.id)}
+              className={button}
+              size="small"
+            >
               Report Abuse
             </Button>
           </Grid>
         </Grid>
       </CardActions>
+      {Modals}
     </Card>
   );
 };
