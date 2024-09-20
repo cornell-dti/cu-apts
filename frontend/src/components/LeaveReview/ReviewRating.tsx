@@ -6,13 +6,14 @@ interface Props {
   name: string;
   label: string;
   onChange: (event: React.ChangeEvent<{}>, value: number | null) => void;
+  defaultValue?: number;
 }
 
-const ReviewRating = ({ name, label, onChange }: Props) => {
+const ReviewRating = ({ name, label, onChange, defaultValue }: Props) => {
   return (
     <Grid container justifyContent="flex-start" alignItems="center" item xs={12} md={6}>
       <Grid item>
-        <HeartRating name={name} onChange={onChange} />
+        <HeartRating name={name} onChange={onChange} defaultValue={defaultValue || 0} />
       </Grid>
       <Grid item style={{ marginLeft: '25px' }}>
         <FormLabel>{label}</FormLabel>
