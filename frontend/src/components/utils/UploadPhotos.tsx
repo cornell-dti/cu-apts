@@ -198,7 +198,7 @@ export default function UploadPhotos({
                   <CardMedia
                     component="img"
                     alt="Apt image"
-                    image={URL.createObjectURL(p)}
+                    image={p.name.startsWith('https://') ? p.name : URL.createObjectURL(p)}
                     title="Apt image"
                     className={photo}
                   />
