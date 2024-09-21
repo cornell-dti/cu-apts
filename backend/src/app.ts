@@ -97,7 +97,7 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       return;
     }
     reviewDoc
-      .update({ ...updatedReview, date: new Date(updatedReview.date), likes: 0, status: 'PENDING' })
+      .update({ ...updatedReview, date: new Date(updatedReview.date), status: 'PENDING' })
       .then(() => {
         res.status(201).send(reviewId);
       });
