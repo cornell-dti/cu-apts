@@ -9,6 +9,17 @@ interface Props {
   defaultValue?: number;
 }
 
+/**
+ * ReviewRating component renders a rating system using hearts and a label.
+ *
+ * @component
+ * @param {string} props.name - The name attribute for the HeartRating component.
+ * @param {string} props.label - The label to be displayed next to the HeartRating component.
+ * @param {function} props.onChange - Callback function to handle the change event when the rating is modified.
+ * @param {number} [props.defaultValue] - The default value for the HeartRating component.
+ * @returns {JSX.Element} The rendered ReviewRating component.
+ */
+
 const ReviewRating = ({ name, label, onChange, defaultValue }: Props) => {
   return (
     <Grid container justifyContent="flex-start" alignItems="center" item xs={12} md={6}>
