@@ -23,6 +23,23 @@ type Props = {
   time: number;
 };
 
+/**
+ * Toast Component – Displays a notification or "toast" message.
+ *
+ * @remarks
+ * The toast appears for a limited time and then disappears. The toast's
+ * color depends on its severity (type of notification).
+ *
+ * @param {boolean} props.isOpen - Controls the initial visibility of the toast.
+ * @param {AlertProps['color']} props.severity - The type of the alert which determines
+ * color of the toast. Can be one of the following: 'success', 'info', 'warning', 'error'.
+ * @param {string} props.message - The message content of the alert.
+ * @param {number} props.time - The duration (in milliseconds) the toast is visible
+ * for before it automatically closes.
+ *
+ * @return {JSX.Element} The rendered Toast component.
+ */
+
 const Toast = ({ isOpen, severity, message, time }: Props) => {
   const classes = useStyles();
   const [open, setOpen] = useState(isOpen);
