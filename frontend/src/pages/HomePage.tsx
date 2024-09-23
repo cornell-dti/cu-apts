@@ -9,6 +9,7 @@ import { CardData } from '../App';
 import { get } from '../utils/call';
 import { loadingLength } from '../constants/HomeConsts';
 import { useTitle } from '../utils';
+import firebase from '../utils/firebase';
 
 const useStyles = makeStyles({
   jumboText: {

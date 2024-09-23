@@ -70,3 +70,4 @@ const uploadFile = async (file: File) => {
 };
 
 export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
+export default firebase;
