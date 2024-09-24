@@ -9,7 +9,6 @@ import { colors } from '../colors';
 import { CardData } from '../App';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
-import firebase from '../utils/firebase';
 
 interface Images {
   [location: string]: string;

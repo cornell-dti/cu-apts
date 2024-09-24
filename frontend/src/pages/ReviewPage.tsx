@@ -3,7 +3,6 @@ import { Box, Container, Typography, makeStyles } from '@material-ui/core';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { CardData } from '../App';
-import firebase from '../utils/firebase';
 
 type Props = {
   user: firebase.User | null;

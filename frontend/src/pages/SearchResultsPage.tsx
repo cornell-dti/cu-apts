@@ -6,7 +6,6 @@ import { colors } from '../colors';
 import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useTitle } from '../utils';
-import firebase from '../utils/firebase';
 
 const useStyles = makeStyles({
   searchText: {

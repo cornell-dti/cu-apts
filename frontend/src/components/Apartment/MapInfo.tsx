@@ -4,8 +4,6 @@ import GoogleMapReact from 'google-map-react';
 import aptIcon from '../../assets/location-pin.svg';
 import schoolIcon from '../../assets/school-pin.svg';
 import expandIcon from '../../assets/expand-button.svg';
-import zoomInIcon from '../../assets/zoom-in-icon.png';
-import zoomOutIcon from '../../assets/zoom-out-icon.png';
 import recenterIcon from '../../assets/recenter-icon.svg';
 import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
@@ -104,26 +102,6 @@ const useStyles = makeStyles((theme) => ({
     background: 'rgba(255, 255, 255, 0.70)',
     boxShadow: '2px 4px 4px 0px rgba(0, 0, 0, 0.10)',
   },
-  zoomInButton: {
-    position: 'absolute',
-    bottom: '53px',
-    right: '13px',
-    width: '39px',
-    height: '39px',
-    borderRadius: '4px',
-    background: 'rgba(255, 255, 255, 0.70)',
-    boxShadow: '2px 4px 4px 0px rgba(0, 0, 0, 0.10)',
-  },
-  zoomOutButton: {
-    position: 'absolute',
-    bottom: '13px',
-    right: '13px',
-    width: '39px',
-    height: '39px',
-    borderRadius: '4px',
-    background: 'rgba(255, 255, 255, 0.70)',
-    boxShadow: '2px 4px 4px 0px rgba(0, 0, 0, 0.10)',
-  },
 }));
 
 /**
@@ -149,8 +127,7 @@ export default function MapInfo({
   handleClick,
   isMobile,
 }: MapInfoProps): ReactElement {
-  const { outerMapDiv, innerMapDiv, mapExpandButton, recenterButton, zoomInButton, zoomOutButton } =
-    useStyles();
+  const { outerMapDiv, innerMapDiv, mapExpandButton, recenterButton } = useStyles();
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
@@ -161,18 +138,6 @@ export default function MapInfo({
     if (mapRef.current) {
       mapRef.current.setCenter({ lat: latitude, lng: longitude });
       mapRef.current.setZoom(16);
-    }
-  };
-
-  // Function to handle zoom in/out of the map
-  const handleZoom = (zoomChange: number) => {
-    if (mapRef.current) {
-      const currentZoom = mapRef.current.getZoom() || 16; // Ensure there is a valid value for currentZoom
-      const newZoom = currentZoom + zoomChange;
-      if (newZoom > 11 && newZoom < 20) {
-        // Ensure the new zoom is within the allowed range
-        mapRef.current.setZoom(newZoom);
-      }
     }
   };
 
@@ -238,29 +203,13 @@ export default function MapInfo({
           </div>
           {expandOrRecenter(isMobile)}
           {!isMobile && (
-            <div>
-              <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
-                <img
-                  src={expandIcon}
-                  alt={'expand-icon'}
-                  style={{ width: '21.4px', height: '21.4px' }}
-                />
-              </IconButton>
-              <IconButton disableRipple className={zoomInButton} onClick={() => handleZoom(1)}>
-                <img
-                  src={zoomInIcon}
-                  alt={'zoom-in-icon'}
-                  style={{ width: '21.4px', height: '21.4px' }}
-                />
-              </IconButton>
-              <IconButton disableRipple className={zoomOutButton} onClick={() => handleZoom(-1)}>
-                <img
-                  src={zoomOutIcon}
-                  alt={'zoom-out-icon'}
-                  style={{ width: '21.4px', height: '21.4px' }}
-                />
-              </IconButton>
-            </div>
+            <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
+              <img
+                src={expandIcon}
+                alt={'expand-icon'}
+                style={{ width: '21.4px', height: '21.4px' }}
+              />
+            </IconButton>
           )}
         </div>
         <Box>
