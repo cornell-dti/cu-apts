@@ -103,7 +103,7 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       });
   } catch (err) {
     console.error(err);
-    res.status(401).send('Error');
+    res.status(500).send('Error');
   }
 });
 
