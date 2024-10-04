@@ -32,7 +32,8 @@ type Props = {
  *
  * @param {boolean} props.isOpen - Controls the initial visibility of the toast.
  * @param {AlertProps['color']} props.severity - The type of the alert which determines
- * color of the toast. Can be one of the following: 'success', 'info', 'warning', 'error'.
+ * color of the toast. Can be one of the following: 'success' (green), 'info' (blue),
+ * 'warning' (orange/yellow), 'error' (red).
  * @param {string} props.message - The message content of the alert.
  * @param {number} props.time - The duration (in milliseconds) the toast is visible
  * for before it automatically closes.
