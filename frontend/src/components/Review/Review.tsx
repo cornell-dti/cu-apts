@@ -30,7 +30,6 @@ import { colors } from '../../colors';
 import { RatingInfo } from '../../pages/LandlordPage';
 import ReviewHeader from './ReviewHeader';
 import ReviewModal from '../LeaveReview/ReviewModal';
-import Toast from '../utils/Toast';
 import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
@@ -45,6 +44,7 @@ type Props = {
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  readonly triggerEditToast?: () => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly showLabel: boolean;
@@ -121,6 +121,7 @@ const ReviewComponent = ({
   addLike,
   removeLike,
   setToggle,
+  triggerEditToast,
   user,
   setUser,
   showLabel,
@@ -148,15 +149,7 @@ const ReviewComponent = ({
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [reviewOpen, setReviewOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
-  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const toastTime = 3500;
-  // Function to display a toast message and hide it after a certain time
-  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
-    setState(true);
-    setTimeout(() => {
-      setState(false);
-    }, toastTime);
-  };
 
   const onSuccessfulEdit = () => {
     get<ReviewWithId>(`/api/review-by-id/${reviewData.id}`, {
@@ -166,19 +159,11 @@ const ReviewComponent = ({
         setToggle((cur) => !cur);
       },
     });
-    showToast(setShowEditSuccessConfirmation);
+    if (triggerEditToast) triggerEditToast();
   };
 
   const Modals = (
     <>
-      {showEditSuccessConfirmation && (
-        <Toast
-          isOpen={showEditSuccessConfirmation}
-          severity="success"
-          message="Review successfully edited! Your updated review is now pending approval from the admin."
-          time={toastTime}
-        />
-      )}
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
