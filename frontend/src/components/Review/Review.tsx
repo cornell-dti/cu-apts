@@ -127,6 +127,25 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+/**
+ * ReviewComponent is a React component that displays a review card with various functionalities
+ * such as liking, editing, deleting, and reporting a review. It also shows detailed information
+ * about the review, including ratings, text, and associated property or landlord details.
+ *
+ * @component
+ * @param {Props} props - The props for the ReviewComponent.
+ * @param {ReviewWithId} props.review - The review data to display.
+ * @param {boolean} props.liked - Indicates if the current user has liked the review.
+ * @param {boolean} props.likeLoading - Indicates if the like action is in progress.
+ * @param {function} props.addLike - Function to add a like to the review.
+ * @param {function} props.removeLike - Function to remove a like from the review.
+ * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to toggle a state.
+ * @param {function} [props.triggerEditToast] - Optional function to trigger a toast notification on edit.
+ * @param {firebase.User | null} props.user - The current logged-in user.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
+ * @param {boolean} props.showLabel - Indicates if the property or landlord label should be shown.
+ * @returns {ReactElement} The rendered ReviewComponent.
+ */
 const ReviewComponent = ({
   review,
   liked,
