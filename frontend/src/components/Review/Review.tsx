@@ -125,6 +125,18 @@ const useStyles = makeStyles(() => ({
     width: '21px',
     height: '21px',
   },
+  reviewOptionMenu: {
+    borderRadius: '12px',
+    boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
+    display: 'inline-grid',
+    gap: '8px',
+  },
+  reviewOptionMenuItem: {
+    padding: '0px 16px',
+  },
+  reviewOptionMenuItemIcon: {
+    minWidth: '30px',
+  },
 }));
 
 /**
@@ -174,6 +186,9 @@ const ReviewComponent = ({
     bedroomsPrice,
     bedPriceIcon,
     bedroomsPriceText,
+    reviewOptionMenu,
+    reviewOptionMenuItem,
+    reviewOptionMenuItemIcon,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
@@ -414,15 +429,22 @@ const ReviewComponent = ({
         <IconButton onClick={handleClick}>
           <MoreVertIcon />
         </IconButton>
-        <Menu id="review-option-menu" open={open} onClose={handleClose} anchorEl={anchorEl}>
+        <Menu
+          className={reviewOptionMenu}
+          open={open}
+          onClose={handleClose}
+          anchorEl={anchorEl}
+          PaperProps={{ style: { borderRadius: '12px' } }}
+        >
           <MenuItem
             key={'Edit Review'}
             onClick={() => {
               openReviewModal();
               handleClose();
             }}
+            className={reviewOptionMenuItem}
           >
-            <ListItemIcon>
+            <ListItemIcon className={reviewOptionMenuItemIcon}>
               <EditIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Edit Review</ListItemText>
@@ -433,8 +455,9 @@ const ReviewComponent = ({
               openDeleteModal();
               handleClose();
             }}
+            className={reviewOptionMenuItem}
           >
-            <ListItemIcon>
+            <ListItemIcon className={reviewOptionMenuItemIcon}>
               <DeleteIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText>Delete Review</ListItemText>
