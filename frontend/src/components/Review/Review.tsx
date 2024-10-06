@@ -12,12 +12,25 @@ import {
   Collapse,
   Link,
   useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  DialogContentText,
+} from '@material-ui/core';
 import clsx from 'clsx';
 import {
   DetailedRating,
@@ -148,6 +161,7 @@ const ReviewComponent = ({
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
   const toastTime = 3500;
 
@@ -160,6 +174,42 @@ const ReviewComponent = ({
       },
     });
     if (triggerEditToast) triggerEditToast();
+  };
+  const deleteModal = () => {
+    return (
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => {
+          handleDeleteModalClose(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{'Delete this review?'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You will not be able to recover deleted reviews.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              handleDeleteModalClose(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleDeleteModalClose(true);
+            }}
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
   };
 
   const Modals = (
@@ -176,6 +226,7 @@ const ReviewComponent = ({
         user={user}
         initialReview={reviewData}
       />
+      {deleteModal()}
     </>
   );
   const handleExpandClick = () => {
@@ -209,6 +260,13 @@ const ReviewComponent = ({
     setReviewOpen(true);
   };
 
+  const openDeleteModal = async () => {
+    if (!user) {
+      return;
+    }
+    setDeleteModalOpen(true);
+  };
+
   const reportAbuseHandler = async (reviewId: string) => {
     const endpoint = `/api/update-review-status/${reviewData.id}/PENDING`;
     if (user) {
@@ -228,6 +286,21 @@ const ReviewComponent = ({
       let user = await getUser(true);
       setUser(user);
     }
+  };
+
+  const handleDeleteModalClose = async (deleteit: Boolean) => {
+    if (deleteit) {
+      const endpoint = `/api/update-review-status/${reviewData.id}/DELETED`;
+      if (user) {
+        const token = await user.getIdToken(true);
+        await axios.put(endpoint, {}, createAuthHeaders(token));
+        setToggle((cur) => !cur);
+      } else {
+        let user = await getUser(true);
+        setUser(user);
+      }
+    }
+    setDeleteModalOpen(false);
   };
 
   const handleLinkClick = () => {
@@ -308,6 +381,49 @@ const ReviewComponent = ({
     );
   };
 
+  const OptionMenu = () => {
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+    return (
+      <div>
+        <IconButton onClick={handleClick}>
+          <MoreVertIcon />
+        </IconButton>
+        <Menu id="review-option-menu" open={open} onClose={handleClose} anchorEl={anchorEl}>
+          <MenuItem
+            key={'Edit Review'}
+            onClick={() => {
+              openReviewModal();
+              handleClose();
+            }}
+          >
+            <ListItemIcon>
+              <EditIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit Review</ListItemText>
+          </MenuItem>
+          <MenuItem
+            key={'Delete Review'}
+            onClick={() => {
+              openDeleteModal();
+              handleClose();
+            }}
+          >
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete Review</ListItemText>
+          </MenuItem>
+        </Menu>
+      </div>
+    );
+  };
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -339,11 +455,7 @@ const ReviewComponent = ({
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
                   {user && reviewData.userId && user.uid === reviewData.userId && (
-                    <Grid item>
-                      <IconButton onClick={() => openReviewModal()}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Grid>
+                    <Grid item>{OptionMenu()}</Grid>
                   )}
                 </Grid>
                 {isMobile && bedroomsPriceLabel()}
