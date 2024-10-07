@@ -90,6 +90,26 @@ interface MapModalProps extends BaseProps {
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+/**
+ * `MapModal` Component - Displays a modal with detailed map and location information of an apartment.
+ *
+ * @remarks
+ * This component is used to show an expanded view of the apartment's location on Google Maps,
+ * along with detailed information about the apartment's address and distances to various
+ * campus landmarks. It provides interactive features such as zooming and recentering the map.
+ * The component uses Material-UI for styling and is responsive to different screen sizes.
+ *
+ * @param Props - Contains:
+ *   - `aptName`: The name of the apartment.
+ *   - `open`: Boolean to control the visibility of the modal.
+ *   - `onClose`: Function to handle closing the modal.
+ *   - `setOpen`: Function to set the open state of the modal.
+ *   - `address`: The address of the apartment.
+ *   - `latitude`: The latitude of the apartment location (default: 0).
+ *   - `longitude`: The longitude of the apartment location (default: 0).
+ *   - `walkTime`: The walk time from the apartment to campus landmarks (default: 0).
+ *   - `driveTime`: The drive time from the apartment to campus landmarks (default: 0).
+ */
 const MapModal = ({
   aptName,
   open,
@@ -235,7 +255,30 @@ const MapModal = ({
                 }}
               >
                 <Marker lat={latitude} lng={longitude} src={aptIcon} altText="apartment icon" />
-                {/* Add other markers here */}
+                <Marker
+                  lat={42.44455308325643}
+                  lng={-76.48360496778704}
+                  src={schoolIcon}
+                  altText="Engineering Quad icon"
+                />
+                <Marker
+                  lat={42.449014547431425}
+                  lng={-76.48413980587392}
+                  src={schoolIcon}
+                  altText="Arts Quad icon"
+                />
+                <Marker
+                  lat={42.446768276610875}
+                  lng={-76.48505175766948}
+                  src={schoolIcon}
+                  altText="Ho Plaza icon"
+                />
+                <Marker
+                  lat={42.448929851009716}
+                  lng={-76.47804712490351}
+                  src={schoolIcon}
+                  altText="Ag Quad icon"
+                />
               </GoogleMapReact>
             </div>
             <IconButton
