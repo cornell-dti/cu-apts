@@ -479,12 +479,12 @@ const ReviewComponent = ({
                       <OptionMenu
                         options={[
                           {
-                            icon: <EditIcon />,
+                            icon: <EditIcon fontSize="small" />,
                             text: 'Edit Review',
                             onClick: openReviewModal,
                           },
                           {
-                            icon: <DeleteIcon />,
+                            icon: <DeleteIcon fontSize="small" />,
                             text: 'Delete Review',
                             onClick: openDeleteModal,
                           },
