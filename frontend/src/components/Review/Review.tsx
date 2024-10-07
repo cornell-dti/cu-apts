@@ -12,16 +12,11 @@ import {
   Collapse,
   Link,
   useMediaQuery,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
 } from '@material-ui/core';
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import {
@@ -47,6 +42,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
+import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
 
@@ -108,7 +104,7 @@ const useStyles = makeStyles(() => ({
   photoRowStyle: {
     overflowX: 'auto',
     display: 'flex',
-    lexDirection: 'row',
+    flexDirection: 'row',
     gap: '1vw',
     paddingTop: '2%',
     paddingLeft: '0.6%',
@@ -125,17 +121,44 @@ const useStyles = makeStyles(() => ({
     width: '21px',
     height: '21px',
   },
-  reviewOptionMenu: {
-    borderRadius: '12px',
-    boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
-    display: 'inline-grid',
-    gap: '8px',
+  submitButton: {
+    borderRadius: '30px',
+    minWidth: '80px',
+    color: colors.white,
+    backgroundColor: colors.red1,
+    '&:hover': {
+      backgroundColor: colors.red7,
+    },
   },
-  reviewOptionMenuItem: {
-    padding: '0px 16px',
+  hollowRedButton: {
+    minWidth: '80px',
+    height: '35px',
+    borderRadius: '30px',
+    border: '2px solid',
+    borderColor: `${colors.red1} !important`,
+    backgroundColor: 'transparent',
+    color: colors.red1,
+    '&:hover': {
+      backgroundColor: colors.red5,
+    },
   },
-  reviewOptionMenuItemIcon: {
-    minWidth: '30px',
+  deleteDialogTitle: {
+    padding: '20px 24px 0 24px',
+    '& .MuiTypography-h6': {
+      color: colors.black,
+      fontSize: '18px',
+      fontWeight: 600,
+      lineHeight: '28px',
+    },
+  },
+  deleteDialogDesc: {
+    color: colors.black,
+    fontSize: '16px',
+    lineHeight: '24px',
+    fontWeight: 400,
+  },
+  deleteDialogActions: {
+    padding: '0 20px 24px',
   },
 }));
 
@@ -186,9 +209,11 @@ const ReviewComponent = ({
     bedroomsPrice,
     bedPriceIcon,
     bedroomsPriceText,
-    reviewOptionMenu,
-    reviewOptionMenuItem,
-    reviewOptionMenuItemIcon,
+    deleteDialogTitle,
+    deleteDialogDesc,
+    deleteDialogActions,
+    submitButton,
+    hollowRedButton,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
@@ -218,15 +243,19 @@ const ReviewComponent = ({
         }}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        PaperProps={{ style: { borderRadius: '12px' } }}
       >
-        <DialogTitle id="alert-dialog-title">{'Delete this review?'}</DialogTitle>
+        <DialogTitle className={deleteDialogTitle} id="alert-dialog-title">
+          Delete this review?
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText className={deleteDialogDesc} id="alert-dialog-description">
             You will not be able to recover deleted reviews.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions className={deleteDialogActions}>
           <Button
+            className={hollowRedButton}
             onClick={() => {
               handleDeleteModalClose(false);
             }}
@@ -234,6 +263,7 @@ const ReviewComponent = ({
             Cancel
           </Button>
           <Button
+            className={submitButton}
             onClick={() => {
               handleDeleteModalClose(true);
             }}
@@ -414,58 +444,6 @@ const ReviewComponent = ({
       </Grid>
     );
   };
-
-  const OptionMenu = () => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-      setAnchorEl(null);
-    };
-    return (
-      <div>
-        <IconButton onClick={handleClick}>
-          <MoreVertIcon />
-        </IconButton>
-        <Menu
-          className={reviewOptionMenu}
-          open={open}
-          onClose={handleClose}
-          anchorEl={anchorEl}
-          PaperProps={{ style: { borderRadius: '12px' } }}
-        >
-          <MenuItem
-            key={'Edit Review'}
-            onClick={() => {
-              openReviewModal();
-              handleClose();
-            }}
-            className={reviewOptionMenuItem}
-          >
-            <ListItemIcon className={reviewOptionMenuItemIcon}>
-              <EditIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Edit Review</ListItemText>
-          </MenuItem>
-          <MenuItem
-            key={'Delete Review'}
-            onClick={() => {
-              openDeleteModal();
-              handleClose();
-            }}
-            className={reviewOptionMenuItem}
-          >
-            <ListItemIcon className={reviewOptionMenuItemIcon}>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Delete Review</ListItemText>
-          </MenuItem>
-        </Menu>
-      </div>
-    );
-  };
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -497,7 +475,22 @@ const ReviewComponent = ({
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
                   {user && reviewData.userId && user.uid === reviewData.userId && (
-                    <Grid item>{OptionMenu()}</Grid>
+                    <Grid item>
+                      <OptionMenu
+                        options={[
+                          {
+                            icon: <EditIcon />,
+                            text: 'Edit Review',
+                            onClick: openReviewModal,
+                          },
+                          {
+                            icon: <DeleteIcon />,
+                            text: 'Delete Review',
+                            onClick: openDeleteModal,
+                          },
+                        ]}
+                      />
+                    </Grid>
                   )}
                 </Grid>
                 {isMobile && bedroomsPriceLabel()}
