@@ -5,6 +5,7 @@ import {
   ListItemIcon,
   ListItemText,
   makeStyles,
+  SvgIcon,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -23,7 +24,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 type OptionMenuElement = {
-  icon: React.ReactNode;
+  icon: React.ReactElement<typeof SvgIcon>;
   text: string;
   onClick: () => void;
 };
@@ -42,7 +43,7 @@ interface OptionMenuProps {
  * @param {OptionMenuElement[]} props.options - An array of option elements to be displayed in the menu.
  *
  * @typedef {Object} OptionMenuElement
- * @property {React.ReactNode} icon - The icon to be displayed for the menu item.
+ * @property {React.ReactElement<typeof SvgIcon>} icon - The icon to be displayed for the menu item.
  * @property {string} text - The text to be displayed for the menu item.
  * @property {() => void} onClick - The function to be called when the menu item is clicked.
  *
