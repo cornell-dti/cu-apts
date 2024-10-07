@@ -237,15 +237,8 @@ export default function MapInfo({
             </GoogleMapReact>
           </div>
           {expandOrRecenter(isMobile)}
-          {!isMobile && (
+          {
             <div>
-              <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
-                <img
-                  src={expandIcon}
-                  alt={'expand-icon'}
-                  style={{ width: '21.4px', height: '21.4px' }}
-                />
-              </IconButton>
               <IconButton disableRipple className={zoomInButton} onClick={() => handleZoom(1)}>
                 <img
                   src={zoomInIcon}
@@ -261,7 +254,7 @@ export default function MapInfo({
                 />
               </IconButton>
             </div>
-          )}
+          }
         </div>
         <Box>
           <Box my={1.5}>
