@@ -344,6 +344,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   addLike={addLike}
                   removeLike={removeLike}
                   setToggle={setToggle}
+                  triggerEditToast={showEditSuccessConfirmationToast}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
