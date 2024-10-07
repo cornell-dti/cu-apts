@@ -14,6 +14,16 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+/**
+ * LinearIndeterminate Component – Displays a linear progress bar.
+ *
+ * @remarks
+ * This component provides a visual indication of an indeterminate loading process.
+ * It utilizes Material-UI's LinearProgress component.
+ *
+ * @return {ReactElement} The rendered LinearIndeterminate component with a centered linear progress bar.
+ */
+
 export default function LinearIndeterminate(): ReactElement {
   const classes = useStyles();
   return (
