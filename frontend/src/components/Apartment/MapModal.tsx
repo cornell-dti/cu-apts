@@ -237,7 +237,7 @@ const MapModal = ({
         </Grid>
       </DialogTitle>
 
-      <DialogContent style={{ padding: 0, overflow: 'hidden' }}>
+      <DialogContent style={{ padding: 0 }}>
         <Box className={classes.contentBox}>
           <div className={classes.outerMapDiv}>
             <div className={classes.innerMapDiv}>
@@ -318,13 +318,17 @@ const MapModal = ({
 
           <Box
             p={2}
-            style={{ width: '94%', padding: 0, display: 'flex', justifyContent: 'space-between' }}
+            style={{
+              width: '94%',
+              padding: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexDirection: isMediumScreen ? 'row' : 'column',
+            }}
           >
-            <Typography className={classes.addressTypography}>
-              {!isSmallScreen && address}
-            </Typography>
+            <Typography className={classes.addressTypography}>{address}</Typography>
 
-            {isMediumScreen && (
+            {/* {isMediumScreen && (
               <Box style={{ minWidth: '50%' }}>
                 <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
                 <DistanceInfo
@@ -343,7 +347,25 @@ const MapModal = ({
                   driveDistance={driveTime}
                 />
               </Box>
-            )}
+            )} */}
+            <Box style={{ minWidth: '50%' }}>
+              <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
+              <DistanceInfo
+                location={'Engineering Quad'}
+                walkDistance={walkTime}
+                driveDistance={driveTime}
+              />
+              <DistanceInfo
+                location={'Ho Plaza'}
+                walkDistance={walkTime}
+                driveDistance={driveTime}
+              />
+              <DistanceInfo
+                location={'Ag Quad'}
+                walkDistance={walkTime}
+                driveDistance={driveTime}
+              />
+            </Box>
           </Box>
         </Box>
       </DialogContent>
