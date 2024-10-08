@@ -129,6 +129,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
@@ -297,6 +298,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
+  };
+
+  const showEditSuccessConfirmationToast = () => {
+    showToast(setShowEditSuccessConfirmation);
   };
 
   const likeHelper = (dislike = false) => {
@@ -624,6 +629,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showEditSuccessConfirmation && (
+              <Toast
+                isOpen={showEditSuccessConfirmation}
+                severity="success"
+                message="Review successfully edited! Your updated review is now pending approval from the admin."
+                time={toastTime}
+              />
+            )}
 
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
@@ -658,23 +671,26 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
 
                 <Grid container item spacing={3}>
-                  {sortReviews(reviewData, sortBy)
-                    .slice(0, resultsToShow)
-                    .map((review, index) => (
-                      <Grid item xs={12} key={index}>
-                        <ReviewComponent
-                          showLabel={false}
-                          review={review}
-                          liked={likedReviews[review.id]}
-                          likeLoading={likeStatuses[review.id]}
-                          addLike={addLike}
-                          removeLike={removeLike}
-                          setToggle={setToggle}
-                          user={user}
-                          setUser={setUser}
-                        />
-                      </Grid>
-                    ))}
+                  {reviewData &&
+                    sortReviews(reviewData, sortBy)
+                      .slice(0, resultsToShow)
+                      .map((review, index) => (
+                        <Grid item xs={12} key={index}>
+                          <ReviewComponent
+                            key={review.id}
+                            showLabel={false}
+                            review={review}
+                            liked={likedReviews[review.id]}
+                            likeLoading={likeStatuses[review.id]}
+                            addLike={addLike}
+                            removeLike={removeLike}
+                            setToggle={setToggle}
+                            triggerEditToast={showEditSuccessConfirmationToast}
+                            user={user}
+                            setUser={setUser}
+                          />
+                        </Grid>
+                      ))}
                 </Grid>
               </Grid>
 

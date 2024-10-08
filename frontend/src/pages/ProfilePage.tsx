@@ -8,6 +8,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@material-ui/core';
+import Toast from '../components/utils/Toast';
 import { colors } from '../colors';
 import questionIcon from '../assets/questionCircle.svg';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
@@ -163,6 +164,8 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const toastTime = 3500;
 
   useTitle('Profile');
 
@@ -227,6 +230,17 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     }
   };
 
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
+    setTimeout(() => {
+      setState(false);
+    }, toastTime);
+  };
+
+  const showEditSuccessConfirmationToast = () => {
+    showToast(setShowEditSuccessConfirmation);
+  };
+
   /** This closes the modal (who can view my profile) when modal is open and user clicks out **/
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -246,6 +260,14 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     <div className={root}>
       <Grid container spacing={2} className={gridContainer}>
         <Grid item xs={11} sm={4} md={3}>
+          {showEditSuccessConfirmation && (
+            <Toast
+              isOpen={showEditSuccessConfirmation}
+              severity="success"
+              message="Review successfully edited! Your updated review is now pending approval from the admin."
+              time={toastTime}
+            />
+          )}
           <div style={isXsScreen ? { width: '100%' } : { width: '70%' }}>
             <h2 className={headerStyle}>My Profile</h2>
             <Card variant="outlined" className={myProfileCard}>
@@ -294,12 +316,14 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
             {sortReviews(pendingReviews, 'date').map((review, index) => (
               <Grid item xs={12} key={index} className={reviewCardStyle}>
                 <ReviewComponent
+                  key={review.id}
                   review={review}
                   liked={likedReviews[review.id]}
                   likeLoading={likeStatuses[review.id]}
                   addLike={addLike}
                   removeLike={removeLike}
                   setToggle={setToggle}
+                  triggerEditToast={showEditSuccessConfirmationToast}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -320,6 +344,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   addLike={addLike}
                   removeLike={removeLike}
                   setToggle={setToggle}
+                  triggerEditToast={showEditSuccessConfirmationToast}
                   user={user}
                   setUser={setUser}
                   showLabel={true}

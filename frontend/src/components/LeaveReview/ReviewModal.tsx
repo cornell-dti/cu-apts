@@ -12,7 +12,7 @@ import {
 } from '@material-ui/core';
 import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState, useRef, useEffect } from 'react';
-import { DetailedRating, Review } from '../../../../common/types/db-types';
+import { DetailedRating, Review, ReviewWithId } from '../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
@@ -20,7 +20,6 @@ import Toast from '../utils/Toast';
 import styles from './ReviewModal.module.scss';
 import DropDown from '../utils/DropDown';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { ReactComponent as XIcon } from '../../assets/xIcon.svg';
 import { colors } from '../../colors';
 import getPriceRange from '../../utils/priceRange';
 import UploadPhotos from '../utils/UploadPhotos';
@@ -39,6 +38,7 @@ interface Props {
   aptId: string;
   aptName: string;
   user: firebase.User | null;
+  initialReview?: ReviewWithId; // Optional initial review to prefill for editing
 }
 
 const useStyle = makeStyles({
@@ -192,6 +192,7 @@ const reducer = (state: FormData, action: Action): FormData => {
  * @param {number} props.toastTime – The time in milliseconds which the review successfully submitted toast is shown.
  * @param {string} props.aptId – The Apartment ID of the apartment being reviewed.
  * @param {string} props.aptName – The name of the apartment being reviewed.
+ * @param {ReviewWithId} [props.initialReview] – The prefilled review to be displayed in the modal (optional).
  * @param props.user – The current user, null if not logged in.
  * @returns
  */
@@ -206,8 +207,31 @@ const ReviewModal = ({
   aptId,
   aptName,
   user,
+  initialReview,
 }: Props) => {
-  const [review, dispatch] = useReducer(reducer, defaultReview);
+  // Function to convert ReviewWithId type to FormData type (used for editing created reviews)
+  const convertReviewToFormData = (review: ReviewWithId): FormData => {
+    return {
+      overallRating: review.overallRating,
+      address: '',
+      ratings: {
+        location: review.detailedRatings.location,
+        safety: review.detailedRatings.safety,
+        value: review.detailedRatings.value,
+        maintenance: review.detailedRatings.maintenance,
+        communication: review.detailedRatings.communication,
+        conditions: review.detailedRatings.conditions,
+      },
+      localPhotos: review.photos.map((photo) => new File([], photo)),
+      body: review.reviewText,
+      bedrooms: review.bedrooms,
+      price: review.price,
+    };
+  };
+  const [review, dispatch] = useReducer(
+    reducer,
+    initialReview ? convertReviewToFormData(initialReview) : defaultReview
+  );
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
@@ -320,12 +344,18 @@ const ReviewModal = ({
         }
         return;
       }
-      const res = await axios.post('/api/new-review', data, createAuthHeaders(token));
+      // If editing a review, send a POST request to update the review, otherwise send a POST request to create a new review
+      const res = initialReview
+        ? await axios.post(`/api/edit-review/${initialReview.id}`, data, createAuthHeaders(token))
+        : await axios.post('/api/new-review', data, createAuthHeaders(token));
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
       setOpen(false);
-      dispatch({ type: 'reset' });
+      // Reset the form if not editing a review.
+      if (!initialReview) {
+        dispatch({ type: 'reset' });
+      }
       onSuccess();
     } catch (err) {
       console.log(err);
@@ -386,12 +416,13 @@ const ReviewModal = ({
   return (
     <Dialog
       open={open}
-      onClose={onCloseClearPhotos}
+      onClose={initialReview ? onClose : onCloseClearPhotos} // If editing a review, close modal without clearing photos
       fullWidth
       PaperProps={{ className: modalWidth }}
     >
       <DialogTitle disableTypography className={leaveAReviewTitle}>
-        Leave a Review{aptName.length > 0 && `: ${aptName}`}
+        {initialReview ? 'Edit Review' : 'Leave a Review'}
+        {aptName.length > 0 && `: ${aptName}`}
       </DialogTitle>
       <DialogContent ref={modalRef}>
         {/* This div padding prevents the scrollbar from displaying unnecessarily */}
@@ -436,7 +467,11 @@ const ReviewModal = ({
                     item: `${i + 1} Bedroom${i > 0 ? 's' : ''}`,
                     callback: () => updateBedrooms(i + 1),
                   }))}
-                  defaultValue="Select"
+                  defaultValue={
+                    initialReview?.bedrooms
+                      ? `${review.bedrooms} Bedroom${review.bedrooms > 0 ? 's' : ''}`
+                      : 'Select'
+                  }
                   className={dropDownStyle}
                   icon={false}
                 />
@@ -472,7 +507,7 @@ const ReviewModal = ({
                     item: getPriceRange(i + 1),
                     callback: () => updatePrice(i + 1),
                   }))}
-                  defaultValue="Select"
+                  defaultValue={initialReview?.price ? getPriceRange(review.price) : 'Select'}
                   className={dropDownStyle}
                   icon={false}
                 />
@@ -486,6 +521,7 @@ const ReviewModal = ({
                 name="overall"
                 label="Overall Experience"
                 onChange={updateOverall()}
+                defaultValue={initialReview?.overallRating || 0}
               ></ReviewRating>
               {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
@@ -505,21 +541,25 @@ const ReviewModal = ({
                   name="location"
                   label="Location"
                   onChange={updateRating('location')}
+                  defaultValue={initialReview?.detailedRatings.location || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
                   label="Safety"
                   onChange={updateRating('safety')}
+                  defaultValue={initialReview?.detailedRatings.safety || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
                   label="Maintenance"
                   onChange={updateRating('maintenance')}
+                  defaultValue={initialReview?.detailedRatings.maintenance || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
                   label="Conditions"
                   onChange={updateRating('conditions')}
+                  defaultValue={initialReview?.detailedRatings.conditions || 0}
                 ></ReviewRating>
               </Grid>
             </Grid>
@@ -553,7 +593,7 @@ const ReviewModal = ({
                   multiline
                   rows={10}
                   inputProps={{
-                    maxlength: REVIEW_CHARACTER_LIMIT,
+                    maxLength: REVIEW_CHARACTER_LIMIT,
                   }}
                   placeholder="Write your review here"
                   helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
@@ -564,6 +604,7 @@ const ReviewModal = ({
                       : ''
                   }`}
                   onChange={updateBody}
+                  defaultValue={initialReview?.reviewText || ''}
                 />
               </Grid>
 
@@ -599,7 +640,7 @@ const ReviewModal = ({
         <Button
           variant="contained"
           disableElevation
-          onClick={onCloseClearPhotos}
+          onClick={initialReview ? onClose : onCloseClearPhotos}
           className={hollowRedButton}
           style={{ marginLeft: '15px' }}
         >
