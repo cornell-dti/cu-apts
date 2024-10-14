@@ -19,7 +19,7 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import { Landlord } from '../../../common/types/db-types';
-import Toast from '../components/LeaveReview/Toast';
+import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
 import axios from 'axios';
@@ -94,6 +94,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<CardData[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
@@ -217,6 +218,10 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   // Function to show a sign-in error toast
   const showSignInErrorToast = () => {
     showToast(setShowSignInError);
+  };
+
+  const showEditSuccessConfirmationToast = () => {
+    showToast(setShowEditSuccessConfirmation);
   };
 
   // Function to handle liking or disliking a review
@@ -521,6 +526,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showEditSuccessConfirmation && (
+              <Toast
+                isOpen={showEditSuccessConfirmation}
+                severity="success"
+                message="Review successfully edited! Your updated review is now pending approval from the admin."
+                time={toastTime}
+              />
+            )}
 
             <Grid container item spacing={3}>
               {sortReviews(reviewData, sortBy)
@@ -528,12 +541,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 .map((review, index) => (
                   <Grid item xs={12} key={index}>
                     <ReviewComponent
+                      key={review.id}
                       review={review}
                       liked={likedReviews[review.id]}
                       likeLoading={likeStatuses[review.id]}
                       addLike={addLike}
                       removeLike={removeLike}
                       setToggle={setToggle}
+                      triggerEditToast={showEditSuccessConfirmationToast}
                       user={user}
                       setUser={setUser}
                       showLabel={true}

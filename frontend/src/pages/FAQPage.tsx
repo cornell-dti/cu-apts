@@ -5,6 +5,7 @@ import { useTitle } from '../utils';
 import { Button, Grid, Typography, makeStyles } from '@material-ui/core';
 import { get } from '../utils/call';
 import { colors } from '../colors';
+import { useModal } from '../components/utils/Footer/ContactModalContext';
 
 export type FAQ = {
   question: string;
@@ -69,63 +70,6 @@ const useStyles = makeStyles(() => ({
     lineHeight: '25px',
     paddingBottom: '18px',
   },
-  pageBackgroundMobile: {
-    backgroundColor: colors.gray3,
-    padding: '24px 34px 0',
-    minHeight: 'calc(120vh - 96px)',
-  },
-  titleMobile: {
-    color: colors.black,
-    fontSize: '18px',
-    fontWeight: 600,
-    lineHeight: '28px',
-    marginBottom: '1px',
-  },
-  subtitleMobile: {
-    color: colors.black,
-    fontSize: '12px',
-    fontWeight: 400,
-    lineHeight: '16px',
-    marginBottom: '24px',
-  },
-  squareButtonMobile: {
-    backgroundColor: colors.red1,
-    color: 'white',
-    '&:hover': {
-      backgroundColor: colors.red7, // dark-red color on Figma
-    },
-    padding: '8px 12px',
-    fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 600,
-    fontSize: '12px',
-    borderRadius: '10px',
-    lineHeight: '16px',
-  },
-  sideBarMobile: {
-    backgroundColor: colors.white,
-    padding: '20px',
-    borderRadius: '8px',
-    width: 'auto',
-    height: '200px',
-    marginLeft: '0',
-    '@media only screen and (max-width: 960px)': {
-      marginLeft: '0',
-    },
-    border: '1px solid' + colors.gray5,
-    marginTop: '16px',
-  },
-  sideBarTitleMobile: {
-    fontSize: '10px',
-    fontWeight: 600,
-    lineHeight: '14px',
-    paddingBottom: '6px',
-  },
-  sideBarBlurbMobile: {
-    fontSize: '10px',
-    fontWeight: 400,
-    lineHeight: '14px',
-    paddingBottom: '18px',
-  },
 }));
 
 /**
@@ -141,64 +85,7 @@ const useStyles = makeStyles(() => ({
 const FAQPage = (): ReactElement => {
   const [data, setData] = useState<FAQ[]>([]);
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const useStyles = makeStyles(() => ({
-    pageBackground: {
-      backgroundColor: colors.gray3,
-      padding: '96px 135px 0',
-      minHeight: 'calc(120vh - 96px)',
-    },
-    title: {
-      color: colors.black,
-      fontSize: '42px',
-      fontWeight: 600,
-      lineHeight: '60px',
-      marginBottom: '20px',
-    },
-    subtitle: {
-      color: colors.black,
-      fontSize: '20px',
-      fontWeight: 400,
-      lineHeight: '28px',
-      marginBottom: '32px',
-    },
-    squareButton: {
-      backgroundColor: colors.red1,
-      color: 'white',
-      '&:hover': {
-        backgroundColor: colors.red7, //dark-red on figma
-      },
-      padding: '8px 18px',
-      fontWeight: 600,
-      fontSize: '16px',
-      borderRadius: '10px',
-      lineHeight: '26px',
-    },
-    sideBar: {
-      backgroundColor: colors.white,
-      padding: '20px',
-      borderRadius: '8px',
-      width: '275px',
-      height: 'fit-content',
-      marginLeft: '48px',
-      '@media only screen and (max-width: 960px)': {
-        marginLeft: '0',
-      },
-      border: '1px solid' + colors.gray5,
-      marginTop: '0',
-    },
-    sideBarTitle: {
-      fontSize: '20px',
-      fontWeight: 600,
-      lineHeight: '26px',
-      paddingBottom: '6px',
-    },
-    sideBarBlurb: {
-      fontSize: '16px',
-      fontWeight: 400,
-      lineHeight: '25px',
-      paddingBottom: '18px',
-    },
-  }));
+  const { openModal } = useModal();
   const { squareButton, sideBar, pageBackground, title, subtitle, sideBarTitle, sideBarBlurb } =
     useStyles();
 
@@ -257,7 +144,7 @@ const FAQPage = (): ReactElement => {
                 <Typography variant="body1" className={sideBarBlurb}>
                   Can't find the answer you're looking for? Feel free to reach out to our team.
                 </Typography>
-                <Button href="mailto:hello@cornelldti.org" className={squareButton}>
+                <Button onClick={openModal} className={squareButton}>
                   Get In Touch
                 </Button>
               </Grid>
@@ -286,7 +173,7 @@ const FAQPage = (): ReactElement => {
               Can't find the answer you're looking for? Feel free to reach out to our team.
             </Typography>
             <Button
-              href="mailto:hello@cornelldti.org"
+              onClick={openModal}
               className={squareButton}
               style={{ padding: '8px 12px', fontSize: '12px', lineHeight: '16px' }}
             >

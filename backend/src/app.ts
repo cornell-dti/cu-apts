@@ -12,6 +12,8 @@ import {
   LandlordWithLabel,
   ApartmentWithLabel,
   ApartmentWithId,
+  CantFindApartmentForm,
+  QuestionForm,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -34,6 +36,8 @@ const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
+const pendingBuildingsCollection = db.collection('pendingBuildings');
+const contactQuestionsCollection = db.collection('contactQuestions');
 
 // Middleware setup
 const app: Express = express();
@@ -71,6 +75,54 @@ app.post('/api/new-review', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(401).send('Error');
+  }
+});
+
+// API endpoint to edit review by id
+app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const { reviewId } = req.params;
+  try {
+    const reviewDoc = reviewCollection.doc(reviewId); // specific doc for the id
+    const reviewData = (await reviewDoc.get()).data();
+    if (!reviewData?.userId || reviewData.userId !== req.user.uid) {
+      res.status(401).send('Error: user is not the review owner. not authorized');
+      return;
+    }
+    const updatedReview = req.body as Review;
+    if (updatedReview.overallRating === 0 || updatedReview.reviewText === '') {
+      res.status(401).send('Error: missing fields');
+      return;
+    }
+    reviewDoc
+      .update({ ...updatedReview, date: new Date(updatedReview.date), status: 'PENDING' })
+      .then(() => {
+        res.status(201).send(reviewId);
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error');
+  }
+});
+
+// API endpoint to get a specific review by its specific review ID
+app.get('/api/review-by-id/:reviewId', async (req, res) => {
+  const { reviewId } = req.params; // Extract the review ID from the request parameters
+  try {
+    const reviewDoc = await reviewCollection.doc(reviewId).get(); // Get the review document from Firestore
+    if (!reviewDoc.exists) {
+      res.status(404).send('Review not found'); // If the document does not exist, return a 404 error
+      return;
+    }
+    const data = reviewDoc.data();
+    const review = { ...data, date: data?.date.toDate() } as ReviewInternal; // Convert the Firestore Timestamp to a Date object
+    const reviewWithId = { ...review, id: reviewDoc.id } as ReviewWithId; // Add the document ID to the review data
+    res.status(200).send(JSON.stringify(reviewWithId)); // Return the review data as a JSON response
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving review'); // Handle any errors that occur during the process
   }
 });
 
@@ -384,6 +436,28 @@ app.get('/api/location/:loc', async (req, res) => {
   res.status(200).send(data);
 });
 
+app.get('/api/pending-buildings/:status', async (req, res) => {
+  const { status } = req.params;
+  const apartmentDocs = (await pendingBuildingsCollection.where('status', '==', status).get()).docs;
+  const apartments: CantFindApartmentForm[] = apartmentDocs.map((doc) => {
+    const data = doc.data();
+    const apartment = { ...data, date: data.date.toDate() } as CantFindApartmentForm;
+    return { ...apartment, id: doc.id } as CantFindApartmentForm;
+  });
+  res.status(200).send(JSON.stringify(apartments));
+});
+
+app.get('/api/contact-questions/:status', async (req, res) => {
+  const { status } = req.params;
+  const questionDocs = (await contactQuestionsCollection.where('status', '==', status).get()).docs;
+  const questions: QuestionForm[] = questionDocs.map((doc) => {
+    const data = doc.data();
+    const question = { ...data, date: data.date.toDate() } as QuestionForm;
+    return { ...question, id: doc.id } as QuestionForm;
+  });
+  res.status(200).send(JSON.stringify(questions));
+});
+
 const likeHandler =
   (dislike = false): RequestHandler =>
   async (req, res) => {
@@ -414,30 +488,6 @@ const likeHandler =
 app.post('/api/add-like', authenticate, likeHandler(false));
 
 app.post('/api/remove-like', authenticate, likeHandler(true));
-
-// Endpoint to update a review by its document ID
-app.put('/api/:reviewId/edit', async (req, res) => {
-  try {
-    const { reviewId } = req.params; // Extract the review document ID from the request parameters
-    const review = req.body as Review; // Get the review data from the request body and cast it to the "Review" type
-
-    // Check if the required fields (overallRating and reviewText) are missing or invalid
-    if (review.overallRating === 0 || review.reviewText === '') {
-      res.status(401).send('Error: missing fields');
-    }
-
-    const newReview = { ...review, date: new Date(review.date), status: 'PENDING' };
-    // Update the review document in the database with the provided data
-    await reviewCollection.doc(reviewId).update(newReview);
-
-    // Send a success response with the updated review document ID
-    res.status(200).send(newReview);
-  } catch (err) {
-    // Handle any errors that may occur during the update process
-    console.error(err);
-    res.status(400).send('Error');
-  }
-});
 
 // Endpoint to delete a review by its document ID
 app.put('/api/delete-review/:reviewId', async (req, res) => {
@@ -858,6 +908,38 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   } catch (err) {
     console.log(err);
     res.status(500).send('Error'); // Handling any errors
+  }
+});
+
+// API endpoint to submit a "Can't Find Your Apartment?" form.
+app.post('/api/add-pending-building', authenticate, async (req, res) => {
+  try {
+    const doc = pendingBuildingsCollection.doc();
+    const apartment = req.body as CantFindApartmentForm;
+    if (apartment.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...apartment, date: new Date(apartment.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+// API endpoint to submit a "Ask Us A Question" form.
+app.post('/api/add-contact-question', authenticate, async (req, res) => {
+  try {
+    const doc = contactQuestionsCollection.doc();
+    const question = req.body as QuestionForm;
+    if (question.name === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({ ...question, date: new Date(question.date), status: 'PENDING' });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
   }
 });
 

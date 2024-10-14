@@ -6,27 +6,23 @@ import {
   DialogTitle,
   Grid,
   TextField,
-  Input,
-  FormLabel,
   Typography,
   makeStyles,
-  IconButton,
-  CardMedia,
   useMediaQuery,
 } from '@material-ui/core';
 import axios from 'axios';
 import React, { Dispatch, SetStateAction, useReducer, useState, useRef, useEffect } from 'react';
-import { DetailedRating, Review } from '../../../../common/types/db-types';
+import { DetailedRating, Review, ReviewWithId } from '../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
-import Toast from './Toast';
+import Toast from '../utils/Toast';
 import styles from './ReviewModal.module.scss';
 import DropDown from '../utils/DropDown';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { ReactComponent as XIcon } from '../../assets/xIcon.svg';
 import { colors } from '../../colors';
 import getPriceRange from '../../utils/priceRange';
+import UploadPhotos from '../utils/UploadPhotos';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
@@ -42,6 +38,7 @@ interface Props {
   aptId: string;
   aptName: string;
   user: firebase.User | null;
+  initialReview?: ReviewWithId; // Optional initial review to prefill for editing
 }
 
 const useStyle = makeStyles({
@@ -110,55 +107,6 @@ const useStyle = makeStyles({
     color: colors.red1,
     '&:hover': {
       backgroundColor: 'rgba(0,0,0,0.1)',
-      opacity: 0.8,
-    },
-  },
-  disabledButton: {
-    minWidth: '80px',
-    height: '35px',
-    borderRadius: '30px',
-    border: '2px solid',
-    borderColor: '#ced4da',
-    backgroundColor: 'transparent',
-    color: '#ced4da',
-    pointerEvents: 'none',
-    cursor: 'default',
-  },
-  photoHover: {
-    backgroundColor: 'black',
-    position: 'absolute',
-    borderRadius: '6px',
-    height: '100%',
-    width: '100%',
-  },
-  photosContainer: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-  },
-  photoRemoveButton: {
-    fill: 'white',
-    cursor: 'pointer',
-    display: 'none',
-    position: 'absolute',
-    zIndex: 1,
-  },
-  photoAndButton: {
-    position: 'relative',
-    borderRadius: '6px',
-    '&:hover $photoRemoveButton': {
-      display: 'block',
-    },
-    '&:hover $photo': {
-      opacity: 0.8,
-    },
-  },
-  photo: {
-    position: 'absolute',
-    height: '100%',
-    width: '100%',
-    borderRadius: '6px',
-    '&:hover': {
       opacity: 0.8,
     },
   },
@@ -244,6 +192,7 @@ const reducer = (state: FormData, action: Action): FormData => {
  * @param {number} props.toastTime – The time in milliseconds which the review successfully submitted toast is shown.
  * @param {string} props.aptId – The Apartment ID of the apartment being reviewed.
  * @param {string} props.aptName – The name of the apartment being reviewed.
+ * @param {ReviewWithId} [props.initialReview] – The prefilled review to be displayed in the modal (optional).
  * @param props.user – The current user, null if not logged in.
  * @returns
  */
@@ -258,8 +207,31 @@ const ReviewModal = ({
   aptId,
   aptName,
   user,
+  initialReview,
 }: Props) => {
-  const [review, dispatch] = useReducer(reducer, defaultReview);
+  // Function to convert ReviewWithId type to FormData type (used for editing created reviews)
+  const convertReviewToFormData = (review: ReviewWithId): FormData => {
+    return {
+      overallRating: review.overallRating,
+      address: '',
+      ratings: {
+        location: review.detailedRatings.location,
+        safety: review.detailedRatings.safety,
+        value: review.detailedRatings.value,
+        maintenance: review.detailedRatings.maintenance,
+        communication: review.detailedRatings.communication,
+        conditions: review.detailedRatings.conditions,
+      },
+      localPhotos: review.photos.map((photo) => new File([], photo)),
+      body: review.reviewText,
+      bedrooms: review.bedrooms,
+      price: review.price,
+    };
+  };
+  const [review, dispatch] = useReducer(
+    reducer,
+    initialReview ? convertReviewToFormData(initialReview) : defaultReview
+  );
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
@@ -279,12 +251,6 @@ const ReviewModal = ({
     promptList,
     submitButton,
     hollowRedButton,
-    disabledButton,
-    photo,
-    photoHover,
-    photosContainer,
-    photoRemoveButton,
-    photoAndButton,
   } = useStyle();
 
   const updateBedrooms = (bedrooms: number) => {
@@ -378,12 +344,18 @@ const ReviewModal = ({
         }
         return;
       }
-      const res = await axios.post('/api/new-review', data, createAuthHeaders(token));
+      // If editing a review, send a POST request to update the review, otherwise send a POST request to create a new review
+      const res = initialReview
+        ? await axios.post(`/api/edit-review/${initialReview.id}`, data, createAuthHeaders(token))
+        : await axios.post('/api/new-review', data, createAuthHeaders(token));
       if (res.status !== 201) {
         throw new Error('Failed to submit review');
       }
       setOpen(false);
-      dispatch({ type: 'reset' });
+      // Reset the form if not editing a review.
+      if (!initialReview) {
+        dispatch({ type: 'reset' });
+      }
       onSuccess();
     } catch (err) {
       console.log(err);
@@ -444,12 +416,13 @@ const ReviewModal = ({
   return (
     <Dialog
       open={open}
-      onClose={onCloseClearPhotos}
+      onClose={initialReview ? onClose : onCloseClearPhotos} // If editing a review, close modal without clearing photos
       fullWidth
       PaperProps={{ className: modalWidth }}
     >
       <DialogTitle disableTypography className={leaveAReviewTitle}>
-        Leave a Review{aptName.length > 0 && `: ${aptName}`}
+        {initialReview ? 'Edit Review' : 'Leave a Review'}
+        {aptName.length > 0 && `: ${aptName}`}
       </DialogTitle>
       <DialogContent ref={modalRef}>
         {/* This div padding prevents the scrollbar from displaying unnecessarily */}
@@ -494,7 +467,11 @@ const ReviewModal = ({
                     item: `${i + 1} Bedroom${i > 0 ? 's' : ''}`,
                     callback: () => updateBedrooms(i + 1),
                   }))}
-                  defaultValue="Select"
+                  defaultValue={
+                    initialReview?.bedrooms
+                      ? `${review.bedrooms} Bedroom${review.bedrooms > 0 ? 's' : ''}`
+                      : 'Select'
+                  }
                   className={dropDownStyle}
                   icon={false}
                 />
@@ -530,7 +507,7 @@ const ReviewModal = ({
                     item: getPriceRange(i + 1),
                     callback: () => updatePrice(i + 1),
                   }))}
-                  defaultValue="Select"
+                  defaultValue={initialReview?.price ? getPriceRange(review.price) : 'Select'}
                   className={dropDownStyle}
                   icon={false}
                 />
@@ -544,6 +521,7 @@ const ReviewModal = ({
                 name="overall"
                 label="Overall Experience"
                 onChange={updateOverall()}
+                defaultValue={initialReview?.overallRating || 0}
               ></ReviewRating>
               {ratingError && <Typography color="error">*This field is required</Typography>}
             </Grid>
@@ -563,21 +541,25 @@ const ReviewModal = ({
                   name="location"
                   label="Location"
                   onChange={updateRating('location')}
+                  defaultValue={initialReview?.detailedRatings.location || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
                   label="Safety"
                   onChange={updateRating('safety')}
+                  defaultValue={initialReview?.detailedRatings.safety || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
                   label="Maintenance"
                   onChange={updateRating('maintenance')}
+                  defaultValue={initialReview?.detailedRatings.maintenance || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
                   label="Conditions"
                   onChange={updateRating('conditions')}
+                  defaultValue={initialReview?.detailedRatings.conditions || 0}
                 ></ReviewRating>
               </Grid>
             </Grid>
@@ -611,7 +593,7 @@ const ReviewModal = ({
                   multiline
                   rows={10}
                   inputProps={{
-                    maxlength: REVIEW_CHARACTER_LIMIT,
+                    maxLength: REVIEW_CHARACTER_LIMIT,
                   }}
                   placeholder="Write your review here"
                   helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
@@ -622,6 +604,7 @@ const ReviewModal = ({
                       : ''
                   }`}
                   onChange={updateBody}
+                  defaultValue={initialReview?.reviewText || ''}
                 />
               </Grid>
 
@@ -639,99 +622,16 @@ const ReviewModal = ({
                 </Grid>
               )}
             </Grid>
-
-            <Grid
-              container
-              item
-              justifyContent="space-between"
-              spacing={3}
-              style={{ paddingTop: '0', paddingBottom: '0' }}
-            >
-              <Grid item>
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}
-                >
-                  <FormLabel>Upload Pictures: </FormLabel>
-                  <FormLabel style={{ fontSize: '13px', color: colors.gray2, paddingTop: '8px' }}>
-                    {`Reviewers may upload up to ${REVIEW_PHOTOS_LIMIT} photos. Max photo size of ${REVIEW_PHOTO_MAX_MB}MB`}
-                  </FormLabel>
-                </div>
-              </Grid>
-              <Grid item>
-                <Button
-                  component={'label'}
-                  variant="contained"
-                  disableElevation
-                  className={
-                    review.localPhotos.length >= REVIEW_PHOTOS_LIMIT
-                      ? disabledButton
-                      : hollowRedButton
-                  }
-                >
-                  Choose File(s)
-                  <Input
-                    style={{ display: 'none' }}
-                    id="upload"
-                    type="file"
-                    inputProps={{ multiple: true, accept: 'image/*' }}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      updatePhotos(event);
-                      setAddedPhoto(!addedPhoto);
-                    }}
-                    disabled={review.localPhotos.length >= REVIEW_PHOTOS_LIMIT}
-                  />
-                </Button>
-              </Grid>
-            </Grid>
-            <Grid item>
-              {review.localPhotos.length > 0 && (
-                <Grid
-                  item
-                  className={photosContainer}
-                  style={isMobile ? { flexDirection: 'column' } : { flexDirection: 'row' }}
-                >
-                  {review.localPhotos.map((p, index) => {
-                    return (
-                      <div
-                        className={photoAndButton}
-                        style={
-                          !isMobile
-                            ? { width: '148px', height: '103px' }
-                            : { width: '70vw', height: '180px' }
-                        }
-                      >
-                        <div className={photoHover} />
-                        <CardMedia
-                          component="img"
-                          alt="Apt image"
-                          image={URL.createObjectURL(p)}
-                          title="Apt image"
-                          className={photo}
-                        />
-                        <IconButton
-                          onClick={() => removePhoto(index)}
-                          style={
-                            !isMobile
-                              ? { position: 'absolute', right: '2px' }
-                              : { position: 'absolute', right: '10px', top: '10px' }
-                          }
-                        >
-                          <XIcon
-                            className={photoRemoveButton}
-                            style={
-                              !isMobile
-                                ? { minWidth: '12px', minHeight: '12px' }
-                                : { minWidth: '30px', minHeight: '30px' }
-                            }
-                          />
-                        </IconButton>
-                      </div>
-                    );
-                  })}
-                </Grid>
-              )}
-            </Grid>
           </Grid>
+          <UploadPhotos
+            photosLimit={REVIEW_PHOTOS_LIMIT}
+            photoMaxMB={REVIEW_PHOTO_MAX_MB}
+            photos={review.localPhotos}
+            onPhotosChange={updatePhotos}
+            removePhoto={removePhoto}
+            addedPhoto={addedPhoto}
+            setAddedPhoto={setAddedPhoto}
+          />
         </div>
       </DialogContent>
       <DialogActions
@@ -740,7 +640,7 @@ const ReviewModal = ({
         <Button
           variant="contained"
           disableElevation
-          onClick={onCloseClearPhotos}
+          onClick={initialReview ? onClose : onCloseClearPhotos}
           className={hollowRedButton}
           style={{ marginLeft: '15px' }}
         >

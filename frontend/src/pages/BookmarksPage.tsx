@@ -15,6 +15,7 @@ import ReviewComponent from '../components/Review/Review';
 import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
+import Toast from '../components/utils/Toast';
 
 type Props = {
   user: firebase.User | null;
@@ -82,6 +83,7 @@ const ToggleButton = ({
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const { background, headerStyle, headerContainer, gridContainer } = useStyles();
   const defaultShow = 6;
+  const toastTime = 3500;
   const savedAPI = '/api/saved-apartments';
 
   const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
@@ -105,6 +107,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [toggle, setToggle] = useState(false);
   const [showMoreLessState, setShowMoreLessState] = useState<string>('Show More');
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -157,6 +160,16 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
     }
   };
 
+  const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
+    setState(true);
+    setTimeout(() => {
+      setState(false);
+    }, toastTime);
+  };
+  const showEditSuccessConfirmationToast = () => {
+    showToast(setShowEditSuccessConfirmation);
+  };
+
   // Function to handle liking or disliking a review
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -192,6 +205,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
+      {showEditSuccessConfirmation && (
+        <Toast
+          isOpen={showEditSuccessConfirmation}
+          severity="success"
+          message="Review successfully edited! Your updated review is now pending approval from the admin."
+          time={toastTime}
+        />
+      )}
       <Grid item xs={11} sm={11} md={9}>
         <Box
           display="flex"
@@ -322,12 +343,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                 .map((review, index) => (
                   <Grid item xs={12} key={index}>
                     <ReviewComponent
+                      key={review.id}
                       review={review}
                       liked={true}
                       likeLoading={likeStatuses[review.id]}
                       addLike={addLike}
                       removeLike={removeLike}
                       setToggle={setToggle}
+                      triggerEditToast={showEditSuccessConfirmationToast}
                       user={user}
                       setUser={setUser}
                       showLabel={true}

@@ -65,6 +65,13 @@ const subscribeLikes = (callback: (data: Likes) => void) => {
 
 const uploadFile = async (file: File) => {
   const storageRef = storage.ref();
+  const fileUrl = file.name;
+
+  // Check if the file URL is already from the cloud, if so, return it
+  if (fileUrl.startsWith('https://')) {
+    return fileUrl;
+  }
+
   const result = await storageRef.child(uuid()).put(file);
   return await result.ref.getDownloadURL();
 };
