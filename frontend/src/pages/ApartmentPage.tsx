@@ -18,6 +18,7 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 import ApartmentHeader from '../components/Apartment/Header';
 import AptInfo from '../components/Apartment/AptInfo';
+import MapInfo from '../components/Apartment/MapInfo';
 import { get } from '../utils/call';
 import {
   Landlord,
@@ -40,6 +41,7 @@ import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/filled-large-saved-icon.png';
 import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 type Props = {
@@ -127,6 +129,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
@@ -371,6 +374,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const Modals = landlordData && apt && (
     <>
+      <MapModal
+        aptName={apt!.name}
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        setOpen={setMapOpen}
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+      />
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
@@ -576,8 +590,21 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
     </>
   );
+
   const InfoSection = landlordData && (
     <Grid item xs={12}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+        Location
+      </Typography>
+      <MapInfo
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+        handleClick={() => setMapOpen(true)}
+        isMobile={isMobile}
+      />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Landlord
       </Typography>
@@ -587,6 +614,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         contact={landlordData.contact}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
       />
     </Grid>
   );
