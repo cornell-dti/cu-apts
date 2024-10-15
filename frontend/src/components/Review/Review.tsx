@@ -53,7 +53,8 @@ type Props = {
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
-  readonly triggerEditToast?: () => void;
+  readonly triggerEditToast: () => void;
+  readonly triggerDeleteToast: () => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly showLabel: boolean;
@@ -175,7 +176,8 @@ const useStyles = makeStyles(() => ({
  * @param {function} props.addLike - Function to add a like to the review.
  * @param {function} props.removeLike - Function to remove a like from the review.
  * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to toggle a state.
- * @param {function} [props.triggerEditToast] - Optional function to trigger a toast notification on edit.
+ * @param {function} props.triggerEditToast - function to trigger a toast notification on edit.
+ * @param {function} props.triggerDeleteToast - function to trigger a toast notification on delete.
  * @param {firebase.User | null} props.user - The current logged-in user.
  * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
  * @param {boolean} props.showLabel - Indicates if the property or landlord label should be shown.
@@ -189,6 +191,7 @@ const ReviewComponent = ({
   removeLike,
   setToggle,
   triggerEditToast,
+  triggerDeleteToast,
   user,
   setUser,
   showLabel,
@@ -363,6 +366,7 @@ const ReviewComponent = ({
         let user = await getUser(true);
         setUser(user);
       }
+      if (triggerDeleteToast) triggerDeleteToast();
     }
     setDeleteModalOpen(false);
   };
