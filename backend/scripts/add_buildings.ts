@@ -10,6 +10,8 @@ type BuildingData = {
   landlordId: number;
   address: string;
   area: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 const getAreaType = (areaName: string): 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' => {
@@ -33,6 +35,8 @@ const formatBuilding = ({
   landlordId,
   address,
   area,
+  latitude = 0,
+  longitude = 0,
 }: BuildingData): ApartmentWithId => ({
   id: id.toString(),
   name,
@@ -42,6 +46,10 @@ const formatBuilding = ({
   numBeds: 0,
   photos: [],
   area: getAreaType(area),
+  latitude,
+  longitude,
+  walkTime: 0,
+  driveTime: 0,
 });
 
 const makeBuilding = async (apartmentWithId: ApartmentWithId) => {
