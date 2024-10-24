@@ -1,11 +1,12 @@
 import React from 'react';
-import { Modal, Box, styled, Container, CardMedia, Dialog, makeStyles } from '@material-ui/core';
+import { Box, styled, Container, CardMedia, Dialog, makeStyles } from '@material-ui/core';
 import Carousel from 'react-material-ui-carousel';
 
 interface Props {
   photos: readonly string[];
   open: boolean;
   onClose?: () => void;
+  startIndex: number;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -24,9 +25,26 @@ const ImageBox = styled(Box)({
   margin: 'auto',
   borderRadius: '10px',
   overflow: 'hidden',
+  maxHeight: '80dvh',
+  objectFit: 'contain',
 });
 
-const PhotoCarousel = ({ photos, open, onClose }: Props) => {
+/**
+ * PhotoCarousel - this component displays a modal with a carousel of photos.
+ *
+ * @remarks
+ * This component is used to display a modal with a carousel of photos.
+ * It dynamically adjusts to different screen sizes and can be navigated using the arrow buttons.
+ *
+ * @component
+ * @param {readonly string[]} props.photos - An array of photo URLs to display in the carousel.
+ * @param {boolean} props.open - A boolean indicating whether the modal is open.
+ * @param {() => void} [props.onClose] - An optional callback function to handle closing the modal.
+ * @param {number} props.startIndex - The starting index of the carousel.
+ *
+ * @returns {JSX.Element} The rendered PhotoCarousel component.
+ */
+const PhotoCarousel = ({ photos, open, onClose, startIndex }: Props) => {
   const { modalBackground, navButton } = useStyles();
   return (
     <Dialog
@@ -41,6 +59,7 @@ const PhotoCarousel = ({ photos, open, onClose }: Props) => {
           autoPlay={false}
           navButtonsAlwaysVisible={true}
           navButtonsProps={{ className: navButton }}
+          index={startIndex}
         >
           {photos.map((src, index) => {
             return (

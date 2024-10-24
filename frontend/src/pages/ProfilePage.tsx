@@ -21,6 +21,7 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import defaultProfilePic from '../assets/cuapts-bear.png';
 import { useTitle } from '../utils';
 import { sortReviews } from '../utils/sortReviews';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -166,6 +167,9 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [toggle, setToggle] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const toastTime = 3500;
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselPhotos, setCarouselPhotos] = useState<readonly string[]>([]);
+  const [carouselStartIndex, setCarouselStartIndex] = useState<number>(0);
 
   useTitle('Profile');
 
@@ -256,6 +260,34 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     };
   }, [isModalOpen, setIsModalOpen]);
 
+  /**
+   * showPhotoCarousel – Opens the photo carousel modal with the provided photos and start index.
+   *
+   * @remarks
+   * This function sets the photos and start index for the photo carousel and then opens the carousel modal.
+   * If no photos are provided, it defaults to showing no photos.
+   *
+   * @param {readonly string[]} [photos] – The array of photo URLs to display in the carousel.
+   * @param {number} [startIndex] – The index of the photo to start the carousel from.
+   * @return {void} – This function does not return anything.
+   */
+  const showPhotoCarousel = (photos: readonly string[] = [], startIndex: number = 0) => {
+    setCarouselPhotos(photos);
+    setCarouselStartIndex(startIndex);
+    setCarouselOpen(true);
+  };
+
+  const Modals = (
+    <>
+      <PhotoCarousel
+        photos={carouselPhotos}
+        open={carouselOpen}
+        onClose={() => setCarouselOpen(false)}
+        startIndex={carouselStartIndex}
+      />
+    </>
+  );
+
   return (
     <div className={root}>
       <Grid container spacing={2} className={gridContainer}>
@@ -324,6 +356,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   removeLike={removeLike}
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -345,6 +378,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   removeLike={removeLike}
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -369,6 +403,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
           </div>
         )}
       </div>
+      {Modals}
     </div>
   );
 };

@@ -93,6 +93,8 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
+  const [carouselPhotos, setCarouselPhotos] = useState<readonly string[]>([]);
+  const [carouselStartIndex, setCarouselStartIndex] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<CardData[]>([]);
@@ -287,6 +289,26 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
+  /**
+   * showPhotoCarousel – Opens the photo carousel modal with the provided photos and start index.
+   *
+   * @remarks
+   * This function sets the photos and start index for the photo carousel and then opens the carousel modal.
+   * If no photos are provided, it defaults to the landlord's photos.
+   *
+   * @param {readonly string[]} [photos] – The array of photo URLs to display in the carousel.
+   * @param {number} [startIndex] – The index of the photo to start the carousel from.
+   * @return {void} – This function does not return anything.
+   */
+  const showPhotoCarousel = (
+    photos: readonly string[] = landlordData ? landlordData.photos : [],
+    startIndex: number = 0
+  ) => {
+    setCarouselPhotos(photos);
+    setCarouselStartIndex(startIndex);
+    setCarouselOpen(true);
+  };
+
   // Define a component 'Modals' conditionally based on landlordData existence
   const Modals = landlordData && (
     <>
@@ -302,8 +324,9 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={landlordData.photos}
+        photos={carouselPhotos}
         open={carouselOpen}
+        startIndex={carouselStartIndex}
         onClose={() => setCarouselOpen(false)}
       />
     </>
@@ -549,6 +572,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       removeLike={removeLike}
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
+                      triggerPhotoCarousel={showPhotoCarousel}
                       user={user}
                       setUser={setUser}
                       showLabel={true}
