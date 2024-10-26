@@ -96,7 +96,7 @@ const useStyles = makeStyles(() => ({
     transition: '0.3s ease-in-out',
     '&:hover': {
       filter: 'brightness(0.85)',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
+      boxShadow: '0 4px 4px rgba(0, 0, 0, 0.1)',
       transform: 'scale(1.02)',
     },
   },
