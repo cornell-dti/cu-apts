@@ -17,6 +17,7 @@ import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
 import Toast from '../components/utils/Toast';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -109,9 +110,13 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [showMoreLessState, setShowMoreLessState] = useState<string>('Show More');
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
-  const [carouselOpen, setCarouselOpen] = useState(false);
-  const [carouselPhotos, setCarouselPhotos] = useState<readonly string[]>([]);
-  const [carouselStartIndex, setCarouselStartIndex] = useState<number>(0);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -207,29 +212,12 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const addLike = likeHelper(false);
   const removeLike = likeHelper(true);
 
-  /**
-   * showPhotoCarousel – Opens the photo carousel modal with the provided photos and start index.
-   *
-   * @remarks
-   * This function sets the photos and start index for the photo carousel and then opens the carousel modal.
-   * If no photos are provided, it defaults to showing no photos.
-   *
-   * @param {readonly string[]} [photos] – The array of photo URLs to display in the carousel.
-   * @param {number} [startIndex] – The index of the photo to start the carousel from.
-   * @return {void} – This function does not return anything.
-   */
-  const showPhotoCarousel = (photos: readonly string[] = [], startIndex: number = 0) => {
-    setCarouselPhotos(photos);
-    setCarouselStartIndex(startIndex);
-    setCarouselOpen(true);
-  };
-
   const Modals = (
     <>
       <PhotoCarousel
         photos={carouselPhotos}
         open={carouselOpen}
-        onClose={() => setCarouselOpen(false)}
+        onClose={closePhotoCarousel}
         startIndex={carouselStartIndex}
       />
     </>

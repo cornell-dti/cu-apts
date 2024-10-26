@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
@@ -130,14 +131,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-  const [carouselOpen, setCarouselOpen] = useState(false);
-  const [carouselPhotos, setCarouselPhotos] = useState<readonly string[]>([]);
-  const [carouselStartIndex, setCarouselStartIndex] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel(apt ? apt.photos : []);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -374,26 +379,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
-  /**
-   * showPhotoCarousel – Opens the photo carousel modal with the provided photos and start index.
-   *
-   * @remarks
-   * This function sets the photos and start index for the photo carousel and then opens the carousel modal.
-   * If no photos are provided, it defaults to the apartment's photos.
-   *
-   * @param {readonly string[]} [photos] – The array of photo URLs to display in the carousel.
-   * @param {number} [startIndex] – The index of the photo to start the carousel from.
-   * @return {void} – This function does not return anything.
-   */
-  const showPhotoCarousel = (
-    photos: readonly string[] = apt ? apt.photos : [],
-    startIndex: number = 0
-  ) => {
-    setCarouselPhotos(photos);
-    setCarouselStartIndex(startIndex);
-    setCarouselOpen(true);
-  };
-
   const Modals = landlordData && apt && (
     <>
       <MapModal
@@ -422,7 +407,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         photos={carouselPhotos}
         open={carouselOpen}
         startIndex={carouselStartIndex}
-        onClose={() => setCarouselOpen(false)}
+        onClose={closePhotoCarousel}
       />
     </>
   );
