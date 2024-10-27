@@ -19,6 +19,7 @@ import {
 import { auth } from 'firebase-admin';
 import { Timestamp } from '@firebase/firestore-types';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
@@ -38,6 +39,8 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
+
+const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
 const app: Express = express();
@@ -940,6 +943,149 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(401).send('Error');
+  }
+});
+
+// 1. Fix the camelCase interface properties
+interface TravelTimes {
+  artsQuadWalking: number;
+  artsQuadDriving: number;
+  duffieldWalking: number;
+  duffieldDriving: number;
+  ctbWalking: number;
+  ctbDriving: number;
+}
+
+const {GOOGLE_MAPS_API_KEY} = process.env;
+const LANDMARKS = {
+  arts_quad: 'Arts Quad, Cornell University, Ithaca, NY 14853',
+  duffield: 'Duffield Hall, Cornell University, Ithaca, NY 14853',
+  ctb: 'College Town Bagels, College Ave, Ithaca, NY 14850',
+};
+
+interface TravelTimeInput {
+  origin: string; // Can be either address or "latitude,longitude"
+}
+
+/**
+ * Travel Times Calculator - Calculates walking and driving times from a given origin to Cornell landmarks.
+ *
+ * @remarks
+ * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Arts Quad,
+ * Duffield Hall, and College Town Bagels. Returns both walking and driving durations in minutes.
+ * Origin can be either an address or coordinates in "latitude,longitude" format.
+ *
+ * @route POST /api/travel-times
+ *
+ * @input {string} req.body.origin - Starting point, either as address or "latitude,longitude"
+ *
+ * @status
+ * - 200: Successfully retrieved travel times
+ * - 400: Missing or invalid origin
+ * - 500: Server error or Google Maps API failure
+ */
+app.post('/api/travel-times', async (req, res) => {
+  try {
+    const { origin } = req.body as TravelTimeInput;
+
+    if (!origin) {
+      return res.status(400).json({ error: 'Origin is required' });
+    }
+
+    // Create destinations array
+    const destinations = Object.values(LANDMARKS);
+
+    // Make request to Google Distance Matrix API for walking times
+    const walkingResponse = await axios.get(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+        origin
+      )}&destinations=${destinations
+        .map((dest) => encodeURIComponent(dest))
+        .join('|')}&mode=walking&key=${GOOGLE_MAPS_API_KEY}`
+    );
+
+    // Make request to Google Distance Matrix API for driving times
+    const drivingResponse = await axios.get(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+        origin
+      )}&destinations=${destinations
+        .map((dest) => encodeURIComponent(dest))
+        .join('|')}&mode=driving&key=${GOOGLE_MAPS_API_KEY}`
+    );
+
+    // Fix the any types with a proper interface
+    interface DistanceMatrixElement {
+      duration: {
+        value: number;
+      };
+    }
+
+    const walkingTimes = walkingResponse.data.rows[0].elements.map(
+      (element: DistanceMatrixElement) => element.duration.value / 60
+    );
+    const drivingTimes = drivingResponse.data.rows[0].elements.map(
+      (element: DistanceMatrixElement) => element.duration.value / 60
+    );
+
+    const travelTimes: TravelTimes = {
+      artsQuadWalking: walkingTimes[0],
+      artsQuadDriving: drivingTimes[0],
+      duffieldWalking: walkingTimes[1],
+      duffieldDriving: drivingTimes[1],
+      ctbWalking: walkingTimes[2],
+      ctbDriving: drivingTimes[2],
+    };
+
+    return res.status(200).json(travelTimes);
+  } catch (error) {
+    console.error('Error calculating travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Test Travel Times Endpoint - Creates a travel times document for a specific building.
+ *
+ * @remarks
+ * Retrieves building coordinates from the buildings collection, calculates travel times to Cornell landmarks,
+ * and stores the results in the travelTimes collection. This endpoint is used for testing and populating
+ * travel time data for existing buildings.
+ *
+ * @param {string} buildingId - The ID of the building to calculate and store travel times for
+ *
+ * @return {Object} - Object containing success message, building ID, and calculated travel times
+ */
+app.post('/api/test-travel-times/:buildingId', async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+
+    // Get building data
+    const buildingDoc = await buildingsCollection.doc(buildingId).get();
+    if (!buildingDoc.exists) {
+      return res.status(404).json({ error: 'Building not found' });
+    }
+
+    const buildingData = buildingDoc.data();
+    if (!buildingData?.latitude || !buildingData?.longitude) {
+      return res.status(400).json({ error: 'Building missing coordinate data' });
+    }
+
+    // Calculate travel times using the main endpoint
+    const response = await axios.post(`${process.env.API_BASE_URL}/api/travel-times`, {
+      origin: `${buildingData.latitude},${buildingData.longitude}`,
+    });
+
+    // Store in Firebase
+    await travelTimesCollection.doc(buildingId).set(response.data);
+
+    return res.status(200).json({
+      message: 'Travel times calculated and stored successfully',
+      buildingId,
+      travelTimes: response.data,
+    });
+  } catch (error) {
+    console.error('Error in test endpoint:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
