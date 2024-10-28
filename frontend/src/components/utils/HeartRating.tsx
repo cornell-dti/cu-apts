@@ -5,7 +5,10 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import { withStyles } from '@material-ui/core';
 import { colors } from '../../colors';
 
-type Props = React.ComponentProps<typeof Rating> & { fontSize?: number | string };
+type Props = React.ComponentProps<typeof Rating> & {
+  fontSize?: number | string;
+  defaultValue?: number;
+};
 
 const StyledRating = withStyles({
   iconEmpty: {
@@ -31,7 +34,7 @@ const HeartRating = (props: Props) => {
   return (
     <StyledRating
       {...props}
-      defaultValue={0}
+      defaultValue={props.defaultValue || 0}
       icon={
         props.fontSize ? (
           <FavoriteIcon style={{ fontSize: props.fontSize }} />

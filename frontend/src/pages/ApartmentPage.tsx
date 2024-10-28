@@ -18,6 +18,7 @@ import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
 import ApartmentHeader from '../components/Apartment/Header';
 import AptInfo from '../components/Apartment/AptInfo';
+import MapInfo from '../components/Apartment/MapInfo';
 import { get } from '../utils/call';
 import {
   Landlord,
@@ -40,6 +41,7 @@ import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/filled-large-saved-icon.png';
 import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 type Props = {
@@ -127,8 +129,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
@@ -299,6 +303,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowSignInError);
   };
 
+  const showEditSuccessConfirmationToast = () => {
+    showToast(setShowEditSuccessConfirmation);
+  };
+
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -366,6 +374,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const Modals = landlordData && apt && (
     <>
+      <MapModal
+        aptName={apt!.name}
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        setOpen={setMapOpen}
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+      />
       <ReviewModal
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
@@ -571,8 +590,21 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       </Grid>
     </>
   );
+
   const InfoSection = landlordData && (
     <Grid item xs={12}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+        Location
+      </Typography>
+      <MapInfo
+        address={apt!.address}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
+        walkTime={apt!.walkTime}
+        driveTime={apt!.driveTime}
+        handleClick={() => setMapOpen(true)}
+        isMobile={isMobile}
+      />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Landlord
       </Typography>
@@ -582,6 +614,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         contact={landlordData.contact}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
+        longitude={apt!.longitude}
+        latitude={apt!.latitude}
       />
     </Grid>
   );
@@ -624,6 +658,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showEditSuccessConfirmation && (
+              <Toast
+                isOpen={showEditSuccessConfirmation}
+                severity="success"
+                message="Review successfully edited! Your updated review is now pending approval from the admin."
+                time={toastTime}
+              />
+            )}
 
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
@@ -658,23 +700,26 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 </Grid>
 
                 <Grid container item spacing={3}>
-                  {sortReviews(reviewData, sortBy)
-                    .slice(0, resultsToShow)
-                    .map((review, index) => (
-                      <Grid item xs={12} key={index}>
-                        <ReviewComponent
-                          showLabel={false}
-                          review={review}
-                          liked={likedReviews[review.id]}
-                          likeLoading={likeStatuses[review.id]}
-                          addLike={addLike}
-                          removeLike={removeLike}
-                          setToggle={setToggle}
-                          user={user}
-                          setUser={setUser}
-                        />
-                      </Grid>
-                    ))}
+                  {reviewData &&
+                    sortReviews(reviewData, sortBy)
+                      .slice(0, resultsToShow)
+                      .map((review, index) => (
+                        <Grid item xs={12} key={index}>
+                          <ReviewComponent
+                            key={review.id}
+                            showLabel={false}
+                            review={review}
+                            liked={likedReviews[review.id]}
+                            likeLoading={likeStatuses[review.id]}
+                            addLike={addLike}
+                            removeLike={removeLike}
+                            setToggle={setToggle}
+                            triggerEditToast={showEditSuccessConfirmationToast}
+                            user={user}
+                            setUser={setUser}
+                          />
+                        </Grid>
+                      ))}
                 </Grid>
               </Grid>
 

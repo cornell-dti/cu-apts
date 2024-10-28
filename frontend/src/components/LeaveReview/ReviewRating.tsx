@@ -19,6 +19,7 @@ interface Props {
  * @param {number} [props.defaultValue] - The default value for the HeartRating component.
  * @returns {JSX.Element} The rendered ReviewRating component.
  */
+
 const ReviewRating = ({ name, label, onChange, defaultValue }: Props) => {
   return (
     <Grid container justifyContent="flex-start" alignItems="center" item xs={12} md={6}>
