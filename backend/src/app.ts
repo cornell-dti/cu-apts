@@ -956,7 +956,7 @@ interface TravelTimes {
   ctbDriving: number;
 }
 
-const {GOOGLE_MAPS_API_KEY} = process.env;
+const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {
   arts_quad: 'Arts Quad, Cornell University, Ithaca, NY 14853',
   duffield: 'Duffield Hall, Cornell University, Ithaca, NY 14853',
@@ -965,6 +965,31 @@ const LANDMARKS = {
 
 interface TravelTimeInput {
   origin: string; // Can be either address or "latitude,longitude"
+}
+
+/**
+ * Makes a request to Google Distance Matrix API and extracts travel times
+ * @param origin - Starting point (address or coordinates)
+ * @param destinations - Array of destination addresses
+ * @param mode - Travel mode ('walking' or 'driving')
+ * @returns Array of travel times in minutes
+ */
+async function getTravelTimes(
+  origin: string,
+  destinations: string[],
+  mode: 'walking' | 'driving'
+): Promise<number[]> {
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+      origin
+    )}&destinations=${destinations
+      .map((dest) => encodeURIComponent(dest))
+      .join('|')}&mode=${mode}&key=${REACT_APP_MAPS_API_KEY}`
+  );
+
+  return response.data.rows[0].elements.map(
+    (element: { duration: { value: number } }) => element.duration.value / 60
+  );
 }
 
 /**
@@ -992,40 +1017,13 @@ app.post('/api/travel-times', async (req, res) => {
       return res.status(400).json({ error: 'Origin is required' });
     }
 
-    // Create destinations array
     const destinations = Object.values(LANDMARKS);
 
-    // Make request to Google Distance Matrix API for walking times
-    const walkingResponse = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-        origin
-      )}&destinations=${destinations
-        .map((dest) => encodeURIComponent(dest))
-        .join('|')}&mode=walking&key=${GOOGLE_MAPS_API_KEY}`
-    );
-
-    // Make request to Google Distance Matrix API for driving times
-    const drivingResponse = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-        origin
-      )}&destinations=${destinations
-        .map((dest) => encodeURIComponent(dest))
-        .join('|')}&mode=driving&key=${GOOGLE_MAPS_API_KEY}`
-    );
-
-    // Fix the any types with a proper interface
-    interface DistanceMatrixElement {
-      duration: {
-        value: number;
-      };
-    }
-
-    const walkingTimes = walkingResponse.data.rows[0].elements.map(
-      (element: DistanceMatrixElement) => element.duration.value / 60
-    );
-    const drivingTimes = drivingResponse.data.rows[0].elements.map(
-      (element: DistanceMatrixElement) => element.duration.value / 60
-    );
+    // Get walking and driving times using the helper function
+    const [walkingTimes, drivingTimes] = await Promise.all([
+      getTravelTimes(origin, destinations, 'walking'),
+      getTravelTimes(origin, destinations, 'driving'),
+    ]);
 
     const travelTimes: TravelTimes = {
       artsQuadWalking: walkingTimes[0],
@@ -1071,7 +1069,7 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
     }
 
     // Calculate travel times using the main endpoint
-    const response = await axios.post(`${process.env.API_BASE_URL}/api/travel-times`, {
+    const response = await axios.post(`http://localhost:3000/api/travel-times`, {
       origin: `${buildingData.latitude},${buildingData.longitude}`,
     });
 
@@ -1087,6 +1085,91 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
     console.error('Error in test endpoint:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+/**
+ * Batch Travel Times Endpoint - Calculates and stores travel times for a batch of buildings.
+ *
+ * @remarks
+ * Processes a batch of buildings from the buildings collection, calculating travel times to Cornell landmarks
+ * for each one and storing the results in the travelTimes collection. This endpoint handles buildings in batches
+ * with rate limiting between requests. Supports pagination through the startAfter parameter.
+ *
+ * @param {number} batchSize - Number of buildings to process in this batch (defaults to 50)
+ * @param {string} [startAfter] - Optional ID of last processed building for pagination
+ * @return {Object} - Summary object containing:
+ *   - Message indicating batch completion
+ *   - Total number of buildings processed in this batch
+ *   - Count of successful calculations
+ *   - Arrays of successful building IDs and failed buildings with error details
+ */
+
+// Helper function for rate limiting API requests
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => {
+  try {
+    const batchSize = parseInt(req.params.batchSize, 10) || 50;
+    const { startAfter } = req.params;
+
+    let query = buildingsCollection.limit(batchSize);
+    if (startAfter) {
+      const lastDoc = await buildingsCollection.doc(startAfter).get();
+      query = query.startAfter(lastDoc);
+    }
+
+    const buildingDocs = (await query.get()).docs;
+    const results = {
+      success: [] as string[],
+      failed: [] as { id: string; error: string }[],
+    };
+
+    // Replace for...of loop with Promise.all and map
+    const processPromises = buildingDocs.map(async (doc) => {
+      try {
+        await delay(100); // 100ms delay between requests
+        const buildingData = doc.data();
+        if (!buildingData?.latitude || !buildingData?.longitude) {
+          results.failed.push({
+            id: doc.id,
+            error: 'Missing coordinates',
+          });
+          return;
+        }
+
+        const response = await axios.post(`http://localhost:3000/api/travel-times`, {
+          origin: `${buildingData.latitude},${buildingData.longitude}`,
+        });
+
+        await travelTimesCollection.doc(doc.id).set(response.data);
+        results.success.push(doc.id);
+      } catch (error) {
+        results.failed.push({
+          id: doc.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    });
+
+    await Promise.all(processPromises);
+
+    res.status(200).json({
+      message: 'Batch processing completed',
+      totalProcessed: buildingDocs.length,
+      successCount: results.success.length,
+      failureCount: results.failed.length,
+      hasMore: buildingDocs.length === batchSize,
+      lastProcessedId: buildingDocs[buildingDocs.length - 1]?.id,
+      results,
+    });
+  } catch (error) {
+    console.error('Batch processing error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add this simple test endpoint
+app.post('/api/batch-travel-times/test', async (req, res) => {
+  res.status(200).json({ message: 'Endpoint working' });
 });
 
 export default app;
