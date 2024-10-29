@@ -946,7 +946,6 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
   }
 });
 
-// 1. Fix the camelCase interface properties
 interface TravelTimes {
   artsQuadWalking: number;
   artsQuadDriving: number;
@@ -968,11 +967,16 @@ interface TravelTimeInput {
 }
 
 /**
- * Makes a request to Google Distance Matrix API and extracts travel times
- * @param origin - Starting point (address or coordinates)
- * @param destinations - Array of destination addresses
- * @param mode - Travel mode ('walking' or 'driving')
- * @returns Array of travel times in minutes
+ * getTravelTimes – Calculates travel times between an origin and multiple destinations using Google Distance Matrix API.
+ *
+ * @remarks
+ * Makes an HTTP request to the Google Distance Matrix API and processes the response to extract duration values.
+ * Times are converted from seconds to minutes before being returned.
+ *
+ * @param {string} origin - Starting location as either an address or coordinates in "lat,lng" format
+ * @param {string[]} destinations - Array of destination addresses to calculate times to
+ * @param {'walking' | 'driving'} mode - Mode of transportation to use for calculations
+ * @return {Promise<number[]>} - Array of travel times in minutes to each destination
  */
 async function getTravelTimes(
   origin: string,
@@ -1123,7 +1127,6 @@ app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => 
       failed: [] as { id: string; error: string }[],
     };
 
-    // Replace for...of loop with Promise.all and map
     const processPromises = buildingDocs.map(async (doc) => {
       try {
         await delay(100); // 100ms delay between requests
@@ -1167,9 +1170,57 @@ app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => 
   }
 });
 
-// Add this simple test endpoint
-app.post('/api/batch-travel-times/test', async (req, res) => {
-  res.status(200).json({ message: 'Endpoint working' });
+/**
+ * Get Travel Times By Coordinates – Calculates travel times from specific coordinates to Cornell landmarks.
+ *
+ * @remarks
+ * Uses Google Maps Distance Matrix API to calculate walking and driving times from given coordinates
+ * to three landmarks: Arts Quad, Duffield Hall, and College Town Bagels. Returns durations in minutes.
+ *
+ * @route GET /api/travel-times/coordinates/:latitude/:longitude
+ *
+ * @input {string} req.params.latitude - Latitude coordinate of starting location
+ * @input {string} req.params.longitude - Longitude coordinate of starting location
+ *
+ * @status
+ * - 200: Successfully retrieved travel times
+ * - 400: Invalid coordinates provided
+ * - 500: Server error or Google Maps API failure
+ */
+app.get('/api/travel-times/coordinates/:latitude/:longitude', async (req, res) => {
+  try {
+    const { latitude, longitude } = req.params;
+
+    // Validate coordinates
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      return res.status(400).json({ error: 'Invalid coordinates' });
+    }
+
+    const destinations = Object.values(LANDMARKS);
+
+    // Get walking and driving times using the helper function
+    const [walkingTimes, drivingTimes] = await Promise.all([
+      getTravelTimes(`${lat},${lng}`, destinations, 'walking'),
+      getTravelTimes(`${lat},${lng}`, destinations, 'driving'),
+    ]);
+
+    const travelTimes: TravelTimes = {
+      artsQuadWalking: walkingTimes[0],
+      artsQuadDriving: drivingTimes[0],
+      duffieldWalking: walkingTimes[1],
+      duffieldDriving: drivingTimes[1],
+      ctbWalking: walkingTimes[2],
+      ctbDriving: drivingTimes[2],
+    };
+
+    return res.status(200).json(travelTimes);
+  } catch (error) {
+    console.error('Error calculating travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export default app;
