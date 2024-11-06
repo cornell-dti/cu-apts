@@ -228,6 +228,7 @@ const AdminReviewComponent = ({
                           title="Apt image"
                           className={photoStyle}
                           onClick={() => triggerPhotoCarousel(photos, i)}
+                          loading="lazy"
                         />
                       );
                     })}

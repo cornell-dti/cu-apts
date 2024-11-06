@@ -395,6 +395,7 @@ const ReviewComponent = ({
                           title="Apt image"
                           className={photoStyle}
                           onClick={() => triggerPhotoCarousel(reviewData.photos, i)}
+                          loading="lazy"
                         />
                       );
                     })}
