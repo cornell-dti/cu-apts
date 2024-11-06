@@ -113,6 +113,16 @@ const useStyles = makeStyles(() => ({
   bedroomsPrice: {
     display: 'flex',
     alignItems: 'center',
+    gap: '30px',
+  },
+  bedroomsWithIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  priceWithIcon: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '10px',
   },
   bedroomsPriceText: {
@@ -198,6 +208,7 @@ const ReviewComponent = ({
 }: Props): ReactElement => {
   const [reviewData, setReviewData] = useState<ReviewWithId>(review);
   const formattedDate = format(new Date(reviewData.date), 'MMM dd, yyyy').toUpperCase();
+  const shortenedDate = format(new Date(reviewData.date), 'MMM yyyy').toUpperCase();
   const {
     root,
     expand,
@@ -210,6 +221,8 @@ const ReviewComponent = ({
     reviewHeader,
     apartmentIndicator,
     bedroomsPrice,
+    bedroomsWithIcon,
+    priceWithIcon,
     bedPriceIcon,
     bedroomsPriceText,
     deleteDialogTitle,
@@ -225,6 +238,7 @@ const ReviewComponent = ({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
 
   const onSuccessfulEdit = () => {
@@ -418,25 +432,59 @@ const ReviewComponent = ({
       )
     );
   };
-
-  const bedroomsPriceLabel = () => {
+  const editDeleteButtons = () => {
     return (
-      <Grid item className={bedroomsPrice} style={isMobile ? { width: '100%' } : {}}>
+      <Grid item>
+        <OptionMenu
+          options={[
+            {
+              icon: <EditIcon fontSize="small" />,
+              text: 'Edit Review',
+              onClick: openReviewModal,
+            },
+            {
+              icon: <DeleteIcon fontSize="small" />,
+              text: 'Delete Review',
+              onClick: openDeleteModal,
+            },
+          ]}
+        />
+      </Grid>
+    );
+  };
+  const bedroomsPriceLabel = (rowNum: number) => {
+    return (
+      <Grid
+        item
+        className={bedroomsPrice}
+        style={
+          rowNum === 2 || isMobile
+            ? { width: '100%' }
+            : { gap: 'unset', justifyContent: 'space-evenly' }
+        }
+      >
         {reviewData.bedrooms > 0 && (
           <div
-            className={bedroomsPrice}
-            style={isMobile ? { marginLeft: '0' } : { marginLeft: '30px' }}
+            className={bedroomsWithIcon}
+            style={rowNum === 2 || isMobile ? {} : { marginLeft: '30px' }}
           >
             <BedIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
-              {reviewData.bedrooms} {reviewData.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
+              {reviewData.bedrooms}{' '}
+              {reviewData.bedrooms === 1
+                ? isSmallScreen
+                  ? 'Bed'
+                  : 'Bedroom'
+                : isSmallScreen
+                ? 'Beds'
+                : 'Bedrooms'}
             </Typography>
           </div>
         )}
         {reviewData.price > 0 && (
           <div
-            className={bedroomsPrice}
-            style={isMobile ? { marginLeft: 'auto' } : { marginLeft: '30px' }}
+            className={priceWithIcon}
+            style={rowNum === 2 || isMobile ? {} : { marginLeft: '30px' }}
           >
             <MoneyIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
@@ -472,32 +520,26 @@ const ReviewComponent = ({
                       <ExpandMoreIcon />
                     </IconButton>
                   </Grid>
-
-                  {!isMobile && bedroomsPriceLabel()}
-
+                  {useMediaQuery(
+                    user && reviewData.userId && user.uid === reviewData.userId
+                      ? '(min-width:1410px)'
+                      : '(min-width:1075px)'
+                  ) && bedroomsPriceLabel(1)}
                   <Grid item style={{ marginLeft: 'auto' }}>
-                    <Typography className={dateText}>{formattedDate}</Typography>
+                    <Typography className={dateText}>
+                      {isSmallScreen ? shortenedDate : formattedDate}
+                    </Typography>
                   </Grid>
-                  {user && reviewData.userId && user.uid === reviewData.userId && (
-                    <Grid item>
-                      <OptionMenu
-                        options={[
-                          {
-                            icon: <EditIcon fontSize="small" />,
-                            text: 'Edit Review',
-                            onClick: openReviewModal,
-                          },
-                          {
-                            icon: <DeleteIcon fontSize="small" />,
-                            text: 'Delete Review',
-                            onClick: openDeleteModal,
-                          },
-                        ]}
-                      />
-                    </Grid>
-                  )}
+                  {user &&
+                    reviewData.userId &&
+                    user.uid === reviewData.userId &&
+                    editDeleteButtons()}
                 </Grid>
-                {isMobile && bedroomsPriceLabel()}
+                {useMediaQuery(
+                  user && reviewData.userId && user.uid === reviewData.userId
+                    ? '(max-width:1409px)'
+                    : '(max-width:1074px)'
+                ) && bedroomsPriceLabel(2)}
                 <Grid item>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>

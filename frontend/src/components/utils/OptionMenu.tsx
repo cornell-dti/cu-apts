@@ -11,6 +11,9 @@ import React, { useState } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 const useStyles = makeStyles(() => ({
+  kebabIcon: {
+    padding: '3px',
+  },
   reviewOptionMenu: {
     borderRadius: '12px',
     boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
@@ -53,7 +56,8 @@ interface OptionMenuProps {
  * @returns {JSX.Element} The rendered OptionMenu component.
  */
 export default function OptionMenu({ options }: OptionMenuProps) {
-  const { reviewOptionMenu, reviewOptionMenuItem, reviewOptionMenuItemIcon } = useStyles();
+  const { kebabIcon, reviewOptionMenu, reviewOptionMenuItem, reviewOptionMenuItemIcon } =
+    useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -66,6 +70,7 @@ export default function OptionMenu({ options }: OptionMenuProps) {
     <div>
       <IconButton
         id="icon-button"
+        className={kebabIcon}
         onClick={handleClick}
         aria-controls={open ? 'basic-menu' : undefined}
         aria-haspopup="true"
