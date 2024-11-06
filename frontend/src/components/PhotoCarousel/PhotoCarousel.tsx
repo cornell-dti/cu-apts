@@ -31,10 +31,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     flexDirection: 'column',
     overflow: 'visible',
-    height: '90dvh',
-    [theme.breakpoints.down('lg')]: {
+    height: '80vh',
+    [theme.breakpoints.down('md')]: {
       height: '60dvw',
     },
+    cursor: 'pointer',
   },
 }));
 const ImageBox = styled(Box)({
@@ -47,6 +48,7 @@ const ImageBox = styled(Box)({
     objectFit: 'contain',
     width: 'calc(69dvw - 96px)',
     margin: 'auto',
+    cursor: 'default',
   },
 });
 
@@ -73,9 +75,23 @@ const PhotoCarousel = ({ photos, open, onClose, startIndex }: Props) => {
       onClose={onClose}
       fullWidth
       maxWidth={false}
+      style={{ cursor: 'pointer' }}
       PaperProps={{ className: modalBackground }}
     >
-      <Container>
+      <Container
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          if (
+            target.tagName !== 'IMG' &&
+            target.tagName !== 'BUTTON' &&
+            target.tagName !== 'svg' &&
+            target.tagName !== 'circle'
+          ) {
+            console.log(target.tagName);
+            onClose?.();
+          }
+        }}
+      >
         <Carousel
           autoPlay={false}
           className={carouselContainer}
@@ -83,10 +99,11 @@ const PhotoCarousel = ({ photos, open, onClose, startIndex }: Props) => {
           navButtonsProps={{ className: navButton }}
           indicatorContainerProps={{ className: indicatorContainer }}
           index={startIndex}
+          animation="fade"
         >
           {photos.map((src, index) => {
             return (
-              <ImageBox key={index}>
+              <ImageBox key={index} style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}>
                 <CardMedia component="img" src={src} />
               </ImageBox>
             );
