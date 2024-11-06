@@ -19,14 +19,35 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     opacity: 1,
   },
+  indicatorContainer: {
+    position: 'absolute',
+    bottom: '-10px',
+    width: '100%',
+    textAlign: 'center',
+  },
+  carouselContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    overflow: 'visible',
+    height: '90dvh',
+    [theme.breakpoints.down('lg')]: {
+      height: '60dvw',
+    },
+  },
 }));
 const ImageBox = styled(Box)({
-  width: 'fit-content',
-  margin: 'auto',
   borderRadius: '10px',
-  overflow: 'hidden',
   maxHeight: '80dvh',
-  objectFit: 'contain',
+  backgroundColor: 'transparent',
+  '& img': {
+    borderRadius: '10px',
+    maxHeight: '80dvh',
+    objectFit: 'contain',
+    width: 'calc(69dvw - 96px)',
+    margin: 'auto',
+  },
 });
 
 /**
@@ -45,20 +66,22 @@ const ImageBox = styled(Box)({
  * @returns {JSX.Element} The rendered PhotoCarousel component.
  */
 const PhotoCarousel = ({ photos, open, onClose, startIndex }: Props) => {
-  const { modalBackground, navButton } = useStyles();
+  const { modalBackground, navButton, indicatorContainer, carouselContainer } = useStyles();
   return (
     <Dialog
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="md"
+      maxWidth={false}
       PaperProps={{ className: modalBackground }}
     >
       <Container>
         <Carousel
           autoPlay={false}
+          className={carouselContainer}
           navButtonsAlwaysVisible={true}
           navButtonsProps={{ className: navButton }}
+          indicatorContainerProps={{ className: indicatorContainer }}
           index={startIndex}
         >
           {photos.map((src, index) => {
