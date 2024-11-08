@@ -168,7 +168,7 @@ app.get('/api/review/like/:userId', authenticate, async (req, res) => {
     throw new Error('not authenticated');
   }
   const realUserId = req.user.uid;
-  const {userId} = req.params;
+  const { userId } = req.params;
   const statusType = req.query.status;
   if (userId !== realUserId) {
     res.status(401).send("Error: user is not authorized to access another user's likes");
