@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import HelpfulIcon from '../../assets/helpful-icon.svg';
 import clsx from 'clsx';
 import {
   DetailedRating,
@@ -112,6 +113,11 @@ const useStyles = makeStyles(() => ({
     width: '21px',
     height: '21px',
   },
+  helpfulIcon: {
+    width: '21px',
+    height: '21px',
+    marginRight: '5px',
+  },
 }));
 
 const ReviewComponent = ({
@@ -126,8 +132,7 @@ const ReviewComponent = ({
   setUser,
   showLabel,
 }: Props): ReactElement => {
-  const [reviewData, setReviewData] = useState<ReviewWithId>(review);
-  const formattedDate = format(new Date(reviewData.date), 'MMM dd, yyyy').toUpperCase();
+  const formattedDate = format(new Date(review.date), 'MMM dd, yyyy').toUpperCase();
   const {
     root,
     expand,
@@ -142,6 +147,7 @@ const ReviewComponent = ({
     bedroomsPrice,
     bedPriceIcon,
     bedroomsPriceText,
+    helpfulIcon,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
@@ -151,14 +157,17 @@ const ReviewComponent = ({
   const isMobile = useMediaQuery('(max-width:600px)');
   const toastTime = 3500;
 
-  const onSuccessfulEdit = () => {
-    get<ReviewWithId>(`/api/review-by-id/${reviewData.id}`, {
+  const updateReviewData = () => {
+    get<ReviewWithId>(`/api/review-by-id/${review.id}`, {
       callback: (updatedReview: ReviewWithId) => {
         // Update the review state with the new data
-        setReviewData(updatedReview);
+        review = updatedReview;
         setToggle((cur) => !cur);
       },
     });
+  };
+  const onSuccessfulEdit = () => {
+    updateReviewData();
     if (triggerEditToast) triggerEditToast();
   };
 
@@ -168,13 +177,13 @@ const ReviewComponent = ({
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         setOpen={setReviewOpen}
-        landlordId={reviewData.landlordId}
+        landlordId={review.landlordId}
         onSuccess={onSuccessfulEdit}
         toastTime={toastTime}
-        aptId={reviewData.aptId ?? ''}
+        aptId={review.aptId ?? ''}
         aptName={apt?.[0]?.name ?? ''}
         user={user}
-        initialReview={reviewData}
+        initialReview={review}
       />
     </>
   );
@@ -183,12 +192,12 @@ const ReviewComponent = ({
   };
   //Retrieving apartment data
   useEffect(() => {
-    if (reviewData.aptId !== null) {
-      get<ApartmentWithId[]>(`/api/apts/${reviewData.aptId}`, {
+    if (review.aptId !== null) {
+      get<ApartmentWithId[]>(`/api/apts/${review.aptId}`, {
         callback: setApt,
       });
     }
-  }, [reviewData]);
+  }, [review]);
 
   const getRatingInfo = (ratings: DetailedRating): RatingInfo[] => {
     return [
@@ -210,7 +219,7 @@ const ReviewComponent = ({
   };
 
   const reportAbuseHandler = async (reviewId: string) => {
-    const endpoint = `/api/update-review-status/${reviewData.id}/PENDING`;
+    const endpoint = `/api/update-review-status/${review.id}/PENDING`;
     if (user) {
       const token = await user.getIdToken(true);
       await axios.put(endpoint, {}, createAuthHeaders(token));
@@ -238,16 +247,16 @@ const ReviewComponent = ({
   };
 
   const landlordNotFound = useCallback(() => {
-    console.error('Landlord with id ' + reviewData.landlordId + ' not found.');
-  }, [reviewData.landlordId]);
+    console.error('Landlord with id ' + review.landlordId + ' not found.');
+  }, [review.landlordId]);
 
   // Fetch landlord data when the component mounts or when landlordId changes
   useEffect(() => {
-    get<Landlord>(`/api/landlord/${reviewData.landlordId}`, {
+    get<Landlord>(`/api/landlord/${review.landlordId}`, {
       callback: setLandlordData,
       errorHandler: landlordNotFound,
     });
-  }, [reviewData.landlordId, landlordNotFound]);
+  }, [review.landlordId, landlordNotFound]);
 
   const propertyLandlordLabel = () => {
     return (
@@ -258,10 +267,7 @@ const ReviewComponent = ({
           </Grid>
           <Link
             {...{
-              to:
-                apt.length > 0
-                  ? `/apartment/${reviewData.aptId}`
-                  : `/landlord/${reviewData.landlordId}`,
+              to: apt.length > 0 ? `/apartment/${review.aptId}` : `/landlord/${review.landlordId}`,
               style: {
                 color: 'black',
                 textDecoration: 'underline',
@@ -281,18 +287,18 @@ const ReviewComponent = ({
   const bedroomsPriceLabel = () => {
     return (
       <Grid item className={bedroomsPrice} style={isMobile ? { width: '100%' } : {}}>
-        {reviewData.bedrooms > 0 && (
+        {review.bedrooms > 0 && (
           <div
             className={bedroomsPrice}
             style={isMobile ? { marginLeft: '0' } : { marginLeft: '30px' }}
           >
             <BedIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
-              {reviewData.bedrooms} {reviewData.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
+              {review.bedrooms} {review.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
             </Typography>
           </div>
         )}
-        {reviewData.price > 0 && (
+        {review.price > 0 && (
           <div
             className={bedroomsPrice}
             style={isMobile ? { marginLeft: 'auto' } : { marginLeft: '30px' }}
@@ -300,7 +306,7 @@ const ReviewComponent = ({
             <MoneyIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
               {' '}
-              {getPriceRange(reviewData.price) || 0}
+              {getPriceRange(review.price) || 0}
             </Typography>
           </div>
         )}
@@ -317,7 +323,7 @@ const ReviewComponent = ({
               <Grid item container justifyContent="space-between" className={bottomborder}>
                 <Grid container item spacing={1} className={reviewHeader}>
                   <Grid item>
-                    <HeartRating value={reviewData.overallRating} readOnly />
+                    <HeartRating value={review.overallRating} readOnly />
                   </Grid>
                   <Grid item>
                     <IconButton
@@ -338,7 +344,7 @@ const ReviewComponent = ({
                   <Grid item style={{ marginLeft: 'auto' }}>
                     <Typography className={dateText}>{formattedDate}</Typography>
                   </Grid>
-                  {user && reviewData.userId && user.uid === reviewData.userId && (
+                  {user && review.userId && user.uid === review.userId && (
                     <Grid item>
                       <IconButton onClick={() => openReviewModal()}>
                         <MoreVertIcon />
@@ -350,7 +356,7 @@ const ReviewComponent = ({
                 <Grid item>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
-                      <ReviewHeader aveRatingInfo={getRatingInfo(reviewData.detailedRatings)} />
+                      <ReviewHeader aveRatingInfo={getRatingInfo(review.detailedRatings)} />
                     </CardContent>
                   </Collapse>
                 </Grid>
@@ -362,19 +368,19 @@ const ReviewComponent = ({
 
               <Grid item container alignContent="center">
                 <Typography>
-                  {expandedText ? reviewData.reviewText : reviewData.reviewText.substring(0, 500)}
-                  {!expandedText && reviewData.reviewText.length > 500 && '...'}
-                  {reviewData.reviewText.length > 500 ? (
+                  {expandedText ? review.reviewText : review.reviewText.substring(0, 500)}
+                  {!expandedText && review.reviewText.length > 500 && '...'}
+                  {review.reviewText.length > 500 ? (
                     <Button className={button} onClick={() => setExpandedText(!expandedText)}>
                       {expandedText ? 'Read Less' : 'Read More'}
                     </Button>
                   ) : null}
                 </Typography>
               </Grid>
-              {reviewData.photos.length > 0 && (
+              {review.photos.length > 0 && (
                 <Grid container>
                   <Grid item className={photoRowStyle}>
-                    {reviewData.photos.map((photo) => {
+                    {review.photos.map((photo) => {
                       return (
                         <CardMedia
                           component="img"
@@ -396,21 +402,24 @@ const ReviewComponent = ({
         <Grid item container justifyContent="space-between">
           <Grid item>
             <Button
-              color={liked ? 'primary' : 'default'}
-              onClick={() => likeHandler(reviewData.id)}
+              onClick={() => likeHandler(review.id)}
               className={button}
               size="small"
               disabled={likeLoading}
+              style={liked ? { color: colors.red1 } : { color: colors.gray1 }}
             >
-              Helpful {`(${reviewData.likes || 0})`}
+              <img
+                src={HelpfulIcon}
+                alt="Helpful icon"
+                className={helpfulIcon}
+                loading="lazy"
+                style={liked ? {} : { filter: 'grayscale(100%)' }}
+              />
+              {`Helpful (${review.likes})`}
             </Button>
           </Grid>
           <Grid item>
-            <Button
-              onClick={() => reportAbuseHandler(reviewData.id)}
-              className={button}
-              size="small"
-            >
+            <Button onClick={() => reportAbuseHandler(review.id)} className={button} size="small">
               Report Abuse
             </Button>
           </Grid>
