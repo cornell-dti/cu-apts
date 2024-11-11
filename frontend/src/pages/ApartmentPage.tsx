@@ -250,7 +250,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
   useEffect(() => {
-    getUser(true).then((user) => {
+    getUser(false).then((user) => {
       if (user) {
         user.getIdToken(true).then((token) => {
           get<ReviewWithId[]>(
