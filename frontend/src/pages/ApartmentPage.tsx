@@ -382,8 +382,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={apt!.travelTimes}
       />
       <ReviewModal
         open={reviewOpen}
@@ -600,8 +599,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={apt!.travelTimes}
         handleClick={() => setMapOpen(true)}
         isMobile={isMobile}
       />

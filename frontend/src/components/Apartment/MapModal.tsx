@@ -118,8 +118,7 @@ const MapModal = ({
   address,
   latitude = 0,
   longitude = 0,
-  walkTime = 0,
-  driveTime = 0,
+  travelTimes,
 }: MapModalProps) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -171,9 +170,13 @@ const MapModal = ({
 
   const DistanceInfo = ({
     location,
-    walkDistance,
-    driveDistance,
-  }: distanceProps & { driveDistance: number }) => (
+    walkTime,
+    driveTime,
+  }: {
+    location: string;
+    walkTime: number;
+    driveTime: number;
+  }) => (
     <Grid
       container
       justifyContent="space-between"
@@ -197,10 +200,10 @@ const MapModal = ({
         </Grid>
       </Grid>
       <Grid item xs={3}>
-        <IconAndText icon={walkIcon} altText={'walk-icon'} distance={walkDistance} />
+        <IconAndText icon={walkIcon} altText={'walk-icon'} distance={walkTime} />
       </Grid>
       <Grid item xs={3}>
-        <IconAndText icon={driveIcon} altText={'drive-icon'} distance={driveDistance} />
+        <IconAndText icon={driveIcon} altText={'drive-icon'} distance={driveTime} />
       </Grid>
     </Grid>
   );
@@ -328,42 +331,22 @@ const MapModal = ({
           >
             <Typography className={classes.addressTypography}>{address}</Typography>
 
-            {/* {isMediumScreen && (
-              <Box style={{ minWidth: '50%' }}>
-                <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
-                <DistanceInfo
-                  location={'Engineering Quad'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-                <DistanceInfo
-                  location={'Ho Plaza'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-                <DistanceInfo
-                  location={'Ag Quad'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-              </Box>
-            )} */}
             <Box style={{ minWidth: '50%' }}>
               <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
               <DistanceInfo
                 location={'Engineering Quad'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.engQuad?.walk || 0)}
+                driveTime={Math.round(travelTimes?.engQuad?.drive || 0)}
               />
               <DistanceInfo
                 location={'Ho Plaza'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.hoPlaza?.walk || 0)}
+                driveTime={Math.round(travelTimes?.hoPlaza?.drive || 0)}
               />
               <DistanceInfo
                 location={'Ag Quad'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.agQuad?.walk || 0)}
+                driveTime={Math.round(travelTimes?.agQuad?.drive || 0)}
               />
             </Box>
           </Box>

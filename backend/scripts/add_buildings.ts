@@ -48,8 +48,11 @@ const formatBuilding = ({
   area: getAreaType(area),
   latitude,
   longitude,
-  walkTime: 0,
-  driveTime: 0,
+  travelTimes: {
+    agQuad: { walk: 0, drive: 0 },
+    engQuad: { walk: 0, drive: 0 },
+    hoPlaza: { walk: 0, drive: 0 },
+  },
 });
 
 const makeBuilding = async (apartmentWithId: ApartmentWithId) => {

@@ -10,6 +10,7 @@ import recenterIcon from '../../assets/recenter-icon.svg';
 import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
 import { Marker } from './Marker';
+import { LocationTravelTimes } from '../../../../common/types/db-types';
 
 config();
 
@@ -17,8 +18,7 @@ export type BaseProps = {
   readonly address: string | null;
   readonly latitude?: number;
   readonly longitude?: number;
-  readonly walkTime?: number;
-  readonly driveTime?: number;
+  readonly travelTimes?: LocationTravelTimes;
 };
 
 type MapInfoProps = BaseProps & {
@@ -28,7 +28,7 @@ type MapInfoProps = BaseProps & {
 
 export type distanceProps = {
   location: string;
-  walkDistance: number;
+  walkDistance: number | undefined;
 };
 
 const WalkDistanceInfo = ({ location, walkDistance }: distanceProps) => {
@@ -145,7 +145,7 @@ export default function MapInfo({
   address,
   latitude = 0,
   longitude = 0,
-  walkTime = 0,
+  travelTimes,
   handleClick,
   isMobile,
 }: MapInfoProps): ReactElement {
@@ -274,9 +274,18 @@ export default function MapInfo({
             <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
               Distance from Campus
             </Typography>
-            <WalkDistanceInfo location={'Engineering Quad'} walkDistance={walkTime} />
-            <WalkDistanceInfo location={'Ho Plaza'} walkDistance={walkTime} />
-            <WalkDistanceInfo location={'Ag Quad'} walkDistance={walkTime} />
+            <WalkDistanceInfo
+              location={'Engineering Quad'}
+              walkDistance={Math.round(travelTimes?.engQuad.walk || 0)}
+            />
+            <WalkDistanceInfo
+              location={'Ho Plaza'}
+              walkDistance={Math.round(travelTimes?.hoPlaza.walk || 0)}
+            />
+            <WalkDistanceInfo
+              location={'Ag Quad'}
+              walkDistance={Math.round(travelTimes?.agQuad.walk || 0)}
+            />
           </Box>
         </Box>
       </Box>

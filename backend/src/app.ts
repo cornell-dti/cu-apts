@@ -14,6 +14,7 @@ import {
   ApartmentWithId,
   CantFindApartmentForm,
   QuestionForm,
+  LocationTravelTimes,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -211,14 +212,46 @@ app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
     const idsList = ids.split(',');
-    // Fetching each apartment from the database and returning an array of apartment objects
+    // Fetching each apartment and its travel times from the database
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
-        const snapshot = await buildingsCollection.doc(id).get();
+        const [snapshot, travelTimeDoc] = await Promise.all([
+          buildingsCollection.doc(id).get(),
+          travelTimesCollection.doc(id).get(),
+        ]);
+
         if (!snapshot.exists) {
           throw new Error('Invalid id');
         }
-        return { id, ...snapshot.data() } as ApartmentWithId;
+
+        // Transform travel times to match LocationTravelTimes schema
+        const rawTravelTimes = travelTimeDoc.exists ? travelTimeDoc.data() : null;
+        const travelTimes: LocationTravelTimes = rawTravelTimes
+          ? {
+              agQuad: {
+                walk: rawTravelTimes.agQuadWalking,
+                drive: rawTravelTimes.agQuadDriving,
+              },
+              engQuad: {
+                walk: rawTravelTimes.engQuadWalking,
+                drive: rawTravelTimes.engQuadDriving,
+              },
+              hoPlaza: {
+                walk: rawTravelTimes.hoPlazaWalking,
+                drive: rawTravelTimes.hoPlazaDriving,
+              },
+            }
+          : {
+              agQuad: { walk: 0, drive: 0 },
+              engQuad: { walk: 0, drive: 0 },
+              hoPlaza: { walk: 0, drive: 0 },
+            };
+
+        return {
+          id,
+          ...snapshot.data(),
+          travelTimes,
+        } as ApartmentWithId;
       })
     );
     res.status(200).send(JSON.stringify(aptsArr));
@@ -947,19 +980,19 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
 });
 
 interface TravelTimes {
-  artsQuadWalking: number;
-  artsQuadDriving: number;
-  duffieldWalking: number;
-  duffieldDriving: number;
-  ctbWalking: number;
-  ctbDriving: number;
+  agQuadWalking: number;
+  agQuadDriving: number;
+  engQuadWalking: number;
+  engQuadDriving: number;
+  hoPlazaWalking: number;
+  hoPlazaDriving: number;
 }
 
 const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {
-  arts_quad: 'Arts Quad, Cornell University, Ithaca, NY 14853',
-  duffield: 'Duffield Hall, Cornell University, Ithaca, NY 14853',
-  ctb: 'College Town Bagels, College Ave, Ithaca, NY 14850',
+  eng_quad: '42.4445,-76.4836', // Duffield Hall
+  ag_quad: '42.4489,-76.4780', // Mann Library
+  ho_plaza: '42.4468,-76.4851', // Ho Plaza
 };
 
 interface TravelTimeInput {
@@ -1000,8 +1033,8 @@ async function getTravelTimes(
  * Travel Times Calculator - Calculates walking and driving times from a given origin to Cornell landmarks.
  *
  * @remarks
- * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Arts Quad,
- * Duffield Hall, and College Town Bagels. Returns both walking and driving durations in minutes.
+ * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Engineering Quad,
+ * Agriculture Quad, and Ho Plaza. Returns both walking and driving durations in minutes.
  * Origin can be either an address or coordinates in "latitude,longitude" format.
  *
  * @route POST /api/travel-times
@@ -1013,15 +1046,17 @@ async function getTravelTimes(
  * - 400: Missing or invalid origin
  * - 500: Server error or Google Maps API failure
  */
-app.post('/api/travel-times', async (req, res) => {
+app.post('/api/calculate-travel-times', async (req, res) => {
   try {
     const { origin } = req.body as TravelTimeInput;
+    console.log('Origin:', origin);
 
     if (!origin) {
       return res.status(400).json({ error: 'Origin is required' });
     }
 
     const destinations = Object.values(LANDMARKS);
+    console.log('Destinations array:', destinations);
 
     // Get walking and driving times using the helper function
     const [walkingTimes, drivingTimes] = await Promise.all([
@@ -1029,15 +1064,19 @@ app.post('/api/travel-times', async (req, res) => {
       getTravelTimes(origin, destinations, 'driving'),
     ]);
 
+    console.log('Raw walking times:', walkingTimes);
+    console.log('Raw driving times:', drivingTimes);
+
     const travelTimes: TravelTimes = {
-      artsQuadWalking: walkingTimes[0],
-      artsQuadDriving: drivingTimes[0],
-      duffieldWalking: walkingTimes[1],
-      duffieldDriving: drivingTimes[1],
-      ctbWalking: walkingTimes[2],
-      ctbDriving: drivingTimes[2],
+      engQuadWalking: walkingTimes[0],
+      engQuadDriving: drivingTimes[0],
+      agQuadWalking: walkingTimes[1],
+      agQuadDriving: drivingTimes[1],
+      hoPlazaWalking: walkingTimes[2],
+      hoPlazaDriving: drivingTimes[2],
     };
 
+    console.log('Final travel times:', travelTimes);
     return res.status(200).json(travelTimes);
   } catch (error) {
     console.error('Error calculating travel times:', error);
@@ -1073,7 +1112,7 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
     }
 
     // Calculate travel times using the main endpoint
-    const response = await axios.post(`http://localhost:3000/api/travel-times`, {
+    const response = await axios.post(`http://localhost:3000/api/calculate-travel-times`, {
       origin: `${buildingData.latitude},${buildingData.longitude}`,
     });
 
@@ -1110,7 +1149,7 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
 // Helper function for rate limiting API requests
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => {
+app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, res) => {
   try {
     const batchSize = parseInt(req.params.batchSize, 10) || 50;
     const { startAfter } = req.params;
@@ -1139,7 +1178,7 @@ app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => 
           return;
         }
 
-        const response = await axios.post(`http://localhost:3000/api/travel-times`, {
+        const response = await axios.post(`http://localhost:3000/api/calculate-travel-times`, {
           origin: `${buildingData.latitude},${buildingData.longitude}`,
         });
 
@@ -1171,54 +1210,35 @@ app.post('/api/batch-travel-times/:batchSize/:startAfter?', async (req, res) => 
 });
 
 /**
- * Get Travel Times By Coordinates – Calculates travel times from specific coordinates to Cornell landmarks.
+ * Get Travel Times By Building ID - Retrieves pre-calculated travel times from the travel times collection.
  *
  * @remarks
- * Uses Google Maps Distance Matrix API to calculate walking and driving times from given coordinates
- * to three landmarks: Arts Quad, Duffield Hall, and College Town Bagels. Returns durations in minutes.
+ * Looks up the travel times document for the given building ID and returns the stored walking and driving
+ * times to Cornell landmarks: Engineering Quad, Agriculture Quad, and Ho Plaza.
  *
- * @route GET /api/travel-times/coordinates/:latitude/:longitude
+ * @route GET /api/travel-times/:buildingId
  *
- * @input {string} req.params.latitude - Latitude coordinate of starting location
- * @input {string} req.params.longitude - Longitude coordinate of starting location
+ * @input {string} req.params.buildingId - ID of the building to get travel times for
  *
  * @status
  * - 200: Successfully retrieved travel times
- * - 400: Invalid coordinates provided
- * - 500: Server error or Google Maps API failure
+ * - 404: Building travel times not found
+ * - 500: Server error
  */
-app.get('/api/travel-times/coordinates/:latitude/:longitude', async (req, res) => {
+app.get('/api/travel-times-by-id/:buildingId', async (req, res) => {
   try {
-    const { latitude, longitude } = req.params;
+    const { buildingId } = req.params;
 
-    // Validate coordinates
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
+    const travelTimeDoc = await travelTimesCollection.doc(buildingId).get();
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) {
-      return res.status(400).json({ error: 'Invalid coordinates' });
+    if (!travelTimeDoc.exists) {
+      return res.status(404).json({ error: 'Travel times not found for this building' });
     }
 
-    const destinations = Object.values(LANDMARKS);
-
-    // Get walking and driving times using the helper function
-    const [walkingTimes, drivingTimes] = await Promise.all([
-      getTravelTimes(`${lat},${lng}`, destinations, 'walking'),
-      getTravelTimes(`${lat},${lng}`, destinations, 'driving'),
-    ]);
-
-    const travelTimes: TravelTimes = {
-      artsQuadWalking: walkingTimes[0],
-      artsQuadDriving: drivingTimes[0],
-      duffieldWalking: walkingTimes[1],
-      duffieldDriving: drivingTimes[1],
-      ctbWalking: walkingTimes[2],
-      ctbDriving: drivingTimes[2],
-    };
-
+    const travelTimes = travelTimeDoc.data() as TravelTimes;
     return res.status(200).json(travelTimes);
   } catch (error) {
-    console.error('Error calculating travel times:', error);
+    console.error('Error retrieving travel times:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
