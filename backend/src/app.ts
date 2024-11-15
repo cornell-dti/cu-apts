@@ -212,46 +212,14 @@ app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
     const idsList = ids.split(',');
-    // Fetching each apartment and its travel times from the database
+    // Fetching each apartment from the database and returning an array of apartment objects
     const aptsArr = await Promise.all(
       idsList.map(async (id) => {
-        const [snapshot, travelTimeDoc] = await Promise.all([
-          buildingsCollection.doc(id).get(),
-          travelTimesCollection.doc(id).get(),
-        ]);
-
+        const snapshot = await buildingsCollection.doc(id).get();
         if (!snapshot.exists) {
           throw new Error('Invalid id');
         }
-
-        // Transform travel times to match LocationTravelTimes schema
-        const rawTravelTimes = travelTimeDoc.exists ? travelTimeDoc.data() : null;
-        const travelTimes: LocationTravelTimes = rawTravelTimes
-          ? {
-              agQuad: {
-                walk: rawTravelTimes.agQuadWalking,
-                drive: rawTravelTimes.agQuadDriving,
-              },
-              engQuad: {
-                walk: rawTravelTimes.engQuadWalking,
-                drive: rawTravelTimes.engQuadDriving,
-              },
-              hoPlaza: {
-                walk: rawTravelTimes.hoPlazaWalking,
-                drive: rawTravelTimes.hoPlazaDriving,
-              },
-            }
-          : {
-              agQuad: { walk: 0, drive: 0 },
-              engQuad: { walk: 0, drive: 0 },
-              hoPlaza: { walk: 0, drive: 0 },
-            };
-
-        return {
-          id,
-          ...snapshot.data(),
-          travelTimes,
-        } as ApartmentWithId;
+        return { id, ...snapshot.data() } as ApartmentWithId;
       })
     );
     res.status(200).send(JSON.stringify(aptsArr));
@@ -1235,7 +1203,8 @@ app.get('/api/travel-times-by-id/:buildingId', async (req, res) => {
       return res.status(404).json({ error: 'Travel times not found for this building' });
     }
 
-    const travelTimes = travelTimeDoc.data() as TravelTimes;
+    const travelTimes = travelTimeDoc.data() as LocationTravelTimes;
+
     return res.status(200).json(travelTimes);
   } catch (error) {
     console.error('Error retrieving travel times:', error);

@@ -56,18 +56,15 @@ export type Apartment = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
   readonly latitude: number;
   readonly longitude: number;
-  readonly travelTimes: LocationTravelTimes;
-};
-
-type TravelTime = {
-  walk: number;
-  drive: number;
 };
 
 export type LocationTravelTimes = {
-  agQuad: TravelTime;
-  engQuad: TravelTime;
-  hoPlaza: TravelTime;
+  agQuadDriving: number;
+  agQuadWalking: number;
+  engQuadDriving: number;
+  engQuadWalking: number;
+  hoPlazaDriving: number;
+  hoPlazaWalking: number;
 };
 
 export type ApartmentWithId = Apartment & Id;

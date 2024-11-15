@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useRef } from 'react';
 import {
   IconButton,
   Button,
@@ -25,6 +25,7 @@ import {
   Apartment,
   ApartmentWithId,
   DetailedRating,
+  LocationTravelTimes,
 } from '../../../common/types/db-types';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
@@ -53,6 +54,10 @@ export type RatingInfo = {
   feature: string;
   rating: number;
 };
+
+interface MapInfoRef {
+  recenter: () => void;
+}
 
 const useStyles = makeStyles((theme) => ({
   reviewButton: {
@@ -136,6 +141,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
+  const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -149,6 +155,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const mapInfoRef = useRef<MapInfoRef>(null);
+  const [mapToggle, setMapToggle] = useState(false);
+
+  const dummyTravelTimes: LocationTravelTimes = {
+    agQuadDriving: -1,
+    agQuadWalking: -1,
+    engQuadDriving: -1,
+    engQuadWalking: -1,
+    hoPlazaDriving: -1,
+    hoPlazaWalking: -1,
+  };
 
   // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
@@ -185,6 +202,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   useEffect(() => {
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
+      errorHandler: handlePageNotFound,
+    });
+  }, [aptId]);
+
+  // Fetch travel times data for the current apartment
+  useEffect(() => {
+    get<LocationTravelTimes>(`/api/travel-times-by-id/${aptId}`, {
+      callback: setTravelTimes,
       errorHandler: handlePageNotFound,
     });
   }, [aptId]);
@@ -372,17 +397,23 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
+  const handleMapModalClose = () => {
+    setMapOpen(false);
+    setMapToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
       <MapModal
         aptName={apt!.name}
         open={mapOpen}
-        onClose={() => setMapOpen(false)}
+        onClose={handleMapModalClose}
         setOpen={setMapOpen}
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        travelTimes={apt!.travelTimes}
+        travelTimes={travelTimes}
+        isMobile={isMobile}
       />
       <ReviewModal
         open={reviewOpen}
@@ -599,8 +630,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        travelTimes={apt!.travelTimes}
+        travelTimes={travelTimes}
         handleClick={() => setMapOpen(true)}
+        mapToggle={mapToggle}
         isMobile={isMobile}
       />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>

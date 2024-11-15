@@ -27,24 +27,26 @@ import { BaseProps, distanceProps } from './MapInfo';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    borderRadius: '13.895px',
-    maxWidth: '70%',
-    maxHeight: '94%',
+    borderRadius: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0px' : '13.895px'),
+    maxWidth: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '70%'),
+    maxHeight: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '94%'),
+    height: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : 'auto'),
+    margin: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : undefined),
     overflow: 'hidden',
   },
   outerMapDiv: {
-    height: '50vh',
-    width: '94%',
-    borderRadius: '12.764px',
+    height: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '65vh' : '50vh'),
+    width: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '94%'),
+    borderRadius: '0px',
     overflow: 'hidden',
     outline: 'none',
     position: 'relative',
-    marginBottom: '30px',
+    marginBottom: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : '30px'),
   },
   innerMapDiv: {
     height: '130%',
     width: '100%',
-    borderRadius: '12.764px',
+    borderRadius: '0px',
     overflow: 'hidden',
     outline: 'none',
     position: 'absolute',
@@ -68,7 +70,8 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     overflow: 'auto',
     alignItems: 'center',
-    marginBottom: '30px',
+    marginBottom: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : '30px'),
+    padding: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : undefined),
   },
   addressTypography: {
     fontWeight: 600,
@@ -110,6 +113,7 @@ interface MapModalProps extends BaseProps {
  *   - `walkTime`: The walk time from the apartment to campus landmarks (default: 0).
  *   - `driveTime`: The drive time from the apartment to campus landmarks (default: 0).
  */
+
 const MapModal = ({
   aptName,
   open,
@@ -119,11 +123,11 @@ const MapModal = ({
   latitude = 0,
   longitude = 0,
   travelTimes,
+  isMobile,
 }: MapModalProps) => {
-  const classes = useStyles();
+  const classes = useStyles({ isMobile });
   const theme = useTheme();
   const mapRef = useRef<google.maps.Map | null>(null);
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
@@ -217,6 +221,7 @@ const MapModal = ({
       }}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
     >
       <DialogTitle style={{ padding: '16px' }}>
         <Grid container justifyContent="space-between" alignItems="center">
@@ -229,7 +234,7 @@ const MapModal = ({
             </Typography>
           </Grid>
           <Grid item>
-            <IconButton onClick={() => setOpen(false)} style={{ padding: 0 }}>
+            <IconButton onClick={onClose} style={{ padding: 0 }}>
               <img
                 src={closeMapIcon}
                 alt={'close-icon'}
@@ -263,12 +268,6 @@ const MapModal = ({
                   lng={-76.48360496778704}
                   src={schoolIcon}
                   altText="Engineering Quad icon"
-                />
-                <Marker
-                  lat={42.449014547431425}
-                  lng={-76.48413980587392}
-                  src={schoolIcon}
-                  altText="Arts Quad icon"
                 />
                 <Marker
                   lat={42.446768276610875}
@@ -335,18 +334,18 @@ const MapModal = ({
               <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
               <DistanceInfo
                 location={'Engineering Quad'}
-                walkTime={Math.round(travelTimes?.engQuad?.walk || 0)}
-                driveTime={Math.round(travelTimes?.engQuad?.drive || 0)}
+                walkTime={Math.round(travelTimes?.engQuadWalking || 0)}
+                driveTime={Math.round(travelTimes?.engQuadDriving || 0)}
               />
               <DistanceInfo
                 location={'Ho Plaza'}
-                walkTime={Math.round(travelTimes?.hoPlaza?.walk || 0)}
-                driveTime={Math.round(travelTimes?.hoPlaza?.drive || 0)}
+                walkTime={Math.round(travelTimes?.hoPlazaWalking || 0)}
+                driveTime={Math.round(travelTimes?.hoPlazaDriving || 0)}
               />
               <DistanceInfo
                 location={'Ag Quad'}
-                walkTime={Math.round(travelTimes?.agQuad?.walk || 0)}
-                driveTime={Math.round(travelTimes?.agQuad?.drive || 0)}
+                walkTime={Math.round(travelTimes?.agQuadWalking || 0)}
+                driveTime={Math.round(travelTimes?.agQuadDriving || 0)}
               />
             </Box>
           </Box>
