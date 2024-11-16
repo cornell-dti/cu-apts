@@ -167,6 +167,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const toastTime = 3500;
   const {
     carouselPhotos,
@@ -250,6 +251,10 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowEditSuccessConfirmation);
   };
 
+  const showDeleteSuccessConfirmationToast = () => {
+    showToast(setShowDeleteSuccessConfirmation);
+  };
+
   /** This closes the modal (who can view my profile) when modal is open and user clicks out **/
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -285,6 +290,14 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
               isOpen={showEditSuccessConfirmation}
               severity="success"
               message="Review successfully edited! Your updated review is now pending approval from the admin."
+              time={toastTime}
+            />
+          )}
+          {showDeleteSuccessConfirmation && (
+            <Toast
+              isOpen={showDeleteSuccessConfirmation}
+              severity="success"
+              message="Review successfully deleted!"
               time={toastTime}
             />
           )}
@@ -344,6 +357,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   removeLike={removeLike}
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
+                  triggerDeleteToast={showDeleteSuccessConfirmationToast}
                   triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
@@ -366,6 +380,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   removeLike={removeLike}
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
+                  triggerDeleteToast={showDeleteSuccessConfirmationToast}
                   triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}

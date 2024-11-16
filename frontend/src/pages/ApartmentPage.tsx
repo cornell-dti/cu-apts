@@ -133,6 +133,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [mapOpen, setMapOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
@@ -312,6 +313,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const showEditSuccessConfirmationToast = () => {
     showToast(setShowEditSuccessConfirmation);
+  };
+
+  const showDeleteSuccessConfirmationToast = () => {
+    showToast(setShowDeleteSuccessConfirmation);
   };
 
   const likeHelper = (dislike = false) => {
@@ -674,7 +679,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
-
+            {showDeleteSuccessConfirmation && (
+              <Toast
+                isOpen={showDeleteSuccessConfirmation}
+                severity="success"
+                message="Review successfully deleted!"
+                time={toastTime}
+              />
+            )}
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
                 <Grid
@@ -723,6 +735,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             removeLike={removeLike}
                             setToggle={setToggle}
                             triggerEditToast={showEditSuccessConfirmationToast}
+                            triggerDeleteToast={showDeleteSuccessConfirmationToast}
                             triggerPhotoCarousel={showPhotoCarousel}
                             user={user}
                             setUser={setUser}
