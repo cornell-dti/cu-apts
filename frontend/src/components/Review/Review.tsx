@@ -17,7 +17,15 @@ import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  DialogContentText,
+} from '@material-ui/core';
 import clsx from 'clsx';
 import {
   DetailedRating,
@@ -34,6 +42,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
+import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
 
@@ -44,7 +53,8 @@ type Props = {
   readonly addLike: (reviewId: string) => Promise<void>;
   readonly removeLike: (reviewId: string) => Promise<void>;
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
-  readonly triggerEditToast?: () => void;
+  readonly triggerEditToast: () => void;
+  readonly triggerDeleteToast: () => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly showLabel: boolean;
@@ -95,12 +105,22 @@ const useStyles = makeStyles(() => ({
   photoRowStyle: {
     overflowX: 'auto',
     display: 'flex',
-    lexDirection: 'row',
+    flexDirection: 'row',
     gap: '1vw',
     paddingTop: '2%',
     paddingLeft: '0.6%',
   },
   bedroomsPrice: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '30px',
+  },
+  bedroomsWithIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  priceWithIcon: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
@@ -112,8 +132,67 @@ const useStyles = makeStyles(() => ({
     width: '21px',
     height: '21px',
   },
+  submitButton: {
+    borderRadius: '30px',
+    minWidth: '80px',
+    color: colors.white,
+    backgroundColor: colors.red1,
+    '&:hover': {
+      backgroundColor: colors.red7,
+    },
+  },
+  hollowRedButton: {
+    minWidth: '80px',
+    height: '35px',
+    borderRadius: '30px',
+    border: '2px solid',
+    borderColor: `${colors.red1} !important`,
+    backgroundColor: 'transparent',
+    color: colors.red1,
+    '&:hover': {
+      backgroundColor: colors.red5,
+    },
+  },
+  deleteDialogTitle: {
+    padding: '20px 24px 0 24px',
+    '& .MuiTypography-h6': {
+      color: colors.black,
+      fontSize: '18px',
+      fontWeight: 600,
+      lineHeight: '28px',
+    },
+  },
+  deleteDialogDesc: {
+    color: colors.black,
+    fontSize: '16px',
+    lineHeight: '24px',
+    fontWeight: 400,
+  },
+  deleteDialogActions: {
+    padding: '0 20px 24px',
+  },
 }));
 
+/**
+ * ReviewComponent is a React component that displays a review card with various functionalities
+ * such as liking, editing, deleting, and reporting a review. It also shows detailed information
+ * about the review, including ratings, text, and associated property or landlord details.
+ *
+ * @component
+ * @param {Props} props - The props for the ReviewComponent.
+ * @param {ReviewWithId} props.review - The review data to display.
+ * @param {boolean} props.liked - Indicates if the current user has liked the review.
+ * @param {boolean} props.likeLoading - Indicates if the like action is in progress.
+ * @param {function} props.addLike - Function to add a like to the review.
+ * @param {function} props.removeLike - Function to remove a like from the review.
+ * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to toggle a state.
+ * @param {function} props.triggerEditToast - function to trigger a toast notification on edit.
+ * @param {function} props.triggerDeleteToast - function to trigger a toast notification on delete.
+ * @param {firebase.User | null} props.user - The current logged-in user.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
+ * @param {boolean} props.showLabel - Indicates if the property or landlord label should be shown.
+ * @returns {ReactElement} The rendered ReviewComponent.
+ */
 const ReviewComponent = ({
   review,
   liked,
@@ -122,12 +201,14 @@ const ReviewComponent = ({
   removeLike,
   setToggle,
   triggerEditToast,
+  triggerDeleteToast,
   user,
   setUser,
   showLabel,
 }: Props): ReactElement => {
   const [reviewData, setReviewData] = useState<ReviewWithId>(review);
   const formattedDate = format(new Date(reviewData.date), 'MMM dd, yyyy').toUpperCase();
+  const shortenedDate = format(new Date(reviewData.date), 'MMM yyyy').toUpperCase();
   const {
     root,
     expand,
@@ -140,15 +221,24 @@ const ReviewComponent = ({
     reviewHeader,
     apartmentIndicator,
     bedroomsPrice,
+    bedroomsWithIcon,
+    priceWithIcon,
     bedPriceIcon,
     bedroomsPriceText,
+    deleteDialogTitle,
+    deleteDialogDesc,
+    deleteDialogActions,
+    submitButton,
+    hollowRedButton,
   } = useStyles();
   const [expanded, setExpanded] = useState(false);
   const [expandedText, setExpandedText] = useState(false);
   const [apt, setApt] = useState<ApartmentWithId[]>([]);
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
 
   const onSuccessfulEdit = () => {
@@ -160,6 +250,47 @@ const ReviewComponent = ({
       },
     });
     if (triggerEditToast) triggerEditToast();
+  };
+  const deleteModal = () => {
+    return (
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => {
+          handleDeleteModalClose(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{ style: { borderRadius: '12px' } }}
+      >
+        <DialogTitle className={deleteDialogTitle} id="alert-dialog-title">
+          Delete this review?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className={deleteDialogDesc} id="alert-dialog-description">
+            You will not be able to recover deleted reviews.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className={deleteDialogActions}>
+          <Button
+            className={hollowRedButton}
+            onClick={() => {
+              handleDeleteModalClose(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className={submitButton}
+            onClick={() => {
+              handleDeleteModalClose(true);
+            }}
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
   };
 
   const Modals = (
@@ -176,6 +307,7 @@ const ReviewComponent = ({
         user={user}
         initialReview={reviewData}
       />
+      {deleteModal()}
     </>
   );
   const handleExpandClick = () => {
@@ -209,6 +341,13 @@ const ReviewComponent = ({
     setReviewOpen(true);
   };
 
+  const openDeleteModal = async () => {
+    if (!user) {
+      return;
+    }
+    setDeleteModalOpen(true);
+  };
+
   const reportAbuseHandler = async (reviewId: string) => {
     const endpoint = `/api/update-review-status/${reviewData.id}/PENDING`;
     if (user) {
@@ -228,6 +367,22 @@ const ReviewComponent = ({
       let user = await getUser(true);
       setUser(user);
     }
+  };
+
+  const handleDeleteModalClose = async (deleteit: Boolean) => {
+    if (deleteit) {
+      const endpoint = `/api/update-review-status/${reviewData.id}/DELETED`;
+      if (user) {
+        const token = await user.getIdToken(true);
+        await axios.put(endpoint, {}, createAuthHeaders(token));
+        setToggle((cur) => !cur);
+      } else {
+        let user = await getUser(true);
+        setUser(user);
+      }
+      if (triggerDeleteToast) triggerDeleteToast();
+    }
+    setDeleteModalOpen(false);
   };
 
   const handleLinkClick = () => {
@@ -277,25 +432,59 @@ const ReviewComponent = ({
       )
     );
   };
-
-  const bedroomsPriceLabel = () => {
+  const editDeleteButtons = () => {
     return (
-      <Grid item className={bedroomsPrice} style={isMobile ? { width: '100%' } : {}}>
+      <Grid item>
+        <OptionMenu
+          options={[
+            {
+              icon: <EditIcon fontSize="small" />,
+              text: 'Edit Review',
+              onClick: openReviewModal,
+            },
+            {
+              icon: <DeleteIcon fontSize="small" />,
+              text: 'Delete Review',
+              onClick: openDeleteModal,
+            },
+          ]}
+        />
+      </Grid>
+    );
+  };
+  const bedroomsPriceLabel = (rowNum: number) => {
+    return (
+      <Grid
+        item
+        className={bedroomsPrice}
+        style={
+          rowNum === 2 || isMobile
+            ? { width: '100%' }
+            : { gap: 'unset', justifyContent: 'space-evenly' }
+        }
+      >
         {reviewData.bedrooms > 0 && (
           <div
-            className={bedroomsPrice}
-            style={isMobile ? { marginLeft: '0' } : { marginLeft: '30px' }}
+            className={bedroomsWithIcon}
+            style={rowNum === 2 || isMobile ? {} : { marginLeft: '30px' }}
           >
             <BedIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
-              {reviewData.bedrooms} {reviewData.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
+              {reviewData.bedrooms}{' '}
+              {reviewData.bedrooms === 1
+                ? isSmallScreen
+                  ? 'Bed'
+                  : 'Bedroom'
+                : isSmallScreen
+                ? 'Beds'
+                : 'Bedrooms'}
             </Typography>
           </div>
         )}
         {reviewData.price > 0 && (
           <div
-            className={bedroomsPrice}
-            style={isMobile ? { marginLeft: 'auto' } : { marginLeft: '30px' }}
+            className={priceWithIcon}
+            style={rowNum === 2 || isMobile ? {} : { marginLeft: '30px' }}
           >
             <MoneyIcon className={bedPriceIcon} />
             <Typography className={bedroomsPriceText}>
@@ -307,7 +496,6 @@ const ReviewComponent = ({
       </Grid>
     );
   };
-
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -332,21 +520,26 @@ const ReviewComponent = ({
                       <ExpandMoreIcon />
                     </IconButton>
                   </Grid>
-
-                  {!isMobile && bedroomsPriceLabel()}
-
+                  {useMediaQuery(
+                    user && reviewData.userId && user.uid === reviewData.userId
+                      ? '(min-width:1410px)'
+                      : '(min-width:1075px)'
+                  ) && bedroomsPriceLabel(1)}
                   <Grid item style={{ marginLeft: 'auto' }}>
-                    <Typography className={dateText}>{formattedDate}</Typography>
+                    <Typography className={dateText}>
+                      {isSmallScreen ? shortenedDate : formattedDate}
+                    </Typography>
                   </Grid>
-                  {user && reviewData.userId && user.uid === reviewData.userId && (
-                    <Grid item>
-                      <IconButton onClick={() => openReviewModal()}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Grid>
-                  )}
+                  {user &&
+                    reviewData.userId &&
+                    user.uid === reviewData.userId &&
+                    editDeleteButtons()}
                 </Grid>
-                {isMobile && bedroomsPriceLabel()}
+                {useMediaQuery(
+                  user && reviewData.userId && user.uid === reviewData.userId
+                    ? '(max-width:1409px)'
+                    : '(max-width:1074px)'
+                ) && bedroomsPriceLabel(2)}
                 <Grid item>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>

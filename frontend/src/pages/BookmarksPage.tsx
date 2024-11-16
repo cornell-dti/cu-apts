@@ -108,6 +108,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [showMoreLessState, setShowMoreLessState] = useState<string>('Show More');
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -169,6 +170,9 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const showEditSuccessConfirmationToast = () => {
     showToast(setShowEditSuccessConfirmation);
   };
+  const showDeleteSuccessConfirmationToast = () => {
+    showToast(setShowDeleteSuccessConfirmation);
+  };
 
   // Function to handle liking or disliking a review
   const likeHelper = (dislike = false) => {
@@ -210,6 +214,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           isOpen={showEditSuccessConfirmation}
           severity="success"
           message="Review successfully edited! Your updated review is now pending approval from the admin."
+          time={toastTime}
+        />
+      )}
+      {showDeleteSuccessConfirmation && (
+        <Toast
+          isOpen={showDeleteSuccessConfirmation}
+          severity="success"
+          message="Review successfully deleted!"
           time={toastTime}
         />
       )}
@@ -351,6 +363,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       removeLike={removeLike}
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
+                      triggerDeleteToast={showDeleteSuccessConfirmationToast}
                       user={user}
                       setUser={setUser}
                       showLabel={true}
