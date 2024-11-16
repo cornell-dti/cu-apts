@@ -95,6 +95,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
+  const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<CardData[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
@@ -248,6 +249,9 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
 
   const showEditSuccessConfirmationToast = () => {
     showToast(setShowEditSuccessConfirmation);
+  };
+  const showDeleteSuccessConfirmationToast = () => {
+    showToast(setShowDeleteSuccessConfirmation);
   };
 
   // Function to handle liking or disliking a review
@@ -560,6 +564,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showDeleteSuccessConfirmation && (
+              <Toast
+                isOpen={showDeleteSuccessConfirmation}
+                severity="success"
+                message="Review successfully deleted!"
+                time={toastTime}
+              />
+            )}
 
             <Grid container item spacing={3}>
               {sortReviews(reviewData, sortBy)
@@ -575,6 +587,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       removeLike={removeLike}
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
+                      triggerDeleteToast={showDeleteSuccessConfirmationToast}
                       user={user}
                       setUser={setUser}
                       showLabel={true}
