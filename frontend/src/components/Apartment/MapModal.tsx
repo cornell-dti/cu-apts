@@ -73,16 +73,43 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : '30px'),
     padding: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : undefined),
   },
+  dataBox: {
+    width: '94%',
+    padding: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '28px 0 0 20px' : 0),
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  aptNameTypography: {
+    fontWeight: 600,
+    fontSize: '24px',
+  },
+  closeIcon: {
+    width: 'clamp(20px, 5vw, 26.9px)',
+    height: 'auto',
+  },
+  controlButton: {
+    width: '100%',
+    height: 'auto',
+  },
   addressTypography: {
     fontWeight: 600,
-    fontSize: 'clamp(16px, 4vw, 20px)',
-    marginBottom: '16px',
+    fontSize: '20px',
   },
   distanceTypography: {
     fontWeight: 600,
-    fontSize: 'clamp(14px, 3.5vw, 18px)',
+    fontSize: 'clamp(16px, 18px, 18px)',
     lineHeight: '28px',
     marginBottom: '10px',
+  },
+  travelIcon: {
+    width: 'clamp(16px, 4vw, 24px)',
+    height: 'auto',
+  },
+  travelTimeTypography: {
+    fontSize: '16px',
+  },
+  locationTypography: {
+    fontSize: '16px',
   },
 }));
 
@@ -162,10 +189,10 @@ const MapModal = ({
   }) => (
     <Grid container alignItems="center" spacing={1}>
       <Grid item>
-        <img src={icon} alt={altText} style={{ width: 'clamp(16px, 4vw, 24px)', height: 'auto' }} />
+        <img src={icon} alt={altText} className={classes.travelIcon} />
       </Grid>
       <Grid item>
-        <Typography variant="body2" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+        <Typography variant="body2" className={classes.travelTimeTypography}>
           {distance} min
         </Typography>
       </Grid>
@@ -197,7 +224,7 @@ const MapModal = ({
             />
           </Grid>
           <Grid item>
-            <Typography variant="body2" style={{ fontSize: 'clamp(10px, 3vw, 16px)' }}>
+            <Typography variant="body2" className={classes.locationTypography}>
               {location}
             </Typography>
           </Grid>
@@ -224,22 +251,20 @@ const MapModal = ({
       fullScreen={isMobile}
     >
       <DialogTitle style={{ padding: '16px' }}>
-        <Grid container justifyContent="space-between" alignItems="center">
-          <Grid item style={{ paddingLeft: '15px', paddingTop: '20px' }}>
-            <Typography
-              variant="h6"
-              style={{ fontWeight: 600, fontSize: 'clamp(18px, 5vw, 23px)' }}
-            >
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          style={{ padding: '15px 15px 0 15px', paddingTop: '20px' }}
+        >
+          <Grid item>
+            <Typography variant="h6" className={classes.aptNameTypography}>
               {aptName}
             </Typography>
           </Grid>
           <Grid item>
             <IconButton onClick={onClose} style={{ padding: 0 }}>
-              <img
-                src={closeMapIcon}
-                alt={'close-icon'}
-                style={{ width: 'clamp(20px, 5vw, 26.9px)', height: 'auto' }}
-              />
+              <img src={closeMapIcon} alt={'close-icon'} className={classes.closeIcon} />
             </IconButton>
           </Grid>
         </Grid>
@@ -284,47 +309,32 @@ const MapModal = ({
               </GoogleMapReact>
             </div>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ top: '13px', right: '13px' }}
               onClick={handleRecenter}
             >
-              <img
-                src={recenterIcon}
-                alt={'recenter-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={recenterIcon} alt={'recenter-icon'} className={classes.controlButton} />
             </IconButton>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ bottom: '53px', right: '13px' }}
               onClick={() => handleZoom(1)}
             >
-              <img
-                src={zoomInIcon}
-                alt={'zoom-in-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={zoomInIcon} alt={'zoom-in-icon'} className={classes.controlButton} />
             </IconButton>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ bottom: '13px', right: '13px' }}
               onClick={() => handleZoom(-1)}
             >
-              <img
-                src={zoomOutIcon}
-                alt={'zoom-out-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={zoomOutIcon} alt={'zoom-out-icon'} className={classes.controlButton} />
             </IconButton>
           </div>
 
           <Box
             p={2}
+            className={classes.dataBox}
             style={{
-              width: '94%',
-              padding: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
               flexDirection: isMediumScreen ? 'row' : 'column',
             }}
           >
