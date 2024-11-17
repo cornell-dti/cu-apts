@@ -494,8 +494,21 @@ app.post('/api/add-like', authenticate, likeHandler(false));
 app.post('/api/remove-like', authenticate, likeHandler(true));
 
 // Endpoint to delete a review by its document ID
-app.put('/api/delete-review/:reviewId', async (req, res) => {
+app.put('/api/delete-review/:reviewId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
   const { reviewId } = req.params; // Extract the review document ID from the request parameters
+  const { uid, email } = req.user;
+  // Check if the user is an admin or the creator of the review
+  const reviewDoc = reviewCollection.doc(reviewId);
+  const reviewData = (await reviewDoc.get()).data();
+  if (!reviewData) {
+    res.status(404).send('Review not found');
+    return;
+  }
+  if (reviewData?.userId !== uid && !(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
   try {
     // Update the status of the review document to 'DELETED'
     await reviewCollection.doc(reviewId).update({ status: 'DELETED' });
@@ -710,8 +723,9 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
  * Sends an email to the user if the review is approved.
  *
  * Permissions:
- * User must be an admin to update a review to approved, declined, or deleted
- * However, all users can update a review from approved to pending
+ * - An admin can update a review from any status to any status
+ * - A regular user can only update their own reviews from any status to deleted
+ * - A regular user cannot update other users' reviews
  *
  * @param reviewDocId - The document ID of the review to update
  * @param newStatus - The new status to set for the review
@@ -726,11 +740,7 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   if (!req.user) throw new Error('Not authenticated');
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
   const { uid, email } = req.user;
-  // Checking if the user is authorized to update the review's status
-  if (newStatus !== 'PENDING' && !(email && admins.includes(email))) {
-    res.status(403).send('Unauthorized');
-    return;
-  }
+  const isAdmin = email && admins.includes(email);
   const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
   try {
     // Validating if the new status is within the allowed list
@@ -739,7 +749,14 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
       return;
     }
     const reviewDoc = reviewCollection.doc(reviewDocId);
-    const currentStatus = (await reviewDoc.get()).data()?.status || '';
+    const reviewData = (await reviewDoc.get()).data();
+    const currentStatus = reviewData?.status || '';
+    const reviewOwnerId = reviewData?.userId || '';
+    // Check if user is authorized to change this review's status
+    if (!isAdmin && (uid !== reviewOwnerId || newStatus !== 'DELETED')) {
+      res.status(403).send('Unauthorized');
+      return;
+    }
     // Updating the review's status in Firestore
     await reviewDoc.update({ status: newStatus });
     res.status(200).send('Success'); // Sending a success response
