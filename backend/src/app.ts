@@ -70,7 +70,7 @@ app.post('/api/new-review', authenticate, async (req, res) => {
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
-    doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
+    doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING', reports: [] });
     res.status(201).send(doc.id);
   } catch (err) {
     console.error(err);
@@ -91,13 +91,23 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       res.status(401).send('Error: user is not the review owner. not authorized');
       return;
     }
+    // Don't allow edits if review is reported
+    if (reviewData.status === 'REPORTED') {
+      res.status(403).send('Error: cannot edit a reported review');
+      return;
+    }
     const updatedReview = req.body as Review;
     if (updatedReview.overallRating === 0 || updatedReview.reviewText === '') {
       res.status(401).send('Error: missing fields');
       return;
     }
     reviewDoc
-      .update({ ...updatedReview, date: new Date(updatedReview.date), status: 'PENDING' })
+      .update({
+        ...updatedReview,
+        date: new Date(updatedReview.date),
+        status: 'PENDING',
+        reports: reviewData.reports || [],
+      })
       .then(() => {
         res.status(201).send(reviewId);
       });
@@ -721,11 +731,12 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
  * Permissions:
  * - An admin can update a review from any status to any status
  * - A regular user can only update their own reviews from any status to deleted
+ * - A regular user can report any review
  * - A regular user cannot update other users' reviews
  *
  * @param reviewDocId - The document ID of the review to update
  * @param newStatus - The new status to set for the review
- *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', or 'DELETED'
+ *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', 'DELETED', or 'REPORTED'
  * @returns status 200 if successfully updates status,
  *                 400 if the new status is invalid,
  *                 401 if authentication fails,
@@ -737,25 +748,60 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
   const { uid, email } = req.user;
   const isAdmin = email && admins.includes(email);
-  const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
+  const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED', 'REPORTED'];
+
   try {
     // Validating if the new status is within the allowed list
     if (!statusList.includes(newStatus)) {
       res.status(400).send('Invalid status type');
       return;
     }
+
     const reviewDoc = reviewCollection.doc(reviewDocId);
     const reviewData = (await reviewDoc.get()).data();
     const currentStatus = reviewData?.status || '';
     const reviewOwnerId = reviewData?.userId || '';
+
     // Check if user is authorized to change this review's status
-    if (!isAdmin && (uid !== reviewOwnerId || newStatus !== 'DELETED')) {
+    // Only admins can change the status of a review to anything other than DELETED or REPORTED
+    // Regular users can only change the status of their own reviews to DELETED
+    // Or they can report a review
+    if (
+      !isAdmin &&
+      (uid !== reviewOwnerId || newStatus !== 'DELETED') &&
+      newStatus !== 'REPORTED'
+    ) {
       res.status(403).send('Unauthorized');
       return;
     }
-    // Updating the review's status in Firestore
-    await reviewDoc.update({ status: newStatus });
+
+    if (newStatus === 'REPORTED') {
+      // Check if user is trying to report their own review
+      if (uid === reviewOwnerId) {
+        res.status(403).send('Cannot report your own review');
+        return;
+      }
+
+      // Check if review is in PENDING state
+      if (currentStatus === 'PENDING') {
+        res.status(403).send('Cannot report a pending review');
+        return;
+      }
+
+      // Updating the review's status in Firestore and adding a report
+      const existingReports = reviewData?.reports || [];
+      const newReport = {
+        date: new Date(),
+        userId: uid,
+        reason: 'No reason provided',
+      };
+      await reviewDoc.update({ status: newStatus, reports: [...existingReports, newReport] });
+    } else {
+      // Updating the review's status in Firestore
+      await reviewDoc.update({ status: newStatus });
+    }
     res.status(200).send('Success'); // Sending a success response
+
     /* If firebase successfully updates status to approved, then send an email
       to the review's creator to inform them that their review has been approved */
     if (newStatus === 'APPROVED' && currentStatus !== 'APPROVED') {
