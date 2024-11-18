@@ -134,6 +134,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
+  const [showReportSuccessConfirmation, setShowReportSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
@@ -195,12 +196,21 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setApt(aptData[0]);
   }, [aptData]);
 
-  // Fetch approved reviews for the current apartment.
+  // Fetch approved and reported reviews for the current apartment.
   useEffect(() => {
-    get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`, {
-      callback: setReviewData,
-    });
-  }, [aptId, showConfirmation, toggle]);
+    const fetchReviews = async () => {
+      const approvedReviews = await axios.get<ReviewWithId[]>(
+        `/api/review/aptId/${aptId}/APPROVED`
+      );
+      const reportedReviews = await axios.get<ReviewWithId[]>(
+        `/api/review/aptId/${aptId}/REPORTED`
+      );
+      const reviews = [...approvedReviews.data, ...reportedReviews.data];
+      setReviewData(reviews);
+    };
+
+    fetchReviews();
+  }, [aptId]);
 
   // Fetch information about buildings related to the apartment and the landlord's data.
   useEffect(() => {
@@ -310,6 +320,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const showDeleteSuccessConfirmationToast = () => {
     showToast(setShowDeleteSuccessConfirmation);
+  };
+
+  const showReportSuccessConfirmationToast = () => {
+    showToast(setShowReportSuccessConfirmation);
   };
 
   const likeHelper = (dislike = false) => {
@@ -679,6 +693,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showReportSuccessConfirmation && (
+              <Toast
+                isOpen={showReportSuccessConfirmation}
+                severity="success"
+                message="Review successfully reported!"
+                time={toastTime}
+              />
+            )}
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
                 <Grid
@@ -728,6 +750,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             setToggle={setToggle}
                             triggerEditToast={showEditSuccessConfirmationToast}
                             triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                            triggerReportToast={showReportSuccessConfirmationToast}
                             user={user}
                             setUser={setUser}
                           />

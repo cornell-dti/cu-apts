@@ -161,11 +161,13 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const isXsScreen = useMediaQuery(theme.breakpoints.down('xs'));
   const [approvedReviews, setApprovedReviews] = useState<ReviewWithId[]>([]);
   const [pendingReviews, setPendingReviews] = useState<ReviewWithId[]>([]);
+  const [reportedReviews, setReportedReviews] = useState<ReviewWithId[]>([]);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [toggle, setToggle] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
+  const [showReportSuccessConfirmation, setShowReportSuccessConfirmation] = useState(false);
   const toastTime = 3500;
 
   useTitle('Profile');
@@ -179,6 +181,11 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     // Fetch pending reviews for the current user.
     get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/PENDING`, {
       callback: setPendingReviews,
+    });
+
+    // Fetch reported reviews for the current user.
+    get<ReviewWithId[]>(`/api/review/userId/${user?.uid}/REPORTED`, {
+      callback: setReportedReviews,
     });
   }, [user?.uid, toggle]);
 
@@ -246,6 +253,10 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowDeleteSuccessConfirmation);
   };
 
+  const showReportSuccessConfirmationToast = () => {
+    showToast(setShowReportSuccessConfirmation);
+  };
+
   /** This closes the modal (who can view my profile) when modal is open and user clicks out **/
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -278,6 +289,14 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
               isOpen={showDeleteSuccessConfirmation}
               severity="success"
               message="Review successfully deleted!"
+              time={toastTime}
+            />
+          )}
+          {showReportSuccessConfirmation && (
+            <Toast
+              isOpen={showReportSuccessConfirmation}
+              severity="success"
+              message="Review successfully reported!"
               time={toastTime}
             />
           )}
@@ -323,6 +342,30 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
         </Grid>
 
         <Grid item xs={11} sm={7} md={6}>
+          <h2 className={reviewHeaderStyle}>Reported Reviews ({reportedReviews.length})</h2>
+          <Grid>
+            {/* Maps list of reported reviews and calls Review Component with fields for each user*/}
+            {sortReviews(reportedReviews, 'date').map((review, index) => (
+              <Grid item xs={12} key={index} className={reviewCardStyle}>
+                <ReviewComponent
+                  key={review.id}
+                  review={review}
+                  liked={likedReviews[review.id]}
+                  likeLoading={likeStatuses[review.id]}
+                  addLike={addLike}
+                  removeLike={removeLike}
+                  setToggle={setToggle}
+                  triggerEditToast={showEditSuccessConfirmationToast}
+                  triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerReportToast={showReportSuccessConfirmationToast}
+                  user={user}
+                  setUser={setUser}
+                  showLabel={true}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
           <h2 className={reviewHeaderStyle}>Pending Reviews ({pendingReviews.length})</h2>
           <Grid>
             {/* Maps list of pending reviews and calls Review Component with fields for each user*/}
@@ -338,6 +381,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerReportToast={showReportSuccessConfirmationToast}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -360,6 +404,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerReportToast={showReportSuccessConfirmationToast}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
