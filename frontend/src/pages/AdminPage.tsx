@@ -11,6 +11,7 @@ import {
   Toolbar,
   Tabs,
   Tab,
+  IconButton,
 } from '@material-ui/core';
 import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
@@ -18,10 +19,28 @@ import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
+  },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '30%',
+    justifyContent: 'space-between',
+  },
+  expand: {
+    transform: 'rotate(180deg)',
+    marginLeft: theme.spacing(1),
+    transition: theme.transitions.create('transform', {
+      duration: 150,
+    }),
+  },
+  expandOpen: {
+    transform: 'rotate(0deg)',
   },
 }));
 
@@ -51,13 +70,20 @@ const AdminPage = (): ReactElement => {
   const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
   const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
 
-  const { container } = useStyles();
+  const [pendingExpanded, setPendingExpanded] = useState(true);
+  const [declinedExpanded, setDeclinedExpanded] = useState(true);
+
+  const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
+  const [reportedExpanded, setReportedExpanded] = useState(true);
+
+  const { container, sectionHeader, expand, expandOpen } = useStyles();
 
   useTitle('Admin');
 
   // calls the APIs and the callback function to set the reviews for each review type
   useEffect(() => {
     const reviewTypes = new Map<string, React.Dispatch<React.SetStateAction<ReviewWithId[]>>>([
+      ['REPORTED', setReportedData],
       ['PENDING', setPendingData],
       ['DECLINED', setDeclinedData],
       ['APPROVED', setApprovedData],
@@ -147,39 +173,84 @@ const AdminPage = (): ReactElement => {
         </Grid>
 
         <Grid container>
-          <Typography variant="h3" style={{ margin: '10px' }}>
-            <strong>Pending Reviews ({pendingData.length})</strong>
-          </Typography>
-          <Grid container item spacing={3}>
-            {sortReviews(pendingData, 'date').map((review, index) => (
-              <Grid item xs={12} key={index}>
-                <AdminReviewComponent
-                  review={review}
-                  setToggle={setToggle}
-                  declinedSection={false}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Grid>
-
-        <Grid container>
-          <Grid item xs={12} sm={12}>
+          <div className={sectionHeader}>
             <Typography variant="h3" style={{ margin: '10px' }}>
-              <strong>Declined Reviews ({declinedData.length})</strong>
+              <strong>Reported Reviews ({reportedData.length})</strong>
             </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: reportedExpanded,
+              })}
+              onClick={() => setReportedExpanded(!reportedExpanded)}
+              aria-expanded={reportedExpanded}
+              aria-label="show reported reviews"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </div>
+          {reportedExpanded && (
             <Grid container item spacing={3}>
-              {sortReviews(declinedData, 'date').map((review, index) => (
+              {sortReviews(reportedData, 'date').map((review, index) => (
                 <Grid item xs={12} key={index}>
-                  <AdminReviewComponent
-                    review={review}
-                    setToggle={setToggle}
-                    declinedSection={true}
-                  />
+                  <AdminReviewComponent review={review} setToggle={setToggle} showDelete={true} />
                 </Grid>
               ))}
             </Grid>
-          </Grid>
+          )}
+        </Grid>
+
+        <Grid container>
+          <div className={sectionHeader}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Pending Reviews ({pendingData.length})</strong>
+            </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: pendingExpanded,
+              })}
+              onClick={() => setPendingExpanded(!pendingExpanded)}
+              aria-expanded={pendingExpanded}
+              aria-label="show pending reviews"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </div>
+          {pendingExpanded && (
+            <Grid container item spacing={3}>
+              {sortReviews(pendingData, 'date').map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <AdminReviewComponent review={review} setToggle={setToggle} showDecline={true} />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Grid>
+
+        <Grid container>
+          <div className={sectionHeader}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Declined Reviews ({declinedData.length})</strong>
+            </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: declinedExpanded,
+              })}
+              onClick={() => setDeclinedExpanded(!declinedExpanded)}
+              aria-expanded={declinedExpanded}
+              aria-label="show declined reviews"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </div>
+          {declinedExpanded && (
+            <Grid container item spacing={3}>
+              {sortReviews(declinedData, 'date').map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <AdminReviewComponent review={review} setToggle={setToggle} showDelete={true} />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Container>

@@ -36,7 +36,8 @@ type Props = {
   /** Function to toggle the display. */
   readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   /** Indicates if the review is in the declined section. */
-  readonly declinedSection: boolean;
+  readonly showDecline?: boolean;
+  readonly showDelete?: boolean;
 };
 
 /**
@@ -87,7 +88,12 @@ const useStyles = makeStyles(() => ({
  * @param review review - The review to approve
  * @returns The rendered component.
  */
-const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): ReactElement => {
+const AdminReviewComponent = ({
+  review,
+  setToggle,
+  showDecline = false,
+  showDelete = false,
+}: Props): ReactElement => {
   const { detailedRatings, overallRating, bedrooms, price, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, dateText, bedroomsPriceText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
@@ -223,7 +229,7 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
 
       <CardActions>
         <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
-          {declinedSection && (
+          {showDelete && (
             <Grid item>
               <Button
                 onClick={() => changeStatus('DELETED')}
@@ -234,15 +240,17 @@ const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): Re
               </Button>
             </Grid>
           )}
-          <Grid item>
-            <Button
-              onClick={() => changeStatus('DECLINED')}
-              variant="outlined"
-              style={{ color: colors.red1 }}
-            >
-              <strong>Decline</strong>
-            </Button>
-          </Grid>
+          {showDecline && (
+            <Grid item>
+              <Button
+                onClick={() => changeStatus('DECLINED')}
+                variant="outlined"
+                style={{ color: colors.red1 }}
+              >
+                <strong>Decline</strong>
+              </Button>
+            </Grid>
+          )}
           <Grid item>
             <Button
               onClick={() => changeStatus('APPROVED')}
