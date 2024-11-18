@@ -55,6 +55,7 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   readonly triggerEditToast: () => void;
   readonly triggerDeleteToast: () => void;
+  readonly triggerReportToast: () => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly showLabel: boolean;
@@ -188,6 +189,7 @@ const useStyles = makeStyles(() => ({
  * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to toggle a state.
  * @param {function} props.triggerEditToast - function to trigger a toast notification on edit.
  * @param {function} props.triggerDeleteToast - function to trigger a toast notification on delete.
+ * @param {function} props.triggerReportToast - function to trigger a toast notification on report.
  * @param {firebase.User | null} props.user - The current logged-in user.
  * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
  * @param {boolean} props.showLabel - Indicates if the property or landlord label should be shown.
@@ -202,6 +204,7 @@ const ReviewComponent = ({
   setToggle,
   triggerEditToast,
   triggerDeleteToast,
+  triggerReportToast,
   user,
   setUser,
   showLabel,
@@ -237,6 +240,7 @@ const ReviewComponent = ({
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
   const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
@@ -293,6 +297,48 @@ const ReviewComponent = ({
     );
   };
 
+  const reportModal = () => {
+    return (
+      <Dialog
+        open={reportModalOpen}
+        onClose={() => {
+          handleReportModalClose(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{ style: { borderRadius: '12px' } }}
+      >
+        <DialogTitle className={deleteDialogTitle} id="alert-dialog-title">
+          Report this review?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className={deleteDialogDesc} id="alert-dialog-description">
+            This review will be sent to admins for review.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className={deleteDialogActions}>
+          <Button
+            className={hollowRedButton}
+            onClick={() => {
+              handleReportModalClose(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className={submitButton}
+            onClick={() => {
+              handleReportModalClose(true);
+            }}
+            autoFocus
+          >
+            Report
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
   const Modals = (
     <>
       <ReviewModal
@@ -308,6 +354,7 @@ const ReviewComponent = ({
         initialReview={reviewData}
       />
       {deleteModal()}
+      {reportModal()}
     </>
   );
   const handleExpandClick = () => {
@@ -348,15 +395,32 @@ const ReviewComponent = ({
     setDeleteModalOpen(true);
   };
 
-  const reportAbuseHandler = async (reviewId: string) => {
-    const endpoint = `/api/update-review-status/${reviewData.id}/PENDING`;
-    if (user) {
-      const token = await user.getIdToken(true);
-      await axios.put(endpoint, {}, createAuthHeaders(token));
-      setToggle((cur) => !cur);
-    } else {
-      let user = await getUser(true);
-      setUser(user);
+  const handleReportModalClose = async (report: Boolean) => {
+    try {
+      if (report) {
+        if (!reviewData.id) {
+          console.error('No review ID found');
+          return;
+        }
+
+        const endpoint = `/api/update-review-status/${reviewData.id}/REPORTED`;
+
+        if (user) {
+          const token = await user.getIdToken(true);
+          const headers = createAuthHeaders(token);
+
+          await axios.put(endpoint, {}, headers);
+          setToggle((cur) => !cur);
+        } else {
+          let user = await getUser(true);
+          setUser(user);
+        }
+        if (triggerReportToast) triggerReportToast();
+      }
+    } catch (error: any) {
+      console.error('Error reporting review:', error.response?.data || error.message);
+    } finally {
+      setReportModalOpen(false);
     }
   };
 
@@ -496,6 +560,15 @@ const ReviewComponent = ({
       </Grid>
     );
   };
+  const reportAbuseButton = () => {
+    return (
+      <Grid item>
+        <Button onClick={() => setReportModalOpen(true)} className={button} size="small">
+          Report Abuse
+        </Button>
+      </Grid>
+    );
+  };
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -598,15 +671,11 @@ const ReviewComponent = ({
               Helpful {`(${reviewData.likes || 0})`}
             </Button>
           </Grid>
-          <Grid item>
-            <Button
-              onClick={() => reportAbuseHandler(reviewData.id)}
-              className={button}
-              size="small"
-            >
-              Report Abuse
-            </Button>
-          </Grid>
+          {user &&
+            reviewData.userId &&
+            reviewData.userId !== user?.uid &&
+            reviewData.status !== 'PENDING' &&
+            reportAbuseButton()}
         </Grid>
       </CardActions>
       {Modals}
