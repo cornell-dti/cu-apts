@@ -606,6 +606,7 @@ const ReviewComponent = ({
                   {user &&
                     reviewData.userId &&
                     user.uid === reviewData.userId &&
+                    reviewData.status !== 'REPORTED' &&
                     editDeleteButtons()}
                 </Grid>
                 {useMediaQuery(
