@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useRef, useState, useEffect } from 'react';
+import React, { Dispatch, SetStateAction, useRef } from 'react';
 import {
   Box,
   Grid,
@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   makeStyles,
   IconButton,
   useTheme,
@@ -124,7 +123,6 @@ const MapModal = ({
   const classes = useStyles();
   const theme = useTheme();
   const mapRef = useRef<google.maps.Map | null>(null);
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
