@@ -20,6 +20,21 @@ type Props = {
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
+/**
+ * SearchResultsPage Component – Displays search results with apartment cards based on a user's query.
+ *
+ * @remarks
+ * The page fetches the search results by calling a backend API. The resulting apartments and landlords
+ * are then listed and displayed. The page adjusts for mobile and desktop versions.
+ *
+ * @param {firebase.User | null} props.user – The currently logged-in Firebase user or null
+ * if no user is logged in.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - A
+ * function to update the `user` state.
+ *
+ * @return {ReactElement} – The rendered JSX structure of the SearchResultsPage.
+ */
+
 const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const { searchText } = useStyles();
   const path = useLocation();
