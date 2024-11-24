@@ -42,6 +42,10 @@ export const useSaveScrollPosition = (storageKey: string, pathName: string) => {
           }
         }, 16);
       } else {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
         window.addEventListener('scroll', handleScroll);
       }
     };
