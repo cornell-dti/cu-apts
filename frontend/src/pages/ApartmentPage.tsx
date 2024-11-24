@@ -275,6 +275,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     checkIfSaved();
   }, [user, setUser, aptId]);
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, []);
+
   const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
     const features = ['location', 'safety', 'value', 'maintenance', 'communication', 'conditions'];
     return features.map((feature) => {
