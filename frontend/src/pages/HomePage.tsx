@@ -9,6 +9,8 @@ import { CardData } from '../App';
 import { get } from '../utils/call';
 import { loadingLength } from '../constants/HomeConsts';
 import { useTitle } from '../utils';
+import { useSaveScrollPosition } from '../utils/saveScrollPosition';
+import { useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles({
   jumboText: {
@@ -45,6 +47,8 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [drawerOpen] = useState<boolean>(false);
+  const path = useLocation();
+  const [pathName] = useState(path.pathname);
 
   useTitle('Home');
 
@@ -60,6 +64,8 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
 
   return (
     <>
