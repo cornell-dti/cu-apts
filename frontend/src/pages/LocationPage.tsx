@@ -19,6 +19,23 @@ type Props = {
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
+/**
+ * LocationPage Component – Displays information and apartments for a specific location
+ * (i.e. Collegetown, West, North, Downtown).
+ *
+ * @remarks
+ * The LocationPage displays the name and description of the location. It also fetches and
+ * displays apartment cards that are located in the specific location (e.g. all apartments
+ * in Collegetown).
+ *
+ * @param {firebase.User | null} props.user – The currently logged-in Firebase user or null
+ * if no user is logged in.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - A
+ * function to update the `user` state.
+ *
+ * @return {ReactElement} The JSX structure of the LocationPage component.
+ */
+
 const LocationPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [data, setData] = useState<CardData[]>([]);
