@@ -456,7 +456,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               onClick={handleSaveToggle}
               className={saveButton}
               color="primary"
-              variant="outlined"
               fullWidth
               disableElevation
             >
