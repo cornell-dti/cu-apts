@@ -1,6 +1,18 @@
 import { useEffect } from 'react';
 
-export const useSaveScrollPosition = (storageKey: string, pathName: string) => {
+/**
+ * useSaveScrollPosition – Custom hook to save and restore the scroll position of a page using sessionStorage.
+ *
+ * @remarks
+ * This hook listens for scroll events and saves the scroll position in sessionStorage when the document is visible.
+ * It also restores the scroll position when the component mounts, ensuring a smooth scroll to the saved position.
+ * The scroll position is only saved if the difference between the current and previous scroll positions is less than 300 pixels.
+ *
+ * @param {string} storageKey – The key used to store the scroll position in sessionStorage.
+ * @param {string} pathName – The pathname of the current route to ensure scroll restoration only happens on the correct page.
+ * @return {void} – This hook does not return a value.
+ */
+export const useSaveScrollPosition = (storageKey: string, pathName: string): void => {
   useEffect(() => {
     const handleScroll = () => {
       if (document.visibilityState === 'visible') {
