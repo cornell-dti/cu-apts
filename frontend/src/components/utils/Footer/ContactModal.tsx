@@ -670,7 +670,7 @@ const ContactModal = ({ user }: Props) => {
         {currModal === 'apartment' && cantFindApartmentModal}
         {currModal === 'question' && questionModal}
 
-        {currModal != 'contact' && (
+        {currModal !== 'contact' && (
           <DialogActions
             style={{
               display: 'flex',

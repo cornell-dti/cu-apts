@@ -24,6 +24,17 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 
 ## Contributors
 
+### 2024-2025
+
+- **Ella Krechmer** - Product Manager
+- **Janet Luo** - Associate Product Manager
+- **Jacob Green** - Product Marketing Manager
+- **Gunyasorn (Grace) Sawatyanon** - Technical Product Manager
+- **David Martinez Lopez** - Designer
+- **Vicky Wang** - Designer
+- **Kea-Roy Ong** - Developer
+- **Casper Liao** - Developer
+
 ### 2023-2024
 
 - **Tina Ou** - Product Manager
@@ -34,7 +45,7 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 - **Cyrus Irani** - Developer
 - **Ankit Lakkapragada** - Developer
 - **Jessica Han** - Developer
-- **Grace Sawatyanon** - Developer
+- **Gunyasorn (Grace) Sawatyanon** - Developer
 - **Miranda Luo** - Developer
 - **Kea-Roy Ong** - Developer
 - **Casper Liao** - Developer
@@ -51,7 +62,7 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 - **Daniel Jin** - Developer
 - **Ankit Lakkapragada** - Developer
 - **Jessica Han** - Developer
-- **Grace Sawatyanon** - Developer
+- **Gunyasorn (Grace) Sawatyanon** - Developer
 
 ### 2021-2022
 
