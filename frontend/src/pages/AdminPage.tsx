@@ -21,6 +21,7 @@ import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
+import { colors } from '../colors';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -33,14 +34,14 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'space-between',
   },
   expand: {
-    transform: 'rotate(180deg)',
+    transform: 'rotate(0deg)',
     marginLeft: theme.spacing(1),
     transition: theme.transitions.create('transform', {
       duration: 150,
     }),
   },
   expandOpen: {
-    transform: 'rotate(0deg)',
+    transform: 'rotate(180deg)',
   },
 }));
 
@@ -185,7 +186,7 @@ const AdminPage = (): ReactElement => {
               aria-expanded={reportedExpanded}
               aria-label="show reported reviews"
             >
-              <ExpandMoreIcon />
+              <ExpandMoreIcon htmlColor={colors.red1} />
             </IconButton>
           </div>
           {reportedExpanded && (
@@ -212,7 +213,7 @@ const AdminPage = (): ReactElement => {
               aria-expanded={pendingExpanded}
               aria-label="show pending reviews"
             >
-              <ExpandMoreIcon />
+              <ExpandMoreIcon htmlColor={colors.red1} />
             </IconButton>
           </div>
           {pendingExpanded && (
@@ -239,7 +240,7 @@ const AdminPage = (): ReactElement => {
               aria-expanded={declinedExpanded}
               aria-label="show declined reviews"
             >
-              <ExpandMoreIcon />
+              <ExpandMoreIcon htmlColor={colors.red1} />
             </IconButton>
           </div>
           {declinedExpanded && (
