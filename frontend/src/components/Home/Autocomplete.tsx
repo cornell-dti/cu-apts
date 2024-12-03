@@ -18,6 +18,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
+import searchPropertyIcon from '../../assets/search-property.svg';
+import searchLandlordIcon from '../../assets/search-landlord.svg';
 
 type Props = {
   drawerOpen: boolean;
@@ -32,6 +34,12 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       maxHeight: 200,
       overflow: 'auto',
       boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
+      borderRadius: '8px',
+      padding: '2px',
+    },
+    menuItem: {
+      borderBottom: '1px solid #E5E5E5',
+      height: '53px',
     },
     text: {
       backgroundColor: colors.white,
@@ -39,8 +47,10 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
 
     addressText: {
       color: colors.gray2,
+      fontSize: '12px',
     },
     buildingText: {
+      fontSize: '16px',
       color: colors.black,
     },
     homeSearchIcon: {
@@ -66,7 +76,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       justifyContent: 'center',
       alignItems: 'center',
     },
-    resultChip: { cursor: 'pointer' },
+    searchLabelIcon: {
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+    },
     field: {
       '&.Mui-focused': {
         '& .MuiOutlinedInput-notchedOutline': {
@@ -81,10 +95,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     searchIcon,
     homeSearchIcon,
     searchIconBackground,
+    searchLabelIcon,
     field,
     menuList,
-    resultChip,
-    addressText,
+    menuItem,
+    addressText: subText,
     buildingText,
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
@@ -166,20 +181,27 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                           component: RouterLink,
                         }}
                       >
-                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
-                          <Grid container justifyContent="space-between">
-                            <Grid item xl={8}>
+                        <MenuItem
+                          button={true}
+                          key={index}
+                          onClick={() => setOpen(false)}
+                          className={menuItem}
+                        >
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item className={searchLabelIcon}>
+                              <img
+                                src={label === 'LANDLORD' ? searchLandlordIcon : searchPropertyIcon}
+                                alt="search icon"
+                              />
+                            </Grid>
+                            <Grid item>
                               <Typography className={buildingText}>{name}</Typography>
-                              <Typography className={addressText}>
+                              <Typography className={subText}>
                                 {address !== name && address}
                               </Typography>
-                            </Grid>
-                            <Grid item xl={4}>
-                              <Chip
-                                color="primary"
-                                label={label.toLowerCase()}
-                                className={resultChip}
-                              />
+                              <Typography className={subText}>
+                                {label === 'LANDLORD' && 'landlord'}
+                              </Typography>
                             </Grid>
                           </Grid>
                         </MenuItem>
