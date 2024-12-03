@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Box, styled, Container, CardMedia, Dialog, makeStyles } from '@material-ui/core';
+import { Box, styled, Container, CardMedia, Dialog, makeStyles } from '@material-ui/core';
 import Carousel from 'react-material-ui-carousel';
 
 interface Props {
