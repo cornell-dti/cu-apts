@@ -730,8 +730,10 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
  *
  * Permissions:
  * - An admin can update a review from any status to any status
- * - A regular user can only update their own reviews from any status to deleted
- * - A regular user can report any review
+ * - A regular user can only update their own reviews to deleted
+ * - A regular user can report any review except:
+ *   - Their own reviews
+ *   - Pending reviews
  * - A regular user cannot update other users' reviews
  *
  * @param reviewDocId - The document ID of the review to update
@@ -762,10 +764,10 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
     const currentStatus = reviewData?.status || '';
     const reviewOwnerId = reviewData?.userId || '';
 
-    // Check if user is authorized to change this review's status
-    // Only admins can change the status of a review to anything other than DELETED or REPORTED
-    // Regular users can only change the status of their own reviews to DELETED
-    // Or they can report a review
+    // Check if user is authorized to change this review's status:
+    // Adimin: Can change the status of a review to any status
+    // Non-review owner: Can report a review
+    // Review owner: Can update or delete their own review if the review is not already REPORTED.
     if (
       !isAdmin &&
       (uid !== reviewOwnerId || newStatus !== 'DELETED') &&
@@ -782,7 +784,6 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
         return;
       }
 
-      // Check if review is in PENDING state
       if (currentStatus === 'PENDING') {
         res.status(403).send('Cannot report a pending review');
         return;

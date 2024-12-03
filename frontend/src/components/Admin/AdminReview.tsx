@@ -83,10 +83,19 @@ const useStyles = makeStyles(() => ({
 }));
 
 /**
- * AdminReviewComponent displays an individual review for admin approval or deletion.
+ * AdminReviewComponent - Displays a review card with approval/deletion controls for administrators.
  *
- * @param review review - The review to approve
- * @returns The rendered component.
+ * @remarks
+ * Renders a review's details including ratings, text, photos, and apartment info along with
+ * buttons for admins to approve, decline or delete the review. Fetches associated apartment
+ * and landlord data on mount.
+ *
+ * @param {ReviewWithId} props.review - The review object containing all review data to display
+ * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to control visibility of the review
+ * @param {boolean} props.showDecline - Optional flag to show decline button, defaults to false
+ * @param {boolean} props.showDelete - Optional flag to show delete button, defaults to false
+ *
+ * @returns {ReactElement} - A Material-UI Card component containing the review details and admin controls
  */
 const AdminReviewComponent = ({
   review,

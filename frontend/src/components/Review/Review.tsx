@@ -395,6 +395,16 @@ const ReviewComponent = ({
     setDeleteModalOpen(true);
   };
 
+  /**
+   * handleReportModalClose - Handles the closing of the report modal and processes the report if confirmed.
+   *
+   * @remarks
+   * If report is true, updates the review status to 'REPORTED' in the backend. Requires user authentication
+   * and handles error cases like missing review ID. Triggers a toast notification on successful report.
+   *
+   * @param {Boolean} report - Whether the user confirmed reporting the review
+   * @return {Promise<void>} - A promise that resolves when the report handling is complete
+   */
   const handleReportModalClose = async (report: Boolean) => {
     try {
       if (report) {
