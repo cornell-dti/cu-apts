@@ -181,17 +181,19 @@ app.get('/api/review/like/:userId', authenticate, async (req, res) => {
     if (data) {
       const reviewIds = Object.keys(data);
       const matchingReviews: ReviewWithId[] = [];
-      let query = reviewCollection.where(FieldPath.documentId(), 'in', reviewIds);
-      if (statusType) {
-        // filter by status if provided
-        query = query.where('status', '==', statusType);
+      if (reviewIds.length > 0) {
+        let query = reviewCollection.where(FieldPath.documentId(), 'in', reviewIds);
+        if (statusType) {
+          // filter by status if provided
+          query = query.where('status', '==', statusType);
+        }
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const reviewData = { ...data, date: data.date.toDate() };
+          matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
+        });
       }
-      const querySnapshot = await query.get();
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const reviewData = { ...data, date: data.date.toDate() };
-        matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
-      });
       res.status(200).send(JSON.stringify(matchingReviews));
       return;
     }
