@@ -1,7 +1,6 @@
 import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  Chip,
   CircularProgress,
   ClickAwayListener,
   Grid,
@@ -35,7 +34,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       overflow: 'auto',
       boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
       borderRadius: '8px',
-      padding: '2px',
+      paddingTop: '2px',
+      paddingBottom: '2px',
     },
     menuItem: {
       borderBottom: '1px solid #E5E5E5',
@@ -61,7 +61,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       alignItems: 'center',
       justifyContent: 'center',
       color: 'white',
-      // fontSize: isMobile ? 17 : 22
       height: '62%',
       width: '62%',
     },
