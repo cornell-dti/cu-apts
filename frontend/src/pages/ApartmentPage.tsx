@@ -39,8 +39,8 @@ import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
-import savedIcon from '../assets/filled-large-saved-icon.png';
-import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import savedIcon from '../assets/saved-icon-filled.svg';
+import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
@@ -77,9 +77,6 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
   },
-  root: {
-    borderRadius: '10px',
-  },
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
@@ -88,22 +85,22 @@ const useStyles = makeStyles((theme) => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-  dateText: {
-    color: colors.gray1,
-  },
-  button: {
-    textTransform: 'none',
-    '&.Mui-disabled': {
-      color: 'inherit',
+  saveButton: {
+    backgroundColor: 'transparent',
+    width: '107px',
+    margin: '10px 16px',
+    borderRadius: '30px',
+    border: '2px solid',
+    fontSize: '15px',
+    borderColor: colors.red1,
+    '&:focus': {
+      borderColor: `${colors.red1} !important`,
     },
   },
-  horizontalLine: {
-    borderTop: '1px solid #C4C4C4',
-    width: '95%',
-    marginTop: '20px',
-    borderLeft: 'none',
-    borderRight: 'none',
-    borderBottom: 'none',
+  bookmarkRibbon: {
+    width: '19px',
+    height: '25px',
+    marginRight: '10px',
   },
 }));
 
@@ -174,6 +171,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
+    saveButton,
+    bookmarkRibbon,
   } = useStyles();
 
   // Set the page title based on whether apartment data is loaded.
@@ -438,7 +437,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
-            <IconButton
+            {/* <IconButton
               disableRipple
               onClick={handleSaveToggle}
               style={{
@@ -451,7 +450,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 alt={isSaved ? 'Saved' : 'Unsaved'}
                 style={{ width: '107px', height: '43px' }}
               />
-            </IconButton>
+            </IconButton> */}
+            <Button
+              disableRipple
+              onClick={handleSaveToggle}
+              className={saveButton}
+              color="primary"
+              fullWidth
+              disableElevation
+            >
+              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
+              {isSaved ? 'Saved' : 'Save'}
+            </Button>
             <Button
               color="primary"
               className={reviewButton}
