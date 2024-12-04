@@ -32,7 +32,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       backgroundColor: colors.white,
       maxHeight: 200,
       overflow: 'auto',
-      boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
+      boxShadow: '0px 4px 8px -1px rgba(0, 0, 0, 0.25)',
       borderRadius: '8px',
       padding: 0,
       boxSizing: 'border-box',
@@ -46,13 +46,19 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       backgroundColor: colors.white,
     },
 
-    addressText: {
+    subText: {
       color: colors.gray2,
       fontSize: '12px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     buildingText: {
       fontSize: '16px',
       color: colors.black,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     homeSearchIcon: {
       paddingRight: '10px',
@@ -82,9 +88,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       alignItems: 'center',
     },
     field: {
+      borderRadius: '10px',
       '&.Mui-focused': {
         '& .MuiOutlinedInput-notchedOutline': {
           border: `1px solid ${colors.red1}`,
+          borderRadius: '10px',
         },
       },
       height: isMobile ? '35px' : '45px',
@@ -99,7 +107,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     field,
     menuList,
     menuItem,
-    addressText: subText,
+    subText,
     buildingText,
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
@@ -195,7 +203,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                                 alt="search icon"
                               />
                             </Grid>
-                            <Grid item>
+                            <Grid item xs style={{ minWidth: 0 }}>
                               <Typography className={buildingText}>{name}</Typography>
                               <Typography className={subText}>
                                 {address !== name && address}
@@ -279,7 +287,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       };
     } else {
       return {
-        style: { height: isMobile ? '35px' : '45px', borderRadius: '10px' },
+        style: { height: isMobile ? '35px' : '45px' },
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
