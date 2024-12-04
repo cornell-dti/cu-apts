@@ -34,8 +34,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       overflow: 'auto',
       boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
       borderRadius: '8px',
-      paddingTop: '2px',
-      paddingBottom: '2px',
+      padding: 0,
+      boxSizing: 'border-box',
+      border: '2px solid white',
     },
     menuItem: {
       borderBottom: '1px solid #E5E5E5',
@@ -185,6 +186,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                           key={index}
                           onClick={() => setOpen(false)}
                           className={menuItem}
+                          style={index === options.length - 1 ? { borderBottom: 'none' } : {}}
                         >
                           <Grid container spacing={2} alignItems="center">
                             <Grid item className={searchLabelIcon}>
