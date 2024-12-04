@@ -33,10 +33,7 @@ export const useSaveScrollPosition = (storageKey: string, pathName: string): voi
         }
         const scrollInterval = setInterval(() => {
           const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          if (
-            Math.abs(window.scrollY - targetPosition) > 50 &&
-            window.location.pathname === pathName
-          ) {
+          if (window.scrollY < targetPosition - 50 && window.location.pathname === pathName) {
             if (targetPosition <= maxScroll) {
               window.scrollTo({
                 top: targetPosition,
