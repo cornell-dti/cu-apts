@@ -39,6 +39,10 @@ type Props = {
   readonly showDecline?: boolean;
   /** Indicates whether to show delete button. */
   readonly showDelete?: boolean;
+  /** Indicates whether to show ignore button for reported reviews. */
+  readonly showIgnore?: boolean;
+  /** Indicates whether to show approve button for pending reviews. */
+  readonly showApprove?: boolean;
   /** Function to trigger the photo carousel. */
   readonly triggerPhotoCarousel: (photos: readonly string[], startIndex: number) => void;
 };
@@ -107,6 +111,8 @@ const useStyles = makeStyles(() => ({
  * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to control visibility of the review
  * @param {boolean} props.showDecline - Optional flag to show decline button, defaults to false
  * @param {boolean} props.showDelete - Optional flag to show delete button, defaults to false
+ * @param {boolean} props.showIgnore - Optional flag to show ignore button, defaults to false
+ * @param {boolean} props.showApprove - Optional flag to show approve button, defaults to false
  *
  * @returns {ReactElement} - A Material-UI Card component containing the review details and admin controls
  */
@@ -115,6 +121,8 @@ const AdminReviewComponent = ({
   setToggle,
   showDecline = false,
   showDelete = false,
+  showIgnore = false,
+  showApprove = false,
   triggerPhotoCarousel,
 }: Props): ReactElement => {
   const { detailedRatings, overallRating, bedrooms, price, date, reviewText, photos } = review;
@@ -276,15 +284,28 @@ const AdminReviewComponent = ({
               </Button>
             </Grid>
           )}
-          <Grid item>
-            <Button
-              onClick={() => changeStatus('APPROVED')}
-              variant="contained"
-              style={{ backgroundColor: colors.green1 }}
-            >
-              <strong>Approve</strong>
-            </Button>
-          </Grid>
+          {showIgnore && (
+            <Grid item>
+              <Button
+                onClick={() => changeStatus('APPROVED')}
+                variant="outlined"
+                style={{ color: colors.gray2 }}
+              >
+                <strong>Ignore</strong>
+              </Button>
+            </Grid>
+          )}
+          {showApprove && (
+            <Grid item>
+              <Button
+                onClick={() => changeStatus('APPROVED')}
+                variant="contained"
+                style={{ backgroundColor: colors.green1 }}
+              >
+                <strong>Approve</strong>
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </CardActions>
     </Card>

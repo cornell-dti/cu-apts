@@ -827,9 +827,9 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
     }
     res.status(200).send('Success'); // Sending a success response
 
-    /* If firebase successfully updates status to approved, then send an email
-      to the review's creator to inform them that their review has been approved */
-    if (newStatus === 'APPROVED' && currentStatus !== 'APPROVED') {
+    /* If firebase successfully updates status to approved (not from an ignored report), 
+    then send an email to the review's creator to inform them that their review has been approved */
+    if (newStatus === 'APPROVED' && !['REPORTED', 'APPROVED'].includes(currentStatus)) {
       // get user id
       const reviewData = (await reviewCollection.doc(reviewDocId).get()).data();
       const userId = reviewData?.userId;

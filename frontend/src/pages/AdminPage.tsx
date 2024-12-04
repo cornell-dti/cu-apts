@@ -212,6 +212,7 @@ const AdminPage = (): ReactElement => {
                   <AdminReviewComponent
                     review={review}
                     setToggle={setToggle}
+                    showIgnore={true}
                     showDelete={true}
                     triggerPhotoCarousel={showPhotoCarousel}
                   />
@@ -245,6 +246,7 @@ const AdminPage = (): ReactElement => {
                     review={review}
                     setToggle={setToggle}
                     showDecline={true}
+                    showApprove={true}
                     triggerPhotoCarousel={showPhotoCarousel}
                   />
                 </Grid>
@@ -277,6 +279,7 @@ const AdminPage = (): ReactElement => {
                     review={review}
                     setToggle={setToggle}
                     showDelete={true}
+                    showApprove={true}
                     triggerPhotoCarousel={showPhotoCarousel}
                   />
                 </Grid>
