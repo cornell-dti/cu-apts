@@ -12,6 +12,7 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import InfoFeatures from '../components/Review/InfoFeatures';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
@@ -92,7 +93,13 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [carouselOpen, setCarouselOpen] = useState(false);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel(landlordData ? landlordData.photos : []);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -306,9 +313,10 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={landlordData.photos}
+        photos={carouselPhotos}
         open={carouselOpen}
-        onClose={() => setCarouselOpen(false)}
+        startIndex={carouselStartIndex}
+        onClose={closePhotoCarousel}
       />
     </>
   );
@@ -346,7 +354,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
             color="secondary"
             variant="contained"
             disableElevation
-            onClick={() => setCarouselOpen(true)}
+            onClick={() => showPhotoCarousel()}
           >
             Show all photos
           </Button>
@@ -444,7 +452,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
               color="secondary"
               variant="contained"
               disableElevation
-              onClick={() => setCarouselOpen(true)}
+              onClick={() => showPhotoCarousel()}
             >
               Show all photos
             </Button>
@@ -504,7 +512,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     <>
       {landlordData && (
         <Container>
-          <LandlordHeader landlord={landlordData} handleClick={() => setCarouselOpen(true)} />
+          <LandlordHeader landlord={landlordData} handleClick={() => showPhotoCarousel()} />
         </Container>
       )}
 
@@ -562,6 +570,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
                       triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                      triggerPhotoCarousel={showPhotoCarousel}
                       user={user}
                       setUser={setUser}
                       showLabel={true}

@@ -21,6 +21,8 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import defaultProfilePic from '../assets/cuapts-bear.png';
 import { useTitle } from '../utils';
 import { sortReviews } from '../utils/sortReviews';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -167,6 +169,13 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const toastTime = 3500;
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel([]);
 
   useTitle('Profile');
 
@@ -261,6 +270,17 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
     };
   }, [isModalOpen, setIsModalOpen]);
 
+  const Modals = (
+    <>
+      <PhotoCarousel
+        photos={carouselPhotos}
+        open={carouselOpen}
+        onClose={closePhotoCarousel}
+        startIndex={carouselStartIndex}
+      />
+    </>
+  );
+
   return (
     <div className={root}>
       <Grid container spacing={2} className={gridContainer}>
@@ -338,6 +358,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -360,6 +381,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -384,6 +406,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
           </div>
         )}
       </div>
+      {Modals}
     </div>
   );
 };

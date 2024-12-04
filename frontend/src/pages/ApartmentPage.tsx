@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
@@ -127,13 +128,19 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-  const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel(apt ? apt.photos : []);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -401,9 +408,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={apt.photos}
+        photos={carouselPhotos}
         open={carouselOpen}
-        onClose={() => setCarouselOpen(false)}
+        startIndex={carouselStartIndex}
+        onClose={closePhotoCarousel}
       />
     </>
   );
@@ -479,7 +487,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             color="secondary"
             variant="contained"
             disableElevation
-            onClick={() => setCarouselOpen(true)}
+            onClick={() => showPhotoCarousel()}
           >
             Show all photos
           </Button>
@@ -553,7 +561,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               color="secondary"
               variant="contained"
               disableElevation
-              onClick={() => setCarouselOpen(true)}
+              onClick={() => showPhotoCarousel()}
             >
               Show all photos
             </Button>
@@ -647,7 +655,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             averageRating={getAverageRating(reviewData)}
             apartment={apt!}
             numReviews={reviewData.length}
-            handleClick={() => setCarouselOpen(true)}
+            handleClick={() => showPhotoCarousel()}
           />
         </Container>
       )}
@@ -738,6 +746,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             setToggle={setToggle}
                             triggerEditToast={showEditSuccessConfirmationToast}
                             triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                            triggerPhotoCarousel={showPhotoCarousel}
                             user={user}
                             setUser={setUser}
                           />
