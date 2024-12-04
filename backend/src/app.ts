@@ -765,7 +765,7 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
     const reviewOwnerId = reviewData?.userId || '';
 
     // Check if user is authorized to change this review's status:
-    // Adimin: Can change the status of a review to any status
+    // Admin: Can change the status of a review to any status
     // Non-review owner: Can report a review
     // Review owner: Can update or delete their own review if the review is not already REPORTED.
     if (
