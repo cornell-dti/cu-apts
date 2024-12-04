@@ -156,28 +156,48 @@ app.get('/api/review/:status', async (req, res) => {
 });
 
 /**
- * Return list of reviews that user marked as helpful (like)
+ * review/like/:userId – Fetches reviews liked by a user.
+ *
+ * @remarks
+ * This endpoint retrieves reviews that a user has marked as helpful (liked). It can also filter by review status by passing in a query parameter. If no parameter is provided, no additional filter is applied.
+ *
+ * @route GET /api/review/like/:userId
+ *
+ * @status
+ * - 200: Successfully retrieved the liked reviews.
+ * - 401: Error due to unauthorized access or authentication issues.
  */
-// TODO: uid param is unused here but when remove it encounter 304 status and req.user is null
-app.get('/api/review/like/:uid', authenticate, async (req, res) => {
-  if (!req.user) throw new Error('not authenticated');
-  const { uid } = req.user;
-  const likesDoc = await likesCollection.doc(uid).get();
+app.get('/api/review/like/:userId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const realUserId = req.user.uid;
+  const { userId } = req.params;
+  const statusType = req.query.status;
+  if (userId !== realUserId) {
+    res.status(401).send("Error: user is not authorized to access another user's likes");
+    return;
+  }
+  const likesDoc = await likesCollection.doc(realUserId).get();
 
   if (likesDoc.exists) {
     const data = likesDoc.data();
     if (data) {
       const reviewIds = Object.keys(data);
       const matchingReviews: ReviewWithId[] = [];
-      const querySnapshot = await reviewCollection
-        .where(FieldPath.documentId(), 'in', reviewIds)
-        .where('status', '==', 'APPROVED')
-        .get();
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const reviewData = { ...data, date: data.date.toDate() };
-        matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
-      });
+      if (reviewIds.length > 0) {
+        let query = reviewCollection.where(FieldPath.documentId(), 'in', reviewIds);
+        if (statusType) {
+          // filter by status if provided
+          query = query.where('status', '==', statusType);
+        }
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const reviewData = { ...data, date: data.date.toDate() };
+          matchingReviews.push({ ...reviewData, id: doc.id } as ReviewWithId);
+        });
+      }
       res.status(200).send(JSON.stringify(matchingReviews));
       return;
     }
