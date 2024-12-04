@@ -26,24 +26,26 @@ import { BaseProps, distanceProps } from './MapInfo';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    borderRadius: '13.895px',
-    maxWidth: '70%',
-    maxHeight: '94%',
+    borderRadius: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0px' : '13.895px'),
+    maxWidth: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '70%'),
+    maxHeight: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '94%'),
+    height: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : 'auto'),
+    margin: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : undefined),
     overflow: 'hidden',
   },
   outerMapDiv: {
-    height: '50vh',
-    width: '94%',
-    borderRadius: '12.764px',
+    height: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '65vh' : '50vh'),
+    width: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '100%' : '94%'),
+    borderRadius: '0px',
     overflow: 'hidden',
     outline: 'none',
     position: 'relative',
-    marginBottom: '30px',
+    marginBottom: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : '30px'),
   },
   innerMapDiv: {
     height: '130%',
     width: '100%',
-    borderRadius: '12.764px',
+    borderRadius: '0px',
     overflow: 'hidden',
     outline: 'none',
     position: 'absolute',
@@ -67,18 +69,46 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     overflow: 'auto',
     alignItems: 'center',
-    marginBottom: '30px',
+    marginBottom: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : '30px'),
+    padding: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '0' : undefined),
+  },
+  dataBox: {
+    width: '94%',
+    padding: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '28px 0 0 20px' : 0),
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  aptNameTypography: {
+    fontWeight: 600,
+    fontSize: '24px',
+  },
+  closeIcon: {
+    width: 'clamp(20px, 5vw, 26.9px)',
+    height: 'auto',
+  },
+  controlButton: {
+    width: '100%',
+    height: 'auto',
   },
   addressTypography: {
     fontWeight: 600,
-    fontSize: 'clamp(16px, 4vw, 20px)',
-    marginBottom: '16px',
+    fontSize: '20px',
   },
   distanceTypography: {
     fontWeight: 600,
-    fontSize: 'clamp(14px, 3.5vw, 18px)',
+    fontSize: 'clamp(16px, 18px, 18px)',
     lineHeight: '28px',
     marginBottom: '10px',
+  },
+  travelIcon: {
+    width: 'clamp(16px, 4vw, 24px)',
+    height: 'auto',
+  },
+  travelTimeTypography: {
+    fontSize: '16px',
+  },
+  locationTypography: {
+    fontSize: '16px',
   },
 }));
 
@@ -86,7 +116,6 @@ interface MapModalProps extends BaseProps {
   aptName: string;
   open: boolean;
   onClose: () => void;
-  setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 /**
@@ -109,18 +138,18 @@ interface MapModalProps extends BaseProps {
  *   - `walkTime`: The walk time from the apartment to campus landmarks (default: 0).
  *   - `driveTime`: The drive time from the apartment to campus landmarks (default: 0).
  */
+
 const MapModal = ({
   aptName,
   open,
   onClose,
-  setOpen,
   address,
   latitude = 0,
   longitude = 0,
-  walkTime = 0,
-  driveTime = 0,
+  travelTimes,
+  isMobile,
 }: MapModalProps) => {
-  const classes = useStyles();
+  const classes = useStyles({ isMobile });
   const theme = useTheme();
   const mapRef = useRef<google.maps.Map | null>(null);
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -157,10 +186,10 @@ const MapModal = ({
   }) => (
     <Grid container alignItems="center" spacing={1}>
       <Grid item>
-        <img src={icon} alt={altText} style={{ width: 'clamp(16px, 4vw, 24px)', height: 'auto' }} />
+        <img src={icon} alt={altText} className={classes.travelIcon} />
       </Grid>
       <Grid item>
-        <Typography variant="body2" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>
+        <Typography variant="body2" className={classes.travelTimeTypography}>
           {distance} min
         </Typography>
       </Grid>
@@ -169,9 +198,13 @@ const MapModal = ({
 
   const DistanceInfo = ({
     location,
-    walkDistance,
-    driveDistance,
-  }: distanceProps & { driveDistance: number }) => (
+    walkTime,
+    driveTime,
+  }: {
+    location: string;
+    walkTime: number;
+    driveTime: number;
+  }) => (
     <Grid
       container
       justifyContent="space-between"
@@ -188,17 +221,17 @@ const MapModal = ({
             />
           </Grid>
           <Grid item>
-            <Typography variant="body2" style={{ fontSize: 'clamp(10px, 3vw, 16px)' }}>
+            <Typography variant="body2" className={classes.locationTypography}>
               {location}
             </Typography>
           </Grid>
         </Grid>
       </Grid>
       <Grid item xs={3}>
-        <IconAndText icon={walkIcon} altText={'walk-icon'} distance={walkDistance} />
+        <IconAndText icon={walkIcon} altText={'walk-icon'} distance={walkTime} />
       </Grid>
       <Grid item xs={3}>
-        <IconAndText icon={driveIcon} altText={'drive-icon'} distance={driveDistance} />
+        <IconAndText icon={driveIcon} altText={'drive-icon'} distance={driveTime} />
       </Grid>
     </Grid>
   );
@@ -212,24 +245,23 @@ const MapModal = ({
       }}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
     >
       <DialogTitle style={{ padding: '16px' }}>
-        <Grid container justifyContent="space-between" alignItems="center">
-          <Grid item style={{ paddingLeft: '15px', paddingTop: '20px' }}>
-            <Typography
-              variant="h6"
-              style={{ fontWeight: 600, fontSize: 'clamp(18px, 5vw, 23px)' }}
-            >
+        <Grid
+          container
+          justifyContent="space-between"
+          alignItems="center"
+          style={{ padding: '15px 15px 0 15px', paddingTop: '20px' }}
+        >
+          <Grid item>
+            <Typography variant="h6" className={classes.aptNameTypography}>
               {aptName}
             </Typography>
           </Grid>
           <Grid item>
-            <IconButton onClick={() => setOpen(false)} style={{ padding: 0 }}>
-              <img
-                src={closeMapIcon}
-                alt={'close-icon'}
-                style={{ width: 'clamp(20px, 5vw, 26.9px)', height: 'auto' }}
-              />
+            <IconButton onClick={onClose} style={{ padding: 0 }}>
+              <img src={closeMapIcon} alt={'close-icon'} className={classes.closeIcon} />
             </IconButton>
           </Grid>
         </Grid>
@@ -260,12 +292,6 @@ const MapModal = ({
                   altText="Engineering Quad icon"
                 />
                 <Marker
-                  lat={42.449014547431425}
-                  lng={-76.48413980587392}
-                  src={schoolIcon}
-                  altText="Arts Quad icon"
-                />
-                <Marker
                   lat={42.446768276610875}
                   lng={-76.48505175766948}
                   src={schoolIcon}
@@ -280,88 +306,53 @@ const MapModal = ({
               </GoogleMapReact>
             </div>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ top: '13px', right: '13px' }}
               onClick={handleRecenter}
             >
-              <img
-                src={recenterIcon}
-                alt={'recenter-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={recenterIcon} alt={'recenter-icon'} className={classes.controlButton} />
             </IconButton>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ bottom: '53px', right: '13px' }}
               onClick={() => handleZoom(1)}
             >
-              <img
-                src={zoomInIcon}
-                alt={'zoom-in-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={zoomInIcon} alt={'zoom-in-icon'} className={classes.controlButton} />
             </IconButton>
             <IconButton
-              className={`${classes.mapButton}`}
+              className={classes.mapButton}
               style={{ bottom: '13px', right: '13px' }}
               onClick={() => handleZoom(-1)}
             >
-              <img
-                src={zoomOutIcon}
-                alt={'zoom-out-icon'}
-                style={{ width: '100%', height: 'auto' }}
-              />
+              <img src={zoomOutIcon} alt={'zoom-out-icon'} className={classes.controlButton} />
             </IconButton>
           </div>
 
           <Box
             p={2}
+            className={classes.dataBox}
             style={{
-              width: '94%',
-              padding: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
               flexDirection: isMediumScreen ? 'row' : 'column',
             }}
           >
             <Typography className={classes.addressTypography}>{address}</Typography>
 
-            {/* {isMediumScreen && (
-              <Box style={{ minWidth: '50%' }}>
-                <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
-                <DistanceInfo
-                  location={'Engineering Quad'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-                <DistanceInfo
-                  location={'Ho Plaza'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-                <DistanceInfo
-                  location={'Ag Quad'}
-                  walkDistance={walkTime}
-                  driveDistance={driveTime}
-                />
-              </Box>
-            )} */}
             <Box style={{ minWidth: '50%' }}>
               <Typography className={classes.distanceTypography}>Distance from Campus</Typography>
               <DistanceInfo
                 location={'Engineering Quad'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.engQuadWalking || 0)}
+                driveTime={Math.round(travelTimes?.engQuadDriving || 0)}
               />
               <DistanceInfo
                 location={'Ho Plaza'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.hoPlazaWalking || 0)}
+                driveTime={Math.round(travelTimes?.hoPlazaDriving || 0)}
               />
               <DistanceInfo
                 location={'Ag Quad'}
-                walkDistance={walkTime}
-                driveDistance={driveTime}
+                walkTime={Math.round(travelTimes?.agQuadWalking || 0)}
+                driveTime={Math.round(travelTimes?.agQuadDriving || 0)}
               />
             </Box>
           </Box>
