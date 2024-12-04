@@ -56,6 +56,7 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   readonly triggerEditToast: () => void;
   readonly triggerDeleteToast: () => void;
+  readonly triggerPhotoCarousel: (photos: readonly string[], startIndex: number) => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   readonly showLabel: boolean;
@@ -102,6 +103,13 @@ const useStyles = makeStyles(() => ({
     borderRadius: '4px',
     height: '15em',
     width: '15em',
+    cursor: 'pointer',
+    transition: '0.3s ease-in-out',
+    '&:hover': {
+      filter: 'brightness(0.85)',
+      boxShadow: '0 4px 4px rgba(0, 0, 0, 0.1)',
+      transform: 'scale(1.02)',
+    },
   },
   photoRowStyle: {
     overflowX: 'auto',
@@ -110,6 +118,9 @@ const useStyles = makeStyles(() => ({
     gap: '1vw',
     paddingTop: '2%',
     paddingLeft: '0.6%',
+    overflowY: 'hidden',
+    paddingRight: '0.6%',
+    paddingBottom: '2%',
   },
   bedroomsPrice: {
     display: 'flex',
@@ -208,6 +219,7 @@ const ReviewComponent = ({
   setToggle,
   triggerEditToast,
   triggerDeleteToast,
+  triggerPhotoCarousel,
   user,
   setUser,
   showLabel,
@@ -562,7 +574,7 @@ const ReviewComponent = ({
               {review.photos.length > 0 && (
                 <Grid container>
                   <Grid item className={photoRowStyle}>
-                    {review.photos.map((photo) => {
+                    {review.photos.map((photo, i) => {
                       return (
                         <CardMedia
                           component="img"
@@ -570,6 +582,8 @@ const ReviewComponent = ({
                           image={photo}
                           title="Apt image"
                           className={photoStyle}
+                          onClick={() => triggerPhotoCarousel(review.photos, i)}
+                          loading="lazy"
                         />
                       );
                     })}

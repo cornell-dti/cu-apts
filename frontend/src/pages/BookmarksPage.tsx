@@ -16,6 +16,8 @@ import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
 import Toast from '../components/utils/Toast';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -109,6 +111,13 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -207,6 +216,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   // Define two functions for handling likes and dislikes
   const addLike = likeHelper(false);
   const removeLike = likeHelper(true);
+
+  const Modals = (
+    <>
+      <PhotoCarousel
+        photos={carouselPhotos}
+        open={carouselOpen}
+        onClose={closePhotoCarousel}
+        startIndex={carouselStartIndex}
+      />
+    </>
+  );
 
   return (
     <div className={background}>
@@ -365,6 +385,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
                       triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                      triggerPhotoCarousel={showPhotoCarousel}
                       user={user}
                       setUser={setUser}
                       showLabel={true}
@@ -392,6 +413,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           </Grid>
         )}
       </Grid>
+      {Modals}
     </div>
   );
 };
