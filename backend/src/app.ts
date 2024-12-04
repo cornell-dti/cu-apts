@@ -984,15 +984,6 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
   }
 });
 
-interface TravelTimes {
-  agQuadWalking: number;
-  agQuadDriving: number;
-  engQuadWalking: number;
-  engQuadDriving: number;
-  hoPlazaWalking: number;
-  hoPlazaDriving: number;
-}
-
 const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {
   eng_quad: '42.4445,-76.4836', // Duffield Hall
@@ -1072,7 +1063,7 @@ app.post('/api/calculate-travel-times', async (req, res) => {
     console.log('Raw walking times:', walkingTimes);
     console.log('Raw driving times:', drivingTimes);
 
-    const travelTimes: TravelTimes = {
+    const travelTimes: LocationTravelTimes = {
       engQuadWalking: walkingTimes[0],
       engQuadDriving: drivingTimes[0],
       agQuadWalking: walkingTimes[1],
@@ -1117,7 +1108,7 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
     }
 
     // Calculate travel times using the main endpoint
-    const response = await axios.post(`http://localhost:3000/api/calculate-travel-times`, {
+    const response = await axios.post(`/api/calculate-travel-times`, {
       origin: `${buildingData.latitude},${buildingData.longitude}`,
     });
 
@@ -1183,7 +1174,7 @@ app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, r
           return;
         }
 
-        const response = await axios.post(`http://localhost:3000/api/calculate-travel-times`, {
+        const response = await axios.post(`/api/calculate-travel-times`, {
           origin: `${buildingData.latitude},${buildingData.longitude}`,
         });
 
@@ -1221,7 +1212,7 @@ app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, r
  * Looks up the travel times document for the given building ID and returns the stored walking and driving
  * times to Cornell landmarks: Engineering Quad, Agriculture Quad, and Ho Plaza.
  *
- * @route GET /api/travel-times/:buildingId
+ * @route GET /api/travel-times-by-id/:buildingId
  *
  * @input {string} req.params.buildingId - ID of the building to get travel times for
  *

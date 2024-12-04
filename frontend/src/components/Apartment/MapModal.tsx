@@ -116,7 +116,6 @@ interface MapModalProps extends BaseProps {
   aptName: string;
   open: boolean;
   onClose: () => void;
-  setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 /**
@@ -144,7 +143,6 @@ const MapModal = ({
   aptName,
   open,
   onClose,
-  setOpen,
   address,
   latitude = 0,
   longitude = 0,

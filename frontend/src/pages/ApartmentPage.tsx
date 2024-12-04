@@ -56,10 +56,6 @@ export type RatingInfo = {
   rating: number;
 };
 
-interface MapInfoRef {
-  recenter: () => void;
-}
-
 const useStyles = makeStyles((theme) => ({
   reviewButton: {
     borderRadius: '30px',
@@ -160,7 +156,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
-  const mapInfoRef = useRef<MapInfoRef>(null);
   const [mapToggle, setMapToggle] = useState(false);
 
   const dummyTravelTimes: LocationTravelTimes = {
@@ -445,7 +440,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         aptName={apt!.name}
         open={mapOpen}
         onClose={handleMapModalClose}
-        setOpen={setMapOpen}
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
