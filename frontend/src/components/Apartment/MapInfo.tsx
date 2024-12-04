@@ -1,4 +1,4 @@
-import React, { ReactElement, useRef } from 'react';
+import React, { ReactElement, useRef, useEffect } from 'react';
 import { Box, Grid, IconButton, Typography, makeStyles } from '@material-ui/core';
 import GoogleMapReact from 'google-map-react';
 import aptIcon from '../../assets/location-pin.svg';
@@ -6,10 +6,10 @@ import schoolIcon from '../../assets/school-pin.svg';
 import expandIcon from '../../assets/expand-button.svg';
 import zoomInIcon from '../../assets/zoom-in-icon.png';
 import zoomOutIcon from '../../assets/zoom-out-icon.png';
-import recenterIcon from '../../assets/recenter-icon.svg';
 import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
 import { Marker } from './Marker';
+import { LocationTravelTimes } from '../../../../common/types/db-types';
 
 config();
 
@@ -17,18 +17,18 @@ export type BaseProps = {
   readonly address: string | null;
   readonly latitude?: number;
   readonly longitude?: number;
-  readonly walkTime?: number;
-  readonly driveTime?: number;
+  readonly travelTimes?: LocationTravelTimes;
+  isMobile: boolean;
 };
 
 type MapInfoProps = BaseProps & {
   handleClick: () => void;
-  isMobile: boolean;
+  mapToggle: boolean;
 };
 
 export type distanceProps = {
   location: string;
-  walkDistance: number;
+  walkDistance: number | undefined;
 };
 
 const WalkDistanceInfo = ({ location, walkDistance }: distanceProps) => {
@@ -141,55 +141,37 @@ const useStyles = makeStyles((theme) => ({
  *   - `longitude`: The longitude of the apartment location.
  *   - `walkTime`: The walk time from the apartment to campus landmarks.
  */
-export default function MapInfo({
+function MapInfo({
   address,
   latitude = 0,
   longitude = 0,
-  walkTime = 0,
+  travelTimes,
   handleClick,
+  mapToggle,
   isMobile,
 }: MapInfoProps): ReactElement {
-  const { outerMapDiv, innerMapDiv, mapExpandButton, recenterButton, zoomInButton, zoomOutButton } =
-    useStyles();
+  const { outerMapDiv, innerMapDiv, mapExpandButton, zoomInButton, zoomOutButton } = useStyles();
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
     mapRef.current = map;
   };
 
-  const handleRecenter = () => {
+  useEffect(() => {
     if (mapRef.current) {
       mapRef.current.setCenter({ lat: latitude, lng: longitude });
       mapRef.current.setZoom(16);
     }
-  };
+  }, [mapToggle, latitude, longitude]);
 
-  // Function to handle zoom in/out of the map
   const handleZoom = (zoomChange: number) => {
     if (mapRef.current) {
-      const currentZoom = mapRef.current.getZoom() || 16; // Ensure there is a valid value for currentZoom
+      const currentZoom = mapRef.current.getZoom() || 16;
       const newZoom = currentZoom + zoomChange;
       if (newZoom > 11 && newZoom < 20) {
-        // Ensure the new zoom is within the allowed range
         mapRef.current.setZoom(newZoom);
       }
     }
-  };
-
-  const expandOrRecenter = (isMobile: boolean) => {
-    return isMobile ? (
-      <IconButton disableRipple className={recenterButton} onClick={handleRecenter}>
-        <img
-          src={recenterIcon}
-          alt={'recenter-icon'}
-          style={{ width: '21.4px', height: '21.4px' }}
-        />
-      </IconButton>
-    ) : (
-      <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
-        <img src={expandIcon} alt={'expand-icon'} style={{ width: '21.4px', height: '21.4px' }} />
-      </IconButton>
-    );
   };
 
   return (
@@ -217,12 +199,6 @@ export default function MapInfo({
                 altText="Engineering Quad icon"
               />
               <Marker
-                lat={42.449014547431425}
-                lng={-76.48413980587392}
-                src={schoolIcon}
-                altText="Arts Quad icon"
-              />
-              <Marker
                 lat={42.446768276610875}
                 lng={-76.48505175766948}
                 src={schoolIcon}
@@ -236,7 +212,13 @@ export default function MapInfo({
               />
             </GoogleMapReact>
           </div>
-          {expandOrRecenter(isMobile)}
+          <IconButton onClick={handleClick} className={mapExpandButton} disableRipple>
+            <img
+              src={expandIcon}
+              alt={'expand-icon'}
+              style={{ width: '21.4px', height: '21.4px' }}
+            />
+          </IconButton>
           {
             <div>
               <IconButton disableRipple className={zoomInButton} onClick={() => handleZoom(1)}>
@@ -274,12 +256,23 @@ export default function MapInfo({
             <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
               Distance from Campus
             </Typography>
-            <WalkDistanceInfo location={'Engineering Quad'} walkDistance={walkTime} />
-            <WalkDistanceInfo location={'Ho Plaza'} walkDistance={walkTime} />
-            <WalkDistanceInfo location={'Ag Quad'} walkDistance={walkTime} />
+            <WalkDistanceInfo
+              location={'Engineering Quad'}
+              walkDistance={Math.round(travelTimes?.engQuadWalking || 0)}
+            />
+            <WalkDistanceInfo
+              location={'Ho Plaza'}
+              walkDistance={Math.round(travelTimes?.hoPlazaWalking || 0)}
+            />
+            <WalkDistanceInfo
+              location={'Ag Quad'}
+              walkDistance={Math.round(travelTimes?.agQuadWalking || 0)}
+            />
           </Box>
         </Box>
       </Box>
     </Box>
   );
 }
+
+export default MapInfo;

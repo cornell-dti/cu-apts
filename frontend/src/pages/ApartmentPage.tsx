@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useRef } from 'react';
 import {
   IconButton,
   Button,
@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
@@ -25,6 +26,7 @@ import {
   Apartment,
   ApartmentWithId,
   DetailedRating,
+  LocationTravelTimes,
 } from '../../../common/types/db-types';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
@@ -39,8 +41,8 @@ import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
-import savedIcon from '../assets/filled-large-saved-icon.png';
-import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
+import savedIcon from '../assets/saved-icon-filled.svg';
+import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
@@ -77,9 +79,6 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
   },
-  root: {
-    borderRadius: '10px',
-  },
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
@@ -88,22 +87,22 @@ const useStyles = makeStyles((theme) => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-  dateText: {
-    color: colors.gray1,
-  },
-  button: {
-    textTransform: 'none',
-    '&.Mui-disabled': {
-      color: 'inherit',
+  saveButton: {
+    backgroundColor: 'transparent',
+    width: '107px',
+    margin: '10px 16px',
+    borderRadius: '30px',
+    border: '2px solid',
+    fontSize: '15px',
+    borderColor: colors.red1,
+    '&:focus': {
+      borderColor: `${colors.red1} !important`,
     },
   },
-  horizontalLine: {
-    borderTop: '1px solid #C4C4C4',
-    width: '95%',
-    marginTop: '20px',
-    borderLeft: 'none',
-    borderRight: 'none',
-    borderBottom: 'none',
+  bookmarkRibbon: {
+    width: '19px',
+    height: '25px',
+    marginRight: '10px',
   },
 }));
 
@@ -130,7 +129,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-  const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -138,6 +136,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
+  const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel(apt ? apt.photos : []);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -151,6 +157,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const [mapToggle, setMapToggle] = useState(false);
+
+  const dummyTravelTimes: LocationTravelTimes = {
+    agQuadDriving: -1,
+    agQuadWalking: -1,
+    engQuadDriving: -1,
+    engQuadWalking: -1,
+    hoPlazaDriving: -1,
+    hoPlazaWalking: -1,
+  };
 
   // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
@@ -175,6 +191,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
+    saveButton,
+    bookmarkRibbon,
   } = useStyles();
 
   // Set the page title based on whether apartment data is loaded.
@@ -187,6 +205,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   useEffect(() => {
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
+      errorHandler: handlePageNotFound,
+    });
+  }, [aptId]);
+
+  // Fetch travel times data for the current apartment
+  useEffect(() => {
+    get<LocationTravelTimes>(`/api/travel-times-by-id/${aptId}`, {
+      callback: setTravelTimes,
       errorHandler: handlePageNotFound,
     });
   }, [aptId]);
@@ -257,6 +283,32 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   // Use setLikedReviews to indicate the number of likes.
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
+  }, []);
+
+  // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
+  useEffect(() => {
+    getUser(false).then((user) => {
+      if (user) {
+        user.getIdToken(true).then((token) => {
+          get<ReviewWithId[]>(
+            `/api/review/like/${user.uid}`,
+            {
+              callback: (reviews) => {
+                const likedReviewsMap: Likes = {};
+                const likeStatusesMap: Likes = {};
+                reviews.forEach((review) => {
+                  likedReviewsMap[review.id] = true;
+                  likeStatusesMap[review.id] = false;
+                });
+                setLikedReviews(likedReviewsMap);
+                setLikeStatuses(likeStatusesMap);
+              },
+            },
+            createAuthHeaders(token)
+          );
+        });
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -391,18 +443,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
+  const handleMapModalClose = () => {
+    setMapOpen(false);
+    setMapToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
       <MapModal
         aptName={apt!.name}
         open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        setOpen={setMapOpen}
+        onClose={handleMapModalClose}
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={travelTimes}
+        isMobile={isMobile}
       />
       <ReviewModal
         open={reviewOpen}
@@ -416,9 +472,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={apt.photos}
+        photos={carouselPhotos}
         open={carouselOpen}
-        onClose={() => setCarouselOpen(false)}
+        startIndex={carouselStartIndex}
+        onClose={closePhotoCarousel}
       />
     </>
   );
@@ -452,7 +509,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
-            <IconButton
+            {/* <IconButton
               disableRipple
               onClick={handleSaveToggle}
               style={{
@@ -465,7 +522,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 alt={isSaved ? 'Saved' : 'Unsaved'}
                 style={{ width: '107px', height: '43px' }}
               />
-            </IconButton>
+            </IconButton> */}
+            <Button
+              disableRipple
+              onClick={handleSaveToggle}
+              className={saveButton}
+              color="primary"
+              fullWidth
+              disableElevation
+            >
+              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
+              {isSaved ? 'Saved' : 'Save'}
+            </Button>
             <Button
               color="primary"
               className={reviewButton}
@@ -483,7 +551,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             color="secondary"
             variant="contained"
             disableElevation
-            onClick={() => setCarouselOpen(true)}
+            onClick={() => showPhotoCarousel()}
           >
             Show all photos
           </Button>
@@ -557,7 +625,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               color="secondary"
               variant="contained"
               disableElevation
-              onClick={() => setCarouselOpen(true)}
+              onClick={() => showPhotoCarousel()}
             >
               Show all photos
             </Button>
@@ -619,9 +687,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={travelTimes}
         handleClick={() => setMapOpen(true)}
+        mapToggle={mapToggle}
         isMobile={isMobile}
       />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
@@ -651,7 +719,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             averageRating={getAverageRating(reviewData)}
             apartment={apt!}
             numReviews={reviewData.length}
-            handleClick={() => setCarouselOpen(true)}
+            handleClick={() => showPhotoCarousel()}
           />
         </Container>
       )}
@@ -751,6 +819,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             triggerEditToast={showEditSuccessConfirmationToast}
                             triggerDeleteToast={showDeleteSuccessConfirmationToast}
                             triggerReportToast={showReportSuccessConfirmationToast}
+                            triggerPhotoCarousel={showPhotoCarousel}
                             user={user}
                             setUser={setUser}
                           />

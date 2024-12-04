@@ -22,6 +22,8 @@ import { sortReviews } from '../utils/sortReviews';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import clsx from 'clsx';
 import { colors } from '../colors';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -67,17 +69,20 @@ const AdminPage = (): ReactElement => {
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
   const [toggle, setToggle] = useState(false);
-
   const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
   const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
-
   const [pendingExpanded, setPendingExpanded] = useState(true);
   const [declinedExpanded, setDeclinedExpanded] = useState(true);
-
   const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
   const [reportedExpanded, setReportedExpanded] = useState(true);
-
   const { container, sectionHeader, expand, expandOpen } = useStyles();
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel([]);
 
   useTitle('Admin');
 
@@ -142,6 +147,17 @@ const AdminPage = (): ReactElement => {
     });
   }, [toggle]);
 
+  const Modals = (
+    <>
+      <PhotoCarousel
+        photos={carouselPhotos}
+        open={carouselOpen}
+        onClose={closePhotoCarousel}
+        startIndex={carouselStartIndex}
+      />
+    </>
+  );
+
   //  Reviews tab
   const reviews = (
     <Container className={container}>
@@ -193,7 +209,12 @@ const AdminPage = (): ReactElement => {
             <Grid container item spacing={3}>
               {sortReviews(reportedData, 'date').map((review, index) => (
                 <Grid item xs={12} key={index}>
-                  <AdminReviewComponent review={review} setToggle={setToggle} showDelete={true} />
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    showDelete={true}
+                    triggerPhotoCarousel={showPhotoCarousel}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -220,7 +241,12 @@ const AdminPage = (): ReactElement => {
             <Grid container item spacing={3}>
               {sortReviews(pendingData, 'date').map((review, index) => (
                 <Grid item xs={12} key={index}>
-                  <AdminReviewComponent review={review} setToggle={setToggle} showDecline={true} />
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    showDecline={true}
+                    triggerPhotoCarousel={showPhotoCarousel}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -247,7 +273,12 @@ const AdminPage = (): ReactElement => {
             <Grid container item spacing={3}>
               {sortReviews(declinedData, 'date').map((review, index) => (
                 <Grid item xs={12} key={index}>
-                  <AdminReviewComponent review={review} setToggle={setToggle} showDelete={true} />
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    showDelete={true}
+                    triggerPhotoCarousel={showPhotoCarousel}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -318,6 +349,7 @@ const AdminPage = (): ReactElement => {
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
+      {Modals}
     </div>
   );
 };
