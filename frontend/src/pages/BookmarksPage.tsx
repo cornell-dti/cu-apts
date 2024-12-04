@@ -130,17 +130,15 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
-    const fetchLikedReviews = async () => {
-      if (user) {
-        const token = await user.getIdToken(true);
+    if (user) {
+      user.getIdToken(true).then((token) => {
         get<ReviewWithId[]>(
-          `/api/review/like/${user.uid}`,
+          `/api/review/like/${user.uid}?status=APPROVED`,
           {
             callback: setHelpfulReviewsData,
           },
           createAuthHeaders(token)
         );
-
         // this is here so we can get the token when it's fetched and not cause an unauthorized error
         get<CardData[]>(
           savedAPI,
@@ -151,9 +149,8 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           },
           createAuthHeaders(token)
         );
-      }
-    };
-    fetchLikedReviews();
+      });
+    }
   }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
@@ -197,13 +194,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         const token = await user.getIdToken(true);
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
-        setHelpfulReviewsData((reviews) =>
-          reviews.map((review) =>
-            review.id === reviewId
-              ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
-              : review
-          )
-        );
+        if (dislike) {
+          setHelpfulReviewsData((reviews) => reviews.filter((review) => review.id !== reviewId));
+        } else {
+          setHelpfulReviewsData((reviews) =>
+            reviews.map((review) =>
+              review.id === reviewId
+                ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
+                : review
+            )
+          );
+        }
       } catch (err) {
         throw new Error('Error with liking review');
       }
