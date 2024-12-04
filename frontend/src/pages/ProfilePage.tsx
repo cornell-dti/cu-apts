@@ -21,6 +21,8 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import defaultProfilePic from '../assets/cuapts-bear.png';
 import { useTitle } from '../utils';
 import { sortReviews } from '../utils/sortReviews';
+import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
+import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -167,6 +169,13 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
   const toastTime = 3500;
+  const {
+    carouselPhotos,
+    carouselStartIndex,
+    carouselOpen,
+    showPhotoCarousel,
+    closePhotoCarousel,
+  } = usePhotoCarousel([]);
 
   useTitle('Profile');
 
@@ -181,6 +190,32 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
       callback: setPendingReviews,
     });
   }, [user?.uid, toggle]);
+
+  // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
+  useEffect(() => {
+    getUser(false).then((user) => {
+      if (user) {
+        user.getIdToken(true).then((token) => {
+          get<ReviewWithId[]>(
+            `/api/review/like/${user.uid}`,
+            {
+              callback: (reviews) => {
+                const likedReviewsMap: Likes = {};
+                const likeStatusesMap: Likes = {};
+                reviews.forEach((review) => {
+                  likedReviewsMap[review.id] = true;
+                  likeStatusesMap[review.id] = false;
+                });
+                setLikedReviews(likedReviewsMap);
+                setLikeStatuses(likeStatusesMap);
+              },
+            },
+            createAuthHeaders(token)
+          );
+        });
+      }
+    });
+  }, []);
 
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
@@ -199,7 +234,16 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
         const token = await user.getIdToken(true);
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
-        setLikedReviews((reviews) => ({ ...reviews, [reviewId]: !dislike }));
+        setLikedReviews((reviews) => {
+          return { ...reviews, [reviewId]: !dislike };
+        });
+        setPendingReviews((reviews) =>
+          reviews.map((review) =>
+            review.id === reviewId
+              ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
+              : review
+          )
+        );
         setApprovedReviews((reviews) =>
           reviews.map((review) =>
             review.id === reviewId
@@ -260,6 +304,17 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isModalOpen, setIsModalOpen]);
+
+  const Modals = (
+    <>
+      <PhotoCarousel
+        photos={carouselPhotos}
+        open={carouselOpen}
+        onClose={closePhotoCarousel}
+        startIndex={carouselStartIndex}
+      />
+    </>
+  );
 
   return (
     <div className={root}>
@@ -327,7 +382,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
           <Grid>
             {/* Maps list of pending reviews and calls Review Component with fields for each user*/}
             {sortReviews(pendingReviews, 'date').map((review, index) => (
-              <Grid item xs={12} key={index} className={reviewCardStyle}>
+              <Grid item xs={12} key={review.id} className={reviewCardStyle}>
                 <ReviewComponent
                   key={review.id}
                   review={review}
@@ -338,6 +393,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -352,6 +408,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
             {sortReviews(approvedReviews, 'date').map((review, index) => (
               <Grid item xs={12} key={index} className={reviewCardStyle}>
                 <ReviewComponent
+                  key={review.id}
                   review={review}
                   liked={likedReviews[review.id]}
                   likeLoading={likeStatuses[review.id]}
@@ -360,6 +417,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                   setToggle={setToggle}
                   triggerEditToast={showEditSuccessConfirmationToast}
                   triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                  triggerPhotoCarousel={showPhotoCarousel}
                   user={user}
                   setUser={setUser}
                   showLabel={true}
@@ -384,6 +442,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
           </div>
         )}
       </div>
+      {Modals}
     </div>
   );
 };
