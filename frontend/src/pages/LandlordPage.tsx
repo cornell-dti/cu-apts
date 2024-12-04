@@ -186,6 +186,32 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     return subscribeLikes(setLikedReviews);
   }, []);
 
+  // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
+  useEffect(() => {
+    getUser(false).then((user) => {
+      if (user) {
+        user.getIdToken(true).then((token) => {
+          get<ReviewWithId[]>(
+            `/api/review/like/${user.uid}`,
+            {
+              callback: (reviews) => {
+                const likedReviewsMap: Likes = {};
+                const likeStatusesMap: Likes = {};
+                reviews.forEach((review) => {
+                  likedReviewsMap[review.id] = true;
+                  likeStatusesMap[review.id] = false;
+                });
+                setLikedReviews(likedReviewsMap);
+                setLikeStatuses(likeStatusesMap);
+              },
+            },
+            createAuthHeaders(token)
+          );
+        });
+      }
+    });
+  }, []);
+
   useEffect(() => {
     const checkIfSaved = async () => {
       try {
