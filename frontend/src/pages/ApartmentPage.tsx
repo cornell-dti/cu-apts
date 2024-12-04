@@ -13,7 +13,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import ReviewModal from '../components/LeaveReview/ReviewModal';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import ReviewComponent from '../components/Review/Review';
 import ReviewHeader from '../components/Review/ReviewHeader';
 import { useTitle } from '../utils';
@@ -41,8 +40,8 @@ import { getAverageRating } from '../utils/average';
 import { colors } from '../colors';
 import clsx from 'clsx';
 import { sortReviews } from '../utils/sortReviews';
-import savedIcon from '../assets/saved-icon-filled.svg';
-import unsavedIcon from '../assets/saved-icon-unfilled.svg';
+import savedIcon from '../assets/filled-large-saved-icon.png';
+import unsavedIcon from '../assets/unfilled-large-saved-icon.png';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
@@ -83,6 +82,9 @@ const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
   },
+  root: {
+    borderRadius: '10px',
+  },
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
@@ -91,22 +93,22 @@ const useStyles = makeStyles((theme) => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-  saveButton: {
-    backgroundColor: 'transparent',
-    width: '107px',
-    margin: '10px 16px',
-    borderRadius: '30px',
-    border: '2px solid',
-    fontSize: '15px',
-    borderColor: colors.red1,
-    '&:focus': {
-      borderColor: `${colors.red1} !important`,
+  dateText: {
+    color: colors.gray1,
+  },
+  button: {
+    textTransform: 'none',
+    '&.Mui-disabled': {
+      color: 'inherit',
     },
   },
-  bookmarkRibbon: {
-    width: '19px',
-    height: '25px',
-    marginRight: '10px',
+  horizontalLine: {
+    borderTop: '1px solid #C4C4C4',
+    width: '95%',
+    marginTop: '20px',
+    borderLeft: 'none',
+    borderRight: 'none',
+    borderBottom: 'none',
   },
 }));
 
@@ -133,6 +135,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [carouselOpen, setCarouselOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -140,13 +143,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
   const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
-  const {
-    carouselPhotos,
-    carouselStartIndex,
-    carouselOpen,
-    showPhotoCarousel,
-    closePhotoCarousel,
-  } = usePhotoCarousel(apt ? apt.photos : []);
   const [loaded, setLoaded] = useState(false);
   const [showSignInError, setShowSignInError] = useState(false);
   const [sortBy, setSortBy] = useState<Fields>('date');
@@ -195,8 +191,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     container,
     expand,
     expandOpen,
-    saveButton,
-    bookmarkRibbon,
   } = useStyles();
 
   // Set the page title based on whether apartment data is loaded.
@@ -278,32 +272,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   // Use setLikedReviews to indicate the number of likes.
   useEffect(() => {
     return subscribeLikes(setLikedReviews);
-  }, []);
-
-  // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
-  useEffect(() => {
-    getUser(false).then((user) => {
-      if (user) {
-        user.getIdToken(true).then((token) => {
-          get<ReviewWithId[]>(
-            `/api/review/like/${user.uid}`,
-            {
-              callback: (reviews) => {
-                const likedReviewsMap: Likes = {};
-                const likeStatusesMap: Likes = {};
-                reviews.forEach((review) => {
-                  likedReviewsMap[review.id] = true;
-                  likeStatusesMap[review.id] = false;
-                });
-                setLikedReviews(likedReviewsMap);
-                setLikeStatuses(likeStatusesMap);
-              },
-            },
-            createAuthHeaders(token)
-          );
-        });
-      }
-    });
   }, []);
 
   useEffect(() => {
@@ -464,10 +432,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         user={user}
       />
       <PhotoCarousel
-        photos={carouselPhotos}
+        photos={apt.photos}
         open={carouselOpen}
-        startIndex={carouselStartIndex}
-        onClose={closePhotoCarousel}
+        onClose={() => setCarouselOpen(false)}
       />
     </>
   );
@@ -501,7 +468,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
-            {/* <IconButton
+            <IconButton
               disableRipple
               onClick={handleSaveToggle}
               style={{
@@ -514,18 +481,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 alt={isSaved ? 'Saved' : 'Unsaved'}
                 style={{ width: '107px', height: '43px' }}
               />
-            </IconButton> */}
-            <Button
-              disableRipple
-              onClick={handleSaveToggle}
-              className={saveButton}
-              color="primary"
-              fullWidth
-              disableElevation
-            >
-              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
-              {isSaved ? 'Saved' : 'Save'}
-            </Button>
+            </IconButton>
             <Button
               color="primary"
               className={reviewButton}
@@ -543,7 +499,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             color="secondary"
             variant="contained"
             disableElevation
-            onClick={() => showPhotoCarousel()}
+            onClick={() => setCarouselOpen(true)}
           >
             Show all photos
           </Button>
@@ -617,7 +573,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               color="secondary"
               variant="contained"
               disableElevation
-              onClick={() => showPhotoCarousel()}
+              onClick={() => setCarouselOpen(true)}
             >
               Show all photos
             </Button>
@@ -711,7 +667,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             averageRating={getAverageRating(reviewData)}
             apartment={apt!}
             numReviews={reviewData.length}
-            handleClick={() => showPhotoCarousel()}
+            handleClick={() => setCarouselOpen(true)}
           />
         </Container>
       )}
@@ -802,7 +758,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             setToggle={setToggle}
                             triggerEditToast={showEditSuccessConfirmationToast}
                             triggerDeleteToast={showDeleteSuccessConfirmationToast}
-                            triggerPhotoCarousel={showPhotoCarousel}
                             user={user}
                             setUser={setUser}
                           />

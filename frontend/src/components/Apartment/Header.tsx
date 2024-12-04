@@ -1,5 +1,14 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import { CardHeader, CardMedia, Grid, withStyles, makeStyles, ButtonBase } from '@material-ui/core';
+import {
+  CardHeader,
+  CardMedia,
+  Grid,
+  Button,
+  withStyles,
+  makeStyles,
+  Avatar,
+  ButtonBase,
+} from '@material-ui/core';
 import styles from './Header.module.scss';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
@@ -129,6 +138,12 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
   },
+  btnSection: {
+    height: '94%',
+    [theme.breakpoints.down('sm')]: {
+      height: '97%',
+    },
+  },
   logoGrid: {
     marginRight: '1em',
     flex: '0 0 auto',
@@ -174,6 +189,7 @@ const ApartmentHeader = ({ apartment, handleClick }: Props): ReactElement => {
     aptAddress,
     headerSection,
     mobileHeaderSection,
+    btnSection,
     logoGrid,
     logoGridMobile,
     mobileAptName,

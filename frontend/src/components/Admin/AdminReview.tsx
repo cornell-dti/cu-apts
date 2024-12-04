@@ -37,8 +37,6 @@ type Props = {
   readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   /** Indicates if the review is in the declined section. */
   readonly declinedSection: boolean;
-  /** Function to trigger the photo carousel. */
-  readonly triggerPhotoCarousel: (photos: readonly string[], startIndex: number) => void;
 };
 
 /**
@@ -72,24 +70,14 @@ const useStyles = makeStyles(() => ({
     borderRadius: '4px',
     height: '15em',
     width: '15em',
-    cursor: 'pointer',
-    transition: '0.3s ease-in-out',
-    '&:hover': {
-      filter: 'brightness(0.85)',
-      boxShadow: '0 4px 4px rgba(0, 0, 0, 0.1)',
-      transform: 'scale(1.02)',
-    },
   },
   photoRowStyle: {
     overflowX: 'auto',
-    overflowY: 'hidden',
     display: 'flex',
     flexDirection: 'row',
     gap: '1vw',
     paddingTop: '2%',
     paddingLeft: '0.6%',
-    paddingRight: '0.6%',
-    paddingBottom: '2%',
   },
 }));
 
@@ -99,12 +87,7 @@ const useStyles = makeStyles(() => ({
  * @param review review - The review to approve
  * @returns The rendered component.
  */
-const AdminReviewComponent = ({
-  review,
-  setToggle,
-  declinedSection,
-  triggerPhotoCarousel,
-}: Props): ReactElement => {
+const AdminReviewComponent = ({ review, setToggle, declinedSection }: Props): ReactElement => {
   const { detailedRatings, overallRating, bedrooms, price, date, reviewText, photos } = review;
   const formattedDate = format(new Date(date), 'MMM dd, yyyy').toUpperCase();
   const { root, dateText, bedroomsPriceText, ratingInfo, photoStyle, photoRowStyle } = useStyles();
@@ -219,7 +202,7 @@ const AdminReviewComponent = ({
               {photos.length > 0 && (
                 <Grid container>
                   <Grid item className={photoRowStyle}>
-                    {photos.map((photo, i) => {
+                    {photos.map((photo) => {
                       return (
                         <CardMedia
                           component="img"
@@ -227,8 +210,6 @@ const AdminReviewComponent = ({
                           image={photo}
                           title="Apt image"
                           className={photoStyle}
-                          onClick={() => triggerPhotoCarousel(photos, i)}
-                          loading="lazy"
                         />
                       );
                     })}

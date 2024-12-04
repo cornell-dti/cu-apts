@@ -16,8 +16,6 @@ import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
 import Toast from '../components/utils/Toast';
-import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 type Props = {
   user: firebase.User | null;
@@ -111,13 +109,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
-  const {
-    carouselPhotos,
-    carouselStartIndex,
-    carouselOpen,
-    showPhotoCarousel,
-    closePhotoCarousel,
-  } = usePhotoCarousel([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -130,15 +121,17 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
 
   // Fetch helpful reviews data when the component mounts or when user changes or when toggle changes
   useEffect(() => {
-    if (user) {
-      user.getIdToken(true).then((token) => {
+    const fetchLikedReviews = async () => {
+      if (user) {
+        const token = await user.getIdToken(true);
         get<ReviewWithId[]>(
-          `/api/review/like/${user.uid}?status=APPROVED`,
+          `/api/review/like/${user.uid}`,
           {
             callback: setHelpfulReviewsData,
           },
           createAuthHeaders(token)
         );
+
         // this is here so we can get the token when it's fetched and not cause an unauthorized error
         get<CardData[]>(
           savedAPI,
@@ -149,8 +142,9 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           },
           createAuthHeaders(token)
         );
-      });
-    }
+      }
+    };
+    fetchLikedReviews();
   }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
@@ -194,17 +188,13 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         const token = await user.getIdToken(true);
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
         await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
-        if (dislike) {
-          setHelpfulReviewsData((reviews) => reviews.filter((review) => review.id !== reviewId));
-        } else {
-          setHelpfulReviewsData((reviews) =>
-            reviews.map((review) =>
-              review.id === reviewId
-                ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
-                : review
-            )
-          );
-        }
+        setHelpfulReviewsData((reviews) =>
+          reviews.map((review) =>
+            review.id === reviewId
+              ? { ...review, likes: (review.likes || defaultLikes) + offsetLikes }
+              : review
+          )
+        );
       } catch (err) {
         throw new Error('Error with liking review');
       }
@@ -216,17 +206,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   // Define two functions for handling likes and dislikes
   const addLike = likeHelper(false);
   const removeLike = likeHelper(true);
-
-  const Modals = (
-    <>
-      <PhotoCarousel
-        photos={carouselPhotos}
-        open={carouselOpen}
-        onClose={closePhotoCarousel}
-        startIndex={carouselStartIndex}
-      />
-    </>
-  );
 
   return (
     <div className={background}>
@@ -385,7 +364,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
                       triggerDeleteToast={showDeleteSuccessConfirmationToast}
-                      triggerPhotoCarousel={showPhotoCarousel}
                       user={user}
                       setUser={setUser}
                       showLabel={true}
@@ -413,7 +391,6 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           </Grid>
         )}
       </Grid>
-      {Modals}
     </div>
   );
 };

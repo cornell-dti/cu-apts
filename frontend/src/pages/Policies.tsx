@@ -41,16 +41,6 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-/**
- * Policies Component – Displays the privacy policy for CUAPTS.
- *
- * @remarks
- * This component displays the privacy policy, describing data collection, usage, user rights etc.
- * It adapts content styling based on the screen size.
- *
- * @return {ReactElement} – The rendered JSX structure of the Policies page.
- */
-
 const Policies = (): ReactElement => {
   const { h2, h3, h4, body, link } = useStyles();
 

@@ -18,8 +18,6 @@ import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
-import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
-import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -52,14 +50,6 @@ const AdminPage = (): ReactElement => {
 
   const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
   const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
-
-  const {
-    carouselPhotos,
-    carouselStartIndex,
-    carouselOpen,
-    showPhotoCarousel,
-    closePhotoCarousel,
-  } = usePhotoCarousel([]);
 
   const { container } = useStyles();
 
@@ -125,17 +115,6 @@ const AdminPage = (): ReactElement => {
     });
   }, [toggle]);
 
-  const Modals = (
-    <>
-      <PhotoCarousel
-        photos={carouselPhotos}
-        open={carouselOpen}
-        onClose={closePhotoCarousel}
-        startIndex={carouselStartIndex}
-      />
-    </>
-  );
-
   //  Reviews tab
   const reviews = (
     <Container className={container}>
@@ -178,7 +157,6 @@ const AdminPage = (): ReactElement => {
                   review={review}
                   setToggle={setToggle}
                   declinedSection={false}
-                  triggerPhotoCarousel={showPhotoCarousel}
                 />
               </Grid>
             ))}
@@ -197,7 +175,6 @@ const AdminPage = (): ReactElement => {
                     review={review}
                     setToggle={setToggle}
                     declinedSection={true}
-                    triggerPhotoCarousel={showPhotoCarousel}
                   />
                 </Grid>
               ))}
@@ -269,7 +246,6 @@ const AdminPage = (): ReactElement => {
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
-      {Modals}
     </div>
   );
 };

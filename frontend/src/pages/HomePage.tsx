@@ -40,21 +40,6 @@ type Props = {
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
-/**
- * HomePage Component – This component represents CUAPTS' home page.
- *
- * @remarks
- * This page displays a search bar (autocomplete), featured properties, and adjusts its layout
- * responsively for desktop and mobile views.
- *
- * @param {firebase.User | null} props.user – The currently logged-in Firebase user or null
- * if no user is logged in.
- * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - A
- * function to update the `user` state.
- *
- * @return {ReactElement} The JSX structure of the HomePage component.
- */
-
 const HomePage = ({ user, setUser }: Props): ReactElement => {
   const classes = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });

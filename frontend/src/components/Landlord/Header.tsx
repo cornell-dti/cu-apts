@@ -1,6 +1,14 @@
 import React, { ReactElement, useState, useEffect } from 'react';
 
-import { CardHeader, CardMedia, Grid, Button, withStyles, makeStyles } from '@material-ui/core';
+import {
+  CardHeader,
+  CardMedia,
+  Grid,
+  Button,
+  withStyles,
+  makeStyles,
+  Avatar,
+} from '@material-ui/core';
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
@@ -138,7 +146,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const LandlordHeader = ({ landlord, handleClick }: Props): ReactElement => {
-  const { name, photos } = landlord;
+  const { name, profilePhoto, photos } = landlord;
+  const icon = profilePhoto ? profilePhoto : DefaultIcon;
   const photoLink = photos.length ? photos[0] : defaultHeader;
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
