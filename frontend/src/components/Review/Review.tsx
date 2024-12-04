@@ -416,6 +416,15 @@ const ReviewComponent = ({
     setDeleteModalOpen(true);
   };
 
+  const handleReportModalOpen = async () => {
+    if (user) {
+      setReportModalOpen(true);
+    } else {
+      let user = await getUser(true);
+      setUser(user);
+    }
+  };
+
   /**
    * handleReportModalClose - Handles the closing of the report modal and processes the report if confirmed.
    *
@@ -583,7 +592,7 @@ const ReviewComponent = ({
   const reportAbuseButton = () => {
     return (
       <Grid item>
-        <Button onClick={() => setReportModalOpen(true)} className={button} size="small">
+        <Button onClick={handleReportModalOpen} className={button} size="small">
           Report Abuse
         </Button>
       </Grid>
@@ -701,11 +710,10 @@ const ReviewComponent = ({
               {`Helpful (${review.likes})`}
             </Button>
           </Grid>
-          {user &&
-            review.userId &&
-            review.userId !== user?.uid &&
-            review.status !== 'PENDING' &&
-            reportAbuseButton()}
+          {/* If user is logged in and the review is not theirs, show report abuse button.
+           * If user is not logged in, show report abuse button.
+           */}
+          {((user && review.userId && review.userId !== user?.uid) || !user) && reportAbuseButton()}
         </Grid>
       </CardActions>
       {Modals}
