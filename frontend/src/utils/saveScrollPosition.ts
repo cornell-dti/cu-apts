@@ -37,12 +37,12 @@ export const useSaveScrollPosition = (storageKey: string, pathName: string): voi
             if (targetPosition <= maxScroll) {
               window.scrollTo({
                 top: targetPosition,
-                behavior: 'smooth',
+                behavior: 'auto',
               });
             } else {
               window.scrollTo({
                 top: maxScroll,
-                behavior: 'smooth',
+                behavior: 'auto',
               });
             }
           } else {
@@ -53,7 +53,7 @@ export const useSaveScrollPosition = (storageKey: string, pathName: string): voi
       } else {
         window.scrollTo({
           top: 0,
-          behavior: 'smooth',
+          behavior: 'auto',
         });
         window.addEventListener('scroll', handleScroll);
       }
