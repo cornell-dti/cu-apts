@@ -209,7 +209,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                                 {address !== name && address}
                               </Typography>
                               <Typography className={subText}>
-                                {label === 'LANDLORD' && 'landlord'}
+                                {label === 'LANDLORD' && 'Landlord'}
                               </Typography>
                             </Grid>
                           </Grid>
