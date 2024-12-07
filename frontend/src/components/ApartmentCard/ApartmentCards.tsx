@@ -10,8 +10,10 @@ import DropDownWithLabel from '../utils/DropDownWithLabel';
 
 type Props = {
   data: CardData[];
+  initialResultsToShow?: number;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  onMoreResultsLoaded?: (results: number) => void;
 };
 
 const useStyles = makeStyles({
@@ -48,12 +50,22 @@ const useStyles = makeStyles({
  * @component
  * @param {Object} props - Component properties.
  * @param {CardData[]} props.data - The data of apartments.
+ * @param {number} [props.initialResultsToShow] - Initial number of results to show.
+ * @param {firebase.User | null} props.user - The current user.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
+ * @param {(results: number) => void} [props.onMoreResultsLoaded] - Callback function when more results are loaded.
  * @returns {ReactElement} ApartmentCards component.
  */
-const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
+const ApartmentCards = ({
+  data,
+  initialResultsToShow,
+  user,
+  onMoreResultsLoaded,
+  setUser,
+}: Props): ReactElement => {
   const { boundingBox, showMoreButton, horizontalLine } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [resultsToShow, setResultsToShow] = useState<number>(loadingLength);
+  const [resultsToShow, setResultsToShow] = useState<number>(initialResultsToShow ?? loadingLength);
 
   const handleShowMore = () => {
     setResultsToShow(resultsToShow + loadingLength);
@@ -68,6 +80,12 @@ const ApartmentCards = ({ data, user, setUser }: Props): ReactElement => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (onMoreResultsLoaded) {
+      onMoreResultsLoaded(resultsToShow);
+    }
+  }, [resultsToShow, onMoreResultsLoaded]);
 
   type Fields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
   const [sortBy, setSortBy] = useState<Fields>('originalOrder');

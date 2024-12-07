@@ -6,6 +6,7 @@ import { colors } from '../colors';
 import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useTitle } from '../utils';
+import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 
 const useStyles = makeStyles({
   searchText: {
@@ -36,9 +37,10 @@ type Props = {
 
 const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const { searchText } = useStyles();
-  const location = useLocation();
+  const path = useLocation();
+  const [pathName] = useState(path.pathname);
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
-  const query = location.search.substring(3);
+  const query = path.search.substring(3);
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useTitle('Search Result');
@@ -49,12 +51,26 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [query]);
 
+  useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
+  const saveResultsCount = (count: number) => {
+    sessionStorage.setItem(`resultsCount_search_${query}`, count.toString());
+  };
+
   return (
     <Container>
       <Typography className={searchText} style={{ fontSize: isMobile ? '20px' : '30px' }}>
         Search results for "{query}"
       </Typography>
-      <ApartmentCards user={user} setUser={setUser} data={searchResults} />
+      <ApartmentCards
+        user={user}
+        initialResultsToShow={parseInt(
+          sessionStorage.getItem(`resultsCount_search_${query}`) || '5',
+          10
+        )}
+        setUser={setUser}
+        data={searchResults}
+        onMoreResultsLoaded={saveResultsCount}
+      />
     </Container>
   );
 };

@@ -9,6 +9,7 @@ import { colors } from '../colors';
 import { CardData } from '../App';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
+import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 
 interface Images {
   [location: string]: string;
@@ -62,6 +63,7 @@ const LocationPage = ({ user, setUser }: Props): ReactElement => {
   });
 
   const path = useLocation();
+  const [pathName] = useState(path.pathname);
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
   const locAPI = `/api/location/${location}/`;
   const locToImg: Images = {
@@ -84,6 +86,10 @@ const LocationPage = ({ user, setUser }: Props): ReactElement => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
+  const saveResultsCount = (count: number) => {
+    sessionStorage.setItem(`resultsCount_${location}`, count.toString());
+  };
   const locDescText: Images = {
     Collegetown: isMobile
       ? 'Collegetown is an off-campus gathering place for Cornellians located within walking distance of campus.'
@@ -112,7 +118,16 @@ const LocationPage = ({ user, setUser }: Props): ReactElement => {
           <Typography variant="body1" className={bodyStyle}>
             {desc}
           </Typography>
-          <ApartmentCards user={user} setUser={setUser} data={data} />
+          <ApartmentCards
+            user={user}
+            initialResultsToShow={parseInt(
+              sessionStorage.getItem(`resultsCount_${location}`) || '5',
+              10
+            )}
+            setUser={setUser}
+            data={data}
+            onMoreResultsLoaded={saveResultsCount}
+          />
         </Container>
       </Box>
     </>

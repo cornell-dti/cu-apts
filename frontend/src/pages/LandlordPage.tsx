@@ -187,6 +187,14 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
     return subscribeLikes(setLikedReviews);
   }, []);
 
+  // Scroll to the top of the page when the component mounts
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, []);
+
   // Fetch the reviews that the user has liked and set the liked reviews and like statuses.
   useEffect(() => {
     getUser(false).then((user) => {
