@@ -1,7 +1,6 @@
 import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  Chip,
   CircularProgress,
   ClickAwayListener,
   Grid,
@@ -18,6 +17,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
+import searchPropertyIcon from '../../assets/search-property.svg';
+import searchLandlordIcon from '../../assets/search-landlord.svg';
 
 type Props = {
   drawerOpen: boolean;
@@ -31,17 +32,33 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       backgroundColor: colors.white,
       maxHeight: 200,
       overflow: 'auto',
-      boxShadow: '1px 8px rgba(49, 49, 49, 0.35)',
+      boxShadow: '0px 4px 8px -1px rgba(0, 0, 0, 0.25)',
+      borderRadius: '8px',
+      padding: 0,
+      boxSizing: 'border-box',
+      border: '2px solid white',
+    },
+    menuItem: {
+      borderBottom: '1px solid #E5E5E5',
+      height: '53px',
     },
     text: {
       backgroundColor: colors.white,
     },
 
-    addressText: {
+    subText: {
       color: colors.gray2,
+      fontSize: '12px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     buildingText: {
+      fontSize: '16px',
       color: colors.black,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     homeSearchIcon: {
       paddingRight: '10px',
@@ -51,7 +68,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       alignItems: 'center',
       justifyContent: 'center',
       color: 'white',
-      // fontSize: isMobile ? 17 : 22
       height: '62%',
       width: '62%',
     },
@@ -66,11 +82,17 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       justifyContent: 'center',
       alignItems: 'center',
     },
-    resultChip: { cursor: 'pointer' },
+    searchLabelIcon: {
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+    },
     field: {
+      borderRadius: '10px',
       '&.Mui-focused': {
         '& .MuiOutlinedInput-notchedOutline': {
           border: `1px solid ${colors.red1}`,
+          borderRadius: '10px',
         },
       },
       height: isMobile ? '35px' : '45px',
@@ -81,10 +103,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     searchIcon,
     homeSearchIcon,
     searchIconBackground,
+    searchLabelIcon,
     field,
     menuList,
-    resultChip,
-    addressText,
+    menuItem,
+    subText,
     buildingText,
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
@@ -166,20 +189,28 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                           component: RouterLink,
                         }}
                       >
-                        <MenuItem button={true} key={index} onClick={() => setOpen(false)}>
-                          <Grid container justifyContent="space-between">
-                            <Grid item xl={8}>
+                        <MenuItem
+                          button={true}
+                          key={index}
+                          onClick={() => setOpen(false)}
+                          className={menuItem}
+                          style={index === options.length - 1 ? { borderBottom: 'none' } : {}}
+                        >
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item className={searchLabelIcon}>
+                              <img
+                                src={label === 'LANDLORD' ? searchLandlordIcon : searchPropertyIcon}
+                                alt="search icon"
+                              />
+                            </Grid>
+                            <Grid item xs style={{ minWidth: 0 }}>
                               <Typography className={buildingText}>{name}</Typography>
-                              <Typography className={addressText}>
+                              <Typography className={subText}>
                                 {address !== name && address}
                               </Typography>
-                            </Grid>
-                            <Grid item xl={4}>
-                              <Chip
-                                color="primary"
-                                label={label.toLowerCase()}
-                                className={resultChip}
-                              />
+                              <Typography className={subText}>
+                                {label === 'LANDLORD' && 'Landlord'}
+                              </Typography>
                             </Grid>
                           </Grid>
                         </MenuItem>
@@ -256,7 +287,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       };
     } else {
       return {
-        style: { height: isMobile ? '35px' : '45px', borderRadius: '10px' },
+        style: { height: isMobile ? '35px' : '45px' },
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
