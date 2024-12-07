@@ -13,6 +13,12 @@ export type DetailedRating = {
   readonly conditions: number;
 };
 
+type ReportEntry = {
+  readonly date: Date;
+  readonly userId: string;
+  readonly reason: string;
+};
+
 export type Review = {
   readonly aptId: string | null;
   readonly likes?: number;
@@ -24,8 +30,9 @@ export type Review = {
   readonly overallRating: number;
   readonly photos: readonly string[];
   readonly reviewText: string;
-  readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'DELETED';
+  readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'DELETED' | 'REPORTED';
   readonly userId?: string | null;
+  readonly reports?: readonly ReportEntry[];
 };
 
 export type ReviewWithId = Review & Id;
@@ -56,8 +63,15 @@ export type Apartment = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
   readonly latitude: number;
   readonly longitude: number;
-  readonly walkTime: number;
-  readonly driveTime: number;
+};
+
+export type LocationTravelTimes = {
+  agQuadDriving: number;
+  agQuadWalking: number;
+  engQuadDriving: number;
+  engQuadWalking: number;
+  hoPlazaDriving: number;
+  hoPlazaWalking: number;
 };
 
 export type ApartmentWithId = Apartment & Id;

@@ -11,6 +11,7 @@ import {
   Toolbar,
   Tabs,
   Tab,
+  IconButton,
 } from '@material-ui/core';
 import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
 import { get } from '../utils/call';
@@ -18,12 +19,31 @@ import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import clsx from 'clsx';
+import { colors } from '../colors';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 
 const useStyles = makeStyles((theme) => ({
   container: {
     marginTop: '20px',
+  },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '30%',
+    justifyContent: 'space-between',
+  },
+  expand: {
+    transform: 'rotate(0deg)',
+    marginLeft: theme.spacing(1),
+    transition: theme.transitions.create('transform', {
+      duration: 150,
+    }),
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
   },
 }));
 
@@ -49,10 +69,13 @@ const AdminPage = (): ReactElement => {
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
   const [toggle, setToggle] = useState(false);
-
   const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
   const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
-
+  const [pendingExpanded, setPendingExpanded] = useState(true);
+  const [declinedExpanded, setDeclinedExpanded] = useState(true);
+  const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
+  const [reportedExpanded, setReportedExpanded] = useState(true);
+  const { container, sectionHeader, expand, expandOpen } = useStyles();
   const {
     carouselPhotos,
     carouselStartIndex,
@@ -61,13 +84,12 @@ const AdminPage = (): ReactElement => {
     closePhotoCarousel,
   } = usePhotoCarousel([]);
 
-  const { container } = useStyles();
-
   useTitle('Admin');
 
   // calls the APIs and the callback function to set the reviews for each review type
   useEffect(() => {
     const reviewTypes = new Map<string, React.Dispatch<React.SetStateAction<ReviewWithId[]>>>([
+      ['REPORTED', setReportedData],
       ['PENDING', setPendingData],
       ['DECLINED', setDeclinedData],
       ['APPROVED', setApprovedData],
@@ -168,41 +190,102 @@ const AdminPage = (): ReactElement => {
         </Grid>
 
         <Grid container>
-          <Typography variant="h3" style={{ margin: '10px' }}>
-            <strong>Pending Reviews ({pendingData.length})</strong>
-          </Typography>
-          <Grid container item spacing={3}>
-            {sortReviews(pendingData, 'date').map((review, index) => (
-              <Grid item xs={12} key={index}>
-                <AdminReviewComponent
-                  review={review}
-                  setToggle={setToggle}
-                  declinedSection={false}
-                  triggerPhotoCarousel={showPhotoCarousel}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <div className={sectionHeader}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Reported Reviews ({reportedData.length})</strong>
+            </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: reportedExpanded,
+              })}
+              onClick={() => setReportedExpanded(!reportedExpanded)}
+              aria-expanded={reportedExpanded}
+              aria-label="show reported reviews"
+            >
+              <ExpandMoreIcon htmlColor={colors.red1} />
+            </IconButton>
+          </div>
+          {reportedExpanded && (
+            <Grid container item spacing={3}>
+              {sortReviews(reportedData, 'date').map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    showIgnore={true}
+                    showDelete={true}
+                    triggerPhotoCarousel={showPhotoCarousel}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </Grid>
 
         <Grid container>
-          <Grid item xs={12} sm={12}>
+          <div className={sectionHeader}>
+            <Typography variant="h3" style={{ margin: '10px' }}>
+              <strong>Pending Reviews ({pendingData.length})</strong>
+            </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: pendingExpanded,
+              })}
+              onClick={() => setPendingExpanded(!pendingExpanded)}
+              aria-expanded={pendingExpanded}
+              aria-label="show pending reviews"
+            >
+              <ExpandMoreIcon htmlColor={colors.red1} />
+            </IconButton>
+          </div>
+          {pendingExpanded && (
+            <Grid container item spacing={3}>
+              {sortReviews(pendingData, 'date').map((review, index) => (
+                <Grid item xs={12} key={index}>
+                  <AdminReviewComponent
+                    review={review}
+                    setToggle={setToggle}
+                    showDecline={true}
+                    showApprove={true}
+                    triggerPhotoCarousel={showPhotoCarousel}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Grid>
+
+        <Grid container>
+          <div className={sectionHeader}>
             <Typography variant="h3" style={{ margin: '10px' }}>
               <strong>Declined Reviews ({declinedData.length})</strong>
             </Typography>
+            <IconButton
+              className={clsx(expand, {
+                [expandOpen]: declinedExpanded,
+              })}
+              onClick={() => setDeclinedExpanded(!declinedExpanded)}
+              aria-expanded={declinedExpanded}
+              aria-label="show declined reviews"
+            >
+              <ExpandMoreIcon htmlColor={colors.red1} />
+            </IconButton>
+          </div>
+          {declinedExpanded && (
             <Grid container item spacing={3}>
               {sortReviews(declinedData, 'date').map((review, index) => (
                 <Grid item xs={12} key={index}>
                   <AdminReviewComponent
                     review={review}
                     setToggle={setToggle}
-                    declinedSection={true}
+                    showDelete={true}
+                    showApprove={true}
                     triggerPhotoCarousel={showPhotoCarousel}
                   />
                 </Grid>
               ))}
             </Grid>
-          </Grid>
+          )}
         </Grid>
       </Grid>
     </Container>

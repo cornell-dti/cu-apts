@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useRef } from 'react';
 import {
   IconButton,
   Button,
@@ -26,6 +26,7 @@ import {
   Apartment,
   ApartmentWithId,
   DetailedRating,
+  LocationTravelTimes,
 } from '../../../common/types/db-types';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
@@ -131,9 +132,11 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
+  const [showReportSuccessConfirmation, setShowReportSuccessConfirmation] = useState(false);
   const [buildings, setBuildings] = useState<Apartment[]>([]);
   const [aptData, setAptData] = useState<ApartmentWithId[]>([]);
   const [apt, setApt] = useState<ApartmentWithId | undefined>(undefined);
+  const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
   const {
     carouselPhotos,
     carouselStartIndex,
@@ -154,6 +157,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const [mapToggle, setMapToggle] = useState(false);
+
+  const dummyTravelTimes: LocationTravelTimes = {
+    agQuadDriving: -1,
+    agQuadWalking: -1,
+    engQuadDriving: -1,
+    engQuadWalking: -1,
+    hoPlazaDriving: -1,
+    hoPlazaWalking: -1,
+  };
 
   // Set the number of results to show based on mobile or desktop view.
   useEffect(() => {
@@ -196,17 +209,34 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, [aptId]);
 
+  // Fetch travel times data for the current apartment
+  useEffect(() => {
+    get<LocationTravelTimes>(`/api/travel-times-by-id/${aptId}`, {
+      callback: setTravelTimes,
+      errorHandler: handlePageNotFound,
+    });
+  }, [aptId]);
+
   // Set the apartment data once it's fetched.
   useEffect(() => {
     setApt(aptData[0]);
   }, [aptData]);
 
-  // Fetch approved reviews for the current apartment.
+  // Fetch approved and reported reviews for the current apartment.
   useEffect(() => {
-    get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`, {
-      callback: setReviewData,
-    });
-  }, [aptId, showConfirmation, toggle]);
+    const fetchReviews = async () => {
+      const approvedReviews = await axios.get<ReviewWithId[]>(
+        `/api/review/aptId/${aptId}/APPROVED`
+      );
+      const reportedReviews = await axios.get<ReviewWithId[]>(
+        `/api/review/aptId/${aptId}/REPORTED`
+      );
+      const reviews = [...approvedReviews.data, ...reportedReviews.data];
+      setReviewData(reviews);
+    };
+
+    fetchReviews();
+  }, [aptId]);
 
   // Fetch information about buildings related to the apartment and the landlord's data.
   useEffect(() => {
@@ -351,6 +381,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowDeleteSuccessConfirmation);
   };
 
+  const showReportSuccessConfirmationToast = () => {
+    showToast(setShowReportSuccessConfirmation);
+  };
+
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -416,18 +450,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setReviewOpen(true);
   };
 
+  const handleMapModalClose = () => {
+    setMapOpen(false);
+    setMapToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
       <MapModal
         aptName={apt!.name}
         open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        setOpen={setMapOpen}
+        onClose={handleMapModalClose}
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={travelTimes}
+        isMobile={isMobile}
       />
       <ReviewModal
         open={reviewOpen}
@@ -656,9 +694,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         address={apt!.address}
         longitude={apt!.longitude}
         latitude={apt!.latitude}
-        walkTime={apt!.walkTime}
-        driveTime={apt!.driveTime}
+        travelTimes={travelTimes}
         handleClick={() => setMapOpen(true)}
+        mapToggle={mapToggle}
         isMobile={isMobile}
       />
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
@@ -730,6 +768,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showReportSuccessConfirmation && (
+              <Toast
+                isOpen={showReportSuccessConfirmation}
+                severity="success"
+                message="Review successfully reported!"
+                time={toastTime}
+              />
+            )}
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
                 <Grid
@@ -779,6 +825,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                             setToggle={setToggle}
                             triggerEditToast={showEditSuccessConfirmationToast}
                             triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                            triggerReportToast={showReportSuccessConfirmationToast}
                             triggerPhotoCarousel={showPhotoCarousel}
                             user={user}
                             setUser={setUser}

@@ -14,11 +14,13 @@ import {
   ApartmentWithId,
   CantFindApartmentForm,
   QuestionForm,
+  LocationTravelTimes,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
 import { Timestamp } from '@firebase/firestore-types';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
@@ -38,6 +40,8 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
+
+const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
 const app: Express = express();
@@ -70,7 +74,7 @@ app.post('/api/new-review', authenticate, async (req, res) => {
     if (review.overallRating === 0 || review.reviewText === '') {
       res.status(401).send('Error: missing fields');
     }
-    doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING' });
+    doc.set({ ...review, date: new Date(review.date), likes: 0, status: 'PENDING', reports: [] });
     res.status(201).send(doc.id);
   } catch (err) {
     console.error(err);
@@ -91,13 +95,23 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       res.status(401).send('Error: user is not the review owner. not authorized');
       return;
     }
+    // Don't allow edits if review is reported
+    if (reviewData.status === 'REPORTED') {
+      res.status(403).send('Error: cannot edit a reported review');
+      return;
+    }
     const updatedReview = req.body as Review;
     if (updatedReview.overallRating === 0 || updatedReview.reviewText === '') {
       res.status(401).send('Error: missing fields');
       return;
     }
     reviewDoc
-      .update({ ...updatedReview, date: new Date(updatedReview.date), status: 'PENDING' })
+      .update({
+        ...updatedReview,
+        date: new Date(updatedReview.date),
+        status: 'PENDING',
+        reports: reviewData.reports || [],
+      })
       .then(() => {
         res.status(201).send(reviewId);
       });
@@ -740,12 +754,15 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
  *
  * Permissions:
  * - An admin can update a review from any status to any status
- * - A regular user can only update their own reviews from any status to deleted
+ * - A regular user can only update their own reviews to deleted
+ * - A regular user can report any review except:
+ *   - Their own reviews
+ *   - Pending reviews
  * - A regular user cannot update other users' reviews
  *
  * @param reviewDocId - The document ID of the review to update
  * @param newStatus - The new status to set for the review
- *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', or 'DELETED'
+ *                  - must be one of 'PENDING', 'APPROVED', 'DECLINED', 'DELETED', or 'REPORTED'
  * @returns status 200 if successfully updates status,
  *                 400 if the new status is invalid,
  *                 401 if authentication fails,
@@ -757,28 +774,62 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   const { reviewDocId, newStatus } = req.params; // Extracting parameters from the URL
   const { uid, email } = req.user;
   const isAdmin = email && admins.includes(email);
-  const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED'];
+  const statusList = ['PENDING', 'APPROVED', 'DECLINED', 'DELETED', 'REPORTED'];
+
   try {
     // Validating if the new status is within the allowed list
     if (!statusList.includes(newStatus)) {
       res.status(400).send('Invalid status type');
       return;
     }
+
     const reviewDoc = reviewCollection.doc(reviewDocId);
     const reviewData = (await reviewDoc.get()).data();
     const currentStatus = reviewData?.status || '';
     const reviewOwnerId = reviewData?.userId || '';
-    // Check if user is authorized to change this review's status
-    if (!isAdmin && (uid !== reviewOwnerId || newStatus !== 'DELETED')) {
+
+    // Check if user is authorized to change this review's status:
+    // Admin: Can change the status of a review to any status
+    // Non-review owner: Can report a review
+    // Review owner: Can update or delete their own review if the review is not already REPORTED.
+    if (
+      !isAdmin &&
+      (uid !== reviewOwnerId || newStatus !== 'DELETED') &&
+      newStatus !== 'REPORTED'
+    ) {
       res.status(403).send('Unauthorized');
       return;
     }
-    // Updating the review's status in Firestore
-    await reviewDoc.update({ status: newStatus });
+
+    if (newStatus === 'REPORTED') {
+      // Check if user is trying to report their own review
+      if (uid === reviewOwnerId) {
+        res.status(403).send('Cannot report your own review');
+        return;
+      }
+
+      if (currentStatus === 'PENDING') {
+        res.status(403).send('Cannot report a pending review');
+        return;
+      }
+
+      // Updating the review's status in Firestore and adding a report
+      const existingReports = reviewData?.reports || [];
+      const newReport = {
+        date: new Date(),
+        userId: uid,
+        reason: 'No reason provided',
+      };
+      await reviewDoc.update({ status: newStatus, reports: [...existingReports, newReport] });
+    } else {
+      // Updating the review's status in Firestore
+      await reviewDoc.update({ status: newStatus });
+    }
     res.status(200).send('Success'); // Sending a success response
-    /* If firebase successfully updates status to approved, then send an email
-      to the review's creator to inform them that their review has been approved */
-    if (newStatus === 'APPROVED' && currentStatus !== 'APPROVED') {
+
+    /* If firebase successfully updates status to approved (not from an ignored report), 
+    then send an email to the review's creator to inform them that their review has been approved */
+    if (newStatus === 'APPROVED' && !['REPORTED', 'APPROVED'].includes(currentStatus)) {
       // get user id
       const reviewData = (await reviewCollection.doc(reviewDocId).get()).data();
       const userId = reviewData?.userId;
@@ -977,6 +1028,262 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(401).send('Error');
+  }
+});
+
+const { REACT_APP_MAPS_API_KEY } = process.env;
+const LANDMARKS = {
+  eng_quad: '42.4445,-76.4836', // Duffield Hall
+  ag_quad: '42.4489,-76.4780', // Mann Library
+  ho_plaza: '42.4468,-76.4851', // Ho Plaza
+};
+
+interface TravelTimeInput {
+  origin: string; // Can be either address or "latitude,longitude"
+}
+
+/**
+ * getTravelTimes – Calculates travel times between an origin and multiple destinations using Google Distance Matrix API.
+ *
+ * @remarks
+ * Makes an HTTP request to the Google Distance Matrix API and processes the response to extract duration values.
+ * Times are converted from seconds to minutes before being returned.
+ *
+ * @param {string} origin - Starting location as either an address or coordinates in "lat,lng" format
+ * @param {string[]} destinations - Array of destination addresses to calculate times to
+ * @param {'walking' | 'driving'} mode - Mode of transportation to use for calculations
+ * @return {Promise<number[]>} - Array of travel times in minutes to each destination
+ */
+async function getTravelTimes(
+  origin: string,
+  destinations: string[],
+  mode: 'walking' | 'driving'
+): Promise<number[]> {
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+      origin
+    )}&destinations=${destinations
+      .map((dest) => encodeURIComponent(dest))
+      .join('|')}&mode=${mode}&key=${REACT_APP_MAPS_API_KEY}`
+  );
+
+  return response.data.rows[0].elements.map(
+    (element: { duration: { value: number } }) => element.duration.value / 60
+  );
+}
+
+/**
+ * Travel Times Calculator - Calculates walking and driving times from a given origin to Cornell landmarks.
+ *
+ * @remarks
+ * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Engineering Quad,
+ * Agriculture Quad, and Ho Plaza. Returns both walking and driving durations in minutes.
+ * Origin can be either an address or coordinates in "latitude,longitude" format.
+ *
+ * @route POST /api/travel-times
+ *
+ * @input {string} req.body.origin - Starting point, either as address or "latitude,longitude"
+ *
+ * @status
+ * - 200: Successfully retrieved travel times
+ * - 400: Missing or invalid origin
+ * - 500: Server error or Google Maps API failure
+ */
+app.post('/api/calculate-travel-times', async (req, res) => {
+  try {
+    const { origin } = req.body as TravelTimeInput;
+    console.log('Origin:', origin);
+
+    if (!origin) {
+      return res.status(400).json({ error: 'Origin is required' });
+    }
+
+    const destinations = Object.values(LANDMARKS);
+    console.log('Destinations array:', destinations);
+
+    // Get walking and driving times using the helper function
+    const [walkingTimes, drivingTimes] = await Promise.all([
+      getTravelTimes(origin, destinations, 'walking'),
+      getTravelTimes(origin, destinations, 'driving'),
+    ]);
+
+    console.log('Raw walking times:', walkingTimes);
+    console.log('Raw driving times:', drivingTimes);
+
+    const travelTimes: LocationTravelTimes = {
+      engQuadWalking: walkingTimes[0],
+      engQuadDriving: drivingTimes[0],
+      agQuadWalking: walkingTimes[1],
+      agQuadDriving: drivingTimes[1],
+      hoPlazaWalking: walkingTimes[2],
+      hoPlazaDriving: drivingTimes[2],
+    };
+
+    console.log('Final travel times:', travelTimes);
+    return res.status(200).json(travelTimes);
+  } catch (error) {
+    console.error('Error calculating travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Test Travel Times Endpoint - Creates a travel times document for a specific building.
+ *
+ * @remarks
+ * Retrieves building coordinates from the buildings collection, calculates travel times to Cornell landmarks,
+ * and stores the results in the travelTimes collection. This endpoint is used for testing and populating
+ * travel time data for existing buildings.
+ *
+ * @param {string} buildingId - The ID of the building to calculate and store travel times for
+ *
+ * @return {Object} - Object containing success message, building ID, and calculated travel times
+ */
+app.post('/api/test-travel-times/:buildingId', async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+
+    // Get building data
+    const buildingDoc = await buildingsCollection.doc(buildingId).get();
+    if (!buildingDoc.exists) {
+      return res.status(404).json({ error: 'Building not found' });
+    }
+
+    const buildingData = buildingDoc.data();
+    if (!buildingData?.latitude || !buildingData?.longitude) {
+      return res.status(400).json({ error: 'Building missing coordinate data' });
+    }
+
+    // Calculate travel times using the main endpoint
+    const response = await axios.post(`/api/calculate-travel-times`, {
+      origin: `${buildingData.latitude},${buildingData.longitude}`,
+    });
+
+    // Store in Firebase
+    await travelTimesCollection.doc(buildingId).set(response.data);
+
+    return res.status(200).json({
+      message: 'Travel times calculated and stored successfully',
+      buildingId,
+      travelTimes: response.data,
+    });
+  } catch (error) {
+    console.error('Error in test endpoint:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+/**
+ * Batch Travel Times Endpoint - Calculates and stores travel times for a batch of buildings.
+ *
+ * @remarks
+ * Processes a batch of buildings from the buildings collection, calculating travel times to Cornell landmarks
+ * for each one and storing the results in the travelTimes collection. This endpoint handles buildings in batches
+ * with rate limiting between requests. Supports pagination through the startAfter parameter.
+ *
+ * @param {number} batchSize - Number of buildings to process in this batch (defaults to 50)
+ * @param {string} [startAfter] - Optional ID of last processed building for pagination
+ * @return {Object} - Summary object containing:
+ *   - Message indicating batch completion
+ *   - Total number of buildings processed in this batch
+ *   - Count of successful calculations
+ *   - Arrays of successful building IDs and failed buildings with error details
+ */
+
+// Helper function for rate limiting API requests
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, res) => {
+  try {
+    const batchSize = parseInt(req.params.batchSize, 10) || 50;
+    const { startAfter } = req.params;
+
+    let query = buildingsCollection.limit(batchSize);
+    if (startAfter) {
+      const lastDoc = await buildingsCollection.doc(startAfter).get();
+      query = query.startAfter(lastDoc);
+    }
+
+    const buildingDocs = (await query.get()).docs;
+    const results = {
+      success: [] as string[],
+      failed: [] as { id: string; error: string }[],
+    };
+
+    const processPromises = buildingDocs.map(async (doc) => {
+      try {
+        await delay(100); // 100ms delay between requests
+        const buildingData = doc.data();
+        if (!buildingData?.latitude || !buildingData?.longitude) {
+          results.failed.push({
+            id: doc.id,
+            error: 'Missing coordinates',
+          });
+          return;
+        }
+
+        const response = await axios.post(`/api/calculate-travel-times`, {
+          origin: `${buildingData.latitude},${buildingData.longitude}`,
+        });
+
+        await travelTimesCollection.doc(doc.id).set(response.data);
+        results.success.push(doc.id);
+      } catch (error) {
+        results.failed.push({
+          id: doc.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    });
+
+    await Promise.all(processPromises);
+
+    res.status(200).json({
+      message: 'Batch processing completed',
+      totalProcessed: buildingDocs.length,
+      successCount: results.success.length,
+      failureCount: results.failed.length,
+      hasMore: buildingDocs.length === batchSize,
+      lastProcessedId: buildingDocs[buildingDocs.length - 1]?.id,
+      results,
+    });
+  } catch (error) {
+    console.error('Batch processing error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get Travel Times By Building ID - Retrieves pre-calculated travel times from the travel times collection.
+ *
+ * @remarks
+ * Looks up the travel times document for the given building ID and returns the stored walking and driving
+ * times to Cornell landmarks: Engineering Quad, Agriculture Quad, and Ho Plaza.
+ *
+ * @route GET /api/travel-times-by-id/:buildingId
+ *
+ * @input {string} req.params.buildingId - ID of the building to get travel times for
+ *
+ * @status
+ * - 200: Successfully retrieved travel times
+ * - 404: Building travel times not found
+ * - 500: Server error
+ */
+app.get('/api/travel-times-by-id/:buildingId', async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+
+    const travelTimeDoc = await travelTimesCollection.doc(buildingId).get();
+
+    if (!travelTimeDoc.exists) {
+      return res.status(404).json({ error: 'Travel times not found for this building' });
+    }
+
+    const travelTimes = travelTimeDoc.data() as LocationTravelTimes;
+
+    return res.status(200).json(travelTimes);
+  } catch (error) {
+    console.error('Error retrieving travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

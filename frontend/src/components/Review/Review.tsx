@@ -56,6 +56,7 @@ type Props = {
   setToggle: React.Dispatch<React.SetStateAction<boolean>>;
   readonly triggerEditToast: () => void;
   readonly triggerDeleteToast: () => void;
+  readonly triggerReportToast: () => void;
   readonly triggerPhotoCarousel: (photos: readonly string[], startIndex: number) => void;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -205,6 +206,7 @@ const useStyles = makeStyles(() => ({
  * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setToggle - Function to toggle a state.
  * @param {function} props.triggerEditToast - function to trigger a toast notification on edit.
  * @param {function} props.triggerDeleteToast - function to trigger a toast notification on delete.
+ * @param {function} props.triggerReportToast - function to trigger a toast notification on report.
  * @param {firebase.User | null} props.user - The current logged-in user.
  * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to set the current user.
  * @param {boolean} props.showLabel - Indicates if the property or landlord label should be shown.
@@ -219,6 +221,7 @@ const ReviewComponent = ({
   setToggle,
   triggerEditToast,
   triggerDeleteToast,
+  triggerReportToast,
   triggerPhotoCarousel,
   user,
   setUser,
@@ -255,6 +258,7 @@ const ReviewComponent = ({
   const [landlordData, setLandlordData] = useState<Landlord>();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
   const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
@@ -314,6 +318,48 @@ const ReviewComponent = ({
     );
   };
 
+  const reportModal = () => {
+    return (
+      <Dialog
+        open={reportModalOpen}
+        onClose={() => {
+          handleReportModalClose(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{ style: { borderRadius: '12px' } }}
+      >
+        <DialogTitle className={deleteDialogTitle} id="alert-dialog-title">
+          Report this review?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText className={deleteDialogDesc} id="alert-dialog-description">
+            This review will be sent to admins for review.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className={deleteDialogActions}>
+          <Button
+            className={hollowRedButton}
+            onClick={() => {
+              handleReportModalClose(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className={submitButton}
+            onClick={() => {
+              handleReportModalClose(true);
+            }}
+            autoFocus
+          >
+            Report
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
   const Modals = (
     <>
       <ReviewModal
@@ -329,6 +375,7 @@ const ReviewComponent = ({
         initialReview={review}
       />
       {deleteModal()}
+      {reportModal()}
     </>
   );
   const handleExpandClick = () => {
@@ -369,15 +416,51 @@ const ReviewComponent = ({
     setDeleteModalOpen(true);
   };
 
-  const reportAbuseHandler = async (reviewId: string) => {
-    const endpoint = `/api/update-review-status/${review.id}/PENDING`;
+  const handleReportModalOpen = async () => {
     if (user) {
-      const token = await user.getIdToken(true);
-      await axios.put(endpoint, {}, createAuthHeaders(token));
-      setToggle((cur) => !cur);
+      setReportModalOpen(true);
     } else {
       let user = await getUser(true);
       setUser(user);
+    }
+  };
+
+  /**
+   * handleReportModalClose - Handles the closing of the report modal and processes the report if confirmed.
+   *
+   * @remarks
+   * If report is true, updates the review status to 'REPORTED' in the backend. Requires user authentication
+   * and handles error cases like missing review ID. Triggers a toast notification on successful report.
+   *
+   * @param {Boolean} report - Whether the user confirmed reporting the review
+   * @return {Promise<void>} - A promise that resolves when the report handling is complete
+   */
+  const handleReportModalClose = async (report: Boolean) => {
+    try {
+      if (report) {
+        if (!review.id) {
+          console.error('No review ID found');
+          return;
+        }
+
+        const endpoint = `/api/update-review-status/${review.id}/REPORTED`;
+
+        if (user) {
+          const token = await user.getIdToken(true);
+          const headers = createAuthHeaders(token);
+
+          await axios.put(endpoint, {}, headers);
+          setToggle((cur) => !cur);
+        } else {
+          let user = await getUser(true);
+          setUser(user);
+        }
+        if (triggerReportToast) triggerReportToast();
+      }
+    } catch (error: any) {
+      console.error('Error reporting review:', error.response?.data || error.message);
+    } finally {
+      setReportModalOpen(false);
     }
   };
 
@@ -506,6 +589,15 @@ const ReviewComponent = ({
       </Grid>
     );
   };
+  const reportAbuseButton = () => {
+    return (
+      <Grid item>
+        <Button onClick={handleReportModalOpen} className={button} size="small">
+          Report Abuse
+        </Button>
+      </Grid>
+    );
+  };
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
@@ -540,7 +632,11 @@ const ReviewComponent = ({
                       {isSmallScreen ? shortenedDate : formattedDate}
                     </Typography>
                   </Grid>
-                  {user && review.userId && user.uid === review.userId && editDeleteButtons()}
+                  {user &&
+                    review.userId &&
+                    user.uid === review.userId &&
+                    review.status !== 'REPORTED' &&
+                    editDeleteButtons()}
                 </Grid>
                 {useMediaQuery(
                   user && review.userId && user.uid === review.userId
@@ -614,11 +710,10 @@ const ReviewComponent = ({
               {`Helpful (${review.likes})`}
             </Button>
           </Grid>
-          <Grid item>
-            <Button onClick={() => reportAbuseHandler(review.id)} className={button} size="small">
-              Report Abuse
-            </Button>
-          </Grid>
+          {/* If user is logged in and the review is not theirs, show report abuse button.
+           * If user is not logged in, show report abuse button.
+           */}
+          {((user && review.userId && review.userId !== user?.uid) || !user) && reportAbuseButton()}
         </Grid>
       </CardActions>
       {Modals}

@@ -111,6 +111,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
+  const [showReportSuccessConfirmation, setShowReportSuccessConfirmation] = useState(false);
   const {
     carouselPhotos,
     carouselStartIndex,
@@ -179,6 +180,9 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   const showDeleteSuccessConfirmationToast = () => {
     showToast(setShowDeleteSuccessConfirmation);
   };
+  const showReportSuccessConfirmationToast = () => {
+    showToast(setShowReportSuccessConfirmation);
+  };
 
   // Function to handle liking or disliking a review
   const likeHelper = (dislike = false) => {
@@ -243,6 +247,14 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           isOpen={showDeleteSuccessConfirmation}
           severity="success"
           message="Review successfully deleted!"
+          time={toastTime}
+        />
+      )}
+      {showReportSuccessConfirmation && (
+        <Toast
+          isOpen={showReportSuccessConfirmation}
+          severity="success"
+          message="Review successfully reported!"
           time={toastTime}
         />
       )}
@@ -385,6 +397,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
                       setToggle={setToggle}
                       triggerEditToast={showEditSuccessConfirmationToast}
                       triggerDeleteToast={showDeleteSuccessConfirmationToast}
+                      triggerReportToast={showReportSuccessConfirmationToast}
                       triggerPhotoCarousel={showPhotoCarousel}
                       user={user}
                       setUser={setUser}
