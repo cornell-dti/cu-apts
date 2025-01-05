@@ -131,12 +131,11 @@ interface MapModalProps extends BaseProps {
  *   - `aptName`: The name of the apartment.
  *   - `open`: Boolean to control the visibility of the modal.
  *   - `onClose`: Function to handle closing the modal.
- *   - `setOpen`: Function to set the open state of the modal.
  *   - `address`: The address of the apartment.
  *   - `latitude`: The latitude of the apartment location (default: 0).
  *   - `longitude`: The longitude of the apartment location (default: 0).
- *   - `walkTime`: The walk time from the apartment to campus landmarks (default: 0).
- *   - `driveTime`: The drive time from the apartment to campus landmarks (default: 0).
+ *   - `travelTimes`: Object containing walking times to campus landmarks.
+ *   - `isMobile`: Boolean indicating if viewing on mobile device.
  */
 
 const MapModal = ({

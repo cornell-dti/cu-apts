@@ -133,13 +133,17 @@ const useStyles = makeStyles((theme) => ({
  * This component is used in the ApartmentPage to display the map and location
  * information of each apartment, including its location on Google Map, address,
  * and time required for walking to campus from different Cornell landmarks.
- * It uses Material-UI components for consistent styling.
+ * It uses Material-UI components for consistent styling and Google Maps React
+ * for map functionality.
  *
  * @param Props - Contains:
  *   - `address`: The address of the apartment.
  *   - `latitude`: The latitude of the apartment location.
  *   - `longitude`: The longitude of the apartment location.
- *   - `walkTime`: The walk time from the apartment to campus landmarks.
+ *   - `travelTimes`: The travel times from the apartment to campus landmarks.
+ *   - `handleClick`: Function to handle clicking the expand button to show full screen map view.
+ *   - `mapToggle`: Boolean toggle used by parent component to trigger resetting map zoom/center.
+ *   - `isMobile`: Boolean indicating if viewing on mobile device.
  */
 function MapInfo({
   address,
