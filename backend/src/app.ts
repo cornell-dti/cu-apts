@@ -1143,6 +1143,10 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
   try {
     const { buildingId } = req.params;
 
+    const { protocol } = req;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
     // Get building data
     const buildingDoc = await buildingsCollection.doc(buildingId).get();
     if (!buildingDoc.exists) {
@@ -1155,7 +1159,7 @@ app.post('/api/test-travel-times/:buildingId', async (req, res) => {
     }
 
     // Calculate travel times using the main endpoint
-    const response = await axios.post(`/api/calculate-travel-times`, {
+    const response = await axios.post(`${baseUrl}/api/calculate-travel-times`, {
       origin: `${buildingData.latitude},${buildingData.longitude}`,
     });
 
@@ -1197,6 +1201,10 @@ app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, r
     const batchSize = parseInt(req.params.batchSize, 10) || 50;
     const { startAfter } = req.params;
 
+    const { protocol } = req;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
     let query = buildingsCollection.limit(batchSize);
     if (startAfter) {
       const lastDoc = await buildingsCollection.doc(startAfter).get();
@@ -1221,13 +1229,14 @@ app.post('/api/batch-create-travel-times/:batchSize/:startAfter?', async (req, r
           return;
         }
 
-        const response = await axios.post(`/api/calculate-travel-times`, {
+        const response = await axios.post(`${baseUrl}/api/calculate-travel-times`, {
           origin: `${buildingData.latitude},${buildingData.longitude}`,
         });
 
         await travelTimesCollection.doc(doc.id).set(response.data);
         results.success.push(doc.id);
       } catch (error) {
+        console.error('Error in batch processing:', error);
         results.failed.push({
           id: doc.id,
           error: error instanceof Error ? error.message : 'Unknown error',
