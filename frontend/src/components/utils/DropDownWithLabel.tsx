@@ -1,3 +1,19 @@
+import React from 'react';
+import { Typography, Grid } from '@material-ui/core';
+import DropDown from './DropDown';
+
+type MenuElement = {
+  item: string;
+  callback: () => void;
+};
+
+interface DropDownWithLabelProps {
+  label: string;
+  menuItems: MenuElement[];
+  labelStyle?: React.CSSProperties;
+  isMobile: boolean;
+}
+
 /**
  * A dropdown component with a label.
  *
@@ -20,21 +36,6 @@
  *
  * <DropDownWithLabel label="Select an item" menuItems={menuItems} isMobile={true} />
  */
-import React from 'react';
-import { Typography, Grid } from '@material-ui/core';
-import DropDown from './DropDown';
-
-type MenuElement = {
-  item: string;
-  callback: () => void;
-};
-
-interface DropDownWithLabelProps {
-  label: string;
-  menuItems: MenuElement[];
-  labelStyle?: React.CSSProperties;
-  isMobile: boolean;
-}
 
 const DropDownWithLabel: React.FC<DropDownWithLabelProps> = ({
   label,
