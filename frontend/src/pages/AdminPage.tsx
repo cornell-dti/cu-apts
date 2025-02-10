@@ -24,6 +24,8 @@ import clsx from 'clsx';
 import { colors } from '../colors';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
+import AdminCantFindApt from '../components/Admin/AdminCantFindApt';
+import AdminContactQuestion from '../components/Admin/AdminContactQuestion';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -294,40 +296,40 @@ const AdminPage = (): ReactElement => {
   //  Contact tab
   const contact = (
     <Container className={container}>
-      <Grid container>
-        <Typography variant="h3" style={{ margin: '10px' }}>
-          <strong>Pending "Can't Find Your Apartment" Data ({pendingApartment.length})</strong>
-        </Typography>
-        {[...pendingApartment]
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .map((apartment, index) => (
-            <ListItem key={index}>
-              <List>
-                <ListItemText>Date: {apartment.date}</ListItemText>
-                <ListItemText>Apartment name: {apartment.name}</ListItemText>
-                <ListItemText>Apartment Address: {apartment.address}</ListItemText>
-                <ListItemText>Photos: {apartment.photos}</ListItemText>
-              </List>
-            </ListItem>
-          ))}
-      </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h3" style={{ margin: '10px', marginBottom: '30px' }}>
+            <strong>Pending "Can't Find Your Apartment" Data ({pendingApartment.length})</strong>
+          </Typography>
+          {[...pendingApartment]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((apartment, index) => (
+              <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
+                <AdminCantFindApt
+                  date={apartment.date}
+                  apartmentName={apartment.name}
+                  apartmentAddress={apartment.address}
+                  photos={apartment.photos}
+                />
+              </Grid>
+            ))}
+        </Grid>
 
-      <Grid container>
-        <Grid item xs={12} sm={12}>
-          <Typography variant="h3" style={{ margin: '10px' }}>
+        <Grid item xs={12}>
+          <Typography variant="h3" style={{ margin: '10px', marginBottom: '30px' }}>
             <strong>Contact Questions ({pendingContactQuestions.length})</strong>
           </Typography>
           {[...pendingContactQuestions]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .map((question, index) => (
-              <ListItem key={index}>
-                <List>
-                  <ListItemText>Date: {question.date}</ListItemText>
-                  <ListItemText>User name: {question.name}</ListItemText>
-                  <ListItemText>Cornell Email: {question.email}</ListItemText>
-                  <ListItemText>Msg: {question.msg}</ListItemText>
-                </List>
-              </ListItem>
+              <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
+                <AdminContactQuestion
+                  date={question.date}
+                  name={question.name}
+                  email={question.email}
+                  msg={question.msg}
+                />
+              </Grid>
             ))}
         </Grid>
       </Grid>
