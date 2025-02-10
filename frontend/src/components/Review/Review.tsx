@@ -46,6 +46,7 @@ import getPriceRange from '../../utils/priceRange';
 import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
+import { exists } from 'fs';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -464,9 +465,19 @@ const ReviewComponent = ({
     }
   };
 
+  /**
+   * likeHandler - Adds a like to a comment after clicking the like button
+   *
+   * @remarks A user is not allowed to like their own comment, hence the extra identification in
+   * the method to ensure the comment wasn't created by the current user.
+   *
+   * @param {Number} id - Id of the comment who's like counter is being added to.
+   */
   const likeHandler = async (id: string) => {
     if (user) {
-      (liked ? removeLike : addLike)(id);
+      if (!(review.userId != null && review.userId == user.uid)) {
+        (liked ? removeLike : addLike)(id);
+      }
     } else {
       let user = await getUser(true);
       setUser(user);
