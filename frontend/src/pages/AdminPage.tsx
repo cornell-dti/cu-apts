@@ -310,6 +310,7 @@ const AdminPage = (): ReactElement => {
                   apartmentName={apartment.name}
                   apartmentAddress={apartment.address}
                   photos={apartment.photos}
+                  triggerPhotoCarousel={showPhotoCarousel}
                 />
               </Grid>
             ))}

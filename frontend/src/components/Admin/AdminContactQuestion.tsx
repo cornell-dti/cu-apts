@@ -33,6 +33,21 @@ type Props = {
   readonly msg: string;
 };
 
+/**
+ * AdminContactQuestion - Displays contact form submissions from users in the admin interface.
+ *
+ * @remarks
+ * Renders a Material-UI Card containing the details of a contact form submission, including
+ * the date, name, email and message from the user. Used in the admin dashboard to review
+ * user questions and contact requests.
+ *
+ * @param {Date} props.date - The submission date/time of the contact form
+ * @param {string} props.name - The name of the user who submitted the form
+ * @param {string} props.email - The email address provided by the user
+ * @param {string} props.msg - The message/question text submitted by the user
+ *
+ * @returns {ReactElement} - A Material-UI Card component displaying the contact form details
+ */
 const AdminContactQuestion = ({ date, name, email, msg }: Props): ReactElement => {
   const classes = useStyles();
   const formattedDate = new Date(date).toLocaleString('en-US', {
