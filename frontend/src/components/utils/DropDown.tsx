@@ -1,29 +1,3 @@
-/**
- * DropDown Component
- *
- * @remarks
- * A dropdown component that displays a button and a menu with selectable items.
- * The component uses Material-UI components for consistent styling.
- *
- * @component
- * @example
- * ```typescript
- * const menuItems = [
- *   { item: 'Price', callback: () => setSortBy('avgPrice')},
- *   { item: 'Rating', callback: () => setSortBy('avgRating')},
- *   { item: 'Date Added', callback: () => setSortBy('id')},
- * ];
- *
- * function App() {
- *   return (
- *     <DropDown menuItems={menuItems} />
- *   );
- * }
- *```
- * @param {Object} props - The props of the component.
- * @param {MenuElement[]} props.menuItems - An array of menu items, each containing an item name and a callback function.
- * @returns {JSX.Element} The rendered dropdown component.
- */
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem, SvgIcon } from '@material-ui/core';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -71,6 +45,21 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap',
   },
 });
+
+/**
+ * DropDown – A dropdown component that displays a button and a menu with selectable items.
+ *
+ * @remarks
+ * The component uses Material-UI components for consistent styling. It allows users to select an item from a dropdown menu, triggering a callback function.
+ *
+ * @param {MenuElement[]} props.menuItems – An array of menu items, each containing an item name and a callback function.
+ * @param {boolean} [props.isMobile] – Optional flag to indicate if the component is being used on a mobile device.
+ * @param {string} [props.defaultValue] – Optional default value to be displayed on the button.
+ * @param {string} [props.className] – Optional custom class name for the button.
+ * @param {boolean} [props.icon] – Optional flag to display an icon on the button.
+ *
+ * @return {JSX.Element} – The rendered dropdown component.
+ */
 
 export default function DropDown({ menuItems, isMobile, defaultValue, className, icon }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

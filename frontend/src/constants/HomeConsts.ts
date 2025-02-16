@@ -1,4 +1,14 @@
 export const loadingLength = 5;
+
+/**
+ * admins – List of CUApts' admins' email addresses.
+ *
+ * @remarks
+ * This array contains the emails of users who have access to the admin system on CUApts. Each email should be followed with a comment indicating
+ * the admin's name. This array should be updated periodically to remove old admins and add new admins.
+ *
+ * @return {string[]} – An array of admin email addresses.
+ */
 export const admins: string[] = [
   'gs622@cornell.edu', // Grace
   'tpp38@cornell.edu', // Sophia
