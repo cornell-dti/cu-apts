@@ -46,7 +46,6 @@ import getPriceRange from '../../utils/priceRange';
 import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
-import { exists } from 'fs';
 
 type Props = {
   readonly review: ReviewWithId;
@@ -475,7 +474,7 @@ const ReviewComponent = ({
    */
   const likeHandler = async (id: string) => {
     if (user) {
-      if (!(review.userId != null && review.userId == user.uid)) {
+      if (!(review.userId != null && review.userId === user.uid)) {
         (liked ? removeLike : addLike)(id);
       }
     } else {
