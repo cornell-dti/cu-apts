@@ -89,6 +89,8 @@ export type CantFindApartmentForm = {
   readonly userId?: string | null;
 };
 
+export type CantFindApartmentFormWithId = CantFindApartmentForm & Id;
+
 export type QuestionForm = {
   readonly date: Date;
   readonly name: string;
@@ -96,3 +98,5 @@ export type QuestionForm = {
   readonly msg: string;
   readonly userId?: string | null;
 };
+
+export type QuestionFormWithId = QuestionForm & Id;
