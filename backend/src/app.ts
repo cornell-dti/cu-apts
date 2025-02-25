@@ -13,7 +13,9 @@ import {
   ApartmentWithLabel,
   ApartmentWithId,
   CantFindApartmentForm,
+  CantFindApartmentFormWithId,
   QuestionForm,
+  QuestionFormWithId,
   LocationTravelTimes,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
@@ -476,7 +478,7 @@ app.get('/api/pending-buildings/:status', async (req, res) => {
   const apartments: CantFindApartmentForm[] = apartmentDocs.map((doc) => {
     const data = doc.data();
     const apartment = { ...data, date: data.date.toDate() } as CantFindApartmentForm;
-    return { ...apartment, id: doc.id } as CantFindApartmentForm;
+    return { ...apartment, id: doc.id } as CantFindApartmentFormWithId;
   });
   res.status(200).send(JSON.stringify(apartments));
 });
@@ -487,7 +489,7 @@ app.get('/api/contact-questions/:status', async (req, res) => {
   const questions: QuestionForm[] = questionDocs.map((doc) => {
     const data = doc.data();
     const question = { ...data, date: data.date.toDate() } as QuestionForm;
-    return { ...question, id: doc.id } as QuestionForm;
+    return { ...question, id: doc.id } as QuestionFormWithId;
   });
   res.status(200).send(JSON.stringify(questions));
 });
@@ -1015,6 +1017,37 @@ app.post('/api/add-pending-building', authenticate, async (req, res) => {
   }
 });
 
+// API endpoint to update the status of a pending building report.
+app.put(
+  '/api/update-pending-building-status/:buildingId/:newStatus',
+  authenticate,
+  async (req, res) => {
+    try {
+      const { buildingId, newStatus } = req.params;
+
+      const validStatuses = ['PENDING', 'COMPLETED', 'DELETED'];
+      if (!validStatuses.includes(newStatus)) {
+        res.status(400).send('Error: Invalid status type');
+        return;
+      }
+
+      const doc = pendingBuildingsCollection.doc(buildingId);
+
+      const docSnapshot = await doc.get();
+      if (!docSnapshot.exists) {
+        res.status(404).send('Error: Building not found');
+        return;
+      }
+
+      await doc.update({ status: newStatus });
+      res.status(200).send('Success');
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error updating building status');
+    }
+  }
+);
+
 // API endpoint to submit a "Ask Us A Question" form.
 app.post('/api/add-contact-question', authenticate, async (req, res) => {
   try {
@@ -1030,6 +1063,36 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
     res.status(401).send('Error');
   }
 });
+
+// API endpoint to update the status of a contact question.
+app.put(
+  '/api/update-contact-question-status/:questionId/:newStatus',
+  authenticate,
+  async (req, res) => {
+    try {
+      const { questionId, newStatus } = req.params;
+
+      const validStatuses = ['PENDING', 'COMPLETED', 'DELETED'];
+      if (!validStatuses.includes(newStatus)) {
+        res.status(400).send('Error: Invalid status type');
+        return;
+      }
+
+      const doc = contactQuestionsCollection.doc(questionId);
+      const docSnapshot = await doc.get();
+      if (!docSnapshot.exists) {
+        res.status(404).send('Error: Question not found');
+        return;
+      }
+
+      await doc.update({ status: newStatus });
+      res.status(200).send('Success');
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error updating question status');
+    }
+  }
+);
 
 const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {

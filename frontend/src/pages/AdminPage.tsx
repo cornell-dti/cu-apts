@@ -13,7 +13,11 @@ import {
   Tab,
   IconButton,
 } from '@material-ui/core';
-import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
+import {
+  CantFindApartmentFormWithId,
+  QuestionFormWithId,
+  ReviewWithId,
+} from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
@@ -71,8 +75,8 @@ const AdminPage = (): ReactElement => {
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
   const [toggle, setToggle] = useState(false);
-  const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
-  const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
+  const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentFormWithId[]>([]);
+  const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionFormWithId[]>([]);
   const [pendingExpanded, setPendingExpanded] = useState(true);
   const [declinedExpanded, setDeclinedExpanded] = useState(true);
   const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
@@ -129,21 +133,22 @@ const AdminPage = (): ReactElement => {
   useEffect(() => {
     const apartmentTypes = new Map<
       string,
-      React.Dispatch<React.SetStateAction<CantFindApartmentForm[]>>
+      React.Dispatch<React.SetStateAction<CantFindApartmentFormWithId[]>>
     >([['PENDING', setPendingApartmentData]]);
     apartmentTypes.forEach((cllbck, apartmentType) => {
-      get<CantFindApartmentForm[]>(`/api/pending-buildings/${apartmentType}`, {
+      get<CantFindApartmentFormWithId[]>(`/api/pending-buildings/${apartmentType}`, {
         callback: cllbck,
       });
     });
   }, [toggle]);
 
   useEffect(() => {
-    const questionTypes = new Map<string, React.Dispatch<React.SetStateAction<QuestionForm[]>>>([
-      ['PENDING', setPendingContactQuestions],
-    ]);
+    const questionTypes = new Map<
+      string,
+      React.Dispatch<React.SetStateAction<QuestionFormWithId[]>>
+    >([['PENDING', setPendingContactQuestions]]);
     questionTypes.forEach((cllbck, questionType) => {
-      get<QuestionForm[]>(`/api/contact-questions/${questionType}`, {
+      get<QuestionFormWithId[]>(`/api/contact-questions/${questionType}`, {
         callback: cllbck,
       });
     });
@@ -306,11 +311,13 @@ const AdminPage = (): ReactElement => {
             .map((apartment, index) => (
               <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
                 <AdminCantFindApt
+                  pending_building_id={apartment.id}
                   date={apartment.date}
                   apartmentName={apartment.name}
                   apartmentAddress={apartment.address}
                   photos={apartment.photos}
                   triggerPhotoCarousel={showPhotoCarousel}
+                  setToggle={setToggle}
                 />
               </Grid>
             ))}
@@ -325,10 +332,12 @@ const AdminPage = (): ReactElement => {
             .map((question, index) => (
               <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
                 <AdminContactQuestion
+                  question_id={question.id}
                   date={question.date}
                   name={question.name}
                   email={question.email}
                   msg={question.msg}
+                  setToggle={setToggle}
                 />
               </Grid>
             ))}
