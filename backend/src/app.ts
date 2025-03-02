@@ -472,6 +472,18 @@ app.get('/api/location/:loc', async (req, res) => {
   res.status(200).send(data);
 });
 
+/**
+ * Get Pending Buildings - Retrieves all pending building reports with a specified status.
+ *
+ * @remarks
+ * This endpoint fetches pending building reports that users have submitted when they couldn't find their apartment.
+ * The reports are filtered by their current status (e.g. 'PENDING', 'COMPLETED', 'DELETED').
+ *
+ * @route GET /api/pending-buildings/:status
+ *
+ * @status
+ * - 200: Successfully retrieved the pending building reports for the given status.
+ */
 app.get('/api/pending-buildings/:status', async (req, res) => {
   const { status } = req.params;
   const apartmentDocs = (await pendingBuildingsCollection.where('status', '==', status).get()).docs;
@@ -483,6 +495,18 @@ app.get('/api/pending-buildings/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(apartments));
 });
 
+/**
+ * Get Contact Questions - Retrieves all contact questions with a specified status.
+ *
+ * @remarks
+ * This endpoint fetches contact questions that users have submitted through the contact form.
+ * The questions are filtered by their current status (e.g. 'PENDING', 'COMPLETED', 'DELETED').
+ *
+ * @route GET /api/contact-questions/:status
+ *
+ * @status
+ * - 200: Successfully retrieved the contact questions for the given status.
+ */
 app.get('/api/contact-questions/:status', async (req, res) => {
   const { status } = req.params;
   const questionDocs = (await contactQuestionsCollection.where('status', '==', status).get()).docs;
@@ -1001,7 +1025,22 @@ app.put('/api/update-review-status/:reviewDocId/:newStatus', authenticate, async
   }
 });
 
-// API endpoint to submit a "Can't Find Your Apartment?" form.
+/**
+ * Add Pending Building - Submits a request for an apartment that a user cannot find in the system.
+ *
+ * @remarks
+ * This endpoint allows authenticated users to submit details about an apartment that is not currently
+ * in the database. The submission is stored with a PENDING status for admin review.
+ *
+ * @route POST /api/add-pending-building
+ *
+ * @input {CantFindApartmentForm} req.body - Form data containing apartment details including date, name,
+ * address, photos and user id.
+ *
+ * @status
+ * - 201: Successfully created pending building request
+ * - 401: Error due to missing required fields or authentication issues
+ */
 app.post('/api/add-pending-building', authenticate, async (req, res) => {
   try {
     const doc = pendingBuildingsCollection.doc();
@@ -1017,7 +1056,24 @@ app.post('/api/add-pending-building', authenticate, async (req, res) => {
   }
 });
 
-// API endpoint to update the status of a pending building report.
+/**
+ * Update Pending Building Status - Updates the status of a pending building report.
+ *
+ * @remarks
+ * This endpoint allows authenticated users to update the status of a pending building report.
+ * The status can be changed to either 'PENDING', 'COMPLETED', or 'DELETED'.
+ *
+ * @route PUT /api/update-pending-building-status/:buildingId/:newStatus
+ *
+ * @input {string} req.params.buildingId - The ID of the pending building report
+ * @input {string} req.params.newStatus - The new status to set ('PENDING', 'COMPLETED', or 'DELETED')
+ *
+ * @status
+ * - 200: Successfully updated the building status
+ * - 400: Invalid status type provided
+ * - 404: Building report not found
+ * - 500: Server error while updating status
+ */
 app.put(
   '/api/update-pending-building-status/:buildingId/:newStatus',
   authenticate,
@@ -1048,7 +1104,21 @@ app.put(
   }
 );
 
-// API endpoint to submit a "Ask Us A Question" form.
+/**
+ * Add Contact Question - Submits a new "Ask Us A Question" form.
+ *
+ * @remarks
+ * This endpoint allows authenticated users to submit questions through the contact form.
+ * The question is stored with a PENDING status and includes metadata of the question.
+ *
+ * @route POST /api/add-contact-question
+ *
+ * @input {QuestionForm} req.body - The question form data containing name, email, question, and user id.
+ *
+ * @status
+ * - 201: Successfully created the question and returns the document ID
+ * - 401: Error due to missing required fields or authentication issues
+ */
 app.post('/api/add-contact-question', authenticate, async (req, res) => {
   try {
     const doc = contactQuestionsCollection.doc();
@@ -1064,7 +1134,24 @@ app.post('/api/add-contact-question', authenticate, async (req, res) => {
   }
 });
 
-// API endpoint to update the status of a contact question.
+/**
+ * Update Contact Question Status - Updates the status of a contact question.
+ *
+ * @remarks
+ * This endpoint allows authenticated users to update the status of a contact question.
+ * The status can be changed to either 'PENDING', 'COMPLETED', or 'DELETED'.
+ *
+ * @route PUT /api/update-contact-question-status/:questionId/:newStatus
+ *
+ * @input {string} req.params.questionId - The ID of the contact question
+ * @input {string} req.params.newStatus - The new status to set ('PENDING', 'COMPLETED', or 'DELETED')
+ *
+ * @status
+ * - 200: Successfully updated the question status
+ * - 400: Invalid status type provided
+ * - 404: Question not found
+ * - 500: Server error while updating status
+ */
 app.put(
   '/api/update-contact-question-status/:questionId/:newStatus',
   authenticate,
