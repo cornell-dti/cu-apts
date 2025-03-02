@@ -13,7 +13,11 @@ import {
   Tab,
   IconButton,
 } from '@material-ui/core';
-import { CantFindApartmentForm, QuestionForm, ReviewWithId } from '../../../common/types/db-types';
+import {
+  CantFindApartmentFormWithId,
+  QuestionFormWithId,
+  ReviewWithId,
+} from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
@@ -24,6 +28,8 @@ import clsx from 'clsx';
 import { colors } from '../colors';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
+import AdminCantFindApt from '../components/Admin/AdminCantFindApt';
+import AdminContactQuestion from '../components/Admin/AdminContactQuestion';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -69,8 +75,8 @@ const AdminPage = (): ReactElement => {
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
   const [toggle, setToggle] = useState(false);
-  const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentForm[]>([]);
-  const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionForm[]>([]);
+  const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentFormWithId[]>([]);
+  const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionFormWithId[]>([]);
   const [pendingExpanded, setPendingExpanded] = useState(true);
   const [declinedExpanded, setDeclinedExpanded] = useState(true);
   const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
@@ -127,21 +133,22 @@ const AdminPage = (): ReactElement => {
   useEffect(() => {
     const apartmentTypes = new Map<
       string,
-      React.Dispatch<React.SetStateAction<CantFindApartmentForm[]>>
+      React.Dispatch<React.SetStateAction<CantFindApartmentFormWithId[]>>
     >([['PENDING', setPendingApartmentData]]);
     apartmentTypes.forEach((cllbck, apartmentType) => {
-      get<CantFindApartmentForm[]>(`/api/pending-buildings/${apartmentType}`, {
+      get<CantFindApartmentFormWithId[]>(`/api/pending-buildings/${apartmentType}`, {
         callback: cllbck,
       });
     });
   }, [toggle]);
 
   useEffect(() => {
-    const questionTypes = new Map<string, React.Dispatch<React.SetStateAction<QuestionForm[]>>>([
-      ['PENDING', setPendingContactQuestions],
-    ]);
+    const questionTypes = new Map<
+      string,
+      React.Dispatch<React.SetStateAction<QuestionFormWithId[]>>
+    >([['PENDING', setPendingContactQuestions]]);
     questionTypes.forEach((cllbck, questionType) => {
-      get<QuestionForm[]>(`/api/contact-questions/${questionType}`, {
+      get<QuestionFormWithId[]>(`/api/contact-questions/${questionType}`, {
         callback: cllbck,
       });
     });
@@ -294,40 +301,45 @@ const AdminPage = (): ReactElement => {
   //  Contact tab
   const contact = (
     <Container className={container}>
-      <Grid container>
-        <Typography variant="h3" style={{ margin: '10px' }}>
-          <strong>Pending "Can't Find Your Apartment" Data ({pendingApartment.length})</strong>
-        </Typography>
-        {[...pendingApartment]
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .map((apartment, index) => (
-            <ListItem key={index}>
-              <List>
-                <ListItemText>Date: {apartment.date}</ListItemText>
-                <ListItemText>Apartment name: {apartment.name}</ListItemText>
-                <ListItemText>Apartment Address: {apartment.address}</ListItemText>
-                <ListItemText>Photos: {apartment.photos}</ListItemText>
-              </List>
-            </ListItem>
-          ))}
-      </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h3" style={{ margin: '10px', marginBottom: '30px' }}>
+            <strong>Pending "Can't Find Your Apartment" Data ({pendingApartment.length})</strong>
+          </Typography>
+          {[...pendingApartment]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((apartment, index) => (
+              <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
+                <AdminCantFindApt
+                  pending_building_id={apartment.id}
+                  date={apartment.date}
+                  apartmentName={apartment.name}
+                  apartmentAddress={apartment.address}
+                  photos={apartment.photos}
+                  triggerPhotoCarousel={showPhotoCarousel}
+                  setToggle={setToggle}
+                />
+              </Grid>
+            ))}
+        </Grid>
 
-      <Grid container>
-        <Grid item xs={12} sm={12}>
-          <Typography variant="h3" style={{ margin: '10px' }}>
+        <Grid item xs={12}>
+          <Typography variant="h3" style={{ margin: '10px', marginBottom: '30px' }}>
             <strong>Contact Questions ({pendingContactQuestions.length})</strong>
           </Typography>
           {[...pendingContactQuestions]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .map((question, index) => (
-              <ListItem key={index}>
-                <List>
-                  <ListItemText>Date: {question.date}</ListItemText>
-                  <ListItemText>User name: {question.name}</ListItemText>
-                  <ListItemText>Cornell Email: {question.email}</ListItemText>
-                  <ListItemText>Msg: {question.msg}</ListItemText>
-                </List>
-              </ListItem>
+              <Grid item xs={12} key={index} style={{ marginBottom: '20px' }}>
+                <AdminContactQuestion
+                  question_id={question.id}
+                  date={question.date}
+                  name={question.name}
+                  email={question.email}
+                  msg={question.msg}
+                  setToggle={setToggle}
+                />
+              </Grid>
             ))}
         </Grid>
       </Grid>
