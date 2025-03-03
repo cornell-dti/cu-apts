@@ -168,15 +168,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     hoPlazaWalking: -1,
   };
 
-  // Set the number of results to show based on mobile or desktop view.
-  useEffect(() => {
-    if (isMobile) {
-      setResultsToShow(5);
-    } else {
-      setResultsToShow(reviewData.length);
-    }
-  }, [isMobile, reviewData.length]);
-
   // Set 'notFound' to true when a page is not found.
   const handlePageNotFound = () => {
     setNotFound(true);
@@ -345,8 +336,34 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   }, []);
 
+  // Set the number of results to show based on mobile or desktop view.
+  useEffect(() => {
+    if (isMobile) {
+      setResultsToShow(5);
+    } else {
+      setResultsToShow(reviewData.length);
+    }
+  }, [isMobile, reviewData.length]);
+
+  // Updates frontend after user review deletion with review removal and a toast notification
+  useEffect(() => {
+    if (sessionStorage.getItem('showDeleteSuccessToast') === 'true') {
+      showDeleteSuccessConfirmationToast(); // Show toast after reload
+      sessionStorage.removeItem('showDeleteSuccessToast'); // Cleanup flag
+    }
+    const fetchReviews = async () => {
+      const approvedReviews = await axios.get<ReviewWithId[]>(
+        `/api/review/aptId/${aptId}/APPROVED`
+      );
+      const reviews = [...approvedReviews.data];
+      setReviewData(reviews);
+    };
+
+    fetchReviews();
+  }, [toggle]);
+
   const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
-    const features = ['location', 'safety', 'value', 'maintenance', 'communication', 'conditions'];
+    const features = ['location', 'safety', 'maintenance', 'conditions'];
     return features.map((feature) => {
       let key = feature as keyof DetailedRating;
       let rating =

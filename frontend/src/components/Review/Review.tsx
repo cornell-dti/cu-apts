@@ -395,9 +395,7 @@ const ReviewComponent = ({
     return [
       { feature: 'Location', rating: ratings.location },
       { feature: 'Safety', rating: ratings.safety },
-      { feature: 'Value', rating: ratings.value },
       { feature: 'Maintenance', rating: ratings.maintenance },
-      { feature: 'Communication', rating: ratings.communication },
       { feature: 'Conditions', rating: ratings.conditions },
     ];
   };
@@ -490,12 +488,12 @@ const ReviewComponent = ({
       if (user) {
         const token = await user.getIdToken(true);
         await axios.put(endpoint, {}, createAuthHeaders(token));
-        setToggle((cur) => !cur);
+        sessionStorage.setItem('showDeleteSuccessToast', 'true');
+        setToggle((curr) => !curr);
       } else {
         let user = await getUser(true);
         setUser(user);
       }
-      if (triggerDeleteToast) triggerDeleteToast();
     }
     setDeleteModalOpen(false);
   };
