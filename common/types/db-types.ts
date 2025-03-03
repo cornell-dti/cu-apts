@@ -7,9 +7,7 @@ type StringSet = Record<string, boolean>;
 export type DetailedRating = {
   readonly location: number;
   readonly safety: number;
-  readonly value: number;
   readonly maintenance: number;
-  readonly communication: number;
   readonly conditions: number;
 };
 

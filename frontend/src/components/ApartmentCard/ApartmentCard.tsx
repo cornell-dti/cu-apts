@@ -100,7 +100,12 @@ const ApartmentCard = ({
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const isMobile = useMediaQuery('(max-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
-  const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
+  const sampleReview =
+    reviewList.length === 0
+      ? ''
+      : reviewList.sort((a, b) => {
+          return (b.likes ?? 0) - (a.likes ?? 0);
+        })[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
