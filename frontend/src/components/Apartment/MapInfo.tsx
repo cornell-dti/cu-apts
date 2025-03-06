@@ -10,6 +10,7 @@ import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
 import { Marker } from './Marker';
 import { LocationTravelTimes } from '../../../../common/types/db-types';
+import { fstat } from 'fs';
 
 config();
 
@@ -192,6 +193,14 @@ function MapInfo({
               options={{
                 fullscreenControl: false,
                 zoomControl: false,
+                clickableIcons: false,
+                styles: [
+                  {
+                    featureType: 'poi',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'on' }],
+                  },
+                ],
               }}
             >
               <Marker lat={latitude} lng={longitude} src={aptIcon} altText="apartment icon" />
