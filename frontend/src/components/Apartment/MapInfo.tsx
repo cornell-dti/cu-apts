@@ -10,7 +10,6 @@ import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
 import { config } from 'dotenv';
 import { Marker } from './Marker';
 import { LocationTravelTimes } from '../../../../common/types/db-types';
-import { fstat } from 'fs';
 
 config();
 
