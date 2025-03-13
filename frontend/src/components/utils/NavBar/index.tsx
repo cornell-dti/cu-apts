@@ -387,6 +387,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               src={user?.photoURL || defaultProfilePic}
               className={profileButton}
               alt="User Profile"
+              onError={(e) => (e.currentTarget.src = defaultProfilePic)}
             />
             {dropDownOpen && (
               <ul
