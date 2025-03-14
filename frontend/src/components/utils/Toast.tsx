@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import { makeStyles, Theme } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -21,6 +22,8 @@ type Props = {
   severity: AlertProps['color'];
   message: string;
   time: number;
+  link?: string;
+  linkMessage?: string;
 };
 
 /**
@@ -41,7 +44,7 @@ type Props = {
  * @return {JSX.Element} The rendered Toast component.
  */
 
-const Toast = ({ isOpen, severity, message, time }: Props) => {
+const Toast = ({ isOpen, severity, message, time, link, linkMessage }: Props) => {
   const classes = useStyles();
   const [open, setOpen] = useState(isOpen);
 
@@ -64,6 +67,7 @@ const Toast = ({ isOpen, severity, message, time }: Props) => {
       >
         <Alert onClose={handleClose} severity={severity}>
           {message}
+          <Link to={link ?? '/'}>{linkMessage}</Link> : null
         </Alert>
       </Snackbar>
     </div>
