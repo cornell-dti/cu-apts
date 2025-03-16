@@ -372,6 +372,7 @@ const ProfilePage = ({ user, setUser }: Props): ReactElement => {
                     src={user?.photoURL || defaultProfilePic}
                     className={userImage}
                     alt="User Profile"
+                    onError={(e) => (e.currentTarget.src = defaultProfilePic)}
                   ></img>
                 </div>
                 <h3 style={{ marginTop: '0', marginBottom: '4px', fontSize: '25px' }}>
