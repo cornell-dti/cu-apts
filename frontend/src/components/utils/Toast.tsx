@@ -67,7 +67,9 @@ const Toast = ({ isOpen, severity, message, time, link, linkMessage }: Props) =>
       >
         <Alert onClose={handleClose} severity={severity}>
           {message}
-          <Link to={link ?? '/'}>{linkMessage}</Link> : null
+          <Link to={link ?? '/'} style={{ color: 'white' }}>
+            {linkMessage}
+          </Link>
         </Alert>
       </Snackbar>
     </div>
