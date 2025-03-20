@@ -151,7 +151,7 @@ const useStyles = makeStyles(() => ({
     marginLeft: '70%',
   },
   searchDrawer: {
-    width: '100%',
+    width: '13em',
     marginBottom: '5%',
   },
   profileDropDownMenu: {
@@ -384,7 +384,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             }}
           >
             <img
-              src={user?.photoURL || defaultProfilePic}
+              src={user?.photoURL ?? defaultProfilePic}
               className={profileButton}
               alt="User Profile"
               onError={(e) => (e.currentTarget.src = defaultProfilePic)}
@@ -572,7 +572,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClose: () => setDrawerOpen(false),
           }}
         >
-          <div className={drawerContainer} style={{ width: '80%' }}>
+          <div className={drawerContainer} style={{ width: '80%', display: 'block' }}>
             {getDrawerChoices()}
           </div>
         </Drawer>
