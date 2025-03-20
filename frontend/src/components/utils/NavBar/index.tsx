@@ -572,7 +572,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
             onClose: () => setDrawerOpen(false),
           }}
         >
-          <div className={drawerContainer} style={{ width: '80%', display: 'block' }}>
+          <div className={drawerContainer} style={{ width: '80%' }}>
             {getDrawerChoices()}
           </div>
         </Drawer>
