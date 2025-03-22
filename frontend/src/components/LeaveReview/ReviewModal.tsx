@@ -123,8 +123,8 @@ interface FormData {
 }
 
 const defaultReview: FormData = {
-  bedrooms: 0,
-  price: 0,
+  bedrooms: -1,
+  price: -1,
   overallRating: 0,
   address: '',
   ratings: {
@@ -177,8 +177,7 @@ const reducer = (state: FormData, action: Action): FormData => {
  *
  * This component displays a modal for users to input information for their review about a specific apartment.
  * This includes the bedroom(s), price per person, overall rating, detailed ratings (location, safety, maintenance,
- * conditions), review text/body, pictures (up to 3 pictures). The information that is required are: overall experience
- * and review text/body, all other information are optional.
+ * conditions), review text/body, pictures (up to 3 pictures). All fields are required.
  * The submit button will add the review to the database and set the status as PENDING until an admin approves it.
  * The modal is responsive for all screen sizes and mobile display.
  *
@@ -235,6 +234,9 @@ const ReviewModal = ({
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
+  const [bedroomError, setBedroomError] = useState(false);
+  const [priceError, setPriceError] = useState(false);
+  const [fieldsError, setFieldsError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
   const [addedPhoto, setAddedPhoto] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -332,10 +334,24 @@ const ReviewModal = ({
       if (
         data.reviewText === '' ||
         data.overallRating === 0 ||
+        data.price < 0 ||
+        data.bedrooms < 0 ||
+        data.detailedRatings.location === 0 ||
+        data.detailedRatings.conditions === 0 ||
+        data.detailedRatings.maintenance === 0 ||
+        data.detailedRatings.safety === 0 ||
         includesProfanity(data.reviewText)
       ) {
         data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
-        data.reviewText === '' ? setEmptyTextError(true) : setEmptyTextError(false);
+        data.reviewText.length <= 15 ? setEmptyTextError(true) : setEmptyTextError(false);
+        data.price < 0 ? setPriceError(true) : setPriceError(false);
+        data.bedrooms < 0 ? setBedroomError(true) : setBedroomError(false);
+        data.detailedRatings.conditions === 0 ||
+        data.detailedRatings.location === 0 ||
+        data.detailedRatings.maintenance === 0 ||
+        data.detailedRatings.safety === 0
+          ? setFieldsError(true)
+          : setFieldsError(false);
         includesProfanity(data.reviewText)
           ? setIncludesProfanityError(true)
           : setIncludesProfanityError(false);
@@ -475,6 +491,11 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
+                {bedroomError && (
+                  <Typography color="error" style={{ fontSize: '10px' }}>
+                    * Required
+                  </Typography>
+                )}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
             </Grid>
@@ -511,6 +532,11 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
+                {priceError && (
+                  <Typography color="error" style={{ fontSize: '10px' }}>
+                    * Required
+                  </Typography>
+                )}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
             </Grid>
@@ -523,7 +549,7 @@ const ReviewModal = ({
                 onChange={updateOverall()}
                 defaultValue={initialReview?.overallRating || 0}
               ></ReviewRating>
-              {ratingError && <Typography color="error">*This field is required</Typography>}
+              {ratingError && <Typography color="error">* Required</Typography>}
             </Grid>
             <div className={styles.div}></div>
             {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
@@ -539,28 +565,29 @@ const ReviewModal = ({
               <Grid container spacing={1} justifyContent="center">
                 <ReviewRating
                   name="location"
-                  label="Location"
+                  label="Location *"
                   onChange={updateRating('location')}
                   defaultValue={initialReview?.detailedRatings.location || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
-                  label="Safety"
+                  label="Safety *"
                   onChange={updateRating('safety')}
                   defaultValue={initialReview?.detailedRatings.safety || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
-                  label="Maintenance"
+                  label="Maintenance *"
                   onChange={updateRating('maintenance')}
                   defaultValue={initialReview?.detailedRatings.maintenance || 0}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
-                  label="Conditions"
+                  label="Conditions *"
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
                 ></ReviewRating>
+                {fieldsError && <Typography color="error">*These fields are required</Typography>}
               </Grid>
             </Grid>
 
@@ -597,7 +624,7 @@ const ReviewModal = ({
                   }}
                   placeholder="Write your review here"
                   helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
-                    emptyTextError ? ' This field is required' : ''
+                    emptyTextError ? ' A minimum of 15 characters is required' : ''
                   }${
                     includesProfanityError
                       ? ' This review contains profanity. Please edit it and try again.'
