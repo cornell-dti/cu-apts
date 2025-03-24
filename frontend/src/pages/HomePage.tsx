@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
-import Autocomplete from '../components/Home/Autocomplete';
+import Autocomplete from '../components/Search/Autocomplete';
 import styles from './HomePage.module.scss';
 import LocationCards from '../components/Home/LocationCards';
 import { colors } from '../colors';

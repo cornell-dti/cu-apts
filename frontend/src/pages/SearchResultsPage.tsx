@@ -1,5 +1,5 @@
 import { Container, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
 import { colors } from '../colors';
@@ -7,6 +7,7 @@ import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useTitle } from '../utils';
 import { useSaveScrollPosition } from '../utils/saveScrollPosition';
+import { FilterState } from '../components/Search/FilterSection';
 
 const useStyles = makeStyles({
   searchText: {
@@ -18,6 +19,14 @@ const useStyles = makeStyles({
 type Props = {
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
+const defaultFilters: FilterState = {
+  locations: [],
+  minPrice: '',
+  maxPrice: '',
+  bedrooms: 0,
+  bathrooms: 0,
 };
 
 /**
@@ -40,16 +49,32 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const path = useLocation();
   const [pathName] = useState(path.pathname);
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
-  const query = path.search.substring(3);
+
+  // Parse URL parameters using useMemo
+  const { query, filters } = useMemo(() => {
+    const params = new URLSearchParams(path.search);
+    return {
+      query: params.get('q') || '',
+      filters: params.get('filters')
+        ? JSON.parse(decodeURIComponent(params.get('filters') || '{}'))
+        : defaultFilters,
+    };
+  }, [path.search]);
+
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useTitle('Search Result');
 
   useEffect(() => {
+    // Log the received data
+    console.log('Received search query:', query);
+    console.log('Received filters:', filters);
+
+    // Only use query parameter in the API call
     get<CardData[]>(`/api/search-results?q=${query}`, {
       callback: setSearchResults,
     });
-  }, [query]);
+  }, [query]); // Remove filters from dependency array since we only use query for API call
 
   useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
   const saveResultsCount = (count: number) => {

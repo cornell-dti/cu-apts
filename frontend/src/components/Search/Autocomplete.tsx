@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
   Link,
+  IconButton,
 } from '@material-ui/core';
 import { get } from '../../utils/call';
 import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
@@ -19,13 +20,24 @@ import { useHistory } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import searchPropertyIcon from '../../assets/search-property.svg';
 import searchLandlordIcon from '../../assets/search-landlord.svg';
+import filterIcon from '../../assets/filter.svg';
+import FilterSection, { FilterState } from './FilterSection';
 
 type Props = {
   drawerOpen: boolean;
 };
 
+const defaultFilters: FilterState = {
+  locations: [],
+  minPrice: '',
+  maxPrice: '',
+  bedrooms: 0,
+  bathrooms: 0,
+};
+
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const useStyles = makeStyles((theme) => ({
     menuList: {
       position: 'absolute',
@@ -41,6 +53,12 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     menuItem: {
       borderBottom: '1px solid #E5E5E5',
       height: '53px',
+    },
+    searchBarRow: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     text: {
       backgroundColor: colors.white,
@@ -81,6 +99,18 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      cursor: 'pointer',
+    },
+    filterIconBackground: {
+      backgroundColor: colors.white,
+      width: '40px',
+      height: isMobile ? '35px' : '40px',
+      position: 'absolute',
+      right: '55px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      cursor: 'pointer',
     },
     searchLabelIcon: {
       cursor: 'pointer',
@@ -99,6 +129,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     },
   }));
   const {
+    searchBarRow,
+    filterIconBackground,
     text,
     searchIcon,
     homeSearchIcon,
@@ -116,6 +148,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const [focus, setFocus] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openFilter, setOpenFilter] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const history = useHistory();
@@ -139,15 +172,26 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       setFocus(true);
     } else if (event.key === 'Enter') {
       setFocus(true);
-      history.push(`/search?q=${query}`);
+      console.log('Current filter state:', filters);
+      const filterParams = encodeURIComponent(JSON.stringify(filters));
+      console.log('Encoded filter params:', filterParams);
+      history.push(`/search?q=${query}&filters=${filterParams}`);
       setQuery('');
       setOpen(false);
     }
   }
 
   const handleSearchIconClick = () => {
-    history.push(`/search?q=${query}`);
+    console.log('Current filter state:', filters);
+    const filterParams = encodeURIComponent(JSON.stringify(filters));
+    console.log('Encoded filter params:', filterParams);
+    history.push(`/search?q=${query}&filters=${filterParams}`);
     setQuery('');
+  };
+
+  const handleToggleFilter = () => {
+    setOpenFilter(!openFilter);
+    setOpen(false);
   };
 
   const handleOnChange = (query: string) => {
@@ -160,12 +204,17 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   };
 
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
   const Menu = () => {
     return (
       <div>
         <ClickAwayListener
           onClickAway={() => {
             setOpen(false);
+            setOpenFilter(false);
           }}
         >
           <div>
@@ -264,7 +313,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const location = useLocation();
   let placeholderText =
     location.pathname === '/' && !drawerOpen
-      ? 'Search by any location e.g. “301 College Ave”'
+      ? 'Search by any location e.g. "301 College Ave"'
       : 'Search';
 
   /**
@@ -287,7 +336,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       };
     } else {
       return {
-        style: { height: isMobile ? '35px' : '45px' },
+        style: {
+          height: isMobile ? '35px' : '45px',
+        },
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
@@ -303,28 +354,33 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
 
   return (
     <div style={{ position: 'relative', width: drawerOpen ? '100%' : '65%' }}>
-      <TextField
-        fullWidth
-        ref={inputRef}
-        value={query}
-        placeholder={placeholderText}
-        className={text}
-        variant="outlined"
-        style={{
-          borderRadius: '10px',
-          width: !isMobile ? '100%' : '98%',
-        }}
-        onKeyDown={textFieldHandleListKeyDown}
-        onChange={(event) => {
-          const value = event.target.value;
-          if (value !== '' || value !== null) {
-            handleOnChange(value);
-          }
-        }}
-        InputProps={getInputProps()}
-      />
-
+      <div className={searchBarRow}>
+        <TextField
+          fullWidth
+          ref={inputRef}
+          value={query}
+          placeholder={placeholderText}
+          className={text}
+          variant="outlined"
+          style={{
+            borderRadius: '10px',
+            width: !isMobile ? '100%' : '98%',
+          }}
+          onKeyDown={textFieldHandleListKeyDown}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value !== '' || value !== null) {
+              handleOnChange(value);
+            }
+          }}
+          InputProps={getInputProps()}
+        />
+        <IconButton onClick={handleToggleFilter} className={filterIconBackground} disableRipple>
+          <img src={filterIcon} alt={'filter-icon'} style={{ width: '21.4px', height: '21.4px' }} />
+        </IconButton>
+      </div>
       <Menu />
+      <FilterSection filters={filters} onChange={handleFilterChange} open={openFilter} />
     </div>
   );
 };
