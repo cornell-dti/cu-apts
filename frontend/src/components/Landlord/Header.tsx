@@ -4,7 +4,7 @@ import { CardHeader, CardMedia, Grid, Button, withStyles, makeStyles } from '@ma
 import styles from './Header.module.scss';
 import { Landlord } from '../../../../common/types/db-types';
 import defaultHeader from '../../assets/default_header.svg';
-import { ReactComponent as DefaultIcon } from '../../assets/default_icon.svg';
+import { ReactComponent as DefaultIcon } from '../../assets/search-landlord.svg';
 import { colors } from '../../colors';
 
 type Props = {
