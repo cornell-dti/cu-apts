@@ -281,6 +281,14 @@ const MapModal = ({
                 options={{
                   fullscreenControl: false,
                   zoomControl: false,
+                  clickableIcons: true,
+                  styles: [
+                    {
+                      featureType: 'poi',
+                      elementType: 'labels',
+                      stylers: [{ visibility: 'on' }],
+                    },
+                  ],
                 }}
               >
                 <Marker lat={latitude} lng={longitude} src={aptIcon} altText="apartment icon" />

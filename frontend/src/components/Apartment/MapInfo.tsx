@@ -192,6 +192,14 @@ function MapInfo({
               options={{
                 fullscreenControl: false,
                 zoomControl: false,
+                clickableIcons: false,
+                styles: [
+                  {
+                    featureType: 'poi',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'on' }],
+                  },
+                ],
               }}
             >
               <Marker lat={latitude} lng={longitude} src={aptIcon} altText="apartment icon" />
