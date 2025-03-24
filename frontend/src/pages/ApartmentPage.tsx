@@ -158,6 +158,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
@@ -385,6 +386,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowReportSuccessConfirmation);
   };
 
+  const showSaveSuccessToast = () => {
+    showToast(setShowSaveSuccess);
+  };
+
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -435,6 +440,9 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
       await axios.post(endpoint, { apartmentId: aptId }, createAuthHeaders(token));
       setIsSaved((prevIsSaved) => !prevIsSaved);
+      if (newIsSaved) {
+        showSaveSuccessToast();
+      }
     } catch (err) {
       throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
     }
@@ -774,6 +782,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 severity="success"
                 message="Review successfully reported!"
                 time={toastTime}
+              />
+            )}
+            {showSaveSuccess && (
+              <Toast
+                isOpen={showSaveSuccess}
+                severity="success"
+                message={`You have bookmarked ${apt?.name}. View your bookmarks `}
+                time={toastTime}
+                linkMessage="here"
+                link="/bookmarks"
               />
             )}
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
