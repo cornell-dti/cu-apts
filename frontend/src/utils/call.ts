@@ -11,10 +11,10 @@ export type GetOptions<T> = {
  * @remarks
  * This function simplifies the process of making a GET request using Axios by only requiring the route as it will
  * handle the callback, error console log, and error handling for you. This function doesn't return a value but will
- * execute the callback function (if provided) with the response data if succesful.
+ * execute the callback function (if provided) with the response data if successful.
  *
  * @param {string} route – The API endpoint to send the GET request to.
- * @param {GetOptions<T>} options – Optional paramters including: callback for handling the response, error handler
+ * @param {GetOptions<T>} options – Optional parameters including: callback for handling the response, error handler
  * for handling request failures, and an optional request body.
  * @param {AxiosRequestConfig} inputConfig – Optional Axios configuration to customize the request.
  */
