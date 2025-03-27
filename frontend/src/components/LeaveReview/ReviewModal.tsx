@@ -471,7 +471,7 @@ const ReviewModal = ({
               justifyContent="flex-start"
             >
               <Grid item style={{ marginRight: '10px', paddingLeft: '0' }}>
-                <Typography>Bedroom(s)</Typography>
+                <Typography>Bedroom(s) *</Typography>
               </Grid>
               <Grid
                 item
@@ -491,11 +491,7 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
-                {bedroomError && (
-                  <Typography color="error" style={{ fontSize: '10px' }}>
-                    * Required
-                  </Typography>
-                )}
+                {bedroomError && <Typography color="error">* Required</Typography>}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
             </Grid>
@@ -516,7 +512,7 @@ const ReviewModal = ({
                   !isMobile ? { marginRight: '10px', marginLeft: 'auto' } : { marginRight: '10px' }
                 }
               >
-                <Typography>Price Per Person</Typography>
+                <Typography>Price Per Person *</Typography>
               </Grid>
               <Grid
                 item
@@ -532,11 +528,7 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
-                {priceError && (
-                  <Typography color="error" style={{ fontSize: '10px' }}>
-                    * Required
-                  </Typography>
-                )}
+                {priceError && <Typography color="error">* Required</Typography>}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
             </Grid>
@@ -545,7 +537,7 @@ const ReviewModal = ({
             <Grid container item>
               <ReviewRating
                 name="overall"
-                label="Overall Experience"
+                label="Overall Experience *"
                 onChange={updateOverall()}
                 defaultValue={initialReview?.overallRating || 0}
               ></ReviewRating>
@@ -587,7 +579,7 @@ const ReviewModal = ({
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
                 ></ReviewRating>
-                {fieldsError && <Typography color="error">*These fields are required</Typography>}
+                {fieldsError && <Typography color="error">* These fields are required</Typography>}
               </Grid>
             </Grid>
 
