@@ -27,11 +27,17 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 ### 2024-2025
 
 - **Ella Krechmer** - Product Manager
+- **Jaeyoung Lee** - Product Manager
 - **Janet Luo** - Associate Product Manager
+- **Celline Lee** - Associate Product Manager
 - **Jacob Green** - Product Marketing Manager
+- **Arsh Aggarwal** - Product Marketing Manager
+- **Jasmine Ren** - Product Marketing Manager
 - **Gunyasorn (Grace) Sawatyanon** - Technical Product Manager
 - **David Martinez Lopez** - Designer
 - **Vicky Wang** - Designer
+- **Erica Lee** - Designer
+- **May Wu** - Designer
 - **Kea-Roy Ong** - Developer
 - **Casper Liao** - Developer
 - **Parsa Tehranipoor** - Developer
