@@ -194,9 +194,15 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     setOpen(false);
   };
 
+  const handleClickAway = () => {
+    setOpen(false);
+    setOpenFilter(false);
+  };
+
   const handleOnChange = (query: string) => {
     setQuery(query);
     setSelected(null);
+    setOpenFilter(false);
     if (query !== '') {
       setLoading(true);
     } else {
@@ -214,7 +220,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         <ClickAwayListener
           onClickAway={() => {
             setOpen(false);
-            setOpenFilter(false);
           }}
         >
           <div>
@@ -354,33 +359,48 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
 
   return (
     <div style={{ position: 'relative', width: drawerOpen ? '100%' : '65%' }}>
-      <div className={searchBarRow}>
-        <TextField
-          fullWidth
-          ref={inputRef}
-          value={query}
-          placeholder={placeholderText}
-          className={text}
-          variant="outlined"
-          style={{
-            borderRadius: '10px',
-            width: !isMobile ? '100%' : '98%',
-          }}
-          onKeyDown={textFieldHandleListKeyDown}
-          onChange={(event) => {
-            const value = event.target.value;
-            if (value !== '' || value !== null) {
-              handleOnChange(value);
-            }
-          }}
-          InputProps={getInputProps()}
-        />
-        <IconButton onClick={handleToggleFilter} className={filterIconBackground} disableRipple>
-          <img src={filterIcon} alt={'filter-icon'} style={{ width: '21.4px', height: '21.4px' }} />
-        </IconButton>
-      </div>
-      <Menu />
-      <FilterSection filters={filters} onChange={handleFilterChange} open={openFilter} />
+      <ClickAwayListener onClickAway={handleClickAway}>
+        <div>
+          <div className={searchBarRow}>
+            <TextField
+              fullWidth
+              ref={inputRef}
+              value={query}
+              placeholder={placeholderText}
+              className={text}
+              variant="outlined"
+              style={{
+                borderRadius: '10px',
+                width: !isMobile ? '100%' : '98%',
+              }}
+              onKeyDown={textFieldHandleListKeyDown}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value !== '' || value !== null) {
+                  handleOnChange(value);
+                }
+              }}
+              InputProps={getInputProps()}
+            />
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
+                handleToggleFilter();
+              }}
+              className={filterIconBackground}
+              disableRipple
+            >
+              <img
+                src={filterIcon}
+                alt={'filter-icon'}
+                style={{ width: '21.4px', height: '21.4px' }}
+              />
+            </IconButton>
+          </div>
+          <Menu />
+          <FilterSection filters={filters} onChange={handleFilterChange} open={openFilter} />
+        </div>
+      </ClickAwayListener>
     </div>
   );
 };

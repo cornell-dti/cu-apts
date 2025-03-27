@@ -132,7 +132,28 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
             </Typography>
             <LocationCards />
           </Box>
-          {!isMobile && <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />}
+          {!isMobile && (
+            <>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Close to Central Campus
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Most Reviewed
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Most Loved
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+            </>
+          )}
         </Container>
       </Box>
     </>

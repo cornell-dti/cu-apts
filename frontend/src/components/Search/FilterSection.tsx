@@ -15,19 +15,19 @@ const useStyles = makeStyles({
   container: {
     position: 'absolute',
     zIndex: 1,
-    width: '100%',
+    minWidth: '100%',
     backgroundColor: 'white',
     borderRadius: '10px',
     marginTop: '5px',
     display: 'flex',
     flexDirection: 'row',
+    boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.1)',
   },
   section: {
     marginBottom: '1rem',
     backgroundColor: 'white',
-    borderRadius: '10px',
     padding: '1rem',
-    border: '1px solid rgb(255, 8, 8)',
+    minWidth: '210px',
   },
   sectionTitle: {
     fontWeight: 'bold',
@@ -99,6 +99,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open }
     onChange({ ...filters, [field]: newValue });
   };
 
+  const handlePriceChange = (field: 'minPrice' | 'maxPrice', value: string) => {
+    if (value === '' || /^\d+$/.test(value)) {
+      onChange({ ...filters, [field]: value });
+    }
+  };
+
   return (
     <div>
       {open && (
@@ -128,10 +134,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open }
               <TextField
                 placeholder="No Min"
                 value={filters.minPrice}
-                onChange={(e) => onChange({ ...filters, minPrice: e.target.value })}
+                onChange={(e) => handlePriceChange('minPrice', e.target.value)}
                 variant="outlined"
                 size="small"
-                InputProps={{
+                type="text"
+                inputProps={{
+                  pattern: '\\d*',
                   className: classes.filterText,
                 }}
               />
@@ -139,10 +147,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open }
               <TextField
                 placeholder="No Max"
                 value={filters.maxPrice}
-                onChange={(e) => onChange({ ...filters, maxPrice: e.target.value })}
+                onChange={(e) => handlePriceChange('maxPrice', e.target.value)}
                 variant="outlined"
                 size="small"
-                InputProps={{
+                type="text"
+                inputProps={{
+                  pattern: '\\d*',
                   className: classes.filterText,
                 }}
               />
