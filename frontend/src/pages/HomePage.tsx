@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Container, Typography, makeStyles } from '@material-ui/core';
-import Autocomplete from '../components/Home/Autocomplete';
+import Autocomplete from '../components/Search/Autocomplete';
 import styles from './HomePage.module.scss';
 import LocationCards from '../components/Home/LocationCards';
 import { colors } from '../colors';
@@ -132,7 +132,28 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
             </Typography>
             <LocationCards />
           </Box>
-          {!isMobile && <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />}
+          {!isMobile && (
+            <>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Close to Central Campus
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Most Reviewed
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+              <Box mb={4}>
+                <Typography variant="h5" style={{ fontWeight: 600 }}>
+                  Most Loved
+                </Typography>
+                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
+              </Box>
+            </>
+          )}
         </Container>
       </Box>
     </>

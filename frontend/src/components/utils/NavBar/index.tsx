@@ -23,7 +23,7 @@ import { Link as RouterLink, useHistory } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
-import Autocomplete from '../../Home/Autocomplete';
+import Autocomplete from '../../Search/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
 import defaultProfilePic from '../../../assets/cuapts-bear.png';
 import { ReactComponent as ProfileIcon } from '../../../assets/profile-icon.svg';

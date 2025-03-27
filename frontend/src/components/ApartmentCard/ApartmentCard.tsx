@@ -25,6 +25,7 @@ import { Link as RouterLink } from 'react-router-dom';
 type Props = {
   buildingData: ApartmentWithId;
   numReviews: number;
+  avgRating: number;
   company?: string;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -84,12 +85,14 @@ const useStyles = makeStyles({
  * @param {Object} props - Component properties.
  * @param {ApartmentWithId} props.buildingData - The data for the apartment.
  * @param {number} props.numReviews - The number of reviews for the apartment.
+ * @param {number} props.avgRating - The average rating for the apartment.
  * @param {string} [props.company] - The company associated with the apartment (optional).
  * @returns {ReactElement} ApartmentCard component.
  */
 const ApartmentCard = ({
   buildingData,
   numReviews,
+  avgRating,
   company,
   user,
   setUser,
@@ -329,6 +332,13 @@ const ApartmentCard = ({
                 style={{ fontSize: isMobile ? '10px' : '18px', lineHeight: 'normal' }}
               >
                 {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
+              </Typography>
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: '10px', lineHeight: 'normal' }}
+              >
+                {`Rating: ${avgRating.toFixed(1)}`}
               </Typography>
             </Grid>
           )}
