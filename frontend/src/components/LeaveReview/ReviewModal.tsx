@@ -343,7 +343,7 @@ const ReviewModal = ({
         includesProfanity(data.reviewText)
       ) {
         data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
-        data.reviewText.length <= 15 ? setEmptyTextError(true) : setEmptyTextError(false);
+        data.reviewText.length < 15 ? setEmptyTextError(true) : setEmptyTextError(false);
         data.price < 0 ? setPriceError(true) : setPriceError(false);
         data.bedrooms < 0 ? setBedroomError(true) : setBedroomError(false);
         data.detailedRatings.conditions === 0 ||
@@ -388,6 +388,15 @@ const ReviewModal = ({
   const onCloseClearPhotos = () => {
     dispatch({ type: 'updatePhotos', photos: [] });
     onClose();
+  };
+
+  const resetErrors = () => {
+    setEmptyTextError(false);
+    setRatingError(false);
+    setBedroomError(false);
+    setPriceError(false);
+    setPriceError(false);
+    setFieldsError(false);
   };
 
   const removePhoto = (index: number) => {
@@ -491,9 +500,13 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
-                {bedroomError && <Typography color="error">* Required</Typography>}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
+              {bedroomError && (
+                <Typography color="error" style={{ fontSize: '12px', minWidth: '200px' }}>
+                  * Required
+                </Typography>
+              )}
             </Grid>
 
             <Grid
@@ -528,21 +541,35 @@ const ReviewModal = ({
                   className={dropDownStyle}
                   icon={false}
                 />
-                {priceError && <Typography color="error">* Required</Typography>}
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
+              {priceError && (
+                <Typography
+                  color="error"
+                  style={{ fontSize: '12px', justifyItems: 'flex-start', minWidth: '180px' }}
+                >
+                  * Required
+                </Typography>
+              )}
             </Grid>
           </Grid>
           <Grid container direction="column" justifyContent="space-evenly" spacing={4}>
-            <Grid container item>
-              <ReviewRating
-                name="overall"
-                label="Overall Experience *"
-                onChange={updateOverall()}
-                defaultValue={initialReview?.overallRating || 0}
-              ></ReviewRating>
-              {ratingError && <Typography color="error">* Required</Typography>}
+            <Grid container item xs={12}>
+              <Grid container item>
+                <ReviewRating
+                  name="overall"
+                  label="Overall Experience *"
+                  onChange={updateOverall()}
+                  defaultValue={initialReview?.overallRating || 0}
+                ></ReviewRating>
+              </Grid>
+              {ratingError && (
+                <Typography color="error" style={{ fontSize: '12px' }}>
+                  * Required
+                </Typography>
+              )}
             </Grid>
+
             <div className={styles.div}></div>
             {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
               <TextField
@@ -579,8 +606,12 @@ const ReviewModal = ({
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
                 ></ReviewRating>
-                {fieldsError && <Typography color="error">* These fields are required</Typography>}
               </Grid>
+              {fieldsError && (
+                <Typography color="error" style={{ fontSize: '12px', marginTop: '5px' }}>
+                  * These fields are required
+                </Typography>
+              )}
             </Grid>
 
             <div className={styles.div}></div>
@@ -659,7 +690,10 @@ const ReviewModal = ({
         <Button
           variant="contained"
           disableElevation
-          onClick={initialReview ? onClose : onCloseClearPhotos}
+          onClick={() => {
+            (initialReview ? onClose : onCloseClearPhotos)();
+            resetErrors();
+          }}
           className={hollowRedButton}
           style={{ marginLeft: '15px' }}
         >
