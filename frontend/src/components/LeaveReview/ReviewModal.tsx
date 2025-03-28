@@ -130,9 +130,7 @@ const defaultReview: FormData = {
   ratings: {
     location: 0,
     safety: 0,
-    value: 0,
     maintenance: 0,
-    communication: 0,
     conditions: 0,
   },
   localPhotos: [],
@@ -217,9 +215,7 @@ const ReviewModal = ({
       ratings: {
         location: review.detailedRatings.location,
         safety: review.detailedRatings.safety,
-        value: review.detailedRatings.value,
         maintenance: review.detailedRatings.maintenance,
-        communication: review.detailedRatings.communication,
         conditions: review.detailedRatings.conditions,
       },
       localPhotos: review.photos.map((photo) => new File([], photo)),
@@ -356,7 +352,8 @@ const ReviewModal = ({
       if (!initialReview) {
         dispatch({ type: 'reset' });
       }
-      onSuccess();
+      sessionStorage.setItem('showModifiedReviewSuccessToast', 'true');
+      window.location.reload();
     } catch (err) {
       console.log(err);
       console.log('Failed to submit form');
@@ -390,6 +387,13 @@ const ReviewModal = ({
     const timer = setTimeout(updateScrollPosition, 100);
     return () => clearTimeout(timer);
   }, [addedPhoto]);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('showModifiedReviewSuccessToast') === 'true') {
+      onSuccess(); // Call the toast notification function
+      sessionStorage.removeItem('showModifiedReviewSuccessToast'); // Clean up so it doesn't trigger again
+    }
+  }, []);
 
   /**
    * Returns the "Things to consider in your review:" prompt box. Function serves to help mobile display.

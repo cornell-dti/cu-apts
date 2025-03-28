@@ -152,9 +152,7 @@ const AdminReviewComponent = ({
     return [
       { feature: 'Location', rating: ratings.location },
       { feature: 'Safety', rating: ratings.safety },
-      { feature: 'Value', rating: ratings.value },
       { feature: 'Maintenance', rating: ratings.maintenance },
-      { feature: 'Communication', rating: ratings.communication },
       { feature: 'Conditions', rating: ratings.conditions },
     ];
   };
