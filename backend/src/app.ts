@@ -423,6 +423,98 @@ app.get('/api/search-results', async (req, res) => {
   }
 });
 
+/**
+ * Search With Query And Filters - Searches apartments based on text query and multiple filter criteria.
+ *
+ * @remarks
+ * This endpoint allows searching apartments using a combination of text search and filters.
+ * The filters include location, price range, number of bedrooms and bathrooms.
+ * Results are filtered progressively based on which parameters are provided.
+ *
+ * @route GET /api/search-with-query-and-filters
+ *
+ * @input {object} req.query - The search parameters
+ * @input {string} req.query.q - Optional text search query
+ * @input {string} req.query.locations - Optional comma-separated list of locations
+ * @input {number} req.query.minPrice - Optional minimum price filter
+ * @input {number} req.query.maxPrice - Optional maximum price filter
+ * @input {number} req.query.bedrooms - Optional number of bedrooms filter
+ * @input {number} req.query.bathrooms - Optional number of bathrooms filter
+ *
+ * @status
+ * - 200: Successfully retrieved filtered search results
+ * - 400: Error occurred while processing the search request
+ */
+
+app.get('/api/search-with-query-and-filters', async (req, res) => {
+  try {
+    // Extract all query parameters
+    const query = req.query.q as string;
+    const locations = req.query.locations as string;
+    const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
+    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
+    const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
+    const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
+
+    // Get all apartments from the application state
+    const apts = req.app.get('apts');
+    const aptsWithType: ApartmentWithId[] = apts;
+
+    // Start with text search if query is provided
+    let filteredResults: ApartmentWithId[] = [];
+    if (query && query.trim() !== '') {
+      const options = {
+        keys: ['name', 'address'],
+      };
+      const fuse = new Fuse(aptsWithType, options);
+      const searchResults = fuse.search(query);
+      filteredResults = searchResults.map((result) => result.item);
+    } else {
+      // If no query, start with all apartments
+      filteredResults = aptsWithType;
+    }
+
+    // Apply location filter if provided
+    if (locations && locations.trim() !== '') {
+      const locationArray = locations.split(',').map((loc) => loc.toUpperCase());
+      filteredResults = filteredResults.filter((apt) =>
+        locationArray.includes(apt.area ? apt.area.toUpperCase() : '')
+      );
+    }
+
+    // Apply price range filters
+    if (minPrice !== null) {
+      filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
+    }
+
+    if (maxPrice !== null) {
+      filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
+    }
+
+    // Apply bedroom filter
+    if (bedrooms !== null && bedrooms > 0) {
+      filteredResults = filteredResults.filter(
+        (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
+      );
+    }
+
+    // Apply bathroom filter
+    if (bathrooms !== null && bathrooms > 0) {
+      filteredResults = filteredResults.filter(
+        (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
+      );
+    }
+
+    // Process the filtered results through pageData to include reviews, ratings, etc.
+    const enrichedResults = await pageData(filteredResults);
+
+    res.status(200).send(JSON.stringify(enrichedResults));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
 /*
  * assumption, what you return for a given page may be different
  * currently, we are assuming 'home' as a potential input and a default case for everything else for the page
@@ -469,7 +561,51 @@ app.get('/api/location/:loc', async (req, res) => {
   );
 
   const data = JSON.stringify(await pageData(buildings));
-  res.status(200).send(data);
+  return res.status(200).send(data);
+});
+
+/**
+ * Get Apartments by Multiple Locations – Retrieves apartments from multiple specified locations.
+ *
+ * @remarks
+ * This endpoint allows fetching apartments from multiple locations in a single request. Locations are
+ * passed as comma-separated values in the query string. The response includes apartment data with
+ * reviews and ratings for each location.
+ *
+ * @route GET /api/locations?locations=[comma-separated locations]
+ *
+ * @input {string} req.query.locations - Comma-separated list of location names (e.g. "Collegetown,Downtown")
+ *
+ * @status
+ * - 200: Successfully retrieved apartments for the specified locations
+ * - 400: No locations specified in query parameter
+ */
+
+app.get('/api/locations', async (req, res) => {
+  const locations = req.query.locations as string;
+
+  if (!locations) {
+    return res.status(400).send({ error: 'No locations specified' });
+  }
+
+  const locationArray = locations.split(',');
+
+  // Create a query to fetch buildings from any of the specified locations
+  let query = buildingsCollection.where('area', '==', locationArray[0].toUpperCase());
+
+  // If there are multiple locations, we need to use an 'in' query instead
+  if (locationArray.length > 1) {
+    const upperLocations = locationArray.map((loc) => loc.toUpperCase());
+    query = buildingsCollection.where('area', 'in', upperLocations);
+  }
+
+  const buildingDocs = (await query.get()).docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+
+  const data = JSON.stringify(await pageData(buildings));
+  return res.status(200).send(data);
 });
 
 /**
@@ -763,7 +899,7 @@ app.get('/api/saved-apartments', authenticate, async (req, res) => {
   );
 
   const data = JSON.stringify(await pageData(buildings)); // Preparing the data for response
-  res.status(200).send(data); // Sending the data back to the client
+  return res.status(200).send(data);
 });
 
 // Endpoints for adding and removing saved landlords for a user

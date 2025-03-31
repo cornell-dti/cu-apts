@@ -132,6 +132,20 @@ const ApartmentCards = ({
                 setOrderLowToHigh(false);
               },
             },
+            {
+              item: 'Most Loved',
+              callback: () => {
+                setSortBy('avgRating');
+                setOrderLowToHigh(false);
+              },
+            },
+            {
+              item: 'Most Reviewed',
+              callback: () => {
+                setSortBy('numReviews');
+                setOrderLowToHigh(false);
+              },
+            },
           ]}
           isMobile={isMobile}
         />
@@ -139,11 +153,11 @@ const ApartmentCards = ({
       <Grid container spacing={3} className={boundingBox}>
         {data &&
           sortApartments(data, sortBy, orderLowToHigh)
-            .slice(0, resultsToShow)
-            .map(({ buildingData, numReviews, company }, index) => {
+            .slice(0, Math.min(3, resultsToShow))
+            .map(({ buildingData, numReviews, company, avgRating }, index) => {
               const { id } = buildingData;
               return (
-                <Grid item md={12} key={index}>
+                <Grid item md={4} key={index}>
                   <Link
                     {...{
                       to: `/apartment/${id}`,
@@ -154,6 +168,7 @@ const ApartmentCards = ({
                     <ApartmentCard
                       key={index}
                       numReviews={numReviews}
+                      avgRating={avgRating ?? 0}
                       buildingData={buildingData}
                       company={company}
                       user={user}
@@ -164,7 +179,7 @@ const ApartmentCards = ({
               );
             })}
 
-        {data && data.length > resultsToShow && (
+        {data && data.length > 3 && resultsToShow > 3 && (
           <>
             <Grid item xs={12}>
               <hr className={horizontalLine} />
