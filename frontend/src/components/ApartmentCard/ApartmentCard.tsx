@@ -333,12 +333,41 @@ const ApartmentCard = ({
               >
                 {numReviews + (numReviews !== 1 ? ' Reviews' : ' Review')}
               </Typography>
+              {/* TODO: TESTING!! */}
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: '10px', lineHeight: 'normal' }}
+              >
+                {`Area: ${buildingData.area}`}
+              </Typography>
               <Typography
                 variant="h6"
                 className={reviewNum}
                 style={{ fontSize: '10px', lineHeight: 'normal' }}
               >
                 {`Rating: ${avgRating.toFixed(1)}`}
+              </Typography>
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: '10px', lineHeight: 'normal' }}
+              >
+                {`Beds: ${buildingData.numBeds}`}
+              </Typography>
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: '10px', lineHeight: 'normal' }}
+              >
+                {`Baths: ${buildingData.numBaths}`}
+              </Typography>
+              <Typography
+                variant="h6"
+                className={reviewNum}
+                style={{ fontSize: '10px', lineHeight: 'normal' }}
+              >
+                {`Price: ${buildingData.price}`}
               </Typography>
             </Grid>
           )}

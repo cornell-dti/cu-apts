@@ -66,15 +66,39 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   useTitle('Search Result');
 
   useEffect(() => {
-    // Log the received data
     console.log('Received search query:', query);
     console.log('Received filters:', filters);
 
-    // Only use query parameter in the API call
-    get<CardData[]>(`/api/search-results?q=${query}`, {
+    const params = new URLSearchParams();
+
+    if (query) {
+      params.append('q', query);
+    }
+
+    if (filters.locations && filters.locations.length > 0) {
+      params.append('locations', filters.locations.join(','));
+    }
+
+    if (filters.minPrice) {
+      params.append('minPrice', filters.minPrice);
+    }
+
+    if (filters.maxPrice) {
+      params.append('maxPrice', filters.maxPrice);
+    }
+
+    if (filters.bedrooms > 0) {
+      params.append('bedrooms', filters.bedrooms.toString());
+    }
+
+    if (filters.bathrooms > 0) {
+      params.append('bathrooms', filters.bathrooms.toString());
+    }
+
+    get<CardData[]>(`/api/search-with-query-and-filters?${params.toString()}`, {
       callback: setSearchResults,
     });
-  }, [query]); // Remove filters from dependency array since we only use query for API call
+  }, [query, filters]);
 
   useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
   const saveResultsCount = (count: number) => {

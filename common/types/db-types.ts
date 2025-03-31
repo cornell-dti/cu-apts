@@ -63,6 +63,7 @@ export type Apartment = {
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
   readonly latitude: number;
   readonly longitude: number;
+  readonly price: number;
 };
 
 export type LocationTravelTimes = {
