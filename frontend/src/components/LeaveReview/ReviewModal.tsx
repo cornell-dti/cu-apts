@@ -236,7 +236,10 @@ const ReviewModal = ({
   const [ratingError, setRatingError] = useState(false);
   const [bedroomError, setBedroomError] = useState(false);
   const [priceError, setPriceError] = useState(false);
-  const [fieldsError, setFieldsError] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+  const [maintenanceError, setMaintenanceError] = useState(false);
+  const [safetyError, setSafetyError] = useState(false);
+  const [conditionsError, setConditionsError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
   const [addedPhoto, setAddedPhoto] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -346,12 +349,14 @@ const ReviewModal = ({
         data.reviewText.length < 15 ? setEmptyTextError(true) : setEmptyTextError(false);
         data.price < 0 ? setPriceError(true) : setPriceError(false);
         data.bedrooms < 0 ? setBedroomError(true) : setBedroomError(false);
-        data.detailedRatings.conditions === 0 ||
-        data.detailedRatings.location === 0 ||
-        data.detailedRatings.maintenance === 0 ||
-        data.detailedRatings.safety === 0
-          ? setFieldsError(true)
-          : setFieldsError(false);
+        data.detailedRatings.conditions === 0
+          ? setConditionsError(true)
+          : setConditionsError(false);
+        data.detailedRatings.location === 0 ? setLocationError(true) : setLocationError(false);
+        data.detailedRatings.maintenance === 0
+          ? setMaintenanceError(true)
+          : setMaintenanceError(false);
+        data.detailedRatings.safety === 0 ? setSafetyError(true) : setSafetyError(false);
         includesProfanity(data.reviewText)
           ? setIncludesProfanityError(true)
           : setIncludesProfanityError(false);
@@ -396,7 +401,10 @@ const ReviewModal = ({
     setBedroomError(false);
     setPriceError(false);
     setPriceError(false);
-    setFieldsError(false);
+    setLocationError(false);
+    setMaintenanceError(false);
+    setConditionsError(false);
+    setSafetyError(false);
   };
 
   const removePhoto = (index: number) => {
@@ -563,6 +571,7 @@ const ReviewModal = ({
                   label="Overall Experience *"
                   onChange={updateOverall()}
                   defaultValue={initialReview?.overallRating || 0}
+                  error={ratingError}
                 ></ReviewRating>
               </Grid>
               {ratingError && (
@@ -589,27 +598,31 @@ const ReviewModal = ({
                   label="Location *"
                   onChange={updateRating('location')}
                   defaultValue={initialReview?.detailedRatings.location || 0}
+                  error={locationError}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
                   label="Safety *"
                   onChange={updateRating('safety')}
                   defaultValue={initialReview?.detailedRatings.safety || 0}
+                  error={safetyError}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
                   label="Maintenance *"
                   onChange={updateRating('maintenance')}
                   defaultValue={initialReview?.detailedRatings.maintenance || 0}
+                  error={maintenanceError}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
                   label="Conditions *"
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
+                  error={conditionsError}
                 ></ReviewRating>
               </Grid>
-              {fieldsError && (
+              {(conditionsError || safetyError || maintenanceError || locationError) && (
                 <Typography color="error" style={{ fontSize: '12px', marginTop: '5px' }}>
                   * These fields are required
                 </Typography>
