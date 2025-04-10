@@ -480,7 +480,7 @@ const ReviewModal = ({
               justifyContent="flex-start"
             >
               <Grid item style={{ marginRight: '10px', paddingLeft: '0' }}>
-                <Typography>Bedroom(s) *</Typography>
+                <Typography color={!bedroomError ? 'initial' : 'error'}>Bedroom(s) *</Typography>
               </Grid>
               <Grid
                 item
@@ -525,7 +525,9 @@ const ReviewModal = ({
                   !isMobile ? { marginRight: '10px', marginLeft: 'auto' } : { marginRight: '10px' }
                 }
               >
-                <Typography>Price Per Person *</Typography>
+                <Typography color={!priceError ? 'initial' : 'error'}>
+                  Price Per Person *
+                </Typography>
               </Grid>
               <Grid
                 item
