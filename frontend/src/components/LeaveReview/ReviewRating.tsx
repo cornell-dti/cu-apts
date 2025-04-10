@@ -7,6 +7,7 @@ interface Props {
   label: string;
   onChange: (event: React.ChangeEvent<{}>, value: number | null) => void;
   defaultValue?: number;
+  error?: boolean;
 }
 
 /**
@@ -17,17 +18,18 @@ interface Props {
  * @param {string} props.label - The label to be displayed next to the HeartRating component.
  * @param {function} props.onChange - Callback function to handle the change event when the rating is modified.
  * @param {number} [props.defaultValue] - The default value for the HeartRating component.
+ * @param {boolean} props.error - If true, displays the label in an error state (typically red).
  * @returns {JSX.Element} The rendered ReviewRating component.
  */
 
-const ReviewRating = ({ name, label, onChange, defaultValue }: Props) => {
+const ReviewRating = ({ name, label, onChange, defaultValue, error }: Props) => {
   return (
     <Grid container justifyContent="flex-start" alignItems="center" item xs={12} md={6}>
       <Grid item>
         <HeartRating name={name} onChange={onChange} defaultValue={defaultValue || 0} />
       </Grid>
       <Grid item style={{ marginLeft: '25px' }}>
-        <FormLabel>{label}</FormLabel>
+        <FormLabel error={error}>{label}</FormLabel>
       </Grid>
     </Grid>
   );
