@@ -14,7 +14,7 @@
     "plugin:import/typescript"
   ],
   "parserOptions": {
-    "project": "./tsconfig.json",
+    "project": "./backend/tsconfig.json",
     "tsconfigRootDir": "./"
   },
   "env": { "node": true },
