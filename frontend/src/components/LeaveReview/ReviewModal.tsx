@@ -123,8 +123,8 @@ interface FormData {
 }
 
 const defaultReview: FormData = {
-  bedrooms: 0,
-  price: 0,
+  bedrooms: -1,
+  price: -1,
   overallRating: 0,
   address: '',
   ratings: {
@@ -177,8 +177,7 @@ const reducer = (state: FormData, action: Action): FormData => {
  *
  * This component displays a modal for users to input information for their review about a specific apartment.
  * This includes the bedroom(s), price per person, overall rating, detailed ratings (location, safety, maintenance,
- * conditions), review text/body, pictures (up to 3 pictures). The information that is required are: overall experience
- * and review text/body, all other information are optional.
+ * conditions), review text/body, pictures (up to 3 pictures). All fields are required.
  * The submit button will add the review to the database and set the status as PENDING until an admin approves it.
  * The modal is responsive for all screen sizes and mobile display.
  *
@@ -235,6 +234,12 @@ const ReviewModal = ({
   const [showError, setShowError] = useState(false);
   const [emptyTextError, setEmptyTextError] = useState(false);
   const [ratingError, setRatingError] = useState(false);
+  const [bedroomError, setBedroomError] = useState(false);
+  const [priceError, setPriceError] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+  const [maintenanceError, setMaintenanceError] = useState(false);
+  const [safetyError, setSafetyError] = useState(false);
+  const [conditionsError, setConditionsError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
   const [addedPhoto, setAddedPhoto] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -332,10 +337,26 @@ const ReviewModal = ({
       if (
         data.reviewText === '' ||
         data.overallRating === 0 ||
+        data.price < 0 ||
+        data.bedrooms < 0 ||
+        data.detailedRatings.location === 0 ||
+        data.detailedRatings.conditions === 0 ||
+        data.detailedRatings.maintenance === 0 ||
+        data.detailedRatings.safety === 0 ||
         includesProfanity(data.reviewText)
       ) {
         data.overallRating === 0 ? setRatingError(true) : setRatingError(false);
-        data.reviewText === '' ? setEmptyTextError(true) : setEmptyTextError(false);
+        data.reviewText.length < 15 ? setEmptyTextError(true) : setEmptyTextError(false);
+        data.price < 0 ? setPriceError(true) : setPriceError(false);
+        data.bedrooms < 0 ? setBedroomError(true) : setBedroomError(false);
+        data.detailedRatings.conditions === 0
+          ? setConditionsError(true)
+          : setConditionsError(false);
+        data.detailedRatings.location === 0 ? setLocationError(true) : setLocationError(false);
+        data.detailedRatings.maintenance === 0
+          ? setMaintenanceError(true)
+          : setMaintenanceError(false);
+        data.detailedRatings.safety === 0 ? setSafetyError(true) : setSafetyError(false);
         includesProfanity(data.reviewText)
           ? setIncludesProfanityError(true)
           : setIncludesProfanityError(false);
@@ -372,6 +393,18 @@ const ReviewModal = ({
   const onCloseClearPhotos = () => {
     dispatch({ type: 'updatePhotos', photos: [] });
     onClose();
+  };
+
+  const resetErrors = () => {
+    setEmptyTextError(false);
+    setRatingError(false);
+    setBedroomError(false);
+    setPriceError(false);
+    setPriceError(false);
+    setLocationError(false);
+    setMaintenanceError(false);
+    setConditionsError(false);
+    setSafetyError(false);
   };
 
   const removePhoto = (index: number) => {
@@ -455,7 +488,7 @@ const ReviewModal = ({
               justifyContent="flex-start"
             >
               <Grid item style={{ marginRight: '10px', paddingLeft: '0' }}>
-                <Typography>Bedroom(s)</Typography>
+                <Typography color={!bedroomError ? 'initial' : 'error'}>Bedroom(s) *</Typography>
               </Grid>
               <Grid
                 item
@@ -477,6 +510,11 @@ const ReviewModal = ({
                 />
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
+              {bedroomError && (
+                <Typography color="error" style={{ fontSize: '12px', minWidth: '200px' }}>
+                  * Required
+                </Typography>
+              )}
             </Grid>
 
             <Grid
@@ -495,7 +533,9 @@ const ReviewModal = ({
                   !isMobile ? { marginRight: '10px', marginLeft: 'auto' } : { marginRight: '10px' }
                 }
               >
-                <Typography>Price Per Person</Typography>
+                <Typography color={!priceError ? 'initial' : 'error'}>
+                  Price Per Person *
+                </Typography>
               </Grid>
               <Grid
                 item
@@ -513,18 +553,34 @@ const ReviewModal = ({
                 />
                 <ExpandMoreIcon className={expandMoreIcon} />
               </Grid>
+              {priceError && (
+                <Typography
+                  color="error"
+                  style={{ fontSize: '12px', justifyItems: 'flex-start', minWidth: '180px' }}
+                >
+                  * Required
+                </Typography>
+              )}
             </Grid>
           </Grid>
           <Grid container direction="column" justifyContent="space-evenly" spacing={4}>
-            <Grid container item>
-              <ReviewRating
-                name="overall"
-                label="Overall Experience"
-                onChange={updateOverall()}
-                defaultValue={initialReview?.overallRating || 0}
-              ></ReviewRating>
-              {ratingError && <Typography color="error">*This field is required</Typography>}
+            <Grid container item xs={12}>
+              <Grid container item>
+                <ReviewRating
+                  name="overall"
+                  label="Overall Experience *"
+                  onChange={updateOverall()}
+                  defaultValue={initialReview?.overallRating || 0}
+                  error={ratingError}
+                ></ReviewRating>
+              </Grid>
+              {ratingError && (
+                <Typography color="error" style={{ fontSize: '12px' }}>
+                  * Required
+                </Typography>
+              )}
             </Grid>
+
             <div className={styles.div}></div>
             {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
               <TextField
@@ -539,29 +595,38 @@ const ReviewModal = ({
               <Grid container spacing={1} justifyContent="center">
                 <ReviewRating
                   name="location"
-                  label="Location"
+                  label="Location *"
                   onChange={updateRating('location')}
                   defaultValue={initialReview?.detailedRatings.location || 0}
+                  error={locationError}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
-                  label="Safety"
+                  label="Safety *"
                   onChange={updateRating('safety')}
                   defaultValue={initialReview?.detailedRatings.safety || 0}
+                  error={safetyError}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
-                  label="Maintenance"
+                  label="Maintenance *"
                   onChange={updateRating('maintenance')}
                   defaultValue={initialReview?.detailedRatings.maintenance || 0}
+                  error={maintenanceError}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
-                  label="Conditions"
+                  label="Conditions *"
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
+                  error={conditionsError}
                 ></ReviewRating>
               </Grid>
+              {(conditionsError || safetyError || maintenanceError || locationError) && (
+                <Typography color="error" style={{ fontSize: '12px', marginTop: '5px' }}>
+                  * These fields are required
+                </Typography>
+              )}
             </Grid>
 
             <div className={styles.div}></div>
@@ -597,7 +662,7 @@ const ReviewModal = ({
                   }}
                   placeholder="Write your review here"
                   helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
-                    emptyTextError ? ' This field is required' : ''
+                    emptyTextError ? ' A minimum of 15 characters is required' : ''
                   }${
                     includesProfanityError
                       ? ' This review contains profanity. Please edit it and try again.'
@@ -640,7 +705,10 @@ const ReviewModal = ({
         <Button
           variant="contained"
           disableElevation
-          onClick={initialReview ? onClose : onCloseClearPhotos}
+          onClick={() => {
+            (initialReview ? onClose : onCloseClearPhotos)();
+            resetErrors();
+          }}
           className={hollowRedButton}
           style={{ marginLeft: '15px' }}
         >
