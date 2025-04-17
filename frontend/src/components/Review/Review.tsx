@@ -652,7 +652,7 @@ const ReviewComponent = ({
                     ? '(max-width:1409px)'
                     : '(max-width:1074px)'
                 ) && bedroomsPriceLabel(2)}
-                <Grid item>
+                <Grid item xs={12}>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
                       <ReviewHeader aveRatingInfo={getRatingInfo(review.detailedRatings)} />
