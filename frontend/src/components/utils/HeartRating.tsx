@@ -12,10 +12,12 @@ type Props = React.ComponentProps<typeof Rating> & {
 
 const StyledRating = withStyles({
   iconEmpty: {
-    color: colors.red2,
+    // color: colors.red2,
+    color: '#B94630',
   },
   iconFilled: {
-    color: colors.red2,
+    // color: colors.red2,
+    color: '#B94630',
   },
 })(Rating);
 
