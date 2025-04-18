@@ -47,8 +47,7 @@ const useStyles = makeStyles(() => ({
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: '1em',
-    paddingBottom: '0.75em',
+    padding: '1em 1em 0.75em 1em',
     margin: '0.5em 0 0.5em 0',
     boxShadow: 'none',
   },
@@ -63,9 +62,11 @@ const useStyles = makeStyles(() => ({
     },
     marginLeft: '10px',
     width: '120px',
+    height: '42px',
     fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 'bold',
-    fontSize: '16px',
+    fontWeight: 600,
+    fontSize: '18px',
+    borderRadius: '8px',
   },
   profileButton: {
     width: '3.5em',
@@ -113,7 +114,7 @@ const useStyles = makeStyles(() => ({
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
     size: '19px',
-    fontSize: '16px',
+    fontSize: '18px',
     lineHeight: '19px',
     letterSpacing: '0.08em',
     textTransform: 'none',
@@ -503,10 +504,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               <Typography
                 style={{
                   fontWeight: 600,
-                  fontSize: !isMobile ? '22px' : '16px',
+                  fontSize: !isMobile ? '20px' : '16px',
                   color: colors.black,
                   textAlign: 'left',
-                  marginTop: isMobile ? 17 : 20,
+                  marginTop: isMobile ? 17 : 28,
                   marginLeft: '8px',
                   lineHeight: '32px',
                 }}
@@ -583,7 +584,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   return (
     <header>
       <AppBar position="static" className={header}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Hidden mdUp>{displayMobile()}</Hidden>
           <Hidden smDown>{displayDesktop()}</Hidden>
         </Container>

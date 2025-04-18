@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core';
 import { get } from '../../utils/call';
 import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '../../assets/search-icon.svg';
 import { makeStyles } from '@material-ui/core/styles';
 import { colors } from '../../colors';
 import { useHistory } from 'react-router-dom';
@@ -59,11 +59,15 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      width: '100%',
     },
     text: {
       backgroundColor: colors.white,
+      fontSize: '18px',
+      fontStyle: 'normal',
+      fontWeight: 400,
+      lineHeight: '28px',
     },
-
     subText: {
       color: colors.gray2,
       fontSize: '12px',
@@ -86,8 +90,14 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       alignItems: 'center',
       justifyContent: 'center',
       color: 'white',
-      height: '62%',
-      width: '62%',
+      height: '50%',
+      width: 'auto',
+    },
+    iconContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px solid red',
     },
     searchIconBackground: {
       backgroundColor: colors.red1,
@@ -125,7 +135,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
           borderRadius: '10px',
         },
       },
-      height: isMobile ? '35px' : '45px',
+      height: isMobile ? '35px' : '68px',
+      padding: '24px',
     },
   }));
   const {
@@ -134,6 +145,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     text,
     searchIcon,
     homeSearchIcon,
+    iconContainer,
     searchIconBackground,
     searchLabelIcon,
     field,
@@ -316,10 +328,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   }, [loading, query]);
 
   const location = useLocation();
-  let placeholderText =
-    location.pathname === '/' && !drawerOpen
-      ? 'Search by any location e.g. "301 College Ave"'
-      : 'Search';
+  let placeholderText = 'Search by address or with filters';
 
   /**
    * @returns The the InputProps for the search bar depending on user's location.
@@ -330,13 +339,31 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     if (location.pathname === '/' && !drawerOpen) {
       return {
         style: { fontSize: isMobile ? 16 : 20 },
-        endAdornment: <>{loading ? <CircularProgress color="inherit" size={20} /> : null}</>,
-        startAdornment: (
-          <SearchIcon
-            style={{ fontSize: isMobile ? 17 : 22, marginLeft: isMobile ? -3 : 0 }}
-            className={homeSearchIcon}
-          />
+        endAdornment: (
+          <div className={iconContainer}>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
+                handleToggleFilter();
+              }}
+              disableRipple
+            >
+              <img src={filterIcon} alt={'filter-icon'} />
+            </IconButton>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
+                handleToggleFilter();
+              }}
+              className={filterIconBackground}
+              disableRipple
+            >
+              <img src={SearchIcon} alt="search icon" />
+            </IconButton>
+            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+          </div>
         ),
+        startAdornment: <></>,
         className: field,
       };
     } else {
@@ -348,7 +375,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
             <div className={searchIconBackground} onClick={handleSearchIconClick}>
-              <SearchIcon className={searchIcon} />
+              <img src={SearchIcon} alt="search icon" />
             </div>
           </React.Fragment>
         ),
@@ -358,7 +385,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   };
 
   return (
-    <div style={{ position: 'relative', width: drawerOpen ? '100%' : '65%' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <ClickAwayListener onClickAway={handleClickAway}>
         <div>
           <div className={searchBarRow}>
@@ -372,6 +399,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               style={{
                 borderRadius: '10px',
                 width: !isMobile ? '100%' : '98%',
+                border: '1px solid red',
               }}
               onKeyDown={textFieldHandleListKeyDown}
               onChange={(event) => {
@@ -382,20 +410,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               }}
               InputProps={getInputProps()}
             />
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
-                handleToggleFilter();
-              }}
-              className={filterIconBackground}
-              disableRipple
-            >
-              <img
-                src={filterIcon}
-                alt={'filter-icon'}
-                style={{ width: '21.4px', height: '21.4px' }}
-              />
-            </IconButton>
           </div>
           <Menu />
           <FilterSection filters={filters} onChange={handleFilterChange} open={openFilter} />

@@ -11,24 +11,41 @@ import { loadingLength } from '../constants/HomeConsts';
 import { useTitle } from '../utils';
 import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 import { useLocation } from 'react-router-dom';
+import HomePageApartmentCards from '../components/ApartmentCard/HomePageApartmentCards';
+import logo from '../assets/3d-logo.svg';
 
 const useStyles = makeStyles({
+  header: {
+    width: '65%',
+    marginLeft: '4.5vw',
+    marginRight: '4.5vw',
+    marginTop: '93px',
+    marginBottom: '100px',
+    position: 'relative',
+  },
   jumboText: {
-    color: colors.white,
     fontWeight: 600,
-    margin: '0.5em 0 0.5em 0',
+    fontSize: '40px',
+    fontStyle: 'normal',
+    lineHeight: '60px',
   },
   jumboSub: {
-    color: colors.white,
+    fontSize: '18px',
+    fontStyle: 'normal',
     fontWeight: 400,
+    lineHeight: '28px',
   },
-  rentingBox: {
-    marginTop: '1.75em',
-    marginBottom: '2em',
+  logoContainer: {
+    position: 'absolute',
+    right: '-34%',
+    top: '80%',
+    transform: 'translateY(-50%)',
+    width: '270px',
+    zIndex: 1,
   },
-  rentingText: {
-    marginBottom: '1em',
-    color: colors.red1,
+  logo: {
+    width: '100%',
+    height: '100%',
   },
 });
 
@@ -58,12 +75,16 @@ type Props = {
  */
 
 const HomePage = ({ user, setUser }: Props): ReactElement => {
-  const classes = useStyles();
+  const { header, jumboText, jumboSub, logoContainer } = useStyles();
   const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [drawerOpen] = useState<boolean>(false);
   const path = useLocation();
   const [pathName] = useState(path.pathname);
+  const introText =
+    'Start your housing search by finding the most \
+  highly rated and recommended apartments at Cornell. Don’t believe us? \
+  Take other Cornellians’ word for it.';
 
   useTitle('Home');
 
@@ -84,77 +105,75 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <>
-      <Box className={styles.JumboTron} mt={isMobile ? -2 : 0}>
-        <Container maxWidth="lg">
-          <Box py={6}>
-            <Typography
-              variant="h1"
-              style={{
-                fontSize: isMobile ? '26px' : '48px',
-                marginTop: isMobile ? '10px' : '0px',
-              }}
-              className={classes.jumboText}
-            >
-              Discover Housing @ Cornell
-            </Typography>
-            <Typography
-              className={classes.jumboSub}
-              style={{
-                fontStyle: 'italic',
-                fontSize: isMobile ? '16px' : '25px',
-                marginTop: isMobile ? '-10px' : '-12px',
-              }}
-            >
-              Easy browsing for off-campus housing
-            </Typography>
-          </Box>
+      <Box className={header} mt={isMobile ? -2 : 0} position="relative">
+        <Typography
+          variant="h1"
+          style={{
+            fontSize: isMobile ? '26px' : '48px',
+            marginTop: isMobile ? '10px' : '0px',
+            marginBottom: isMobile ? '10px' : '16px',
+          }}
+          className={jumboText}
+        >
+          Discover Housing <span style={{ color: '#B94630' }}>@ Cornell</span>
+        </Typography>
+        <Typography
+          className={jumboSub}
+          style={{
+            fontSize: isMobile ? '16px' : '18px',
+          }}
+        >
+          {introText}
+        </Typography>
+        <Box mt={3} paddingBottom={isMobile ? 4 : 0}>
+          <Autocomplete drawerOpen={drawerOpen} />
+        </Box>
 
-          <Box pb={5} mx={0} mt={-4} paddingBottom={isMobile ? 4 : 8}>
-            <Autocomplete drawerOpen={drawerOpen} />
+        {!isMobile && (
+          <Box className={logoContainer}>
+            <img className={logo} src={logo} alt="3d-logo" />
           </Box>
-        </Container>
+        )}
       </Box>
 
-      <Box marginLeft="5.5vw" marginRight="5.5vw">
-        <Container maxWidth="lg">
-          <Box textAlign="center" className={classes.rentingBox}>
-            <Typography
-              variant="h2"
-              style={{
-                fontSize: isMobile ? '21px' : '35px',
-                fontWeight: isMobile ? 650 : 600,
-                marginTop: isMobile ? '-15px' : '0px',
-                letterSpacing: '0.72px',
-              }}
-              className={classes.rentingText}
-            >
-              Find the Best Properties in Ithaca
-            </Typography>
-            <LocationCards />
-          </Box>
-          {!isMobile && (
-            <>
-              <Box mb={4}>
-                <Typography variant="h5" style={{ fontWeight: 600 }}>
-                  Close to Central Campus
-                </Typography>
-                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
-              </Box>
-              <Box mb={4}>
-                <Typography variant="h5" style={{ fontWeight: 600 }}>
-                  Most Reviewed
-                </Typography>
-                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
-              </Box>
-              <Box mb={4}>
-                <Typography variant="h5" style={{ fontWeight: 600 }}>
-                  Most Loved
-                </Typography>
-                <ApartmentCards user={user} setUser={setUser} data={data.buildingData} />
-              </Box>
-            </>
-          )}
-        </Container>
+      <Box style={{ marginLeft: '4.5vw', marginRight: '4.5vw' }}>
+        {!isMobile && (
+          <>
+            <Box mb={8}>
+              <HomePageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={data.buildingData}
+                sortMethod="originalOrder"
+                orderLowToHigh={false}
+                title="Close to Central Campus"
+                cardSize="small"
+              />
+            </Box>
+            <Box mb={8}>
+              <HomePageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={data.buildingData}
+                sortMethod="numReviews"
+                orderLowToHigh={false}
+                title="Most Reviewed"
+                cardSize="small"
+              />
+            </Box>
+            <Box mb={8}>
+              <HomePageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={data.buildingData}
+                sortMethod="avgRating"
+                orderLowToHigh={false}
+                title="Most Loved"
+                cardSize="large"
+              />
+            </Box>
+          </>
+        )}
       </Box>
     </>
   );

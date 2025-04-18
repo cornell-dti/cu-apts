@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core';
 
 type Props = {
   readonly value: number;
+  readonly isAptCard?: boolean;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -18,34 +19,49 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '4px', // Adjust the border radius as needed
     marginRight: '4px', // Add a small gap between segments
   },
+  aptCardBarSegment: {
+    flex: 1,
+    height: '5.6px', // Adjust the height as needed
+    borderRadius: '4px', // Adjust the border radius as needed
+    marginRight: '4px', // Add a small gap between segments
+  },
   aveRating: {
     marginLeft: '8px', // Add spacing between the segments and the rating
+    color: 'textSecondary',
+  },
+  aptCardAveRating: {
+    fontSize: '12.631px',
+    fontStyle: 'normal',
+    fontWeight: 400,
+    lineHeight: 'normal',
   },
 }));
 
-export default function LabeledLinearProgress({ value }: Props): ReactElement {
-  const { barContainer, barSegment, aveRating } = useStyles();
+/**
+ * Renders a linear progress bar that displays a rating value using colored segments.
+ * Each segment represents one rating point, with partial segments shown for decimal values.
+ *
+ * The bar consists of 5 segments that fill from left to right based on the rating value:
+ * - Segments before the rating value are filled solid red (colors.red1)
+ * - The segment containing any decimal portion shows a gradient fill
+ * - Remaining segments are gray (colors.gray4)
+ *
+ * For example:
+ * - A rating of 3.5 shows 3 solid red segments, 1 half-filled segment, and 1 gray segment
+ * - A rating of 4.2 shows 4 solid red segments and 1 segment filled 20% red
+ *
+ * @param {number} value - The rating value to display (1-5)
+ * @param {boolean} isAptCard - Whether this is being rendered in an apartment card
+ * @returns {ReactElement} The linear progress bar component
+ */
+export default function LabeledLinearProgress({ value, isAptCard = false }: Props): ReactElement {
+  const { barContainer, barSegment, aveRating, aptCardAveRating, aptCardBarSegment } = useStyles();
   let rating_value = value - 1;
 
   const segments = Array.from({ length: 5 }, (_, index) => (
-    /**
-     * This JSX code represents a rendering of a bar segment for a rating display. The rating value is used to determine the visual appearance of the segment.
-     *
-     * @param {number} index - The index of the segment within the rating bar.
-     * @param {string} barSegment - The CSS class name for styling the segment.
-     * @param {number} rating_value - The rating value to be displayed.
-     *
-     * The background style of the div is set based on the index and rating value:
-     * - If the index is less than or equal to the rating_value, the background is set to colors.red1.
-     * - If the index is greater than the rating_value and is exactly 0.5 more than the rating_value, a gradient background is applied. The gradient transitions from colors.red1 to colors.gray4, creating a partial fill effect.
-     * - For all other cases, the background is set to colors.gray4.
-     */
-    /**
-     * Make it so the segments fill, and when there is a decimal leftover, the segment gets filled to that decimal.
-     */
     <div
       key={index}
-      className={barSegment}
+      className={isAptCard ? aptCardBarSegment : barSegment}
       style={{
         background:
           index <= rating_value
@@ -62,7 +78,7 @@ export default function LabeledLinearProgress({ value }: Props): ReactElement {
   return (
     <div className={barContainer}>
       {segments}
-      <Typography className={aveRating} variant="body2" color="textSecondary">
+      <Typography className={isAptCard ? aptCardAveRating : aveRating} variant="body2">
         {value !== null && value !== undefined ? value.toFixed(1) : ''}
       </Typography>
     </div>
