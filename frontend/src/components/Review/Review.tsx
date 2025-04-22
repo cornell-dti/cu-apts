@@ -263,6 +263,8 @@ const ReviewComponent = ({
   const isMobile = useMediaQuery('(max-width:600px)');
   const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
+  const isSelfReview = user && review.userId === user.uid;
+  const likeDisabled = !!likeLoading || !!isSelfReview;
 
   const updateReviewData = () => {
     get<ReviewWithId>(`/api/review-by-id/${review.id}`, {
@@ -652,7 +654,7 @@ const ReviewComponent = ({
                     ? '(max-width:1409px)'
                     : '(max-width:1074px)'
                 ) && bedroomsPriceLabel(2)}
-                <Grid item>
+                <Grid item xs={12}>
                   <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
                       <ReviewHeader aveRatingInfo={getRatingInfo(review.detailedRatings)} />
@@ -706,7 +708,7 @@ const ReviewComponent = ({
               onClick={() => likeHandler(review.id)}
               className={button}
               size="small"
-              disabled={likeLoading}
+              disabled={likeDisabled}
               style={liked ? { color: colors.red1 } : { color: colors.gray1 }}
             >
               <img
