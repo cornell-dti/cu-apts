@@ -11796,6 +11796,11 @@
   "resolved" "https://registry.npmjs.org/react-hotjar/-/react-hotjar-4.0.0.tgz"
   "version" "4.0.0"
 
+"react-icons@^5.5.0":
+  "integrity" "sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw=="
+  "resolved" "https://registry.npmjs.org/react-icons/-/react-icons-5.5.0.tgz"
+  "version" "5.5.0"
+
 "react-infinite-scroll-component@^6.1.0":
   "integrity" "sha512-SQu5nCqy8DxQWpnUVLx7V7b7LcA37aM7tvoWjTLZp1dk6EJibM5/4EJKzOnl07/BsM1Y40sKLuqjCwwH/xV0TQ=="
   "resolved" "https://registry.npmjs.org/react-infinite-scroll-component/-/react-infinite-scroll-component-6.1.0.tgz"
