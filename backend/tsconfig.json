@@ -18,8 +18,7 @@
     "outDir": "dist",
     "rootDirs": ["./src", "../common"],
     "baseUrl": "./",
-    "jsx": "react-jsx" 
-    
+    "jsx": "react-jsx"
   },
   "ts-node": {
     "files": true
