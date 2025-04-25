@@ -1,148 +1,62 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react';
-import { Card, CardMedia, Grid, Typography, makeStyles, Button } from '@material-ui/core';
+// import { Container, Section, Img, Text, Column, Row } from '@react-email/components';
 
-export interface PropertyCardProps {
+type Props = {
   propertyName: string;
   address: string;
   priceRange: string;
-  bedrooms: string;
+  bedrooms: number;
   imageUrl: string;
-}
+};
 
-const useStyles = makeStyles({
-  root: {
-    borderRadius: '10px',
+const styles = {
+  card: {
+    border: '0.406px solid #E8E8E8',
+    padding: '7px',
+    borderRadius: '5.5px',
   },
-  contentContainer: {
-    padding: '1.5rem',
+  h2: {
+    fontFamily: 'Work-Sans',
+    color: '#000',
+    fontSize: '8px',
+    fontWeight: '600',
   },
-  propertyName: {
-    fontWeight: 800,
-    fontSize: '29px',
-    lineHeight: '36px',
+  p: {
+    color: '#5D5D5D',
+    fontFamily: 'Work-Sans',
+    fontSize: '8px',
   },
-  addressText: {
-    fontSize: '20px',
-    fontWeight: 400,
-    lineHeight: '32px',
+  img: {
+    borderRadius: '5.5px',
+    width: '152px',
+    height: '122px',
+    overflow: 'hidden',
   },
-  detailText: {
-    fontSize: '18px',
-    fontWeight: 700,
-  },
-  iconContainer: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    backgroundColor: '#ffffff',
-    border: '2px solid #000000',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: '8px',
-  },
-  icon: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-  },
-});
+};
 
-/**
- * PropertyCard Component
- *
- * This component displays a card containing information about a specific property,
- * including its name, address, price range, number of bedrooms, and an image.
- * The card is responsive and adjusts its layout based on the screen size.
- *
- * @component
- * @param {Object} props - Component properties.
- * @param {ApartmentWithId} props.buildingData - The data for the apartment.
- * @param {number} props.numReviews - The number of reviews for the apartment.
- * @param {string} [props.company] - The company associated with the apartment (optional).
- * @returns {ReactElement} ApartmentCard component.
- */
-const PropertyCard: React.FC<PropertyCardProps> = ({
+const PropertyCard: React.FC<Props> = ({
   propertyName,
   address,
   priceRange,
   bedrooms,
   imageUrl,
-}) => {
-  const classes = useStyles();
-
-  return (
-    <Card className={classes.root} variant="outlined">
-      <Grid container direction="row" spacing={2}>
-        {/* Image Section */}
-        <Grid item xs={12} md={3}>
-          <CardMedia
-            image={imageUrl}
-            component="img"
-            title={propertyName}
-            style={{
-              aspectRatio: '1',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              borderRadius: '6px',
-            }}
-          />
-        </Grid>
-
-        {/* Content Section */}
-        <Grid item xs={12} md={9} container direction="column">
-          {/* Property Name and Address */}
-          <Grid item>
-            <Typography variant="h5" className={classes.propertyName}>
-              {propertyName}
-            </Typography>
-            <Typography className={classes.addressText}>{address}</Typography>
-          </Grid>
-
-          {/* Property Details */}
-          <Grid
-            item
-            container
-            direction="row"
-            spacing={3}
-            alignItems="center"
-            style={{ marginTop: '16px' }}
-          >
-            {/* Price Range */}
-            <Grid item>
-              <Grid container alignItems="center">
-                <div className={classes.iconContainer}>
-                  <img src="backend/scripts/email/assets/moneyicon.svg" alt="" />
-                </div>
-                <Typography className={classes.detailText}>{priceRange}</Typography>
-              </Grid>
-            </Grid>
-
-            {/* Bedrooms */}
-            <Grid item>
-              <Grid container alignItems="center">
-                <div className={classes.iconContainer}>
-                  <img src="backend/scripts/email/assets/ion_bed-outline.svg" alt="" />
-                </div>
-                <Typography className={classes.detailText}>{bedrooms}</Typography>
-              </Grid>
-            </Grid>
-
-            {/* View Details Button - Optional */}
-            <Grid item>
-              <Button
-                variant="outlined"
-                color="primary"
-                style={{ textTransform: 'none', fontWeight: 600 }}
-              >
-                View Details
-              </Button>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Card>
-  );
-};
+}: Props) => (
+  <div style={styles.card}>
+    <img src={imageUrl} alt="nasdjn" />
+    <h2 style={styles.h2}>{propertyName}</h2>
+    <p style={styles.p}>{address}</p>
+    <div style={{ display: 'flex', justifyItems: 'space-between' }}>
+      <div style={{ display: 'flex' }}>
+        <img src="backend/scripts/email/assets/moneyicon.svg" alt="asdkjhk" />
+        <h2>{priceRange}</h2>
+      </div>
+      <div style={{ display: 'flex' }}>
+        <img src="backend/scripts/email/assets/bed-icon.svg" alt="asdjkahsd" />
+        <h2>{bedrooms}</h2>
+      </div>
+    </div>
+  </div>
+);
 
 export default PropertyCard;

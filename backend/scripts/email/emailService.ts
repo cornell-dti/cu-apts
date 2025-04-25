@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import fetch, { Headers, Response, Request } from 'node-fetch';
 import * as path from 'path';
 import React from 'react';
-import Newsletter from './templates/Newsletter';
+import GenerateNewsletter from './templates/GenerateNewsletter';
 
 if (!global.fetch) {
   global.fetch = fetch as unknown as typeof global.fetch;
@@ -28,10 +28,7 @@ async function main() {
       from: 'onboarding@resend.dev',
       to: 'laurenpothuru@gmail.com',
       subject: 'Hello World',
-      react: React.createElement(Newsletter, {
-        firstName: 'Lauren',
-        headline: 'Latest Property Listings',
-      }),
+      react: React.createElement(GenerateNewsletter),
     });
 
     if (error) {
