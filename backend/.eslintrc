@@ -14,7 +14,8 @@
     "plugin:import/typescript"
   ],
   "parserOptions": {
-    "project": "tsconfig.json"
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "./"
   },
   "env": { "node": true },
   "rules": {
@@ -24,5 +25,8 @@
     "no-shadow": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "react/react-in-jsx-scope": "off"
-  }
+  },
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+    ]
 }
