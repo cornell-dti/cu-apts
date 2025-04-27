@@ -16,8 +16,7 @@ import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
 import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
-import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
-import FavoriteIcon from '@material-ui/icons/Favorite';
+import { ApartmentWithId, DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
 import HeartRating from '../utils/HeartRating';
 import ReviewHeader from '../Review/ReviewHeader';
@@ -211,6 +210,7 @@ const NewApartmentCard = ({
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const isMobile = useMediaQuery('(max-width:600px)');
   const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
+  const [aveRatingInfo, setAveRatingInfo] = useState<RatingInfo[]>([]);
   const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -286,13 +286,21 @@ const NewApartmentCard = ({
     });
   }, [id]);
 
-  const calculateAveRating = (): RatingInfo[] => {
+  const calculateAveRating = (reviews: ReviewWithId[]): RatingInfo[] => {
     const features = ['location', 'maintenance', 'safety', 'conditions'];
     return features.map((feature) => {
-      let rating = 4.5;
+      let key = feature as keyof DetailedRating;
+      let rating =
+        reviews.reduce((sum, review) => sum + review.detailedRatings[key], 0) / reviews.length;
+
       return { feature, rating };
     });
   };
+
+  // Set the average rating after calculating it from the data.
+  useEffect(() => {
+    setAveRatingInfo(calculateAveRating(reviewList));
+  }, [reviewList]);
 
   return (
     <Card
@@ -332,7 +340,7 @@ const NewApartmentCard = ({
             </div>
           </div>
           <div className={apartmentStatsContainer}>
-            <ReviewHeader aveRatingInfo={calculateAveRating()} isAptCard={true} />
+            <ReviewHeader aveRatingInfo={aveRatingInfo} isAptCard={true} />
           </div>
           <div className={sampleReviewContainer}>
             <img src={verticalLine} alt="vertical line" style={{ width: '4px', height: '80%' }} />

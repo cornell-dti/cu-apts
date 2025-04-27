@@ -38,6 +38,8 @@ const defaultFilters: FilterState = {
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [openFilter, setOpenFilter] = useState(false);
+
   const useStyles = makeStyles((theme) => ({
     menuList: {
       position: 'absolute',
@@ -67,6 +69,20 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       fontStyle: 'normal',
       fontWeight: 400,
       lineHeight: '28px',
+      boxShadow: '0px 0px 4px 2px rgba(0, 0, 0, 0.05)',
+      '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+          borderColor: '#F9F9F9',
+          borderWidth: '1px',
+        },
+        '&:hover fieldset': {
+          borderColor: '#E5E5E5',
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#E5E5E5',
+          borderWidth: '1px',
+        },
+      },
     },
     subText: {
       color: colors.gray2,
@@ -97,57 +113,37 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      border: '1px solid red',
+      gap: '8px',
     },
-    searchIconBackground: {
-      backgroundColor: colors.red1,
-      width: '50px',
-      height: isMobile ? '35px' : '45px',
-      position: 'absolute',
-      right: '0',
-      borderRadius: '0px 10px 10px 0px',
+    iconBackground: {
+      width: '34px',
+      height: '34px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       cursor: 'pointer',
+      '&:hover': {
+        backgroundColor: '#F9F9F9',
+        scale: '1.02',
+      },
     },
-    filterIconBackground: {
-      backgroundColor: colors.white,
-      width: '40px',
-      height: isMobile ? '35px' : '40px',
-      position: 'absolute',
-      right: '55px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      cursor: 'pointer',
-    },
-    searchLabelIcon: {
+    searchMenuLabelIcon: {
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
     },
     field: {
-      borderRadius: '10px',
-      '&.Mui-focused': {
-        '& .MuiOutlinedInput-notchedOutline': {
-          border: `1px solid ${colors.red1}`,
-          borderRadius: '10px',
-        },
-      },
+      borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
       height: isMobile ? '35px' : '68px',
       padding: '24px',
     },
   }));
   const {
     searchBarRow,
-    filterIconBackground,
+    iconBackground,
     text,
-    searchIcon,
-    homeSearchIcon,
     iconContainer,
-    searchIconBackground,
-    searchLabelIcon,
+    searchMenuLabelIcon,
     field,
     menuList,
     menuItem,
@@ -159,8 +155,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [query, setQuery] = useState('');
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const [focus, setFocus] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [openFilter, setOpenFilter] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const history = useHistory();
@@ -175,39 +170,50 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   function handleListKeyDown(event: React.KeyboardEvent) {
     event.preventDefault();
     if (event.key === 'Tab') {
-      setOpen(false);
+      setOpenMenu(false);
     }
+  }
+
+  function checkIfSearchable() {
+    return (
+      query.trim() !== '' ||
+      Object.values(filters).some((val) =>
+        Array.isArray(val) ? val.length > 0 : val !== '' && val !== 0
+      )
+    );
   }
 
   function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'ArrowDown') {
       setFocus(true);
-    } else if (event.key === 'Enter') {
+    } else if (event.key === 'Enter' && checkIfSearchable()) {
       setFocus(true);
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
       history.push(`/search?q=${query}&filters=${filterParams}`);
       setQuery('');
-      setOpen(false);
+      setOpenMenu(false);
     }
   }
 
   const handleSearchIconClick = () => {
-    console.log('Current filter state:', filters);
-    const filterParams = encodeURIComponent(JSON.stringify(filters));
-    console.log('Encoded filter params:', filterParams);
-    history.push(`/search?q=${query}&filters=${filterParams}`);
-    setQuery('');
+    if (checkIfSearchable()) {
+      console.log('Current filter state:', filters);
+      const filterParams = encodeURIComponent(JSON.stringify(filters));
+      console.log('Encoded filter params:', filterParams);
+      history.push(`/search?q=${query}&filters=${filterParams}`);
+      setQuery('');
+    }
   };
 
   const handleToggleFilter = () => {
     setOpenFilter(!openFilter);
-    setOpen(false);
+    setOpenMenu(false);
   };
 
   const handleClickAway = () => {
-    setOpen(false);
+    setOpenMenu(false);
     setOpenFilter(false);
   };
 
@@ -231,11 +237,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       <div>
         <ClickAwayListener
           onClickAway={() => {
-            setOpen(false);
+            setOpenMenu(false);
           }}
         >
           <div>
-            {open ? (
+            {openMenu ? (
               <MenuList
                 style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
                 className={menuList}
@@ -258,12 +264,12 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                         <MenuItem
                           button={true}
                           key={index}
-                          onClick={() => setOpen(false)}
+                          onClick={() => setOpenMenu(false)}
                           className={menuItem}
                           style={index === options.length - 1 ? { borderBottom: 'none' } : {}}
                         >
                           <Grid container spacing={2} alignItems="center">
-                            <Grid item className={searchLabelIcon}>
+                            <Grid item className={searchMenuLabelIcon}>
                               <img
                                 src={label === 'LANDLORD' ? searchLandlordIcon : searchPropertyIcon}
                                 alt="search icon"
@@ -293,11 +299,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   };
   useEffect(() => {
     if (query === '') {
-      setOpen(false);
+      setOpenMenu(false);
     } else if (selected === null) {
-      setOpen(true);
+      setOpenMenu(true);
     } else {
-      setOpen(false);
+      setOpenMenu(false);
     }
   }, [query, selected]);
 
@@ -343,24 +349,25 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
           <div className={iconContainer}>
             <IconButton
               onClick={(e) => {
-                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
+                e.stopPropagation();
                 handleToggleFilter();
               }}
+              className={iconBackground}
               disableRipple
             >
-              <img src={filterIcon} alt={'filter-icon'} />
+              <img src={filterIcon} alt={'filter-icon'} style={{ width: '32px', height: '32px' }} />
             </IconButton>
             <IconButton
               onClick={(e) => {
-                e.stopPropagation(); // Prevent click from triggering ClickAwayListener
-                handleToggleFilter();
+                e.stopPropagation();
+                handleSearchIconClick();
               }}
-              className={filterIconBackground}
+              className={iconBackground}
               disableRipple
             >
-              <img src={SearchIcon} alt="search icon" />
+              <img src={SearchIcon} alt="search icon" style={{ width: '34px', height: '34px' }} />
             </IconButton>
-            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+            {/* {loading ? <CircularProgress color="inherit" size={20} /> : null} */}
           </div>
         ),
         startAdornment: <></>,
@@ -374,7 +381,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            <div className={searchIconBackground} onClick={handleSearchIconClick}>
+            <div className={iconBackground} onClick={handleSearchIconClick}>
               <img src={SearchIcon} alt="search icon" />
             </div>
           </React.Fragment>
@@ -397,9 +404,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               className={text}
               variant="outlined"
               style={{
-                borderRadius: '10px',
+                borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
                 width: !isMobile ? '100%' : '98%',
-                border: '1px solid red',
               }}
               onKeyDown={textFieldHandleListKeyDown}
               onChange={(event) => {
@@ -412,7 +418,12 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
             />
           </div>
           <Menu />
-          <FilterSection filters={filters} onChange={handleFilterChange} open={openFilter} />
+          <FilterSection
+            filters={filters}
+            onChange={handleFilterChange}
+            open={openFilter}
+            handleSearch={handleSearchIconClick}
+          />
         </div>
       </ClickAwayListener>
     </div>

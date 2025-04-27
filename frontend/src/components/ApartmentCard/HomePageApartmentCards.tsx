@@ -116,7 +116,9 @@ const ApartmentCards = ({
     <div className={container}>
       <div className={header}>
         <Typography className={titleText}>{title}</Typography>
-        <Button className={viewMoreButton}>View More</Button>
+        <Button className={viewMoreButton} disableRipple>
+          View More
+        </Button>
       </div>
       <div className={cardsContainer}>
         {data &&

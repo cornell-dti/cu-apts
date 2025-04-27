@@ -41,7 +41,7 @@ const useStyles = makeStyles({
     top: '80%',
     transform: 'translateY(-50%)',
     width: '270px',
-    zIndex: 1,
+    zIndex: -1,
   },
   logo: {
     width: '100%',
