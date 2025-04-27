@@ -20,8 +20,8 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
   >
     <table>
       <tr>
-        <td>
-          <img src={gifUrl} alt="" style={{ marginRight: '15px' }} />
+        <td width="40%">
+          <img src={gifUrl} alt="" style={{ marginRight: '5px', maxWidth: '170px' }} />
         </td>
         <td>
           <h1
@@ -29,12 +29,14 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
               color: '#B94630',
               fontSize: '22.5px',
               fontWeight: '700',
-              margin: '15px 0',
+              marginBottom: '15px',
             }}
           >
             CU on Reels!
           </h1>
-          <p style={{ color: '#5D5D5D', fontSize: '14.976px' }}>{description}</p>
+          <p style={{ color: '#5D5D5D', fontSize: '14.976px', marginBottom: '15px' }}>
+            {description}
+          </p>
           <a
             href="https://www.instagram.com/cuapts/"
             style={{
@@ -42,7 +44,8 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
               padding: '10px 12px',
               borderRadius: '8px',
               color: '#FFF6F6',
-              margin: '15px 0',
+              textDecoration: 'none',
+              marginTop: '15px',
             }}
           >
             View More

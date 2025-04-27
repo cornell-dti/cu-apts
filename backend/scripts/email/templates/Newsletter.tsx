@@ -1,5 +1,4 @@
 import { Html, Head, Body, Container, Text } from '@react-email/components';
-
 import {
   AreaProps,
   LandlordSpotlightProps,
@@ -69,7 +68,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
         <img
           src="https://i.postimg.cc/26VJr7yV/headline-background.png"
           alt=""
-          style={{ width: '100%', height: 'auto', maxWidth: '700px' }}
+          style={{ width: '100%', height: 'auto', maxWidth: '700px', marginBottom: '20px' }}
         />
       </div>
 
@@ -83,6 +82,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
           border: '1.5px solid #F6F6F6',
           borderRadius: '15px',
           backgroundColor: '#ffffff',
+          marginBottom: '20px',
         }}
       >
         <Text
@@ -91,9 +91,11 @@ const Newsletter: React.FC<NewsletterProps> = ({
             lineHeight: '1.5',
             textAlign: 'center',
             marginBottom: '20px',
+            color: '#5D5D5D',
+            fontWeight: '400',
           }}
         >
-          <strong>Hi {firstName}!</strong> {introductionMessage}
+          <strong style={{ fontWeight: '700' }}>Hi {firstName}!</strong> {introductionMessage}
         </Text>
 
         {/* landlord section */}
@@ -103,6 +105,8 @@ const Newsletter: React.FC<NewsletterProps> = ({
               landlordData={landlord.landlord}
               landlordMessage={landlord.message}
               landlordReview={landlord.review}
+              popularProperties={landlord.lovedProperties}
+              recentProperties={landlord.recentProperties}
             />
           ))}
 
@@ -112,6 +116,8 @@ const Newsletter: React.FC<NewsletterProps> = ({
             imageUrl={areaSpotlight.imageURL}
             name={areaSpotlight.name}
             description={areaSpotlight.description}
+            recentProperties={areaSpotlight.properties}
+            activities={areaSpotlight.activities}
           />
         )}
 
@@ -151,14 +157,25 @@ const Newsletter: React.FC<NewsletterProps> = ({
 
         {/* advice section */}
         {advice && (
-          <table cellPadding="0" cellSpacing="0" style={{ width: '100%', padding: '10px 0px' }}>
+          <table
+            cellPadding="0"
+            cellSpacing="0"
+            style={{ width: '100%', padding: '10px 0px', marginBottom: '20px' }}
+          >
             <tbody>
               <tr>
-                <td style={{ width: '10%', verticalAlign: 'middle', justifyContent: 'center' }}>
+                <td
+                  style={{
+                    width: '20%',
+                    verticalAlign: 'middle',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
                   <img
                     src="https://i.postimg.cc/m21M8DVG/chatbubble-ellipses-outline.png"
                     alt=""
-                    // style={{ width: '30%', height: 'auto' }}
+                    style={{ width: '50%', height: 'auto' }}
                   />
                 </td>
                 <td style={{ width: '90%', verticalAlign: 'top' }}>
@@ -184,18 +201,15 @@ const Newsletter: React.FC<NewsletterProps> = ({
       </Container>
 
       {/* footer */}
-      <div
+      <Container
         style={{
-          marginTop: '20px',
           background: '#A82A12',
           color: 'white',
           width: '100%',
           padding: '28.148px 53.271px 28.393px 53px',
           justifyContent: 'center',
           alignItems: 'center',
-          alignSelf: 'stretch',
           maxWidth: '700px',
-          margin: '0 auto', // Add this
         }}
       >
         <table>
@@ -243,7 +257,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
             </tr>
           </tbody>
         </table>
-      </div>
+      </Container>
     </Body>
   </Html>
 );

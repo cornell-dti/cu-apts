@@ -30,7 +30,16 @@ const FeatureSpotlight: React.FC<Props> = ({ imgUrl, featureName, description }:
     >
       New Feature on CU Apts
     </h1>
-    <img src={imgUrl} alt="" style={{ borderRadius: '8px', border: '1px solid #E6E6E6' }} />
+    <img
+      src={imgUrl}
+      alt=""
+      style={{
+        borderRadius: '8px',
+        border: '1px solid #E6E6E6',
+        width: '100%',
+        marginBottom: '22px',
+      }}
+    />
     <h2
       style={{
         color: '#000',

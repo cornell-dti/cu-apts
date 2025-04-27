@@ -1,18 +1,23 @@
 // eslint-disable-next-line import/no-unresolved
-import { Landlord } from '@common/types/db-types';
+import { Landlord, ApartmentWithId } from '@common/types/db-types';
 
+export interface Activity {
+  name: string;
+  address: string;
+  imgUrl: string;
+}
 export interface AreaProps {
   name: string;
   description: string;
   imageURL: string;
-  properties: string[];
-  activities: string[];
+  properties: ApartmentWithId[];
+  activities: Activity[];
 }
 export interface LandlordSpotlightProps {
   landlord: Landlord;
   message: string;
-  recentProperties: string[];
-  lovedProperties: string[];
+  recentProperties: ApartmentWithId[];
+  lovedProperties: ApartmentWithId[];
   review: string;
 }
 export interface AdviceProps {

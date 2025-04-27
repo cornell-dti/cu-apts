@@ -1,53 +1,52 @@
-// eslint-disable-next-line no-use-before-define
-import React from 'react';
-// import { Container, Section, Img, Text, Column, Row } from '@react-email/components';
+import { ApartmentWithId } from '@common/types/db-types';
 
-type Props = {
-  propertyName: string;
-  address: string;
-  priceRange: string;
-  bedrooms: number;
-  imageUrl: string;
-};
-
-const PropertyCard: React.FC<Props> = ({
-  propertyName,
-  address,
-  priceRange,
-  bedrooms,
-  imageUrl,
-}: Props) => (
-  <div style={{ border: '0.406px solid #E8E8E8', padding: '7px', borderRadius: '5.5px' }}>
-    <img src={imageUrl} alt="nasdjn" />
+// Property display component
+const PropertyCard = ({ property }: { property: ApartmentWithId }) => (
+  <>
+    <img
+      src={
+        property.photos?.[1] ??
+        'https://images.squarespace-cdn.com/content/v1/665f8368e87e4548121b2b1b/1739995859299-Q3ZMFXYTF9PB4FXHRKE1/Carey-Building-Apartments_ALT.jpg'
+      }
+      alt={property.name || 'Property'}
+      style={{ borderRadius: '8px', width: '100%' }}
+    />
     <h2
       style={{
         color: '#000',
-        fontSize: '8px',
+        fontSize: '12px',
         fontWeight: '600',
       }}
     >
-      {propertyName}
+      {property.name || `Property at ${property.address}`}
     </h2>
     <p
       style={{
         color: '#5D5D5D',
-
-        fontSize: '8px',
+        fontSize: '12px',
       }}
     >
-      {address}
+      {property.address}
     </p>
-    <div style={{ display: 'flex', justifyItems: 'space-between' }}>
-      <div style={{ display: 'flex' }}>
-        <img src="backend/scripts/email/assets/moneyicon.svg" alt="asdkjhk" />
-        <h2>{priceRange}</h2>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <img
+          src="https://static-00.iconduck.com/assets.00/money-icon-1024x1024-f6dh1k6o.png"
+          alt="$"
+          style={{ width: '13px', height: '13px', marginRight: '4px' }}
+        />
+        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0' }}>price</p>
       </div>
-      <div style={{ display: 'flex' }}>
-        <img src="backend/scripts/email/assets/bed-icon.svg" alt="asdjkahsd" />
-        <h2>{bedrooms}</h2>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/952/952772.png"
+          alt="bed"
+          style={{ width: '16px', height: '16px', marginRight: '4px' }}
+        />
+        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0' }}>{property.numBeds} Bed</p>
       </div>
     </div>
-  </div>
+  </>
 );
 
 export default PropertyCard;

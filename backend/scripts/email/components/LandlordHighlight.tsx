@@ -1,21 +1,53 @@
 // eslint-disable-next-line import/no-unresolved
-import { Landlord } from '@common/types/db-types';
+import { Landlord, ApartmentWithId } from '@common/types/db-types';
 import { ReactElement } from 'react';
 import { Section, Heading } from '@react-email/components';
+import PropertyCard from './PropertyCard';
 
 type Props = {
   landlordData: Landlord;
   landlordReview: string;
   landlordMessage: string;
+  recentProperties: ApartmentWithId[];
+  popularProperties: ApartmentWithId[];
 };
 
 const LandlordHighlight: React.FC<Props> = ({
   landlordData,
   landlordReview,
   landlordMessage,
+  recentProperties,
+  popularProperties,
 }: Props): ReactElement => {
   const { name } = landlordData;
-  // const {properties} = landlordData;
+
+  // Property list section
+  const PropertyList = ({ properties }: { properties: ApartmentWithId[] }) => (
+    <>
+      {properties.length > 0 ? (
+        <div style={{ display: 'flex', marginBottom: '15px' }}>
+          {properties.map((property) => (
+            <Section
+              style={{
+                background: 'white',
+                borderRadius: '6px',
+                border: '0.406px solid #E8E8E8',
+                width: '33%',
+                padding: '7px',
+                margin: '5px',
+              }}
+            >
+              <PropertyCard key={property.id} property={property} />
+            </Section>
+          ))}
+        </div>
+      ) : (
+        <p style={{ color: '#5D5D5D', fontSize: '13px', fontStyle: 'italic' }}>
+          No properties to display
+        </p>
+      )}
+    </>
+  );
 
   return (
     <Section
@@ -33,7 +65,6 @@ const LandlordHighlight: React.FC<Props> = ({
       <Heading
         style={{
           color: '#B94630',
-
           fontSize: '22.5px',
           fontWeight: '700',
           margin: '15px 0',
@@ -45,7 +76,6 @@ const LandlordHighlight: React.FC<Props> = ({
       <h2
         style={{
           color: '#000',
-
           fontSize: '14.5px',
           fontWeight: '600',
           margin: '0 0 10px 0',
@@ -57,7 +87,6 @@ const LandlordHighlight: React.FC<Props> = ({
       <h2
         style={{
           color: '#000',
-
           fontSize: '14.5px',
           fontWeight: '600',
           margin: '0 0 10px 0',
@@ -65,11 +94,10 @@ const LandlordHighlight: React.FC<Props> = ({
       >
         Recently Released / Vacant
       </h2>
-
+      <PropertyList properties={recentProperties} />
       <h2
         style={{
           color: '#000',
-
           fontSize: '14.5px',
           fontWeight: '600',
           margin: '0 0 10px 0',
@@ -77,22 +105,21 @@ const LandlordHighlight: React.FC<Props> = ({
       >
         Top Loved Properties
       </h2>
-
+      <PropertyList properties={popularProperties} />
       <table style={{ width: '100%' }}>
         <tbody>
           <tr>
-            <td style={{ width: '25%', verticalAlign: 'middle', justifyContent: 'center' }}>
+            <td style={{ verticalAlign: 'middle', justifyContent: 'center', textAlign: 'center' }}>
               <img
                 src="https://i.postimg.cc/m21M8DVG/chatbubble-ellipses-outline.png"
                 alt="chatbubble"
-                style={{ width: '30%', height: 'auto' }}
+                style={{ width: '50%', height: 'auto' }}
               />
             </td>
-            <td style={{ width: '74%', verticalAlign: 'top' }}>
+            <td style={{ verticalAlign: 'top' }}>
               <h2
                 style={{
                   color: '#000',
-
                   fontSize: '14.5px',
                   fontWeight: '600',
                   margin: '0 0 10px 0',
@@ -108,4 +135,5 @@ const LandlordHighlight: React.FC<Props> = ({
     </Section>
   );
 };
+
 export default LandlordHighlight;
