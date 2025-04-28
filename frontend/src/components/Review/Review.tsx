@@ -475,9 +475,7 @@ const ReviewComponent = ({
    */
   const likeHandler = async (id: string) => {
     if (user) {
-      if (!(review.userId != null && review.userId == user.uid)) {
-        (liked ? removeLike : addLike)(id);
-      }
+      (liked ? removeLike : addLike)(id);
     } else {
       let user = await getUser(true);
       setUser(user);
