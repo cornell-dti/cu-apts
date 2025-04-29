@@ -6,13 +6,7 @@ reminders, etc.
 
 ## Infrastructure
 
-This system is built on top of [Resend](https://resend.com)'s email API. We chose Resend for the
-following reasons:
-
-1. (**Main reason**): capable of handling high email volumes without daily sending limits
-2. Improved deliverability rates
-3. Simplified API for sending
-4. Quality developer documentation and support
+This system is built on top of [Resend](https://resend.com)'s email API. 
 
 ## Getting Started
 
@@ -122,12 +116,11 @@ listings.
    });
    ```
 
-2. To customize the newsletter template itself, edit `templates/GenerateNewsletter.tsx`.
+2. In `templates/GenerateNewsletter.tsx`, add newsletter information.
 
 3. For further customization:
-   - Add new property types to the `EmailCampaignOptions` interface
    - Extend the `GenerateNewsletter` component to accept additional props
-   - Modify the component structure in `GenerateNewsletter.tsx`
+   - Modify the component structure in `Newsletter.tsx`
 
 ### User Batching
 
