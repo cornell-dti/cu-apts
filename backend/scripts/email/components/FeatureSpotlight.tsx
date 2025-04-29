@@ -6,6 +6,21 @@ type Props = {
   description: string;
 };
 
+/**
+ * FeatureSpotlight Component
+ *
+ * This component highlights a new feature on the CU Apts platform. It displays an image representing
+ * the feature, a title for the feature, and a brief description. The component is styled with a clean
+ * and modern layout to grab attention while being easy to integrate into email templates or newsletters.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.imgUrl - The URL of the image representing the feature.
+ * @param {string} props.featureName - The name of the feature being spotlighted.
+ * @param {string} props.description - A brief description of the feature.
+ * @returns {ReactElement} FeatureSpotlight component.
+ */
+
 const FeatureSpotlight: React.FC<Props> = ({ imgUrl, featureName, description }: Props) => (
   <Section
     style={{

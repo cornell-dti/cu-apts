@@ -1,7 +1,20 @@
 import { ApartmentWithId } from '@common/types/db-types';
 
-// Property display component
-const PropertyCard = ({ property }: { property: ApartmentWithId }) => (
+/**
+ * PropertyCard Component
+ *
+ * This component displays a concise card view of an apartment property, designed for use within
+ * newsletter sections. It shows the property's image, name, address, and key details like
+ * number of beds. The component uses a consistent styling approach with a default placeholder
+ * image if no property photos are provided.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {ApartmentWithId} props.property - The apartment property data to display, including photos,
+ *                                           name, address, and number of beds.
+ * @returns {ReactElement} PropertyCard component.
+ */
+const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactElement => (
   <>
     <img
       src={
@@ -9,7 +22,7 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }) => (
         'https://images.squarespace-cdn.com/content/v1/665f8368e87e4548121b2b1b/1739995859299-Q3ZMFXYTF9PB4FXHRKE1/Carey-Building-Apartments_ALT.jpg'
       }
       alt={property.name || 'Property'}
-      style={{ borderRadius: '8px', width: '100%' }}
+      style={{ borderRadius: '8px', width: '152px', height: '122px', overflow: 'hidden' }}
     />
     <h2
       style={{

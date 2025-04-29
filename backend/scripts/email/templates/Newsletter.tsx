@@ -27,6 +27,27 @@ type NewsletterProps = {
   subleaseSpotlight?: SubleaseProps;
 };
 
+/**
+ * Newsletter Component
+ *
+ * This component generates an email newsletter template for CUApts, featuring multiple optional sections
+ * like landlord spotlights, area features, advice from upperclassmen, and new feature announcements.
+ * The newsletter is responsive and maintains consistent styling using the Work Sans font family.
+ * Each section is conditionally rendered based on the provided props.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.firstName - The recipient's first name for personalized greeting.
+ * @param {string} props.introductionMessage - Opening message that appears after the greeting.
+ * @param {LandlordSpotlightProps[]} [props.landlordSpotlight] - Array of landlord information to showcase (optional).
+ * @param {AreaProps} [props.areaSpotlight] - Information about a featured housing area (optional).
+ * @param {AdviceProps} [props.advice] - Upperclassmen advice section content (optional).
+ * @param {ReelsProps} [props.reels] - Content for featuring video reels (optional).
+ * @param {FeatureSpotlightProps} [props.newFeature] - Information about a new platform feature (optional).
+ * @param {NeighborhoodCompProps} [props.neighborhoodComparison] - Data for comparing two neighborhoods (optional).
+ * @param {SubleaseProps} [props.subleaseSpotlight] - Information about featured subleasing opportunities (optional).
+ * @returns {ReactElement} Newsletter component.
+ */
 const Newsletter: React.FC<NewsletterProps> = ({
   firstName,
   introductionMessage,

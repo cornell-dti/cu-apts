@@ -12,6 +12,23 @@ type Props = {
   popularProperties: ApartmentWithId[];
 };
 
+/**
+ * LandlordHighlight Component
+ *
+ * This component displays a comprehensive section about a specific landlord in the newsletter,
+ * including a message from the landlord, their recent or vacant properties, most popular properties,
+ * and a featured review. The component organizes this information in a structured layout with
+ * consistent styling and responsive property cards.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {Landlord} props.landlordData - Data object containing information about the landlord.
+ * @param {string} props.landlordReview - A featured review about the landlord.
+ * @param {string} props.landlordMessage - A message from the landlord to readers.
+ * @param {ApartmentWithId[]} props.recentProperties - Array of recently listed or vacant properties.
+ * @param {ApartmentWithId[]} props.popularProperties - Array of the landlord's most popular properties.
+ * @returns {ReactElement} LandlordHighlight component.
+ */
 const LandlordHighlight: React.FC<Props> = ({
   landlordData,
   landlordReview,

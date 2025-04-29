@@ -11,6 +11,24 @@ type Props = {
   activities: Activity[];
 };
 
+/**
+ * AreaSpotlight Component
+ *
+ * This component highlights a specific area, showcasing its details, recently released or vacant
+ * properties, and activities in the area. It displays an image of the area, a brief description,
+ * and dynamically renders lists of recent properties and activities. The component is styled with
+ * a clean and flexible layout, making it easy to integrate into newsletters or similar sections.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.imageUrl - The URL of the image representing the area.
+ * @param {string} props.name - The name of the area to spotlight.
+ * @param {string} props.description - A brief description of the area.
+ * @param {ApartmentWithId[]} props.recentProperties - An array of recent properties in the area to display.
+ * @param {Activity[]} props.activities - An array of activities available in the area to display.
+ * @returns {ReactElement} AreaSpotlight component.
+ */
+
 const AreaSpotlight: React.FC<Props> = ({
   imageUrl,
   name,
@@ -64,7 +82,7 @@ const AreaSpotlight: React.FC<Props> = ({
               <img
                 src={activity.imgUrl}
                 alt=""
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                style={{ width: '152px', height: '122px', overflow: 'hidden', borderRadius: '8px' }}
               />
               <p style={{ color: '#000', fontSize: '12px', fontWeight: '600' }}>{activity.name}</p>
               <p

@@ -5,6 +5,20 @@ type Props = {
   description: string;
 };
 
+/**
+ * ReelsFeature Component
+ *
+ * This component showcases the "CU on Reels" feature, displaying a GIF representing the feature
+ * and a brief description. It includes a call-to-action button linking to the Instagram page for
+ * CU Apts, encouraging users to explore more content. The component is styled with a modern and
+ * clean layout for easy integration into newsletters or email templates.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.gifUrl - The URL of the GIF to display in the feature.
+ * @param {string} props.description - A brief description of the "CU on Reels" feature.
+ * @returns {ReactElement} ReelsFeature component.
+ */
 const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
   <Section
     style={{
@@ -21,7 +35,7 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
     <table>
       <tr>
         <td width="40%">
-          <img src={gifUrl} alt="" style={{ marginRight: '5px', maxWidth: '170px' }} />
+          <img src={gifUrl} alt="" style={{ marginRight: '40px', maxWidth: '170px' }} />
         </td>
         <td>
           <h1
@@ -37,19 +51,16 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
           <p style={{ color: '#5D5D5D', fontSize: '14.976px', marginBottom: '15px' }}>
             {description}
           </p>
-          <a
-            href="https://www.instagram.com/cuapts/"
-            style={{
-              backgroundColor: '#B94630',
-              padding: '10px 12px',
-              borderRadius: '8px',
-              color: '#FFF6F6',
-              textDecoration: 'none',
-              marginTop: '15px',
-            }}
-          >
-            View More
-          </a>
+          <div style={{ backgroundColor: '#B94630', padding: '10px 12px', borderRadius: '8px' }}>
+            <a
+              href="https://www.instagram.com/cuapts/"
+              style={{
+                textDecoration: 'none',
+              }}
+            >
+              View More
+            </a>
+          </div>
         </td>
       </tr>
     </table>

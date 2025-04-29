@@ -5,6 +5,23 @@ type Props = {
   email: string;
 };
 
+/**
+ * SubleaseSpotlight Component
+ *
+ * This component showcases a "Sublease Spotlight" section, designed to display key details about
+ * a sublease opportunity. It includes an image, a description, and optional contact information
+ * such as a phone number and email. The component is styled with a clean, modern layout and
+ * uses default icons for contact details when available.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.imgUrl - The URL of the image to display in the spotlight section.
+ * @param {string} props.description - A brief description of the sublease opportunity.
+ * @param {string} [props.phoneNumber] - The phone number for contacting regarding the sublease (optional).
+ * @param {string} props.email - The email address for contacting regarding the sublease.
+ * @returns {ReactElement} SubleaseSpotlight component.
+ */
+
 const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, email }: Props) => (
   <table
     style={{
@@ -35,10 +52,9 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
         <h1
           style={{
             color: '#B94630',
-
             fontSize: '22.5px',
             fontWeight: '700',
-            margin: '15px 0',
+            margin: '0 0 15px 0',
           }}
         >
           Sublease Spotlight
@@ -54,7 +70,7 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
           {description}
         </p>
         {phoneNumber && (
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <img
               src="https://i.pinimg.com/736x/6c/99/1f/6c991fb7ebe3cdff3856bd0c1b46b41e.jpg"
               alt=""
@@ -63,7 +79,7 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
             <p
               style={{
                 color: '#5D5D5D',
-                fontSize: '11px',
+                fontSize: '13px',
                 margin: '0',
               }}
             >
@@ -71,7 +87,7 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
             </p>
           </div>
         )}
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <img
             src="https://icons.veryicon.com/png/o/business/official-icon-library-of-alibaba/email-fill.png"
             alt=""
@@ -80,9 +96,10 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
           <p
             style={{
               color: '#5D5D5D',
-              fontSize: '11px',
+              fontSize: '13px',
               lineHeight: '1.5',
               margin: '0',
+              width: '215',
             }}
           >
             Email: {email}
