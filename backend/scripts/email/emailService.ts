@@ -43,6 +43,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
   dotenv.config({ path: path.resolve(process.cwd(), '.env.dev') });
 
   const fromEmail = process.env.GLOBAL_FROM_EMAIL ?? 'laurenpothuru@gmail.com';
+  const fromName = 'CU Apts';
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -119,9 +120,9 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
       );
 
       const { data, error } = await resend.emails.send({
-        from: fromEmail,
+        from: `${fromName} <${fromEmail}>`,
         to: toEmail,
-        bcc: bccEmails,
+        // bcc: bccEmails,
         subject,
         react: React.createElement(GenerateNewsletter, {
           recentLandlordProperties,
@@ -156,7 +157,7 @@ async function main() {
   try {
     console.log('Starting email campaign...');
 
-    // ADD EMAIL CUSTOMIZATION HERE
+    // Customize  email subject
     await sendEmailCampaign({
       subject: 'New Apartment Listings Available!',
     });

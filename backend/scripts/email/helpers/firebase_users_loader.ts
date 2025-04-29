@@ -1,4 +1,4 @@
-import { db } from 'src/firebase-config';
+import { db } from '../../../src/firebase-config';
 
 export interface UserData {
   id: string;

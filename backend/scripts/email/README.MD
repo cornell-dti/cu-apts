@@ -1,41 +1,182 @@
 # CUApts Email System
 
-This is the CUApts email-sending system. This folder is the home for all logic and templates related
-to the emails that we send to users, such as newsletters, information about events, reminders, etc.
+Welcome to the CUApts email-sending system. This folder is the home for all logic and templates
+related to the emails that we send to users, such as newsletters, information about events,
+reminders, etc.
 
 ## Infrastructure
 
-This system is built on top of [Resend](https://resend.com)'s email API.
+This system is built on top of [Resend](https://resend.com)'s email API. We chose Resend for the
+following reasons:
+
+1. (**Main reason**): capable of handling high email volumes without daily sending limits
+2. Improved deliverability rates
+3. Simplified API for sending
+4. Quality developer documentation and support
 
 ## Getting Started
 
-1. Install dependencies:
+1. Install dependencies in the root directory:
 
-```
-npm install resend
-```
+   ```bash
+   npm install resend dotenv node-fetch
+   ```
 
 2. Set up environment variables in `.env.dev` **in the root directory of the project (`cu-apts`)**:
 
+   ```
+   RESEND_API_KEY=your_resend_api_key  # contact TPM for access
+   GLOBAL_FROM_NAME=CUApts  # what the name of the sender will be
+   GLOBAL_FROM_EMAIL=cuaptsdti@gmail.com  # what the email of the sender will be
+   ```
+
+   **Never commit this file!** (Should already be in `.gitignore`.)
+
+3. Create a new template in `scripts/email/templates/` or modify the existing
+   `GenerateNewsletter.tsx` template.
+
+4. Update the `emailService.ts` file to use your template and customize the campaign options.
+
+5. From the root directory, run the script:
+   ```bash
+   ts-node backend/scripts/email/emailService.ts
+   ```
+
+**Important**: Before running in production, make sure to test with a small batch of recipients.
+
+## How It Works
+
+1. The `emailService.ts` script:
+
+   - Loads environment variables from `.env.dev`
+   - Initializes the Resend client with your API key
+   - Fetches user data from Firebase
+   - Fetches apartment property data from your API if needed
+   - Processes users into batches of 50 recipients
+   - Sends emails to each batch with your template
+
+2. The system chunks the user list into batches of 50 recipients to optimize sending (Resend allows
+   up to 50 email addresses in a single API call).
+
+3. Emails are sent to all batches concurrently, with progress updates printed to the console.
+
+## Creating Templates
+
+Templates in this system are React components that return JSX to be rendered as HTML emails.
+
+1. Create a new TSX file in `scripts/email/templates/`.
+2. Define your template structure using React components:
+
+   ```tsx
+   import React from 'react';
+
+   interface TemplateProps {
+     // Define any props your template needs
+     customData?: string;
+   }
+
+   const YourTemplate: React.FC<TemplateProps> = ({ customData }) => {
+     return (
+       <BaseLayout>
+         {/* Your email content here */}
+         <h1>Hello from CUApts!</h1>
+         <p>{customData || 'Your default content'}</p>
+       </BaseLayout>
+     );
+   };
+
+   export default YourTemplate;
+   ```
+
+3. To use your template, update the `emailService.ts` file:
+
+   ```typescript
+   import YourTemplate from './templates/YourTemplate';
+
+   // In the sendEmailCampaign function:
+   const { data, error } = await resend.emails.send({
+     from: `${fromName} <${fromEmail}>`,
+     to: toEmail,
+     bcc: bccEmails,
+     subject: subject,
+     react: React.createElement(YourTemplate, { customData: 'Your custom content' }),
+   });
+   ```
+
+## Creating and Sending Newsletters
+
+The `GenerateNewsletter` template provides an easy way to send newsletters featuring apartment
+listings.
+
+### How to Configure a Newsletter Campaign:
+
+1. In the `emailService.ts` file, update the `sendEmailCampaign` options:
+
+   ```typescript
+   await sendEmailCampaign({
+     subject: 'Your Newsletter Subject',
+     toEmail: 'primary-recipient@example.com', // This is the main recipient
+     recentLandlordPropertyIDs, // Featured landlord properties
+     lovedPropertyIds, // Most loved properties
+     recentAreaPropertyIDs, // Featured area properties
+   });
+   ```
+
+2. To customize the newsletter template itself, edit `templates/GenerateNewsletter.tsx`.
+
+3. For further customization:
+   - Add new property types to the `EmailCampaignOptions` interface
+   - Extend the `GenerateNewsletter` component to accept additional props
+   - Modify the component structure in `GenerateNewsletter.tsx`
+
+### User Batching
+
+The `getUserBatches` function splits your user list into batches of 50 recipients:
+
+```typescript
+// This is handled in emailService.ts
+const userBatches = await getUserBatches(50);
+console.log(`Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`);
 ```
-RESEND_API_KEY= some_api #contact TPM for access
-GLOBAL_FROM_NAME=CUApts #what the name of the sender will be
-GLOBAL_FROM_EMAIL=cuaptsdti@gmail.com #what the email of the sender will be (once DNS records for cuaptsdti.org are configured)
+
+## Fetching User Data
+
+User data is fetched from Firebase using the `firebase_users_loader.ts` helper module:
+
+```typescript
+import { getUserBatches, USERS } from './helpers/firebase_users_loader';
+
+// This gives you access to all users and the ability to filter them
+const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
 ```
 
-**Never commit this file!** (Should already be in `.gitignore`.)
+## Fetching Apartment Data
 
-3.
+Apartment data is fetched from your API using the `getPropertiesByIds` function:
 
-4.  From the root directory, run
-
+```typescript
+const getPropertiesByIds = async (ids: string[]): Promise<ApartmentWithId[]> => {
+  try {
+    const idParam = ids.join(',');
+    const response = await fetch(`${API_BASE_URL}/api/apts/${idParam}`);
+    // ...process and return data
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    return [];
+  }
+};
 ```
-ts-node backend/scripts/email/emailService.ts
-```
 
-### How it Works
+Note that this must be done **before** running the GenerateNewsletter script, as all reactive code
+is converted to pure HTML/CSS when being sent out. Thus, no data can be fetched in the body of an
+email. To work around this, you must fetch property data before sending the email, and pass this
+data to the newsletter template.
 
-### Creating Templates
+## Further Notes
 
-1. Create a new tsx file in `scripts/email/templates/`
-2.
+- You **must** run the script from the root directory of the project.
+- The system automatically handles large mailing lists by splitting them into batches of 50
+  recipients.
+- Always test your emails with a small group before sending to all users.
+- The system includes error handling and logging for each batch of emails sent.
+- Keep your templates responsive for both desktop and mobile viewing.
