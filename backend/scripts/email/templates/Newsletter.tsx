@@ -25,6 +25,7 @@ type NewsletterProps = {
   newFeature?: FeatureSpotlightProps;
   neighborhoodComparison?: NeighborhoodCompProps;
   subleaseSpotlight?: SubleaseProps;
+  headerUrl: string;
 };
 
 /**
@@ -58,6 +59,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
   newFeature,
   neighborhoodComparison,
   subleaseSpotlight,
+  headerUrl,
 }: NewsletterProps) => (
   <Html>
     <Head>
@@ -87,7 +89,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
       {/* header */}
       <div style={{ textAlign: 'center', width: '100%' }}>
         <img
-          src="https://i.postimg.cc/26VJr7yV/headline-background.png"
+          src={headerUrl}
           alt=""
           style={{ width: '100%', height: 'auto', maxWidth: '700px', marginBottom: '20px' }}
         />
