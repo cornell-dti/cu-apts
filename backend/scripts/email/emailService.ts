@@ -106,13 +106,11 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
 
     const resend = new Resend(apiKey);
 
-    // Removed userFilter parameter from getUserBatches call
     const userBatches = await getUserBatches(50);
     console.log(
       `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
     );
 
-    // Send to each batch
     const emailPromises = userBatches.map(async (batch, i) => {
       const bccEmails = batch.map((user) => user.email);
       console.log(
@@ -144,6 +142,33 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     console.error('Exception when sending emails:', err);
     throw err;
   }
+
+  /**  Sends an email to one person (useful for testing email templates).
+   *   To use, uncomment code below, comment out lines 82-86 and 108-143, edit info below,
+   *   and run the file as normal.
+   */
+  /*
+  try {
+    // In your main file
+    const { data, error } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: 'laurenpothuru@gmail.com',
+      subject: 'Hello World',
+      react: React.createElement(GenerateNewsletter, {
+        recentLandlordProperties,
+        lovedProperties,
+        recentAreaProperties,
+      }),
+    });
+    if (error) {
+      console.error('Error sending email:', error);
+    } else {
+      console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+    }
+  } catch (err) {
+    console.error('Exception when sending email:', err);
+  }
+    */
 };
 
 /**
