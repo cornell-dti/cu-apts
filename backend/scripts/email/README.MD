@@ -6,7 +6,7 @@ reminders, etc.
 
 ## Infrastructure
 
-This system is built on top of [Resend](https://resend.com)'s email API. 
+This system is built on top of [Resend](https://resend.com)'s email API.
 
 ## Getting Started
 
@@ -20,14 +20,16 @@ This system is built on top of [Resend](https://resend.com)'s email API.
 
    ```
    RESEND_API_KEY=your_resend_api_key  # contact TPM for access
-   GLOBAL_FROM_NAME=CUApts  # what the name of the sender will be
-   GLOBAL_FROM_EMAIL=cuaptsdti@gmail.com  # what the email of the sender will be
+   GLOBAL_FROM_NAME= CUApts  # what the name of the sender will be
+   GLOBAL_FROM_EMAIL= cuapts.org  # what the email of the sender will be
    ```
 
    **Never commit this file!** (Should already be in `.gitignore`.)
 
 3. Create a new template in `scripts/email/templates/` or modify the existing
-   `GenerateNewsletter.tsx` template.
+   `GenerateNewsletter.tsx` template. Make sure to test out the formatting in multiple email
+   services (ex: gmail vs apple mail). Each service will result in slightly different outputs, so
+   ensure that your template is consistent throughout.
 
 4. Update the `emailService.ts` file to use your template and customize the campaign options.
 

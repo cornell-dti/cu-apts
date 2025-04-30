@@ -15,6 +15,8 @@ if (!global.fetch) {
   global.Request = Request as unknown as typeof global.Request;
 }
 
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
 type EmailCampaignOptions = {
   subject?: string;
   toEmail?: string;
@@ -42,7 +44,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
   // Load environment variables
   dotenv.config({ path: path.resolve(process.cwd(), '.env.dev') });
 
-  const fromEmail = process.env.GLOBAL_FROM_EMAIL ?? 'laurenpothuru@gmail.com';
+  const fromEmail = 'updates.cuapts.org';
   const fromName = 'CU Apts';
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -51,7 +53,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     return;
   }
 
-  const { API_BASE_URL } = process.env;
+  // const { API_BASE_URL } = process.env;
 
   /**
    * getPropertiesByIds
@@ -79,96 +81,94 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     }
   };
 
-  try {
-    console.log(`Total users available in database: ${USERS.length}`);
-    const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
-    console.log(`Valid email addresses: ${validEmails.length}`);
+  // try {
+  //   console.log(`Total users available in database: ${USERS.length}`);
+  //   const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
+  //   console.log(`Valid email addresses: ${validEmails.length}`);
 
-    if (validEmails.length === 0) {
-      console.error('No valid email addresses found!');
-      return;
-    }
+  //   if (validEmails.length === 0) {
+  //     console.error('No valid email addresses found!');
+  //     return;
+  //   }
 
-    // loads chosen properties
-    const recentLandlordProperties = options.recentLandlordPropertyIDs
-      ? await getPropertiesByIds(options.recentLandlordPropertyIDs)
-      : [];
-    const lovedProperties = options.lovedPropertyIds
-      ? await getPropertiesByIds(options.lovedPropertyIds)
-      : [];
-    const recentAreaProperties = options.recentAreaPropertyIDs
-      ? await getPropertiesByIds(options.recentAreaPropertyIDs)
-      : [];
+  // loads chosen properties
+  const recentLandlordProperties = options.recentLandlordPropertyIDs
+    ? await getPropertiesByIds(options.recentLandlordPropertyIDs)
+    : [];
+  const lovedProperties = options.lovedPropertyIds
+    ? await getPropertiesByIds(options.lovedPropertyIds)
+    : [];
+  const recentAreaProperties = options.recentAreaPropertyIDs
+    ? await getPropertiesByIds(options.recentAreaPropertyIDs)
+    : [];
 
-    console.log(
-      `Fetched ${recentLandlordProperties.length} recent properties (landlord highlight), ${lovedProperties.length} loved properties (landlord highlight), and ${recentAreaProperties.length} recent properties (area spotlight).`
-    );
+  console.log(
+    `Fetched ${recentLandlordProperties.length} recent properties (landlord highlight), ${lovedProperties.length} loved properties (landlord highlight), and ${recentAreaProperties.length} recent properties (area spotlight).`
+  );
 
-    const resend = new Resend(apiKey);
+  const resend = new Resend(apiKey);
 
-    const userBatches = await getUserBatches(50);
-    console.log(
-      `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
-    );
+  //   const userBatches = await getUserBatches(50);
+  //   console.log(
+  //     `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
+  //   );
 
-    const emailPromises = userBatches.map(async (batch, i) => {
-      const bccEmails = batch.map((user) => user.email);
-      console.log(
-        `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
-      );
+  //   const emailPromises = userBatches.map(async (batch, i) => {
+  //     const bccEmails = batch.map((user) => user.email);
+  //     console.log(
+  //       `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
+  //     );
 
-      const { data, error } = await resend.emails.send({
-        from: `${fromName} <${fromEmail}>`,
-        to: toEmail,
-        // bcc: bccEmails,
-        subject,
-        react: React.createElement(GenerateNewsletter, {
-          recentLandlordProperties,
-          lovedProperties,
-          recentAreaProperties,
-        }),
-      });
+  //     const { data, error } = await resend.emails.send({
+  //       from: `${fromName} <${fromEmail}>`,
+  //       to: toEmail,
+  //       // bcc: bccEmails,
+  //       subject,
+  //       react: React.createElement(GenerateNewsletter, {
+  //         recentLandlordProperties,
+  //         lovedProperties,
+  //         recentAreaProperties,
+  //       }),
+  //     });
 
-      if (error) {
-        console.error(`Error sending batch ${i + 1}:`, error);
-      } else {
-        console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
-      }
-    });
+  //     if (error) {
+  //       console.error(`Error sending batch ${i + 1}:`, error);
+  //     } else {
+  //       console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
+  //     }
+  //   });
 
-    await Promise.all(emailPromises);
-    console.log('All email batches sent successfully!');
-  } catch (err) {
-    console.error('Exception when sending emails:', err);
-    throw err;
-  }
+  //   await Promise.all(emailPromises);
+  //   console.log('All email batches sent successfully!');
+  // } catch (err) {
+  //   console.error('Exception when sending emails:', err);
+  //   throw err;
+  // }
 
   /**  Sends an email to one person (useful for testing email templates).
    *   To use, uncomment code below, comment out lines 82-86 and 108-143, edit info below,
    *   and run the file as normal.
    */
-  /*
-  try {
-    // In your main file
-    const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: 'laurenpothuru@gmail.com',
-      subject: 'Hello World',
-      react: React.createElement(GenerateNewsletter, {
-        recentLandlordProperties,
-        lovedProperties,
-        recentAreaProperties,
-      }),
-    });
-    if (error) {
-      console.error('Error sending email:', error);
-    } else {
-      console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
-    }
-  } catch (err) {
-    console.error('Exception when sending email:', err);
-  }
-    */
+  // try {
+  //   // In your main file
+  //   const { data, error } = await resend.emails.send({
+  //     from: 'updates@cuapts.org',
+  //     to: 'laurenpothuru@gmail.com',
+  //     subject: subject,
+  //     react: React.createElement(GenerateNewsletter, {
+  //       recentLandlordProperties,
+  //       lovedProperties,
+  //       recentAreaProperties,
+  //     }),
+  //   });
+  //   if (error) {
+  //     console.error('Error sending email:', error);
+  //   } else {
+  //     console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+  //   }
+  // } catch (err) {
+  //   console.error('Exception when sending email:', err);
+  // }
 };
 
 /**
@@ -185,6 +185,9 @@ async function main() {
     // Customize  email subject
     await sendEmailCampaign({
       subject: 'New Apartment Listings Available!',
+      recentAreaPropertyIDs: ['12', '2', '24'],
+      lovedPropertyIds: ['23', '24', '24'],
+      recentLandlordPropertyIDs: ['14', '23', '24'],
     });
 
     console.log('Campaign completed successfully!');
