@@ -67,7 +67,7 @@ const NeighborhoodComparison: React.FC<Props> = ({
                 width: '100%',
                 height: 'auto',
                 overflow: 'hidden',
-                marginRight: '20px',
+                marginBottom: '5px',
               }}
             />
             <p
@@ -97,7 +97,13 @@ const NeighborhoodComparison: React.FC<Props> = ({
             <img
               src={image2}
               alt=""
-              style={{ borderRadius: '8px', width: '100%', height: 'auto', overflow: 'hidden' }}
+              style={{
+                borderRadius: '8px',
+                width: '100%',
+                height: 'auto',
+                overflow: 'hidden',
+                marginBottom: '5px',
+              }}
             />
             <p
               style={{

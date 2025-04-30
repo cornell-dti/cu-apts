@@ -51,11 +51,20 @@ const ReelsFeature: React.FC<Props> = ({ gifUrl, description }: Props) => (
           <p style={{ color: '#5D5D5D', fontSize: '14.976px', marginBottom: '15px' }}>
             {description}
           </p>
-          <div style={{ backgroundColor: '#B94630', padding: '10px 12px', borderRadius: '8px' }}>
+          <div
+            style={{
+              backgroundColor: '#B94630',
+              padding: '10px 12px',
+              borderRadius: '8px',
+              color: '#5D5D5D',
+              width: 'fit-content',
+            }}
+          >
             <a
               href="https://www.instagram.com/cuapts/"
               style={{
                 textDecoration: 'none',
+                color: '#FFF6F6',
               }}
             >
               View More

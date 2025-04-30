@@ -102,6 +102,9 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
   const advice: AdviceProps = {
     name: 'A Cornell Student',
     message: 'You should do this and this and this in the housing search process. good luck!',
+    major: 'Real Estate',
+    year: '2024',
+    apartment: 'Collegetown Crossings',
   };
 
   /**
@@ -169,8 +172,7 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
    * @property {string} description - Detailed description of the feature and its benefits
    */
   const featureSpotlight: FeatureSpotlightProps = {
-    imgUrl:
-      'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTOJgeX2Q_YP7mHSFPphSHfTILVHFWBdmaYgEHJfPsTADW2nlMm',
+    imgUrl: 'https://i.postimg.cc/855xZ26H/cuapts.png',
     featureName: 'Feature Name',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. Duis eget augue rhoncus, dapibus orci ut, vestibulum nisi. Suspendisse hendrerit viverra odio a gravida.',
@@ -193,7 +195,7 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. Duis eget augue rhoncus, ',
     phoneNumber: '1234567890',
-    email: 'dummyemail@gmail.com',
+    email: 'exampleemail@gmail.com',
   };
 
   /**
@@ -216,10 +218,8 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. \n-Duis eget augue rhoncus\n-dapibus orci ut, vestibulu\n-Lorem ipsum dolor sit amet,\n-consectetur adipiscing elit.\n-Pellentesque nec porttitor ligula Duis eget',
     description2:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. \n-Duis eget augue rhoncus\n-dapibus orci ut, vestibulu\n-Lorem ipsum dolor sit amet,\n-consectetur adipiscing elit.\n-Pellentesque nec porttitor ligula Duis eget',
-    image1:
-      'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTOJgeX2Q_YP7mHSFPphSHfTILVHFWBdmaYgEHJfPsTADW2nlMm',
-    image2:
-      'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTOJgeX2Q_YP7mHSFPphSHfTILVHFWBdmaYgEHJfPsTADW2nlMm',
+    image1: 'https://i.postimg.cc/jdVkfwZv/Frame-2263.png',
+    image2: 'https://i.postimg.cc/jdVkfwZv/Frame-2263.png',
   };
 
   return (

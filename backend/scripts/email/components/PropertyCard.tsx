@@ -22,7 +22,7 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactE
         'https://images.squarespace-cdn.com/content/v1/665f8368e87e4548121b2b1b/1739995859299-Q3ZMFXYTF9PB4FXHRKE1/Carey-Building-Apartments_ALT.jpg'
       }
       alt={property.name || 'Property'}
-      style={{ borderRadius: '8px', width: '152px', height: '122px', overflow: 'hidden' }}
+      style={{ borderRadius: '8px', width: '150px', height: '122px', overflow: 'hidden' }}
     />
     <h2
       style={{
@@ -42,21 +42,25 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactE
       {property.address}
     </p>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', textAlign: 'center', marginRight: '10px' }}
+      >
         <img
           src="https://static-00.iconduck.com/assets.00/money-icon-1024x1024-f6dh1k6o.png"
           alt="$"
           style={{ width: '13px', height: '13px', marginRight: '4px' }}
         />
-        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0' }}>price</p>
+        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0', color: '#000' }}>price</p>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <img
           src="https://cdn-icons-png.flaticon.com/512/952/952772.png"
           alt="bed"
           style={{ width: '16px', height: '16px', marginRight: '4px' }}
         />
-        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0' }}>{property.numBeds} Bed</p>
+        <p style={{ fontWeight: '600', fontSize: '12px', margin: '0', color: '#000' }}>
+          {property.numBeds} Bed
+        </p>
       </div>
     </div>
   </>

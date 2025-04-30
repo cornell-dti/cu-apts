@@ -108,35 +108,35 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
 
   const resend = new Resend(apiKey);
 
-  //   const userBatches = await getUserBatches(50);
+  // const userBatches = await getUserBatches(50);
+  // console.log(
+  //   `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
+  // );
+
+  // const emailPromises = userBatches.map(async (batch, i) => {
+  //   const bccEmails = batch.map((user) => user.email);
   //   console.log(
-  //     `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
+  //     `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
   //   );
 
-  //   const emailPromises = userBatches.map(async (batch, i) => {
-  //     const bccEmails = batch.map((user) => user.email);
-  //     console.log(
-  //       `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
-  //     );
-
-  //     const { data, error } = await resend.emails.send({
-  //       from: `${fromName} <${fromEmail}>`,
-  //       to: toEmail,
-  //       // bcc: bccEmails,
-  //       subject,
-  //       react: React.createElement(GenerateNewsletter, {
-  //         recentLandlordProperties,
-  //         lovedProperties,
-  //         recentAreaProperties,
-  //       }),
-  //     });
-
-  //     if (error) {
-  //       console.error(`Error sending batch ${i + 1}:`, error);
-  //     } else {
-  //       console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
-  //     }
+  //   const { data, error } = await resend.emails.send({
+  //     from: `${fromName} <${fromEmail}>`,
+  //     to: toEmail,
+  //     // bcc: bccEmails,
+  //     subject,
+  //     react: React.createElement(GenerateNewsletter, {
+  //       recentLandlordProperties,
+  //       lovedProperties,
+  //       recentAreaProperties,
+  //     }),
   //   });
+
+  //   if (error) {
+  //     console.error(`Error sending batch ${i + 1}:`, error);
+  //   } else {
+  //     console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
+  //   }
+  // });
 
   //   await Promise.all(emailPromises);
   //   console.log('All email batches sent successfully!');
@@ -149,26 +149,26 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
    *   To use, uncomment code below, comment out lines 82-86 and 108-143, edit info below,
    *   and run the file as normal.
    */
-  // try {
-  //   // In your main file
-  //   const { data, error } = await resend.emails.send({
-  //     from: 'updates@cuapts.org',
-  //     to: 'laurenpothuru@gmail.com',
-  //     subject: subject,
-  //     react: React.createElement(GenerateNewsletter, {
-  //       recentLandlordProperties,
-  //       lovedProperties,
-  //       recentAreaProperties,
-  //     }),
-  //   });
-  //   if (error) {
-  //     console.error('Error sending email:', error);
-  //   } else {
-  //     console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
-  //   }
-  // } catch (err) {
-  //   console.error('Exception when sending email:', err);
-  // }
+  try {
+    // In your main file
+    const { data, error } = await resend.emails.send({
+      from: 'updates@cuapts.org',
+      to: 'lsp75@cornell.edu',
+      subject,
+      react: React.createElement(GenerateNewsletter, {
+        recentLandlordProperties,
+        lovedProperties,
+        recentAreaProperties,
+      }),
+    });
+    if (error) {
+      console.error('Error sending email:', error);
+    } else {
+      console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+    }
+  } catch (err) {
+    console.error('Exception when sending email:', err);
+  }
 };
 
 /**

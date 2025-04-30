@@ -118,7 +118,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
             fontWeight: '400',
           }}
         >
-          <strong style={{ fontWeight: '700' }}>Hi {firstName}!</strong> {introductionMessage}
+          <strong style={{ fontWeight: '700' }}>Hi!</strong> {introductionMessage}
         </Text>
 
         {/* landlord section */}
