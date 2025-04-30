@@ -76,7 +76,19 @@ type Props = {
 
 const HomePage = ({ user, setUser }: Props): ReactElement => {
   const { header, jumboText, jumboSub, logoContainer } = useStyles();
-  const [data, setData] = useState<returnData>({ buildingData: [], isEnded: false });
+  const [closeToCampusData, setCloseToCampusData] = useState<returnData>({
+    buildingData: [],
+    isEnded: false,
+  });
+  const [mostReviewedData, setMostReviewedData] = useState<returnData>({
+    buildingData: [],
+    isEnded: false,
+  });
+  const [mostLovedData, setMostLovedData] = useState<returnData>({
+    buildingData: [],
+    isEnded: false,
+  });
+
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [drawerOpen] = useState<boolean>(false);
   const path = useLocation();
@@ -89,8 +101,14 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
   useTitle('Home');
 
   useEffect(() => {
-    get<returnData>(`/api/page-data/home/${loadingLength}`, {
-      callback: setData,
+    get<returnData>(`/api/page-data/home/${loadingLength}/distanceToCampus`, {
+      callback: setCloseToCampusData,
+    });
+    get<returnData>(`/api/page-data/home/${loadingLength}/numReviews`, {
+      callback: setMostReviewedData,
+    });
+    get<returnData>(`/api/page-data/home/${loadingLength}/avgRating`, {
+      callback: setMostLovedData,
     });
   }, []);
 
@@ -104,7 +122,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
   useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
 
   return (
-    <>
+    <Container maxWidth="xl">
       <Box className={header} mt={isMobile ? -2 : 0} position="relative">
         <Typography
           variant="h1"
@@ -143,9 +161,9 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
               <HomePageApartmentCards
                 user={user}
                 setUser={setUser}
-                data={data.buildingData}
-                sortMethod="originalOrder"
-                orderLowToHigh={false}
+                data={closeToCampusData.buildingData}
+                sortMethod="distanceToCampus"
+                orderLowToHigh={true}
                 title="Close to Central Campus"
                 cardSize="small"
               />
@@ -154,7 +172,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
               <HomePageApartmentCards
                 user={user}
                 setUser={setUser}
-                data={data.buildingData}
+                data={mostReviewedData.buildingData}
                 sortMethod="numReviews"
                 orderLowToHigh={false}
                 title="Most Reviewed"
@@ -165,7 +183,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
               <HomePageApartmentCards
                 user={user}
                 setUser={setUser}
-                data={data.buildingData}
+                data={mostLovedData.buildingData}
                 sortMethod="avgRating"
                 orderLowToHigh={false}
                 title="Most Loved"
@@ -175,7 +193,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
           </>
         )}
       </Box>
-    </>
+    </Container>
   );
 };
 

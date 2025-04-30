@@ -15,7 +15,7 @@ import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
 import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
-import { ApartmentWithId, ReviewWithId } from '../../../../common/types/db-types';
+import { ApartmentWithId } from '../../../../common/types/db-types';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
 
@@ -106,7 +106,6 @@ const useStyles = makeStyles({
     gap: '4px',
     width: '21%',
     height: '30%',
-    // border: `1px solid ${colors.gray2}`,
   },
   apartmentRatingIcon: {
     color: colors.red2,
@@ -192,13 +191,11 @@ const NewApartmentCard = ({
   user,
   setUser,
 }: Props): ReactElement => {
-  const { id, name, photos, address, numBeds = 0 } = buildingData;
+  const { id, name, photos, address, numBeds = 0, distanceToCampus = 0 } = buildingData;
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
   const isMobile = useMediaQuery('(max-width:600px)');
-  const [reviewList, setReviewList] = useState<ReviewWithId[]>([]);
-  const sampleReview = reviewList.length === 0 ? '' : reviewList[0].reviewText;
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
@@ -268,13 +265,6 @@ const NewApartmentCard = ({
     }
   };
 
-  useEffect(() => {
-    // Fetches approved reviews for the current apartment.
-    get<ReviewWithId[]>(`/api/review/aptId/${id}/APPROVED`, {
-      callback: setReviewList,
-    });
-  }, [id]);
-
   return (
     <Card
       className={isHovered ? redHighlight : root}
@@ -301,8 +291,19 @@ const NewApartmentCard = ({
         <div className={apartmentInfo}>
           <div className={apartmentBackground}>
             <div className={apartmentText}>
-              <Typography className={apartmentName}>{name}</Typography>
-              <Typography className={apartmentAddress}>{address}</Typography>
+              {/* <Typography>{distanceToCampus} miles away</Typography> */}
+              <Typography
+                className={apartmentName}
+                style={{ fontSize: name.length > 19 ? '13px' : '14px' }}
+              >
+                {name.slice(0, 20) + (name.length > 20 ? '...' : '')}
+              </Typography>
+              <Typography
+                className={apartmentAddress}
+                style={{ fontSize: name.length > 19 ? '12.5px' : '14px' }}
+              >
+                {address}
+              </Typography>
               <Typography className={apartmentReviews}>
                 {numReviews} {numReviews === 1 ? 'review' : 'reviews'}
               </Typography>

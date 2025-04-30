@@ -521,7 +521,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     </Grid>
   );
 
-  const searchBar = location.pathname !== '/';
+  const searchBar = location.pathname !== '/' && !location.pathname.startsWith('/search');
   const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">

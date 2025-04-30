@@ -2,22 +2,20 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import ApartmentCard from './ApartmentCard';
 import NewApartmentCard from './NewApartmentCard';
 import { Grid, Link, makeStyles, Button, Box, Typography } from '@material-ui/core';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
+import { loadingLength } from '../../constants/HomeConsts';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import { sortApartments } from '../../utils/sortApartments';
-import LargeApartmentCard from './LargeApartmentCard';
-import { defaultFilters, FilterState } from '../Search/FilterSection';
 
 type Props = {
   data: CardData[];
+  initialResultsToShow?: number;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   onMoreResultsLoaded?: (results: number) => void;
   sortMethod?: keyof CardData | keyof ApartmentWithId | 'originalOrder';
   orderLowToHigh?: boolean;
-  title: string;
-  cardSize?: 'small' | 'large';
 };
 
 const useStyles = makeStyles({
@@ -46,17 +44,18 @@ const useStyles = makeStyles({
     lineHeight: '28px',
   },
   cardsContainer: {
-    display: 'flex',
-    overflowX: 'auto',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '12px',
+    padding: '4px',
+    height: '600px',
+    overflowY: 'auto',
     scrollbarWidth: 'none', // Firefox
     '&::-webkit-scrollbar': {
       // Chrome, Safari, Edge
       display: 'none',
     },
-    '-ms-overflow-style': 'none', // IE
-    gap: '20px',
-    padding: '4px',
-    // border: `1px solid black`,
+    '-ms-overflow-style': 'none',
   },
 });
 
@@ -71,6 +70,7 @@ const useStyles = makeStyles({
  * @component
  * @param {Object} props - Component properties.
  * @param {CardData[]} props.data - Array of apartment data to display in cards.
+ * @param {number} [props.initialResultsToShow] - Initial number of cards to display.
  * @param {firebase.User | null} props.user - The currently logged in Firebase user.
  * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to update the user state.
  * @param {(results: number) => void} [props.onMoreResultsLoaded] - Callback when more results are loaded.
@@ -82,17 +82,15 @@ const useStyles = makeStyles({
  */
 const ApartmentCards = ({
   data,
+  initialResultsToShow,
   user,
   onMoreResultsLoaded,
   setUser,
   sortMethod = 'originalOrder',
   orderLowToHigh = false,
-  title,
-  cardSize = 'small',
 }: Props): ReactElement => {
   const { container, header, titleText, viewMoreButton, cardsContainer } = useStyles();
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const history = useHistory();
 
   // Handle resizing of the window depending on mobile and if it is clicked.
   useEffect(() => {
@@ -104,35 +102,14 @@ const ApartmentCards = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleViewMoreClick = (
-    sortMethod: keyof CardData | keyof ApartmentWithId | 'originalOrder',
-    orderLowToHigh: boolean
-  ) => {
-    const query = '';
-    // Create a new filter object instead of using defaultFilters directly
-    const filters: FilterState = {
-      ...defaultFilters,
-      initialSortBy: sortMethod,
-      initialSortLowToHigh: orderLowToHigh,
-    };
-    console.log('apartment cards starting with ', sortMethod, orderLowToHigh);
-    const filterParams = encodeURIComponent(JSON.stringify(filters));
-
-    history.push(`/search?q=${query}&filters=${filterParams}`);
-  };
+  useEffect(() => {
+    if (onMoreResultsLoaded) {
+      onMoreResultsLoaded(initialResultsToShow ?? loadingLength);
+    }
+  }, [initialResultsToShow, onMoreResultsLoaded]);
 
   return (
     <div className={container}>
-      <div className={header}>
-        <Typography className={titleText}>{title}</Typography>
-        <Button
-          className={viewMoreButton}
-          disableRipple
-          onClick={() => handleViewMoreClick(sortMethod, orderLowToHigh)}
-        >
-          View More
-        </Button>
-      </div>
       <div className={cardsContainer}>
         {data &&
           sortApartments(data, sortMethod, orderLowToHigh).map(
@@ -148,27 +125,15 @@ const ApartmentCards = ({
                         component: RouterLink,
                       }}
                     >
-                      {cardSize === 'small' ? (
-                        <NewApartmentCard
-                          key={index}
-                          numReviews={numReviews}
-                          avgRating={avgRating ?? 0}
-                          buildingData={buildingData}
-                          company={company}
-                          user={user}
-                          setUser={setUser}
-                        />
-                      ) : (
-                        <LargeApartmentCard
-                          key={index}
-                          numReviews={numReviews}
-                          avgRating={avgRating ?? 0}
-                          buildingData={buildingData}
-                          company={company}
-                          user={user}
-                          setUser={setUser}
-                        />
-                      )}
+                      <NewApartmentCard
+                        key={index}
+                        numReviews={numReviews}
+                        avgRating={avgRating ?? 0}
+                        buildingData={buildingData}
+                        company={company}
+                        user={user}
+                        setUser={setUser}
+                      />
                     </Link>
                   </div>
                 </>

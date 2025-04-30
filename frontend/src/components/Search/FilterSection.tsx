@@ -11,6 +11,8 @@ import {
 import { colors } from '../../colors';
 import plusIcon from '../../assets/filter-plus-icon.svg';
 import minusIcon from '../../assets/filter-minus-icon.svg';
+import { ApartmentWithId } from '../../../../common/types/db-types';
+import { CardData } from '../../App';
 
 const useStyles = makeStyles({
   filterContainer: {
@@ -152,7 +154,7 @@ const useStyles = makeStyles({
   },
   divisionLine: {
     fontSize: 24,
-    border: '1px solid #E5E5E5',
+    border: '0.90px solid #E5E5E5',
     height: '208px',
     position: 'relative',
     transform: 'translateY(12%)',
@@ -229,7 +231,7 @@ const useStyles = makeStyles({
   },
 });
 
-type LocationType = 'Collegetown' | 'North' | 'West' | 'Downtown';
+export type LocationType = 'Collegetown' | 'North' | 'West' | 'Downtown';
 
 export type FilterState = {
   locations: LocationType[];
@@ -237,6 +239,18 @@ export type FilterState = {
   maxPrice: string;
   bedrooms: number;
   bathrooms: number;
+  initialSortBy: keyof CardData | keyof ApartmentWithId | 'originalOrder';
+  initialSortLowToHigh: boolean;
+};
+
+export const defaultFilters: FilterState = {
+  locations: [],
+  minPrice: '',
+  maxPrice: '',
+  bedrooms: 0,
+  bathrooms: 0,
+  initialSortBy: 'avgRating',
+  initialSortLowToHigh: false,
 };
 
 export type FilterSectionProps = {
@@ -248,7 +262,7 @@ export type FilterSectionProps = {
 
 const LOCATIONS: LocationType[] = ['Collegetown', 'North', 'West', 'Downtown'];
 
-const PriceInputBox: React.FC<{
+export const PriceInputBox: React.FC<{
   label: string;
   value: string;
   placeholder: string;
@@ -329,7 +343,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open, 
 
   const handlePriceChange = (field: 'minPrice' | 'maxPrice', value: string) => {
     onChange({ ...filters, [field]: value });
-    console.log(value);
   };
 
   return (

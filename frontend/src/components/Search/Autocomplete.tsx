@@ -22,6 +22,7 @@ import searchPropertyIcon from '../../assets/search-property.svg';
 import searchLandlordIcon from '../../assets/search-landlord.svg';
 import filterIcon from '../../assets/filter.svg';
 import FilterSection, { FilterState } from './FilterSection';
+import FilterDropDown from './FilterDropDown';
 
 type Props = {
   drawerOpen: boolean;
@@ -33,12 +34,17 @@ const defaultFilters: FilterState = {
   maxPrice: '',
   bedrooms: 0,
   bathrooms: 0,
+  initialSortBy: 'avgRating',
+  initialSortLowToHigh: false,
 };
 
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [openFilter, setOpenFilter] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const isSearchResults = location.pathname.startsWith('/search');
 
   const useStyles = makeStyles((theme) => ({
     menuList: {
@@ -60,7 +66,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       width: '100%',
     },
     text: {
@@ -69,10 +75,10 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       fontStyle: 'normal',
       fontWeight: 400,
       lineHeight: '28px',
-      boxShadow: '0px 0px 4px 2px rgba(0, 0, 0, 0.05)',
+      boxShadow: isHome ? '0px 0px 4px 2px rgba(0, 0, 0, 0.05)' : 'none',
       '& .MuiOutlinedInput-root': {
         '& fieldset': {
-          borderColor: '#F9F9F9',
+          borderColor: isHome ? '#F9F9F9' : '#E8E8E8',
           borderWidth: '1px',
         },
         '&:hover fieldset': {
@@ -134,8 +140,14 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     },
     field: {
       borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-      height: isMobile ? '35px' : '68px',
-      padding: '24px',
+      height: isMobile ? '35px' : isHome ? '68px' : '44px',
+      padding: isHome ? '24px' : '8px 24px',
+    },
+    filterRow: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: '18px',
     },
   }));
   const {
@@ -149,6 +161,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     menuItem,
     subText,
     buildingText,
+    filterRow,
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
@@ -175,9 +188,10 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   }
 
   function checkIfSearchable() {
+    const { initialSortBy, initialSortLowToHigh, ...otherFilters } = filters;
     return (
       query.trim() !== '' ||
-      Object.values(filters).some((val) =>
+      Object.values(otherFilters).some((val) =>
         Array.isArray(val) ? val.length > 0 : val !== '' && val !== 0
       )
     );
@@ -333,7 +347,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   }, [loading, query]);
 
-  const location = useLocation();
   let placeholderText = 'Search by address or with filters';
 
   /**
@@ -342,7 +355,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
    * If: home/NavBar drawer is open –> returns search bar style with red input adornment on right.
    */
   const getInputProps = () => {
-    if (location.pathname === '/' && !drawerOpen) {
+    if (isHome && !drawerOpen) {
       return {
         style: { fontSize: isMobile ? 16 : 20 },
         endAdornment: (
@@ -375,15 +388,19 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       };
     } else {
       return {
-        style: {
-          height: isMobile ? '35px' : '45px',
-        },
         endAdornment: (
           <React.Fragment>
             {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            <div className={iconBackground} onClick={handleSearchIconClick}>
-              <img src={SearchIcon} alt="search icon" />
-            </div>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSearchIconClick();
+              }}
+              className={iconBackground}
+              disableRipple
+            >
+              <img src={SearchIcon} alt="search icon" style={{ width: '26px', height: '26px' }} />
+            </IconButton>
           </React.Fragment>
         ),
         className: field,
@@ -405,7 +422,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               variant="outlined"
               style={{
                 borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-                width: !isMobile ? '100%' : '98%',
+                width: isSearchResults ? '58%' : !isMobile ? '100%' : '98%',
               }}
               onKeyDown={textFieldHandleListKeyDown}
               onChange={(event) => {
@@ -416,6 +433,31 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               }}
               InputProps={getInputProps()}
             />
+            {isSearchResults && (
+              <div className={filterRow}>
+                <FilterDropDown
+                  label={'Location'}
+                  isMobile={false}
+                  filters={filters}
+                  onChange={handleFilterChange}
+                  onApply={handleSearchIconClick}
+                />
+                <FilterDropDown
+                  label={'Price'}
+                  isMobile={false}
+                  filters={filters}
+                  onChange={handleFilterChange}
+                  onApply={handleSearchIconClick}
+                />
+                <FilterDropDown
+                  label={'Beds & Baths'}
+                  isMobile={false}
+                  filters={filters}
+                  onChange={handleFilterChange}
+                  onApply={handleSearchIconClick}
+                />
+              </div>
+            )}
           </div>
           <Menu />
           <FilterSection

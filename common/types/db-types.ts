@@ -64,6 +64,7 @@ export type Apartment = {
   readonly latitude: number;
   readonly longitude: number;
   readonly price: number;
+  readonly distanceToCampus: number; // walking distance to ho plaza in minutes
 };
 
 export type LocationTravelTimes = {

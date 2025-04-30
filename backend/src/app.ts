@@ -455,6 +455,8 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
     const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
     const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
+    const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
+    const sortBy = req.query.sortBy || 'numReviews';
 
     // Get all apartments from the application state
     const apts = req.app.get('apts');
@@ -482,31 +484,54 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
       );
     }
 
+    // TODO: Fix price filter
     // Apply price range filters
-    if (minPrice !== null) {
-      filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
-    }
+    // if (minPrice !== null) {
+    //   filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
+    // }
 
-    if (maxPrice !== null) {
-      filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
-    }
+    // if (maxPrice !== null) {
+    //   filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
+    // }
 
     // Apply bedroom filter
-    if (bedrooms !== null && bedrooms > 0) {
-      filteredResults = filteredResults.filter(
-        (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
-      );
-    }
+    // TODO: Fix amenities filter
+    // if (bedrooms !== null && bedrooms > 0) {
+    //   filteredResults = filteredResults.filter(
+    //     (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
+    //   );
+    // }
 
-    // Apply bathroom filter
-    if (bathrooms !== null && bathrooms > 0) {
-      filteredResults = filteredResults.filter(
-        (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
-      );
-    }
+    // // Apply bathroom filter
+    // if (bathrooms !== null && bathrooms > 0) {
+    //   filteredResults = filteredResults.filter(
+    //     (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
+    //   );
+    // }
 
     // Process the filtered results through pageData to include reviews, ratings, etc.
-    const enrichedResults = await pageData(filteredResults);
+    let enrichedResults = await pageData(filteredResults);
+
+    // If size is specified and less than available, slice the results
+    if (size && size > 0 && enrichedResults.length > size) {
+      console.log('endpoint sortBy', sortBy);
+      switch (sortBy) {
+        case 'numReviews':
+          enrichedResults.sort((a, b) => b.numReviews - a.numReviews);
+          break;
+        case 'avgRating':
+          enrichedResults.sort((a, b) => b.avgRating - a.avgRating);
+          break;
+        case 'distanceToCampus':
+          enrichedResults.sort(
+            (a, b) => a.buildingData.distanceToCampus - b.buildingData.distanceToCampus
+          );
+          break;
+        default:
+          break;
+      }
+      enrichedResults = enrichedResults.slice(0, size);
+    }
 
     res.status(200).send(JSON.stringify(enrichedResults));
   } catch (err) {
@@ -515,13 +540,25 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
   }
 });
 
-/*
- * assumption, what you return for a given page may be different
- * currently, we are assuming 'home' as a potential input and a default case for everything else for the page
- * for the home case, we are returning the top (size) apartments, top being having the most reviews
+/**
+ * Get Page Data - Retrieves paginated and sorted apartment data.
+ *
+ * @remarks
+ * This endpoint fetches apartment data with optional sorting and pagination. For the homepage, it retrieves all apartments
+ * and sorts them by the specified criteria before applying pagination. For other pages, it applies pagination directly
+ * from the database query.
+ *
+ * @route GET /api/page-data/:page/:size/:sortBy?
+ *
+ * @input {string} req.params.page - The page type ('home' or other)
+ * @input {string} req.params.size - Number of results to return
+ * @input {string} req.params.sortBy - Optional sorting criteria ('numReviews', 'avgRating', or 'distanceToCampus')
+ *
+ * @status
+ * - 200: Successfully retrieved and processed apartment data
  */
-app.get('/api/page-data/:page/:size', async (req, res) => {
-  const { page, size } = req.params;
+app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
+  const { page, size, sortBy = 'numReviews' } = req.params;
   let buildingDocs;
   let buildingData;
 
@@ -537,9 +574,26 @@ app.get('/api/page-data/:page/:size', async (req, res) => {
   );
 
   if (page === 'home') {
-    const buildingReviewCounts = (await pageData(buildings)).map((elem) => [elem.numReviews, elem]);
-    buildingReviewCounts.sort().reverse();
-    buildingData = buildingReviewCounts.splice(0, Number(size)).map((elem) => elem[1]);
+    // Get enriched data first
+    const enrichedData = await pageData(buildings);
+
+    // Sort based on the specified field
+    enrichedData.sort((a, b) => {
+      // Handle fields that exist after pageData processing
+      switch (sortBy) {
+        case 'numReviews':
+          return b.numReviews - a.numReviews;
+        case 'avgRating':
+          return b.avgRating - a.avgRating;
+        case 'distanceToCampus':
+          // Sort by distance to campus in ascending order (closer to campus comes first)
+          return a.buildingData.distanceToCampus - b.buildingData.distanceToCampus;
+        default:
+          return 0;
+      }
+    });
+    // Take only the requested size
+    buildingData = enrichedData.slice(0, Number(size));
   } else {
     buildingData = await pageData(buildings);
   }
@@ -1578,6 +1632,47 @@ app.get('/api/travel-times-by-id/:buildingId', async (req, res) => {
     return res.status(200).json(travelTimes);
   } catch (error) {
     console.error('Error retrieving travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+/**
+ * Create Distance to Campus - Updates each building's distanceToCampus field with walking time to Ho Plaza.
+ *
+ * @remarks
+ * Queries the entire travel times collection and updates each building document in the buildings collection
+ * with its corresponding walking time to Ho Plaza. Returns an array of tuples containing the building ID
+ * and updated walking time.
+ *
+ * @route POST /api/create-distance-to-campus
+ *
+ * @returns {Array<[string, number]>} Array of [buildingId, walkingTime] tuples
+ *
+ * @status
+ * - 200: Successfully retrieved and updated walking times
+ * - 500: Server error occurred while retrieving times or updating buildings
+ */
+app.post('/api/create-distance-to-campus', async (req, res) => {
+  try {
+    const snapshot = await travelTimesCollection.get();
+
+    const walkingTimes = snapshot.docs.map((doc) => {
+      const data = doc.data() as LocationTravelTimes;
+      return [doc.id, data.hoPlazaWalking] as [string, number];
+    });
+
+    // Update each building's distanceToCampus field
+    await Promise.all(
+      walkingTimes.map(async ([buildingId, walkingTime]) => {
+        const buildingRef = buildingsCollection.doc(buildingId);
+        await buildingRef.update({
+          distanceToCampus: walkingTime,
+        });
+      })
+    );
+
+    return res.status(200).json(walkingTimes);
+  } catch (error) {
+    console.error('Error retrieving/updating Ho Plaza walking times:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
