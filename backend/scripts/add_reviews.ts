@@ -24,9 +24,7 @@ const formatReview = (data: any): Review => ({
   detailedRatings: {
     location: data['detailedRatings.location'],
     safety: data['detailedRatings.safety'],
-    value: data['detailedRatings.value'],
     maintenance: data['detailedRatings.maintenance'],
-    communication: data['detailedRatings.communication'],
     conditions: data['detailedRatings.condition'],
   },
   date: data.date,
