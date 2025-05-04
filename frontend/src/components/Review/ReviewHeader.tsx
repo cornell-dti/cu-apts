@@ -9,6 +9,18 @@ type Props = {
   readonly aveRatingInfo: RatingInfo[];
 };
 
+/**
+ * ReviewHeader – Displays the visualization for the ratings of different review categories.
+ *
+ * @remarks
+ * This component is used to present the ratings for reviews and pages for different categories
+ * such as Communication and Location etc.
+ *
+ * @param {RatingInfo[]} props.aveRatingInfo – An array of average rating data where each contains
+ * the category name (`feature`) and its rating (`rating`).
+ *
+ * @return {ReactElement} – The responsive layout displaying the labeled rating bars for each category.
+ */
 export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
