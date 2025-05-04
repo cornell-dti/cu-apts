@@ -9,6 +9,18 @@ type Props = {
   readonly aveRatingInfo: RatingInfo[];
 };
 
+/**
+ * ReviewHeader Component – Displays a visual summary of average ratings.
+ *
+ * @remarks
+ * This is used for user reviews, the apartment page, and the landlord page to show the
+ * rating in the different categories.
+ *
+ * @param {RatingInfo[]} props.aveRatingInfo - An array of average ratings, each containing a
+ * name for the rating category and a numeric rating value.
+ *
+ * @returns {ReactElement} The rendered ReviewHeader component.
+ */
 export default function ReviewHeader({ aveRatingInfo }: Props): ReactElement {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
