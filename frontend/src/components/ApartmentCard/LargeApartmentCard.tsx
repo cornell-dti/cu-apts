@@ -187,6 +187,7 @@ const useStyles = makeStyles({
  * including its name, landlord, address, average rating, number of reviews, and a sample review.
  * The landlord button redirects users to the landlord page.
  * The card is responsive and adjusts its layout based on the screen size.
+ * Users can save/unsave apartments if they are logged in.
  *
  * @component
  * @param {Object} props - Component properties.
@@ -194,6 +195,8 @@ const useStyles = makeStyles({
  * @param {number} props.numReviews - The number of reviews for the apartment.
  * @param {number} props.avgRating - The average rating for the apartment.
  * @param {string} [props.company] - The company associated with the apartment (optional).
+ * @param {firebase.User | null} props.user - The currently logged in Firebase user.
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to update the user state.
  * @returns {ReactElement} NewApartmentCard component.
  */
 const NewApartmentCard = ({

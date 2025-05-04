@@ -65,18 +65,19 @@ const sortHamburger = (color: string) => {
 };
 
 /**
- * DropDown – A dropdown component that displays a button and a menu with selectable items.
+ * SortDropDown – A dropdown component that displays a button and a menu with selectable sort options.
  *
  * @remarks
- * The component uses Material-UI components for consistent styling. It allows users to select an item from a dropdown menu, triggering a callback function.
+ * The component uses Material-UI components for consistent styling. It allows users to select a sort option
+ * from a dropdown menu, triggering a callback function. The button displays a sort icon and the current sort option.
  *
- * @param {MenuElement[]} props.menuItems – An array of menu items, each containing an item name and a callback function.
- * @param {boolean} [props.isMobile] – Optional flag to indicate if the component is being used on a mobile device.
- * @param {string} [props.defaultValue] – Optional default value to be displayed on the button.
- * @param {string} [props.className] – Optional custom class name for the button.
- * @param {boolean} [props.icon] – Optional flag to display an icon on the button.
+ * @param {MenuElement[]} props.menuItems - Array of menu items, each containing a sort option name and callback function
+ * @param {boolean} [props.isMobile] - Optional flag indicating if component is being used on mobile device
+ * @param {string} [props.defaultValue] - Optional default sort option to display on the button
+ * @param {string} [props.className] - Optional custom class name for styling the button
+ * @param {boolean} [props.icon] - Optional flag to show/hide the sort icon on the button
  *
- * @return {JSX.Element} – The rendered dropdown component.
+ * @returns {JSX.Element} A dropdown component with sort options
  */
 
 export default function SortDropDown({

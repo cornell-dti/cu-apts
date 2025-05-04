@@ -60,12 +60,12 @@ const useStyles = makeStyles({
 });
 
 /**
- * HomePageApartmentCards Component
+ * SearchResultsPageApartmentCards Component
  *
  * @remarks
- * This component displays a horizontal scrollable list of apartment cards on the homepage.
- * It includes a header with a title and "View More" button, followed by a row of cards
- * that can be scrolled horizontally. The cards maintain a fixed width and spacing.
+ * This component displays a vertically scrollable grid of apartment cards on the search results page.
+ * The cards are arranged in a 3-column grid layout with fixed spacing. The container has a fixed height
+ * and enables vertical scrolling with hidden scrollbars.
  *
  * @component
  * @param {Object} props - Component properties.
@@ -76,9 +76,7 @@ const useStyles = makeStyles({
  * @param {(results: number) => void} [props.onMoreResultsLoaded] - Callback when more results are loaded.
  * @param {keyof CardData | keyof ApartmentWithId | 'originalOrder'} [props.sortMethod='originalOrder'] - How to sort the apartment cards.
  * @param {boolean} [props.orderLowToHigh=false] - Sort direction - true for ascending, false for descending.
- * @param {string} props.title - Title text displayed above the card list.
- * @param {'small' | 'large'} [props.cardSize='small'] - Size variant for the apartment cards.
- * @returns {ReactElement} HomePageApartmentCards component.
+ * @returns {ReactElement} SearchResultsPageApartmentCards component.
  */
 const ApartmentCards = ({
   data,

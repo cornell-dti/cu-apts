@@ -239,7 +239,21 @@ app.get('/api/review/:location/count', async (req, res) => {
   res.status(200).send(JSON.stringify({ count: approvedReviewCount }));
 });
 
-// API endpoint to get apartments by a list of IDs
+/**
+ * Get Multiple Apartments by IDs – Retrieves multiple apartments by their document IDs.
+ *
+ * @remarks
+ * This endpoint accepts a comma-separated list of apartment IDs and returns the corresponding apartment data.
+ * Each ID is validated to ensure it exists in the database before returning the data.
+ *
+ * @route GET /api/apts/:ids
+ *
+ * @input {string} req.params.ids - Comma-separated list of apartment document IDs
+ *
+ * @status
+ * - 200: Successfully retrieved apartment data for all provided IDs
+ * - 400: Error retrieving apartments or invalid ID provided
+ */
 app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
@@ -376,6 +390,21 @@ app.post('/api/set-data', async (req, res) => {
   }
 });
 
+/**
+ * Search Apartments and Landlords – Performs a fuzzy search across both apartments and landlords.
+ *
+ * @remarks
+ * This endpoint searches through apartment and landlord names/addresses using fuzzy matching.
+ * Returns up to 5 combined results, with each result labeled as either LANDLORD or APARTMENT.
+ *
+ * @route GET /api/search
+ *
+ * @input {string} req.query.q - The search query string to match against names and addresses
+ *
+ * @status
+ * - 200: Successfully retrieved and labeled search results
+ * - 400: Error occurred while processing the search request
+ */
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -402,6 +431,21 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+/**
+ * Search Results - Retrieves enriched apartment data based on a text search query.
+ *
+ * @remarks
+ * This endpoint performs a fuzzy search on apartment names and addresses using the provided query string.
+ * The matching results are enriched with additional data like reviews and ratings before being returned.
+ *
+ * @route GET /api/search-results
+ *
+ * @input {string} req.query.q - The search query string to match against apartment names and addresses
+ *
+ * @status
+ * - 200: Successfully retrieved and enriched the matching apartment results
+ * - 400: Error occurred while processing the search request
+ */
 app.get('/api/search-results', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -484,7 +528,7 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
       );
     }
 
-    // TODO: Fix price filter
+    // TODO: Right now we disable the price filter because of lack of data
     // Apply price range filters
     // if (minPrice !== null) {
     //   filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
@@ -495,7 +539,7 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     // }
 
     // Apply bedroom filter
-    // TODO: Fix amenities filter
+    // TODO: Right now we disable the bedroom filter because of lack of data
     // if (bedrooms !== null && bedrooms > 0) {
     //   filteredResults = filteredResults.filter(
     //     (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
@@ -539,23 +583,21 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     res.status(400).send('Error');
   }
 });
-
 /**
- * Get Page Data - Retrieves paginated and sorted apartment data.
+ * Get Paginated Apartment Data – Retrieves paginated and sorted apartment listings.
  *
  * @remarks
- * This endpoint fetches apartment data with optional sorting and pagination. For the homepage, it retrieves all apartments
- * and sorts them by the specified criteria before applying pagination. For other pages, it applies pagination directly
- * from the database query.
+ * Handles two different pagination strategies based on page type. For homepage, fetches all apartments and sorts them before paginating. For other pages, paginates directly from the database query. Enriches apartment data with reviews and ratings.
  *
  * @route GET /api/page-data/:page/:size/:sortBy?
  *
- * @input {string} req.params.page - The page type ('home' or other)
- * @input {string} req.params.size - Number of results to return
- * @input {string} req.params.sortBy - Optional sorting criteria ('numReviews', 'avgRating', or 'distanceToCampus')
+ * @input {string} req.params.page - Page type ('home' or other) determining pagination strategy
+ * @input {string} req.params.size - Number of results to return per page
+ * @input {string} req.params.sortBy - Optional sorting field ('numReviews', 'avgRating', 'distanceToCampus')
  *
  * @status
- * - 200: Successfully retrieved and processed apartment data
+ * - 200: Successfully retrieved paginated apartment data
+ * - 400: Error retrieving or processing apartment data
  */
 app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
   const { page, size, sortBy = 'numReviews' } = req.params;
@@ -606,6 +648,20 @@ app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
   res.status(200).send(returnData);
 });
 
+/**
+ * Get Apartments by Location - Retrieves all apartments from a specific location.
+ *
+ * @remarks
+ * This endpoint fetches apartment data filtered by a single location parameter. The location is case-insensitive
+ * and will be converted to uppercase before querying. Returns enriched apartment data including reviews and ratings.
+ *
+ * @route GET /api/location/:loc
+ *
+ * @input {string} req.params.loc - The location to filter apartments by (e.g. "Collegetown")
+ *
+ * @status
+ * - 200: Successfully retrieved apartments for the specified location
+ */
 app.get('/api/location/:loc', async (req, res) => {
   const { loc } = req.params;
   const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())

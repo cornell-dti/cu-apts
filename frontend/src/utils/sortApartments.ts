@@ -3,11 +3,16 @@ import { ApartmentWithId } from '../../../common/types/db-types';
 export type AptSortFields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
 
 /**
- * Sort apartments based on a specific property.
- * @param arr CardData[] – array of CardData objects.
- * @param property Fields – the property to sort the reviews with
- * @param orderLowToHigh boolean – if true, sort from low to high, otherwise sort from high to low
- * @returns CardData[] – a sorted shallow copy of the array of CardData objects
+ * sortApartments – Sorts an array of apartment data based on a specified property in ascending or descending order.
+ *
+ * @remarks
+ * Creates a shallow copy of the input array and sorts it based on either CardData or ApartmentWithId properties.
+ * If the property values are equal, sorts by apartment ID as a tiebreaker.
+ *
+ * @param {CardData[]} arr - Array of apartment card data to sort
+ * @param {AptSortFields} property - Property to sort apartments by
+ * @param {boolean} orderLowToHigh - If true, sorts ascending; if false, sorts descending
+ * @return {CardData[]} - New sorted array of apartment data
  */
 
 const sortApartments = (arr: CardData[], property: AptSortFields, orderLowToHigh: boolean) => {

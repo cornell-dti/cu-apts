@@ -38,6 +38,21 @@ const defaultFilters: FilterState = {
   initialSortLowToHigh: false,
 };
 
+/**
+ * Autocomplete - A search component with filtering capabilities for properties and landlords.
+ *
+ * @remarks
+ * This component provides a search bar with autocomplete functionality, displaying matching properties
+ * and landlords as users type. It includes advanced filtering options and handles search result
+ * navigation. The component adapts its appearance based on whether it's rendered on the home page
+ * or search results page.
+ *
+ * @param {Props} props - Component properties
+ * @param {boolean} props.drawerOpen - Controls whether the navigation drawer is open
+ *
+ * @returns {ReactElement} A search bar component with autocomplete and filtering capabilities
+ */
+
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -246,6 +261,16 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     setFilters(newFilters);
   };
 
+  /**
+   * Menu - Renders a dropdown menu displaying search results for properties and landlords.
+   *
+   * @remarks
+   * The menu displays search results in a scrollable list, with each result showing an icon,
+   * name, and address. Results are clickable and link to their respective detail pages.
+   * The menu closes when clicking away or selecting an item.
+   *
+   * @returns {ReactElement} A dropdown menu component containing search results
+   */
   const Menu = () => {
     return (
       <div>

@@ -213,16 +213,19 @@ function GetButtonColor(lab: string) {
 }
 
 /**
- * NavBar Component
+ * NavBar – A navigation component that provides site-wide routing and authentication controls.
  *
- * This component is the navigation bar that is used on all pages throughout the CUApts website. It provides routing to the Home and FAQ pages
- * and the Login/Sign Out buttons.
- * @param headersData: An array of objects representing navigation links. Each object should have label (string) and href (string) properties.
- * @param user: (firebase.User | null) The current user object, can be null if the user is not authenticated.
- * @param setUser: function to set user.
- * @returns the NavBar component.
+ * @remarks
+ * Renders a responsive navigation bar that appears on all pages of the CUApts website. It includes
+ * navigation links to key pages like Home and FAQ, handles user authentication state, and provides
+ * profile management options for logged-in users.
+ *
+ * @param {HeaderData[]} props.headersData - Array of navigation link objects containing label and href properties
+ * @param {firebase.User | null} props.user - Current Firebase user object if authenticated, null otherwise
+ * @param {(user: firebase.User | null) => void} props.setUser - Callback function to update the user authentication state
+ *
+ * @returns {ReactElement} A navigation bar component with routing and authentication controls
  */
-
 const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonState, setButtonState] = useState(initialUserState);

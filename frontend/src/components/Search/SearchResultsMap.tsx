@@ -51,23 +51,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 /**
- * `MapInfo` Component - Displays map and location information of an apartment.
+ * `SearchResultsMap` Component - Displays a map with markers for multiple apartments.
  *
  * @remarks
- * This component is used in the ApartmentPage to display the map and location
- * information of each apartment, including its location on Google Map, address,
- * and time required for walking to campus from different Cornell landmarks.
- * It uses Material-UI components for consistent styling and Google Maps React
- * for map functionality.
+ * This component renders a Google Map showing the locations of all apartments in the search results.
+ * It includes interactive markers that show apartment details on hover and handles map zoom/pan.
+ * The map automatically centers on the mean location of all apartments shown.
  *
  * @param Props - Contains:
- *   - `address`: The address of the apartment.
- *   - `latitude`: The latitude of the apartment location.
- *   - `longitude`: The longitude of the apartment location.
- *   - `travelTimes`: The travel times from the apartment to campus landmarks.
- *   - `handleClick`: Function to handle clicking the expand button to show full screen map view.
- *   - `mapToggle`: Boolean toggle used by parent component to trigger resetting map zoom/center.
- *   - `isMobile`: Boolean indicating if viewing on mobile device.
+ *   - `apartments`: Array of apartment data (CardData) to display on the map
+ *   - `isMobile`: Boolean indicating if viewing on mobile device
+ *   - `user`: Current Firebase user object or null if not logged in
+ *   - `setUser`: React setState function to update the user state
+ *
+ * @returns A Google Map React component with apartment markers and hover interactions
  */
 function SearchResultsMap({
   apartments,

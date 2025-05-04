@@ -301,12 +301,12 @@ export const PriceInputBox: React.FC<{
  * The filter state is managed by the parent component and updates are propagated through the onChange callback.
  *
  * @param {FilterState} props.filters - The current state of all filters including locations, price range, and room counts
- * @param {function} props.onChange - Callback function that is called whenever any filter value changes
+ * @param {(filters: FilterState) => void} props.onChange - Callback function that is called whenever any filter value changes
  * @param {boolean} props.open - Controls the visibility of the filter panel
+ * @param {() => void} props.handleSearch - Callback function that is called to execute the search
  *
- * @return {ReactElement} - Returns a collapsible panel containing filter controls
+ * @returns {ReactElement} A collapsible panel containing filter controls
  */
-
 const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open, handleSearch }) => {
   const {
     filterContainer,

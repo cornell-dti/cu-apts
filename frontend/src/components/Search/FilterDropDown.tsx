@@ -165,20 +165,21 @@ const useStyles = makeStyles({
 });
 
 /**
- * DropDown – A dropdown component that displays a button and a menu with selectable items.
+ * FilterDropDown - A dropdown filter component for apartment search criteria.
  *
  * @remarks
- * The component uses Material-UI components for consistent styling. It allows users to select an item from a dropdown menu, triggering a callback function.
+ * This component provides a dropdown menu for filtering apartment search results.
+ * It handles location selection, price range inputs, and bedroom/bathroom counts.
+ * The component uses Material-UI components and custom styling.
  *
- * @param {MenuElement[]} props.menuItems – An array of menu items, each containing an item name and a callback function.
- * @param {boolean} [props.isMobile] – Optional flag to indicate if the component is being used on a mobile device.
- * @param {string} [props.defaultValue] – Optional default value to be displayed on the button.
- * @param {string} [props.className] – Optional custom class name for the button.
- * @param {boolean} [props.icon] – Optional flag to display an icon on the button.
+ * @param {FilterState} props.filters - Current filter state containing locations, price ranges, and room counts
+ * @param {(filters: FilterState) => void} props.onChange - Callback function when filters are changed
+ * @param {'Location' | 'Price' | 'Rooms'} props.label - Label indicating which type of filter this dropdown controls
+ * @param {boolean} props.isMobile - Flag indicating if component is being rendered on mobile
+ * @param {() => void} props.onApply - Callback function when filters are applied
  *
- * @return {JSX.Element} – The rendered dropdown component.
+ * @returns {ReactElement} A dropdown filter component with an expandable menu
  */
-
 export default function FilterDropDown({ filters, onChange, label, isMobile, onApply }: Props) {
   const [open, setOpen] = useState(false);
 
