@@ -263,8 +263,8 @@ const ReviewComponent = ({
   const isMobile = useMediaQuery('(max-width:600px)');
   const isSmallScreen = useMediaQuery('(max-width:391px)');
   const toastTime = 3500;
-  const isSelfReview = user && review.userId === user.uid;
-  const likeDisabled = !!likeLoading || !!isSelfReview;
+  // const isSelfReview = user && review.userId === user.uid;
+  // const likeDisabled = !!likeLoading || !!isSelfReview;
 
   const updateReviewData = () => {
     get<ReviewWithId>(`/api/review-by-id/${review.id}`, {
@@ -475,9 +475,7 @@ const ReviewComponent = ({
    */
   const likeHandler = async (id: string) => {
     if (user) {
-      if (!(review.userId != null && review.userId == user.uid)) {
-        (liked ? removeLike : addLike)(id);
-      }
+      (liked ? removeLike : addLike)(id);
     } else {
       let user = await getUser(true);
       setUser(user);
@@ -708,7 +706,7 @@ const ReviewComponent = ({
               onClick={() => likeHandler(review.id)}
               className={button}
               size="small"
-              disabled={likeDisabled}
+              disabled={likeLoading || user?.uid === review.userId}
               style={liked ? { color: colors.red1 } : { color: colors.gray1 }}
             >
               <img
