@@ -18,6 +18,27 @@ type markerWithCardProp = {
   readonly setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
+/**
+ * MapMarkerWithCard - A component that renders a map marker with a hoverable apartment card.
+ *
+ * @remarks
+ * This component combines a map marker with an apartment card that appears on hover.
+ * The marker changes appearance and size when hovered, and displays a detailed card
+ * with apartment information.
+ *
+ * @param {CardData} props.apt - The apartment data to display in the card
+ * @param {number} props.idx - Index of this marker in the list of markers
+ * @param {number | null} props.hoveredIdx - Index of currently hovered marker
+ * @param {function} props.setHoveredIdx - Function to update the hovered marker index
+ * @param {boolean} props.cardHovered - Whether the card is currently being hovered
+ * @param {function} props.setCardHovered - Function to update card hover state
+ * @param {number} props.markerSize - Size of the marker in pixels
+ * @param {firebase.User | null} props.user - Current user object
+ * @param {function} props.setUser - Function to update the user state
+ *
+ * @return {JSX.Element} - A div containing the marker image and conditionally rendered card
+ */
+
 export const MapMarkerWithCard = ({
   apt,
   idx,
