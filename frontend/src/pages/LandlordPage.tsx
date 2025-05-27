@@ -116,6 +116,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const { container, leaveReviewContainer, horizontalLine, heartRating, aptRating, reviewButton } =
     useStyles();
 
@@ -272,6 +273,9 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   const showReportSuccessConfirmationToast = () => {
     showToast(setShowReportSuccessConfirmation);
   };
+  const showSaveSuccessToast = () => {
+    showToast(setShowSaveSuccess);
+  };
 
   // Function to handle liking or disliking a review
   const likeHelper = (dislike = false) => {
@@ -321,6 +325,9 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
       const endpoint = newIsSaved ? '/api/add-saved-landlord' : '/api/remove-saved-landlord';
       await axios.post(endpoint, { landlordId: landlordId }, createAuthHeaders(token));
       setIsSaved((prevIsSaved) => !prevIsSaved);
+      if (newIsSaved) {
+        showSaveSuccessToast();
+      }
     } catch (err) {
       throw new Error(newIsSaved ? 'Error with saving landlord' : 'Error with unsaving landlord');
     }
@@ -598,6 +605,16 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
                 severity="success"
                 message="Review successfully reported!"
                 time={toastTime}
+              />
+            )}
+            {showSaveSuccess && (
+              <Toast
+                isOpen={showSaveSuccess}
+                severity="success"
+                message={`You have bookmarked ${landlordData?.name}. View your bookmarks `}
+                time={toastTime}
+                linkMessage="here"
+                link="/bookmarks"
               />
             )}
 
