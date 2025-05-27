@@ -772,6 +772,61 @@ app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false))
 // These endpoints allow for adding and removing landlords to/from a user's saved list.
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
 
+app.post(
+  '/api/send-email-to-landlord/:landlordEmail/:message/:subject',
+  authenticate,
+  async (req, res) => {
+    if (!req.user) throw new Error('Not authenticated');
+
+    const userId = req.user.uid;
+    const userRecord = await auth().getUser(userId);
+    const userEmail = userRecord?.email;
+    const { landlordEmail, message, subject } = req.params;
+
+    try {
+      if (!cuaptsEmail || !cuaptsEmailPassword) {
+        throw new Error('Host email or password not found');
+      }
+      if (!userEmail) {
+        throw new Error('User email not found');
+      }
+
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          type: 'login',
+          user: cuaptsEmail,
+          pass: cuaptsEmailPassword,
+        },
+      });
+
+      const mailOptions = {
+        from: { name: 'The CUApts Team', address: cuaptsEmail },
+        to: landlordEmail,
+        subject,
+        text: message,
+        replyTo: userEmail,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log('Error sending email:', error);
+          return res.status(500).send('Error sending email');
+        } 
+          console.log('Email sent:', info.response);
+          return res.status(200).send('Email sent successfully');
+        
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send('Error');
+    }
+  }
+);
+
 /**
  * update-review-status
  *

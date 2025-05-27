@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
 type Props = {
   readonly landlordId: string | null;
   readonly landlord: string | null;
-  readonly contact: string | null;
+  readonly contact: () => void;
   readonly address: string | null;
 };
 
@@ -61,18 +61,15 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
         </Grid>
         <Grid item xs={6} sm={12} md={6}>
           {contact && (
-            <Link
-              href={contact}
-              target="_blank"
-              rel="noreferrer"
-              {...{
-                style: { textDecoration: 'none', display: 'inline-block', width: '100%' },
-              }}
+            <Button
+              onClick={contact}
+              color="primary"
+              variant="contained"
+              fullWidth
+              disableElevation
             >
-              <Button color="primary" variant="contained" fullWidth disableElevation>
-                Contact
-              </Button>
-            </Link>
+              Contact
+            </Button>
           )}
         </Grid>
       </Grid>
