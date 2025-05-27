@@ -528,7 +528,7 @@ const LandlordMessagingModal = ({
               <Box style={{ flex: isMobile ? 1 : '0 0 206px' }}>
                 <Box style={{ display: 'flex' }}>
                   <Typography className={classes.secondTitleBox}>Name</Typography>
-                  {subjectError && (
+                  {nameError && (
                     <Typography
                       style={{
                         color: '#f44336',
@@ -559,7 +559,7 @@ const LandlordMessagingModal = ({
               <Box style={{ flex: isMobile ? 1 : '0 0 255px' }}>
                 <Box style={{ display: 'flex' }}>
                   <Typography className={classes.secondTitleBox}>Phone</Typography>
-                  {subjectError && (
+                  {phoneError && (
                     <Typography
                       style={{
                         color: '#f44336',
@@ -595,7 +595,7 @@ const LandlordMessagingModal = ({
                 <Typography className={classes.secondTitleBox} style={{ marginBottom: '4px' }}>
                   Move-in date
                 </Typography>
-                {subjectError && (
+                {dateError && (
                   <Typography
                     style={{
                       color: '#f44336',
@@ -904,7 +904,7 @@ const LandlordMessagingModal = ({
                 style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}
               >
                 <Typography className={classes.subjectTextField}>Body</Typography>
-                {subjectError && (
+                {messageError && (
                   <Typography
                     style={{
                       color: '#f44336',
