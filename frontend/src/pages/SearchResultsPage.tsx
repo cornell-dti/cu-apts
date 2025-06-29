@@ -142,7 +142,7 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
     setSortLowToHigh(filters.initialSortLowToHigh);
   }, [query, filters]);
 
-  useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
+  // useSaveScrollPosition(`scrollPosition_${pathName}`, pathName);
 
   const saveResultsCount = (count: number) => {
     sessionStorage.setItem(`resultsCount_search_${query}`, count.toString());
