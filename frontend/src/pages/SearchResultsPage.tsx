@@ -36,6 +36,8 @@ const useStyles = makeStyles({
   mapContainer: {
     flex: 1,
     height: '100%',
+    width: '100%',
+    minHeight: '300px',
   },
   sortDropDown: {
     display: 'flex',
@@ -146,67 +148,126 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
     sessionStorage.setItem(`resultsCount_search_${query}`, count.toString());
   };
 
+  const sortSection = () => {
+    return (
+      <div className={sortDropDown}>
+        <SortDropDown
+          menuItems={[
+            {
+              item: 'Highest Rating',
+              callback: () => {
+                setSortBy('avgRating');
+                setSortLowToHigh(false);
+              },
+            },
+            {
+              item: 'Most Reviewed',
+              callback: () => {
+                setSortBy('numReviews');
+                setSortLowToHigh(false);
+              },
+            },
+            {
+              item: 'Lowest Price',
+              callback: () => {
+                setSortBy('price');
+                setSortLowToHigh(true);
+              },
+            },
+            {
+              item: 'Highest Price',
+              callback: () => {
+                setSortBy('price');
+                setSortLowToHigh(false);
+              },
+            },
+          ]}
+          isMobile={isMobile}
+        />
+      </div>
+    );
+  };
+
   return (
     <Container maxWidth="xl">
       <div className={header}>
-        <div className={searchBar}>
-          <Autocomplete drawerOpen={false} />
-        </div>
-        <div className={sortDropDown}>
-          <SortDropDown
-            menuItems={[
-              {
-                item: 'Highest Rating',
-                callback: () => {
-                  setSortBy('avgRating');
-                  setSortLowToHigh(false);
-                },
-              },
-              {
-                item: 'Most Reviewed',
-                callback: () => {
-                  setSortBy('numReviews');
-                  setSortLowToHigh(false);
-                },
-              },
-              {
-                item: 'Lowest Price',
-                callback: () => {
-                  setSortBy('price');
-                  setSortLowToHigh(true);
-                },
-              },
-              {
-                item: 'Highest Price',
-                callback: () => {
-                  setSortBy('price');
-                  setSortLowToHigh(false);
-                },
-              },
-            ]}
-            isMobile={isMobile}
-          />
-        </div>
+        {!isMobile ? (
+          <>
+            <div className={searchBar}>
+              <Autocomplete drawerOpen={false} />
+            </div>
+            {sortSection()}
+          </>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px',
+              width: '100%',
+            }}
+          >
+            <div className={searchBar}>
+              <Autocomplete drawerOpen={false} />
+            </div>
+            {sortSection()}
+          </div>
+        )}
       </div>
-      <div className={mainContent}>
-        <div className={searchResultsContainer}>
-          <SearchResultsPageApartmentCards
-            user={user}
-            setUser={setUser}
-            data={searchResults}
-            sortMethod={sortBy}
-            orderLowToHigh={sortLowToHigh}
-          />
+      {!isMobile ? (
+        <div className={mainContent}>
+          <div className={searchResultsContainer}>
+            <SearchResultsPageApartmentCards
+              user={user}
+              setUser={setUser}
+              data={searchResults}
+              sortMethod={sortBy}
+              orderLowToHigh={sortLowToHigh}
+            />
+          </div>
+          <div className={mapContainer}>
+            <SearchResultsMap
+              apartments={searchResults}
+              isMobile={isMobile}
+              user={user}
+              setUser={setUser}
+            />
+          </div>
         </div>
-        <div className={mapContainer}>
-          <SearchResultsMap
-            apartments={searchResults}
-            isMobile={isMobile}
-            user={user}
-            setUser={setUser}
-          />
+      ) : (
+        <div
+          className={mainContent}
+          style={{
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px',
+            width: '100%',
+            height: 'auto',
+            paddingBottom: '20px',
+          }}
+        >
+          <div className={mapContainer}>
+            <SearchResultsMap
+              apartments={searchResults}
+              isMobile={isMobile}
+              user={user}
+              setUser={setUser}
+            />
+          </div>
+          <div className={searchResultsContainer} style={{ width: '100%', maxWidth: '100%' }}>
+            <SearchResultsPageApartmentCards
+              user={user}
+              setUser={setUser}
+              data={searchResults}
+              sortMethod={sortBy}
+              orderLowToHigh={sortLowToHigh}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </Container>
   );
 };

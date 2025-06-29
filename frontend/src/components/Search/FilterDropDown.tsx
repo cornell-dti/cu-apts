@@ -4,9 +4,6 @@ import {
   FormControlLabel,
   Checkbox,
   Grid,
-  Menu,
-  MenuItem,
-  SvgIcon,
   Typography,
   IconButton,
 } from '@material-ui/core';
@@ -44,7 +41,6 @@ type Props = {
 const useStyles = makeStyles({
   dropdownButton: {
     height: '44px',
-    padding: '10px 20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -56,7 +52,6 @@ const useStyles = makeStyles({
     transition: 'background 0.2s, color 0.2s',
   },
   labelText: {
-    fontSize: '18px',
     fontWeight: 600,
     lineHeight: '28px',
     transition: 'color 0.2s',
@@ -67,7 +62,6 @@ const useStyles = makeStyles({
     gap: '12px',
     position: 'absolute',
     top: '115%',
-    left: '0',
     padding: '16px 16px 16px 16px',
     borderRadius: '8px',
     background: '#fff',
@@ -227,7 +221,7 @@ export default function FilterDropDown({ filters, onChange, label, isMobile, onA
     switch (label) {
       case 'Location':
         return (
-          <div className={filterMenuContainer} style={{ width: '130%' }}>
+          <div className={filterMenuContainer} style={{ width: isMobile ? '150%' : '130%' }}>
             <Grid container direction="column">
               {LOCATIONS.map((location) => (
                 <FormControlLabel
@@ -252,20 +246,22 @@ export default function FilterDropDown({ filters, onChange, label, isMobile, onA
         );
       case 'Price':
         return (
-          <div className={filterMenuContainer} style={{ width: '190%' }}>
+          <div className={filterMenuContainer} style={{ width: isMobile ? '230%' : '190%' }}>
             <div className={priceInputsContainerRow}>
               <PriceInputBox
                 label="Min Price"
                 value={filters.minPrice}
-                placeholder="No Min"
+                placeholder={isMobile ? 'Min' : 'No Min'}
                 onChange={(val) => handlePriceChange('minPrice', val)}
+                isMobile={isMobile}
               />
               <span style={{ fontSize: 24, color: 'black' }}>-</span>
               <PriceInputBox
                 label="Max Price"
                 value={filters.maxPrice}
-                placeholder="No Max"
+                placeholder={isMobile ? 'Max' : 'No Max'}
                 onChange={(val) => handlePriceChange('maxPrice', val)}
+                isMobile={isMobile}
               />
             </div>
             <Button className={applyButton} onClick={onApply}>
@@ -275,7 +271,7 @@ export default function FilterDropDown({ filters, onChange, label, isMobile, onA
         );
       case 'Beds & Baths':
         return (
-          <div className={filterMenuContainer} style={{ width: '140%' }}>
+          <div className={filterMenuContainer} style={{ width: '140%', right: '0' }}>
             <div className={amenitiesRow}>
               <Typography className={filterText}>Bedrooms</Typography>
               <div className={numberControlContainer}>
@@ -340,9 +336,16 @@ export default function FilterDropDown({ filters, onChange, label, isMobile, onA
         disableRipple
         style={{
           background: open ? '#E8E8E8' : '#fff',
+          padding: isMobile ? '0px 12px' : '10px 20px',
         }}
       >
-        <Typography className={labelText} style={{ color }}>
+        <Typography
+          className={labelText}
+          style={{
+            color,
+            fontSize: isMobile ? 12 : 18,
+          }}
+        >
           {label}
         </Typography>
         {expandArrow(open, color)}

@@ -550,7 +550,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const displayMobile = (): ReactElement => {
     return (
-      <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
+      <Toolbar className={toolbar} style={{ marginTop: '-10px' }}>
         <div>{homeLogo}</div>
         {isAdmin(user) && getAdminButton()}
         <IconButton

@@ -1,5 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import ApartmentCard from './ApartmentCard';
+import React, { ReactElement, useEffect } from 'react';
 import NewApartmentCard from './NewApartmentCard';
 import { Grid, Link, makeStyles, Button, Box, Typography } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
@@ -56,6 +55,31 @@ const useStyles = makeStyles({
       display: 'none',
     },
     '-ms-overflow-style': 'none',
+    '@media (max-width: 600px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: '4px',
+      height: 'auto',
+      maxHeight: 'none',
+      padding: '0px',
+      margin: '0 4px',
+      '& > div > a > div': {
+        width: '100% !important',
+        maxWidth: '180px !important',
+        padding: '6px !important',
+        '& .MuiTypography-root': {
+          '&:first-of-type': {
+            fontSize: '11px !important',
+            height: 'auto !important',
+            lineHeight: '1.2 !important',
+          },
+          '&:nth-of-type(2)': {
+            fontSize: '10px !important',
+            height: 'auto !important',
+            lineHeight: '1.2 !important',
+          },
+        },
+      },
+    },
   },
 });
 
@@ -87,18 +111,7 @@ const ApartmentCards = ({
   sortMethod = 'originalOrder',
   orderLowToHigh = false,
 }: Props): ReactElement => {
-  const { container, header, titleText, viewMoreButton, cardsContainer } = useStyles();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  // Handle resizing of the window depending on mobile and if it is clicked.
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 600);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { container, cardsContainer } = useStyles();
 
   useEffect(() => {
     if (onMoreResultsLoaded) {

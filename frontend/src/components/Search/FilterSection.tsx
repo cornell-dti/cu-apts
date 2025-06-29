@@ -107,7 +107,6 @@ const useStyles = makeStyles({
     },
   },
   minMaxLabel: {
-    fontSize: '14px',
     fontStyle: 'normal',
     fontWeight: 400,
     lineHeight: '20px',
@@ -258,6 +257,7 @@ export type FilterSectionProps = {
   onChange: (filters: FilterState) => void;
   open: boolean;
   handleSearch: () => void;
+  isMobile: boolean | undefined;
 };
 
 const LOCATIONS: LocationType[] = ['Collegetown', 'North', 'West', 'Downtown'];
@@ -267,12 +267,15 @@ export const PriceInputBox: React.FC<{
   value: string;
   placeholder: string;
   onChange: (val: string) => void;
-}> = ({ label, value, placeholder, onChange }) => {
+  isMobile?: boolean;
+}> = ({ label, value, placeholder, onChange, isMobile = false }) => {
   const { priceInputContainer, minMaxLabel, priceTextFieldBox, pricePlaceholder } = useStyles();
   const displayValue = value === '' ? '' : '$' + value;
   return (
     <div className={priceInputContainer}>
-      <Typography className={minMaxLabel}>{label}</Typography>
+      <Typography className={minMaxLabel} style={{ fontSize: isMobile ? '10px' : '14px' }}>
+        {label}
+      </Typography>
       <TextField
         value={displayValue}
         onChange={(e) => {
@@ -304,10 +307,17 @@ export const PriceInputBox: React.FC<{
  * @param {(filters: FilterState) => void} props.onChange - Callback function that is called whenever any filter value changes
  * @param {boolean} props.open - Controls the visibility of the filter panel
  * @param {() => void} props.handleSearch - Callback function that is called to execute the search
+ * @param {boolean} props.isMobile - State of the device to determine style of the filter section
  *
  * @returns {ReactElement} A collapsible panel containing filter controls
  */
-const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open, handleSearch }) => {
+const FilterSection: React.FC<FilterSectionProps> = ({
+  filters,
+  onChange,
+  open,
+  handleSearch,
+  isMobile,
+}) => {
   const {
     filterContainer,
     optionsContainer,
@@ -388,6 +398,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open, 
                   value={filters.minPrice}
                   placeholder="No Min"
                   onChange={(val) => handlePriceChange('minPrice', val)}
+                  isMobile={isMobile}
                 />
                 <span style={{ fontSize: 24, color: 'black' }}>-</span>
                 <PriceInputBox
@@ -395,6 +406,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ filters, onChange, open, 
                   value={filters.maxPrice}
                   placeholder="No Max"
                   onChange={(val) => handlePriceChange('maxPrice', val)}
+                  isMobile={isMobile}
                 />
               </div>
             </div>

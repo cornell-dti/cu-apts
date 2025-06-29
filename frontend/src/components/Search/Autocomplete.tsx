@@ -86,6 +86,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     },
     text: {
       backgroundColor: colors.white,
+      width: '100%',
       fontSize: '18px',
       fontStyle: 'normal',
       fontWeight: 400,
@@ -137,7 +138,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       gap: '8px',
     },
     iconBackground: {
-      width: '34px',
+      width: isMobile ? '24px' : '34px',
       height: '34px',
       display: 'flex',
       justifyContent: 'center',
@@ -372,7 +373,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   }, [loading, query]);
 
-  let placeholderText = 'Search by address or with filters';
+  let placeholderText = !isMobile ? 'Search by address or with filters' : 'Start your search';
 
   /**
    * @returns The the InputProps for the search bar depending on user's location.
@@ -385,16 +386,22 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         style: { fontSize: isMobile ? 16 : 20 },
         endAdornment: (
           <div className={iconContainer}>
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleFilter();
-              }}
-              className={iconBackground}
-              disableRipple
-            >
-              <img src={filterIcon} alt={'filter-icon'} style={{ width: '32px', height: '32px' }} />
-            </IconButton>
+            {!isMobile && (
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleFilter();
+                }}
+                className={iconBackground}
+                disableRipple
+              >
+                <img
+                  src={filterIcon}
+                  alt={'filter-icon'}
+                  style={{ width: isMobile ? '24px' : '32px', height: isMobile ? '24px' : '32px' }}
+                />
+              </IconButton>
+            )}
             <IconButton
               onClick={(e) => {
                 e.stopPropagation();
@@ -403,7 +410,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               className={iconBackground}
               disableRipple
             >
-              <img src={SearchIcon} alt="search icon" style={{ width: '34px', height: '34px' }} />
+              <img
+                src={SearchIcon}
+                alt="search icon"
+                style={{ width: isMobile ? '24px' : '34px', height: isMobile ? '24px' : '34px' }}
+              />
             </IconButton>
             {/* {loading ? <CircularProgress color="inherit" size={20} /> : null} */}
           </div>
@@ -433,63 +444,140 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   };
 
+  const searchResultMobile = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: '100%',
+      }}
+    >
+      {/* Row 1: Search bar */}
+      <div style={{ width: '100%' }}>
+        <TextField
+          fullWidth
+          ref={inputRef}
+          value={query}
+          placeholder={placeholderText}
+          className={text}
+          variant="outlined"
+          style={{
+            borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
+            width: '100%',
+          }}
+          onKeyDown={textFieldHandleListKeyDown}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value !== '' || value !== null) {
+              handleOnChange(value);
+            }
+          }}
+          InputProps={getInputProps()}
+        />
+      </div>
+      {/* Row 2: Three dropdowns */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 4,
+          width: '100%',
+          justifyContent: 'space-between',
+        }}
+      >
+        <FilterDropDown
+          label={'Location'}
+          isMobile={true}
+          filters={filters}
+          onChange={handleFilterChange}
+          onApply={handleSearchIconClick}
+        />
+        <FilterDropDown
+          label={'Price'}
+          isMobile={true}
+          filters={filters}
+          onChange={handleFilterChange}
+          onApply={handleSearchIconClick}
+        />
+        <FilterDropDown
+          label={'Beds & Baths'}
+          isMobile={true}
+          filters={filters}
+          onChange={handleFilterChange}
+          onApply={handleSearchIconClick}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <ClickAwayListener onClickAway={handleClickAway}>
         <div>
-          <div className={searchBarRow}>
-            <TextField
-              fullWidth
-              ref={inputRef}
-              value={query}
-              placeholder={placeholderText}
-              className={text}
-              variant="outlined"
+          {isMobile && isSearchResults ? (
+            searchResultMobile()
+          ) : (
+            <div
+              className={searchBarRow}
               style={{
-                borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-                width: isSearchResults ? '58%' : !isMobile ? '100%' : '98%',
+                width: !isSearchResults && isMobile ? '130%' : '100%',
               }}
-              onKeyDown={textFieldHandleListKeyDown}
-              onChange={(event) => {
-                const value = event.target.value;
-                if (value !== '' || value !== null) {
-                  handleOnChange(value);
-                }
-              }}
-              InputProps={getInputProps()}
-            />
-            {isSearchResults && (
-              <div className={filterRow}>
-                <FilterDropDown
-                  label={'Location'}
-                  isMobile={false}
-                  filters={filters}
-                  onChange={handleFilterChange}
-                  onApply={handleSearchIconClick}
-                />
-                <FilterDropDown
-                  label={'Price'}
-                  isMobile={false}
-                  filters={filters}
-                  onChange={handleFilterChange}
-                  onApply={handleSearchIconClick}
-                />
-                <FilterDropDown
-                  label={'Beds & Baths'}
-                  isMobile={false}
-                  filters={filters}
-                  onChange={handleFilterChange}
-                  onApply={handleSearchIconClick}
-                />
-              </div>
-            )}
-          </div>
+            >
+              <TextField
+                fullWidth
+                ref={inputRef}
+                value={query}
+                placeholder={placeholderText}
+                className={text}
+                variant="outlined"
+                style={{
+                  borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
+                  width: isSearchResults ? '58%' : '100%',
+                }}
+                onKeyDown={textFieldHandleListKeyDown}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value !== '' || value !== null) {
+                    handleOnChange(value);
+                  }
+                }}
+                InputProps={getInputProps()}
+              />
+              {isSearchResults && (
+                <div className={filterRow}>
+                  <FilterDropDown
+                    label={'Location'}
+                    isMobile={false}
+                    filters={filters}
+                    onChange={handleFilterChange}
+                    onApply={handleSearchIconClick}
+                  />
+                  <FilterDropDown
+                    label={'Price'}
+                    isMobile={false}
+                    filters={filters}
+                    onChange={handleFilterChange}
+                    onApply={handleSearchIconClick}
+                  />
+                  <FilterDropDown
+                    label={'Beds & Baths'}
+                    isMobile={false}
+                    filters={filters}
+                    onChange={handleFilterChange}
+                    onApply={handleSearchIconClick}
+                  />
+                </div>
+              )}
+            </div>
+          )}
           <Menu />
           <FilterSection
             filters={filters}
             onChange={handleFilterChange}
             open={openFilter}
             handleSearch={handleSearchIconClick}
+            isMobile={isMobile}
           />
         </div>
       </ClickAwayListener>

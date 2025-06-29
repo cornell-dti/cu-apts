@@ -27,7 +27,6 @@ type MapInfoProps = BaseProps & {
 
 const useStyles = makeStyles((theme) => ({
   outerMapDiv: {
-    height: '100%',
     width: '100%',
     borderRadius: '10px',
     overflow: 'hidden',
@@ -35,7 +34,6 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
   },
   innerMapDiv: {
-    height: '110%',
     width: '110%',
     borderRadius: '10px',
     overflow: 'hidden',
@@ -45,9 +43,7 @@ const useStyles = makeStyles((theme) => ({
     left: '50%',
     transform: 'translate(-50%,-50%)',
   },
-  markerContainer: {
-    border: '1px solid red',
-  },
+  markerContainer: {},
 }));
 
 /**
@@ -126,8 +122,8 @@ function SearchResultsMap({
   };
 
   return (
-    <div className={outerMapDiv}>
-      <div className={innerMapDiv}>
+    <div className={outerMapDiv} style={{ height: !isMobile ? '100%' : '300px' }}>
+      <div className={innerMapDiv} style={{ height: !isMobile ? '110%' : '120%' }}>
         <GoogleMapReact
           onGoogleApiLoaded={handleApiLoaded}
           yesIWantToUseGoogleMapApiInternals
