@@ -23,7 +23,7 @@ import { Link as RouterLink, useHistory } from 'react-router-dom';
 import LogoIcon from '../../../assets/navbar-logo.svg';
 import { useLocation } from 'react-router-dom';
 import { colors } from '../../../colors';
-import Autocomplete from '../../Home/Autocomplete';
+import Autocomplete from '../../Search/Autocomplete';
 import { isAdmin } from '../../../utils/adminTool';
 import defaultProfilePic from '../../../assets/cuapts-bear.png';
 import { ReactComponent as ProfileIcon } from '../../../assets/profile-icon.svg';
@@ -47,8 +47,7 @@ const useStyles = makeStyles(() => ({
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: '1em',
-    paddingBottom: '0.75em',
+    padding: '1em 1em 0.75em 1em',
     margin: '0.5em 0 0.5em 0',
     boxShadow: 'none',
   },
@@ -63,9 +62,11 @@ const useStyles = makeStyles(() => ({
     },
     marginLeft: '10px',
     width: '120px',
+    height: '42px',
     fontFamily: 'Work Sans, sans-serif',
-    fontWeight: 'bold',
-    fontSize: '16px',
+    fontWeight: 600,
+    fontSize: '18px',
+    borderRadius: '8px',
   },
   profileButton: {
     width: '3.5em',
@@ -113,7 +114,7 @@ const useStyles = makeStyles(() => ({
     fontFamily: 'Work Sans, sans-serif',
     fontWeight: 'bold',
     size: '19px',
-    fontSize: '16px',
+    fontSize: '18px',
     lineHeight: '19px',
     letterSpacing: '0.08em',
     textTransform: 'none',
@@ -212,16 +213,19 @@ function GetButtonColor(lab: string) {
 }
 
 /**
- * NavBar Component
+ * NavBar – A navigation component that provides site-wide routing and authentication controls.
  *
- * This component is the navigation bar that is used on all pages throughout the CUApts website. It provides routing to the Home and FAQ pages
- * and the Login/Sign Out buttons.
- * @param headersData: An array of objects representing navigation links. Each object should have label (string) and href (string) properties.
- * @param user: (firebase.User | null) The current user object, can be null if the user is not authenticated.
- * @param setUser: function to set user.
- * @returns the NavBar component.
+ * @remarks
+ * Renders a responsive navigation bar that appears on all pages of the CUApts website. It includes
+ * navigation links to key pages like Home and FAQ, handles user authentication state, and provides
+ * profile management options for logged-in users.
+ *
+ * @param {HeaderData[]} props.headersData - Array of navigation link objects containing label and href properties
+ * @param {firebase.User | null} props.user - Current Firebase user object if authenticated, null otherwise
+ * @param {(user: firebase.User | null) => void} props.setUser - Callback function to update the user authentication state
+ *
+ * @returns {ReactElement} A navigation bar component with routing and authentication controls
  */
-
 const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   const initialUserState = !user ? 'Sign In' : 'Sign Out';
   const [buttonState, setButtonState] = useState(initialUserState);
@@ -503,10 +507,10 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
               <Typography
                 style={{
                   fontWeight: 600,
-                  fontSize: !isMobile ? '22px' : '16px',
+                  fontSize: !isMobile ? '20px' : '16px',
                   color: colors.black,
                   textAlign: 'left',
-                  marginTop: isMobile ? 17 : 20,
+                  marginTop: isMobile ? 17 : 28,
                   marginLeft: '8px',
                   lineHeight: '32px',
                 }}
@@ -520,7 +524,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
     </Grid>
   );
 
-  const searchBar = location.pathname !== '/';
+  const searchBar = location.pathname !== '/' && !location.pathname.startsWith('/search');
   const displayDesktop = () => {
     return (
       <Grid container className={toolbar} alignItems="center" justifyContent="space-between">
@@ -546,7 +550,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
 
   const displayMobile = (): ReactElement => {
     return (
-      <Toolbar className={toolbar} style={{ marginTop: '-20px' }}>
+      <Toolbar className={toolbar} style={{ marginTop: '-10px' }}>
         <div>{homeLogo}</div>
         {isAdmin(user) && getAdminButton()}
         <IconButton
@@ -583,7 +587,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   return (
     <header>
       <AppBar position="static" className={header}>
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Hidden mdUp>{displayMobile()}</Hidden>
           <Hidden smDown>{displayDesktop()}</Hidden>
         </Container>

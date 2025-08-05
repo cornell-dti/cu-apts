@@ -239,7 +239,21 @@ app.get('/api/review/:location/count', async (req, res) => {
   res.status(200).send(JSON.stringify({ count: approvedReviewCount }));
 });
 
-// API endpoint to get apartments by a list of IDs
+/**
+ * Get Multiple Apartments by IDs – Retrieves multiple apartments by their document IDs.
+ *
+ * @remarks
+ * This endpoint accepts a comma-separated list of apartment IDs and returns the corresponding apartment data.
+ * Each ID is validated to ensure it exists in the database before returning the data.
+ *
+ * @route GET /api/apts/:ids
+ *
+ * @input {string} req.params.ids - Comma-separated list of apartment document IDs
+ *
+ * @status
+ * - 200: Successfully retrieved apartment data for all provided IDs
+ * - 400: Error retrieving apartments or invalid ID provided
+ */
 app.get('/api/apts/:ids', async (req, res) => {
   try {
     const { ids } = req.params;
@@ -376,6 +390,21 @@ app.post('/api/set-data', async (req, res) => {
   }
 });
 
+/**
+ * Search Apartments and Landlords – Performs a fuzzy search across both apartments and landlords.
+ *
+ * @remarks
+ * This endpoint searches through apartment and landlord names/addresses using fuzzy matching.
+ * Returns up to 5 combined results, with each result labeled as either LANDLORD or APARTMENT.
+ *
+ * @route GET /api/search
+ *
+ * @input {string} req.query.q - The search query string to match against names and addresses
+ *
+ * @status
+ * - 200: Successfully retrieved and labeled search results
+ * - 400: Error occurred while processing the search request
+ */
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -402,6 +431,21 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+/**
+ * Search Results - Retrieves enriched apartment data based on a text search query.
+ *
+ * @remarks
+ * This endpoint performs a fuzzy search on apartment names and addresses using the provided query string.
+ * The matching results are enriched with additional data like reviews and ratings before being returned.
+ *
+ * @route GET /api/search-results
+ *
+ * @input {string} req.query.q - The search query string to match against apartment names and addresses
+ *
+ * @status
+ * - 200: Successfully retrieved and enriched the matching apartment results
+ * - 400: Error occurred while processing the search request
+ */
 app.get('/api/search-results', async (req, res) => {
   try {
     const query = req.query.q as string;
@@ -423,13 +467,140 @@ app.get('/api/search-results', async (req, res) => {
   }
 });
 
-/*
- * assumption, what you return for a given page may be different
- * currently, we are assuming 'home' as a potential input and a default case for everything else for the page
- * for the home case, we are returning the top (size) apartments, top being having the most reviews
+/**
+ * Search With Query And Filters - Searches apartments based on text query and multiple filter criteria.
+ *
+ * @remarks
+ * This endpoint allows searching apartments using a combination of text search and filters.
+ * The filters include location, price range, number of bedrooms and bathrooms.
+ * Results are filtered progressively based on which parameters are provided.
+ *
+ * @route GET /api/search-with-query-and-filters
+ *
+ * @input {object} req.query - The search parameters
+ * @input {string} req.query.q - Optional text search query
+ * @input {string} req.query.locations - Optional comma-separated list of locations
+ * @input {number} req.query.minPrice - Optional minimum price filter
+ * @input {number} req.query.maxPrice - Optional maximum price filter
+ * @input {number} req.query.bedrooms - Optional number of bedrooms filter
+ * @input {number} req.query.bathrooms - Optional number of bathrooms filter
+ *
+ * @status
+ * - 200: Successfully retrieved filtered search results
+ * - 400: Error occurred while processing the search request
  */
-app.get('/api/page-data/:page/:size', async (req, res) => {
-  const { page, size } = req.params;
+
+app.get('/api/search-with-query-and-filters', async (req, res) => {
+  try {
+    // Extract all query parameters
+    const query = req.query.q as string;
+    const locations = req.query.locations as string;
+    const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
+    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
+    const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
+    const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
+    const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
+    const sortBy = req.query.sortBy || 'numReviews';
+
+    // Get all apartments from the application state
+    const apts = req.app.get('apts');
+    const aptsWithType: ApartmentWithId[] = apts;
+
+    // Start with text search if query is provided
+    let filteredResults: ApartmentWithId[] = [];
+    if (query && query.trim() !== '') {
+      const options = {
+        keys: ['name', 'address'],
+      };
+      const fuse = new Fuse(aptsWithType, options);
+      const searchResults = fuse.search(query);
+      filteredResults = searchResults.map((result) => result.item);
+    } else {
+      // If no query, start with all apartments
+      filteredResults = aptsWithType;
+    }
+
+    // Apply location filter if provided
+    if (locations && locations.trim() !== '') {
+      const locationArray = locations.split(',').map((loc) => loc.toUpperCase());
+      filteredResults = filteredResults.filter((apt) =>
+        locationArray.includes(apt.area ? apt.area.toUpperCase() : '')
+      );
+    }
+
+    // TODO: Right now we disable the price filter because of lack of data
+    // Apply price range filters
+    // if (minPrice !== null) {
+    //   filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
+    // }
+
+    // if (maxPrice !== null) {
+    //   filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
+    // }
+
+    // Apply bedroom filter
+    // TODO: Right now we disable the bedroom filter because of lack of data
+    // if (bedrooms !== null && bedrooms > 0) {
+    //   filteredResults = filteredResults.filter(
+    //     (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
+    //   );
+    // }
+
+    // // Apply bathroom filter
+    // if (bathrooms !== null && bathrooms > 0) {
+    //   filteredResults = filteredResults.filter(
+    //     (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
+    //   );
+    // }
+
+    // Process the filtered results through pageData to include reviews, ratings, etc.
+    let enrichedResults = await pageData(filteredResults);
+
+    // If size is specified and less than available, slice the results
+    if (size && size > 0 && enrichedResults.length > size) {
+      console.log('endpoint sortBy', sortBy);
+      switch (sortBy) {
+        case 'numReviews':
+          enrichedResults.sort((a, b) => b.numReviews - a.numReviews);
+          break;
+        case 'avgRating':
+          enrichedResults.sort((a, b) => b.avgRating - a.avgRating);
+          break;
+        case 'distanceToCampus':
+          enrichedResults.sort(
+            (a, b) => a.buildingData.distanceToCampus - b.buildingData.distanceToCampus
+          );
+          break;
+        default:
+          break;
+      }
+      enrichedResults = enrichedResults.slice(0, size);
+    }
+
+    res.status(200).send(JSON.stringify(enrichedResults));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+/**
+ * Get Paginated Apartment Data – Retrieves paginated and sorted apartment listings.
+ *
+ * @remarks
+ * Handles two different pagination strategies based on page type. For homepage, fetches all apartments and sorts them before paginating. For other pages, paginates directly from the database query. Enriches apartment data with reviews and ratings.
+ *
+ * @route GET /api/page-data/:page/:size/:sortBy?
+ *
+ * @input {string} req.params.page - Page type ('home' or other) determining pagination strategy
+ * @input {string} req.params.size - Number of results to return per page
+ * @input {string} req.params.sortBy - Optional sorting field ('numReviews', 'avgRating', 'distanceToCampus')
+ *
+ * @status
+ * - 200: Successfully retrieved paginated apartment data
+ * - 400: Error retrieving or processing apartment data
+ */
+app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
+  const { page, size, sortBy = 'numReviews' } = req.params;
   let buildingDocs;
   let buildingData;
 
@@ -445,9 +616,26 @@ app.get('/api/page-data/:page/:size', async (req, res) => {
   );
 
   if (page === 'home') {
-    const buildingReviewCounts = (await pageData(buildings)).map((elem) => [elem.numReviews, elem]);
-    buildingReviewCounts.sort().reverse();
-    buildingData = buildingReviewCounts.splice(0, Number(size)).map((elem) => elem[1]);
+    // Get enriched data first
+    const enrichedData = await pageData(buildings);
+
+    // Sort based on the specified field
+    enrichedData.sort((a, b) => {
+      // Handle fields that exist after pageData processing
+      switch (sortBy) {
+        case 'numReviews':
+          return b.numReviews - a.numReviews;
+        case 'avgRating':
+          return b.avgRating - a.avgRating;
+        case 'distanceToCampus':
+          // Sort by distance to campus in ascending order (closer to campus comes first)
+          return a.buildingData.distanceToCampus - b.buildingData.distanceToCampus;
+        default:
+          return 0;
+      }
+    });
+    // Take only the requested size
+    buildingData = enrichedData.slice(0, Number(size));
   } else {
     buildingData = await pageData(buildings);
   }
@@ -460,6 +648,20 @@ app.get('/api/page-data/:page/:size', async (req, res) => {
   res.status(200).send(returnData);
 });
 
+/**
+ * Get Apartments by Location - Retrieves all apartments from a specific location.
+ *
+ * @remarks
+ * This endpoint fetches apartment data filtered by a single location parameter. The location is case-insensitive
+ * and will be converted to uppercase before querying. Returns enriched apartment data including reviews and ratings.
+ *
+ * @route GET /api/location/:loc
+ *
+ * @input {string} req.params.loc - The location to filter apartments by (e.g. "Collegetown")
+ *
+ * @status
+ * - 200: Successfully retrieved apartments for the specified location
+ */
 app.get('/api/location/:loc', async (req, res) => {
   const { loc } = req.params;
   const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())
@@ -469,7 +671,51 @@ app.get('/api/location/:loc', async (req, res) => {
   );
 
   const data = JSON.stringify(await pageData(buildings));
-  res.status(200).send(data);
+  return res.status(200).send(data);
+});
+
+/**
+ * Get Apartments by Multiple Locations – Retrieves apartments from multiple specified locations.
+ *
+ * @remarks
+ * This endpoint allows fetching apartments from multiple locations in a single request. Locations are
+ * passed as comma-separated values in the query string. The response includes apartment data with
+ * reviews and ratings for each location.
+ *
+ * @route GET /api/locations?locations=[comma-separated locations]
+ *
+ * @input {string} req.query.locations - Comma-separated list of location names (e.g. "Collegetown,Downtown")
+ *
+ * @status
+ * - 200: Successfully retrieved apartments for the specified locations
+ * - 400: No locations specified in query parameter
+ */
+
+app.get('/api/locations', async (req, res) => {
+  const locations = req.query.locations as string;
+
+  if (!locations) {
+    return res.status(400).send({ error: 'No locations specified' });
+  }
+
+  const locationArray = locations.split(',');
+
+  // Create a query to fetch buildings from any of the specified locations
+  let query = buildingsCollection.where('area', '==', locationArray[0].toUpperCase());
+
+  // If there are multiple locations, we need to use an 'in' query instead
+  if (locationArray.length > 1) {
+    const upperLocations = locationArray.map((loc) => loc.toUpperCase());
+    query = buildingsCollection.where('area', 'in', upperLocations);
+  }
+
+  const buildingDocs = (await query.get()).docs;
+  const buildings: ApartmentWithId[] = buildingDocs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
+  );
+
+  const data = JSON.stringify(await pageData(buildings));
+  return res.status(200).send(data);
 });
 
 /**
@@ -763,7 +1009,7 @@ app.get('/api/saved-apartments', authenticate, async (req, res) => {
   );
 
   const data = JSON.stringify(await pageData(buildings)); // Preparing the data for response
-  res.status(200).send(data); // Sending the data back to the client
+  return res.status(200).send(data);
 });
 
 // Endpoints for adding and removing saved landlords for a user
@@ -1442,6 +1688,47 @@ app.get('/api/travel-times-by-id/:buildingId', async (req, res) => {
     return res.status(200).json(travelTimes);
   } catch (error) {
     console.error('Error retrieving travel times:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+/**
+ * Create Distance to Campus - Updates each building's distanceToCampus field with walking time to Ho Plaza.
+ *
+ * @remarks
+ * Queries the entire travel times collection and updates each building document in the buildings collection
+ * with its corresponding walking time to Ho Plaza. Returns an array of tuples containing the building ID
+ * and updated walking time.
+ *
+ * @route POST /api/create-distance-to-campus
+ *
+ * @returns {Array<[string, number]>} Array of [buildingId, walkingTime] tuples
+ *
+ * @status
+ * - 200: Successfully retrieved and updated walking times
+ * - 500: Server error occurred while retrieving times or updating buildings
+ */
+app.post('/api/create-distance-to-campus', async (req, res) => {
+  try {
+    const snapshot = await travelTimesCollection.get();
+
+    const walkingTimes = snapshot.docs.map((doc) => {
+      const data = doc.data() as LocationTravelTimes;
+      return [doc.id, data.hoPlazaWalking] as [string, number];
+    });
+
+    // Update each building's distanceToCampus field
+    await Promise.all(
+      walkingTimes.map(async ([buildingId, walkingTime]) => {
+        const buildingRef = buildingsCollection.doc(buildingId);
+        await buildingRef.update({
+          distanceToCampus: walkingTime,
+        });
+      })
+    );
+
+    return res.status(200).json(walkingTimes);
+  } catch (error) {
+    console.error('Error retrieving/updating Ho Plaza walking times:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
