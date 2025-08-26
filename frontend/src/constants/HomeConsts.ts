@@ -1,4 +1,4 @@
-export const loadingLength = 5;
+export const loadingLength = 8;
 
 /**
  * admins – List of CUApts' admins' email addresses.
