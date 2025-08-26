@@ -12,7 +12,7 @@ This system is built on top of [Resend](https://resend.com)'s email API.
 
 1. Install dependencies in the root directory:
 
-   ```bash
+   ```
    npm install resend dotenv node-fetch
    ```
 
@@ -26,15 +26,18 @@ This system is built on top of [Resend](https://resend.com)'s email API.
 
    **Never commit this file!** (Should already be in `.gitignore`.)
 
-3. Create a new template in `scripts/email/templates/` or modify the existing
+3. Create a new email template in `scripts/email/templates/` or modify the existing
    `GenerateNewsletter.tsx` template. Make sure to test out the formatting in multiple email
    services (ex: gmail vs apple mail). Each service will result in slightly different outputs, so
    ensure that your template is consistent throughout.
 
+   **Important** As many email service providers support limited CSS styling, please make sure to
+   use in-line CSS and web-safe fonts! 
+
 4. Update the `emailService.ts` file to use your template and customize the campaign options.
 
 5. From the root directory, run the script:
-   ```bash
+   ```
    ts-node backend/scripts/email/emailService.ts
    ```
 

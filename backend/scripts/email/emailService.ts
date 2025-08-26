@@ -53,7 +53,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     return;
   }
 
-  // const { API_BASE_URL } = process.env;
+  const { API_BASE_URL } = process.env;
 
   /**
    * getPropertiesByIds
@@ -81,17 +81,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     }
   };
 
-  // try {
-  //   console.log(`Total users available in database: ${USERS.length}`);
-  //   const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
-  //   console.log(`Valid email addresses: ${validEmails.length}`);
-
-  //   if (validEmails.length === 0) {
-  //     console.error('No valid email addresses found!');
-  //     return;
-  //   }
-
-  // loads chosen properties
+  // Loads chosen properties
   const recentLandlordProperties = options.recentLandlordPropertyIDs
     ? await getPropertiesByIds(options.recentLandlordPropertyIDs)
     : [];
@@ -108,71 +98,100 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
 
   const resend = new Resend(apiKey);
 
-  // const userBatches = await getUserBatches(50);
-  // console.log(
-  //   `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
-  // );
+  /**
+   * BATCH PROCESSING AND EMAIL SENDING
+   *
+   * Processes users in batches and sends emails concurrently:
+   * - Creates batches of 50 users each using getUserBatches()
+   * - Maps over batches to send emails in parallel
+   * - Uses BCC to hide recipient emails from each other
+   * - Includes error handling and progress logging for each batch
+   * - Waits for all batches to complete using Promise.all()
+   *
+   * To use, uncomment line 191, comment out line 192, and run the file as normal.
+   */
+  const sendBatchEmail = async () => {
+    try {
+      console.log(`Total users available in database: ${USERS.length}`);
+      const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
+      console.log(`Valid email addresses: ${validEmails.length}`);
 
-  // const emailPromises = userBatches.map(async (batch, i) => {
-  //   const bccEmails = batch.map((user) => user.email);
-  //   console.log(
-  //     `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
-  //   );
+      if (validEmails.length === 0) {
+        console.error('No valid email addresses found!');
+        return;
+      }
 
-  //   const { data, error } = await resend.emails.send({
-  //     from: `${fromName} <${fromEmail}>`,
-  //     to: toEmail,
-  //     // bcc: bccEmails,
-  //     subject,
-  //     react: React.createElement(GenerateNewsletter, {
-  //       recentLandlordProperties,
-  //       lovedProperties,
-  //       recentAreaProperties,
-  //     }),
-  //   });
+      const userBatches = await getUserBatches(50);
+      console.log(
+        `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
+      );
 
-  //   if (error) {
-  //     console.error(`Error sending batch ${i + 1}:`, error);
-  //   } else {
-  //     console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
-  //   }
-  // });
+      const emailPromises = userBatches.map(async (batch, i) => {
+        const bccEmails = batch.map((user) => user.email);
+        console.log(
+          `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
+        );
 
-  //   await Promise.all(emailPromises);
-  //   console.log('All email batches sent successfully!');
-  // } catch (err) {
-  //   console.error('Exception when sending emails:', err);
-  //   throw err;
-  // }
+        const { data, error } = await resend.emails.send({
+          from: `${fromName} <${fromEmail}>`,
+          to: toEmail,
+          // bcc: bccEmails,
+          subject,
+          react: React.createElement(GenerateNewsletter, {
+            recentLandlordProperties,
+            lovedProperties,
+            recentAreaProperties,
+          }),
+        });
 
-  /**  Sends an email to one person (useful for testing email templates).
-   *   To use, uncomment code below, comment out lines 82-86 and 108-143, edit info below,
+        if (error) {
+          console.error(`Error sending batch ${i + 1}:`, error);
+        } else {
+          console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
+        }
+      });
+
+      await Promise.all(emailPromises);
+      console.log('All email batches sent successfully!');
+    } catch (err) {
+      console.error('Exception when sending emails:', err);
+      throw err;
+    }
+  };
+
+  /**
+   * SINGLE TEST EMAIL SENDING
+   * Sends an email to one person (useful for testing email templates).
+   *   To use, uncomment line 192, comment out line 191, edit info below,
    *   and run the file as normal.
    */
-  try {
-    // In your main file
-    const { data, error } = await resend.emails.send({
-      from: 'updates@cuapts.org',
-      to: 'lsp75@cornell.edu',
-      subject,
-      react: React.createElement(GenerateNewsletter, {
-        recentLandlordProperties,
-        lovedProperties,
-        recentAreaProperties,
-      }),
-    });
-    if (error) {
-      console.error('Error sending email:', error);
-    } else {
-      console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+  const sendSingleTestEmail = async () => {
+    try {
+      const { data, error } = await resend.emails.send({
+        from: 'updates@cuapts.org',
+        to: 'laurenpothuru@gmail.com',
+        subject,
+        react: React.createElement(GenerateNewsletter, {
+          recentLandlordProperties,
+          lovedProperties,
+          recentAreaProperties,
+        }),
+      });
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+      }
+    } catch (err) {
+      console.error('Exception when sending email:', err);
     }
-  } catch (err) {
-    console.error('Exception when sending email:', err);
-  }
+  };
+
+  // sendBatchEmail();
+  sendSingleTestEmail();
 };
 
 /**
- * main
  * Entry point function that executes the email campaign with default settings.
  * Handles logging and error handling for the campaign process.
  *
