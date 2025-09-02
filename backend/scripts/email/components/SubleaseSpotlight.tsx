@@ -72,7 +72,7 @@ const SubleaseSpotlight: React.FC<Props> = ({ imgUrl, description, phoneNumber, 
         {phoneNumber && (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <img
-              src="https://i.pinimg.com/736x/6c/99/1f/6c991fb7ebe3cdff3856bd0c1b46b41e.jpg"
+              src="https://i.postimg.cc/B6SY793m/Pngtree-telephone-glyph-icon-vector-5199512.png"
               alt=""
               style={{ width: '20px', height: 'auto', marginRight: '5px' }}
             />

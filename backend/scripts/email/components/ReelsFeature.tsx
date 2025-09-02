@@ -8,10 +8,9 @@ type Props = {
 /**
  * ReelsFeature Component
  *
- * This component showcases the "CU on Reels" feature, displaying a GIF representing the feature
+ * This component showcases the "CU on Reels" feature, displaying a GIF of a reel or social media video,
  * and a brief description. It includes a call-to-action button linking to the Instagram page for
- * CU Apts, encouraging users to explore more content. The component is styled with a modern and
- * clean layout for easy integration into newsletters or email templates.
+ * CU Apts, encouraging users to explore more content.
  *
  * @component
  * @param {Object} props - Component properties.

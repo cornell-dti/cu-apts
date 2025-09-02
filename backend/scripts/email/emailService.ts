@@ -53,7 +53,7 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     return;
   }
 
-  const { API_BASE_URL } = process.env;
+  // const { API_BASE_URL } = process.env;
 
   /**
    * getPropertiesByIds
@@ -100,16 +100,13 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
 
   /**
    * BATCH PROCESSING AND EMAIL SENDING
-   *
    * Processes users in batches and sends emails concurrently:
-   * - Creates batches of 50 users each using getUserBatches()
-   * - Maps over batches to send emails in parallel
+   * - Creates batches of 50 users and maps over batches to send emails in parallel
    * - Uses BCC to hide recipient emails from each other
-   * - Includes error handling and progress logging for each batch
-   * - Waits for all batches to complete using Promise.all()
    *
    * To use, uncomment line 191, comment out line 192, and run the file as normal.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendBatchEmail = async () => {
     try {
       console.log(`Total users available in database: ${USERS.length}`);

@@ -2288,14 +2288,14 @@
     "prettier" "3.5.3"
     "react-promise-suspense" "0.3.4"
 
-"@react-email/render@1.0.5":
-  "integrity" "sha512-CA69HYXPk21HhtAXATIr+9JJwpDNmAFCvdMUjWmeoD1+KhJ9NAxusMRxKNeibdZdslmq3edaeOKGbdQ9qjK8LQ=="
-  "resolved" "https://registry.npmjs.org/@react-email/render/-/render-1.0.5.tgz"
-  "version" "1.0.5"
+"@react-email/render@1.1.2":
+  "integrity" "sha512-RnRehYN3v9gVlNMehHPHhyp2RQo7+pSkHDtXPvg3s0GbzM9SQMW4Qrf8GRNvtpLC4gsI+Wt0VatNRUFqjvevbw=="
+  "resolved" "https://registry.npmjs.org/@react-email/render/-/render-1.1.2.tgz"
+  "version" "1.1.2"
   dependencies:
-    "html-to-text" "9.0.5"
-    "prettier" "3.4.2"
-    "react-promise-suspense" "0.3.4"
+    "html-to-text" "^9.0.5"
+    "prettier" "^3.5.3"
+    "react-promise-suspense" "^0.3.4"
 
 "@react-email/row@0.0.12":
   "integrity" "sha512-HkCdnEjvK3o+n0y0tZKXYhIXUNPDx+2vq1dJTmqappVHXS5tXS6W5JOPZr5j+eoZ8gY3PShI2LWj5rWF7ZEtIQ=="
@@ -7535,7 +7535,7 @@
     "relateurl" "^0.2.7"
     "terser" "^4.6.3"
 
-"html-to-text@9.0.5":
+"html-to-text@^9.0.5", "html-to-text@9.0.5":
   "integrity" "sha512-qY60FjREgVZL03vJU6IfMV4GDjGBIoOyvuFdpBDIX9yTlDw0TjxVBQp+P8NvpdIXNJvfWBTNul7fsAQJq2FNpg=="
   "resolved" "https://registry.npmjs.org/html-to-text/-/html-to-text-9.0.5.tgz"
   "version" "9.0.5"
@@ -11416,10 +11416,10 @@
   "resolved" "https://registry.npmjs.org/prettier/-/prettier-2.5.1.tgz"
   "version" "2.5.1"
 
-"prettier@3.4.2":
-  "integrity" "sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ=="
-  "resolved" "https://registry.npmjs.org/prettier/-/prettier-3.4.2.tgz"
-  "version" "3.4.2"
+"prettier@^3.5.3":
+  "integrity" "sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ=="
+  "resolved" "https://registry.npmjs.org/prettier/-/prettier-3.6.2.tgz"
+  "version" "3.6.2"
 
 "prettier@3.5.3":
   "integrity" "sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw=="
@@ -11836,7 +11836,7 @@
     "auto-bind" "^2.1.1"
     "react-swipeable" "^6.1.0"
 
-"react-promise-suspense@0.3.4":
+"react-promise-suspense@^0.3.4", "react-promise-suspense@0.3.4":
   "integrity" "sha512-I42jl7L3Ze6kZaq+7zXWSunBa3b1on5yfvUW6Eo/3fFOj6dZ5Bqmcd264nJbTK/gn1HjjILAjSwnZbV4RpSaNQ=="
   "resolved" "https://registry.npmjs.org/react-promise-suspense/-/react-promise-suspense-0.3.4.tgz"
   "version" "0.3.4"
@@ -11969,6 +11969,11 @@
   "integrity" "sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg=="
   "resolved" "https://registry.npmjs.org/react/-/react-19.1.0.tgz"
   "version" "19.1.0"
+
+"react@^19.1.1":
+  "integrity" "sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ=="
+  "resolved" "https://registry.npmjs.org/react/-/react-19.1.1.tgz"
+  "version" "19.1.1"
 
 "read-pkg-up@^7.0.1":
   "integrity" "sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg=="
@@ -12225,12 +12230,12 @@
   "resolved" "https://registry.npmjs.org/requires-port/-/requires-port-1.0.0.tgz"
   "version" "1.0.0"
 
-"resend@^4.2.0":
-  "integrity" "sha512-s6ogU+BBYH1H6Zl926cpddtLRAJWeFv5cIKcuHLWk1QYhFTbpFJlhqx31pnN2f0CB075KFSrc1Xf6HG690wzuw=="
-  "resolved" "https://registry.npmjs.org/resend/-/resend-4.2.0.tgz"
-  "version" "4.2.0"
+"resend@^4.8.0":
+  "integrity" "sha512-R8eBOFQDO6dzRTDmaMEdpqrkmgSjPpVXt4nGfWsZdYOet0kqra0xgbvTES6HmCriZEXbmGk3e0DiGIaLFTFSHA=="
+  "resolved" "https://registry.npmjs.org/resend/-/resend-4.8.0.tgz"
+  "version" "4.8.0"
   dependencies:
-    "@react-email/render" "1.0.5"
+    "@react-email/render" "1.1.2"
 
 "resolve-cwd@^2.0.0":
   "integrity" "sha1-AKn3OHVW4nA46uIyyqNypqWbZlo="

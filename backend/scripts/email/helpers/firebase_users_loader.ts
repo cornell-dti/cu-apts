@@ -23,7 +23,6 @@ export async function getAllUsers(): Promise<UserData[]> {
       });
     });
 
-    console.log(`Successfully loaded ${users.length} users`);
     return users;
   } catch (error) {
     console.error('Error loading users:', error);

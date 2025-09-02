@@ -14,6 +14,7 @@ import NeighborhoodComparison from '../components/NeighborhoodComparison';
 import SubleaseSpotlight from '../components/SubleaseSpotlight';
 import FeatureSpotlight from '../components/FeatureSpotlight';
 import ReelsFeature from '../components/ReelsFeature';
+import Header from '../components/Header';
 
 type NewsletterProps = {
   firstName: string;
@@ -50,6 +51,7 @@ type NewsletterProps = {
  * @returns {ReactElement} Newsletter component.
  */
 const Newsletter: React.FC<NewsletterProps> = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   firstName,
   introductionMessage,
   landlordSpotlight,
@@ -67,6 +69,8 @@ const Newsletter: React.FC<NewsletterProps> = ({
         href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet"
       />
+      <meta name="color-scheme" content="light" />
+      <meta name="supported-color-schemes" content="light" />
 
       <style>
         {`
@@ -84,16 +88,13 @@ const Newsletter: React.FC<NewsletterProps> = ({
         width: '100%',
         alignContent: 'center',
         justifyContent: 'center',
+        backgroundColor: '#ffffffff',
+        mixBlendMode: 'normal',
+        isolation: 'isolate',
+        colorScheme: 'light only',
       }}
     >
-      {/* header */}
-      <div style={{ textAlign: 'center', width: '100%' }}>
-        <img
-          src={headerUrl}
-          alt=""
-          style={{ width: '100%', height: 'auto', maxWidth: '700px', marginBottom: '20px' }}
-        />
-      </div>
+      <Header headerUrl={headerUrl} />
 
       {/* main email body */}
       <Container
@@ -106,6 +107,9 @@ const Newsletter: React.FC<NewsletterProps> = ({
           borderRadius: '15px',
           backgroundColor: '#ffffff',
           marginBottom: '20px',
+          mixBlendMode: 'normal',
+          isolation: 'isolate',
+          colorScheme: 'light only',
         }}
       >
         <Text
@@ -116,74 +120,144 @@ const Newsletter: React.FC<NewsletterProps> = ({
             marginBottom: '20px',
             color: '#5D5D5D',
             fontWeight: '400',
+            mixBlendMode: 'normal',
+            isolation: 'isolate',
+            colorScheme: 'light only',
           }}
         >
-          <strong style={{ fontWeight: '700' }}>Hi!</strong> {introductionMessage}
+          <strong
+            style={{
+              fontWeight: '700',
+              color: '#5D5D5D',
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+            }}
+          >
+            Hi!
+          </strong>{' '}
+          {introductionMessage}
         </Text>
 
         {/* landlord section */}
         {landlordSpotlight &&
           landlordSpotlight.map((landlord) => (
-            <LandlordHighlight
-              landlordData={landlord.landlord}
-              landlordMessage={landlord.message}
-              landlordReview={landlord.review}
-              popularProperties={landlord.lovedProperties}
-              recentProperties={landlord.recentProperties}
-            />
+            <div
+              style={{
+                mixBlendMode: 'normal',
+                isolation: 'isolate',
+                colorScheme: 'light only',
+              }}
+            >
+              <LandlordHighlight
+                landlordData={landlord.landlord}
+                landlordMessage={landlord.message}
+                landlordReview={landlord.review}
+                popularProperties={landlord.lovedProperties}
+                recentProperties={landlord.recentProperties}
+              />
+            </div>
           ))}
 
         {/* area section */}
         {areaSpotlight && (
-          <AreaSpotlight
-            imageUrl={areaSpotlight.imageURL}
-            name={areaSpotlight.name}
-            description={areaSpotlight.description}
-            recentProperties={areaSpotlight.properties}
-            activities={areaSpotlight.activities}
-          />
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <AreaSpotlight
+              imageUrl={areaSpotlight.imageURL}
+              name={areaSpotlight.name}
+              description={areaSpotlight.description}
+              recentProperties={areaSpotlight.properties}
+              activities={areaSpotlight.activities}
+            />
+          </div>
         )}
 
         {/* New Feature Spotlight */}
         {newFeature && (
-          <FeatureSpotlight
-            imgUrl={newFeature.imgUrl}
-            featureName={newFeature.featureName}
-            description={newFeature.description}
-          />
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <FeatureSpotlight
+              imgUrl={newFeature.imgUrl}
+              featureName={newFeature.featureName}
+              description={newFeature.description}
+            />
+          </div>
         )}
 
         {/* Neighborhood Comparison */}
         {neighborhoodComparison && (
-          <NeighborhoodComparison
-            name1={neighborhoodComparison.name1}
-            name2={neighborhoodComparison.name2}
-            description1={neighborhoodComparison.description1}
-            description2={neighborhoodComparison.description2}
-            image1={neighborhoodComparison.image1}
-            image2={neighborhoodComparison.image2}
-          />
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <NeighborhoodComparison
+              name1={neighborhoodComparison.name1}
+              name2={neighborhoodComparison.name2}
+              description1={neighborhoodComparison.description1}
+              description2={neighborhoodComparison.description2}
+              image1={neighborhoodComparison.image1}
+              image2={neighborhoodComparison.image2}
+            />
+          </div>
         )}
 
         {/* Sublease Spotlight */}
         {subleaseSpotlight && (
-          <SubleaseSpotlight
-            imgUrl={subleaseSpotlight.imgUrl}
-            email={subleaseSpotlight.email}
-            description={subleaseSpotlight.description}
-            phoneNumber={subleaseSpotlight.phoneNumber ?? undefined}
-          />
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <SubleaseSpotlight
+              imgUrl={subleaseSpotlight.imgUrl}
+              email={subleaseSpotlight.email}
+              description={subleaseSpotlight.description}
+              phoneNumber={subleaseSpotlight.phoneNumber ?? undefined}
+            />
+          </div>
         )}
 
         {/* Reels Feature */}
-        {reels && <ReelsFeature gifUrl={reels.gifUrl} description={reels.description} />}
+        {reels && (
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <ReelsFeature gifUrl={reels.gifUrl} description={reels.description} />
+          </div>
+        )}
 
         {/* advice section */}
         {advice && (
           <table
             cellPadding="0"
             cellSpacing="0"
-            style={{ width: '100%', padding: '10px 0px', marginBottom: '20px' }}
+            style={{
+              width: '100%',
+              padding: '10px 0px',
+              marginBottom: '20px',
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
           >
             <tbody>
               <tr>
@@ -205,15 +279,36 @@ const Newsletter: React.FC<NewsletterProps> = ({
                   <h1
                     style={{
                       color: '#B94630',
-
                       fontSize: '22.5px',
                       fontWeight: '700',
+                      mixBlendMode: 'normal',
+                      isolation: 'isolate',
+                      colorScheme: 'light only',
                     }}
                   >
                     Advice from Upperclassmen
                   </h1>
-                  <p style={{ color: '#5D5D5D', fontSize: '15px' }}>{advice.message}</p>
-                  <p style={{ color: '#5D5D5D', fontSize: '15px', textAlign: 'end' }}>
+                  <p
+                    style={{
+                      color: '#5D5D5D',
+                      fontSize: '15px',
+                      mixBlendMode: 'normal',
+                      isolation: 'isolate',
+                      colorScheme: 'light only',
+                    }}
+                  >
+                    {advice.message}
+                  </p>
+                  <p
+                    style={{
+                      color: '#5D5D5D',
+                      fontSize: '15px',
+                      textAlign: 'end',
+                      mixBlendMode: 'normal',
+                      isolation: 'isolate',
+                      colorScheme: 'light only',
+                    }}
+                  >
                     {advice.name}, {advice.year}, {advice.major}, {advice.apartment}
                   </p>
                 </td>
@@ -233,6 +328,9 @@ const Newsletter: React.FC<NewsletterProps> = ({
           justifyContent: 'center',
           alignItems: 'center',
           maxWidth: '700px',
+          mixBlendMode: 'normal',
+          isolation: 'isolate',
+          colorScheme: 'light only',
         }}
       >
         <table>
@@ -249,13 +347,29 @@ const Newsletter: React.FC<NewsletterProps> = ({
                   }}
                 />
               </td>
-              <td style={{ fontSize: '12px', color: '#FFCFC7', lineHeight: '12.5px' }}>
+              <td
+                style={{
+                  fontSize: '12px',
+                  color: '#FFCFC7',
+                  lineHeight: '12.5px',
+                  mixBlendMode: 'normal',
+                  isolation: 'isolate',
+                  colorScheme: 'light only',
+                }}
+              >
                 <p>
                   You&apos;re signed up to this email as [EMAIL HERE]. Manage email preferences.{' '}
                 </p>
                 <p>
                   Don&apos;t see your apartments? Submit{' '}
-                  <a style={{ color: '#FFCFC7' }} href="https://www.cuapts.org/">
+                  <a
+                    style={{
+                      color: '#FFCFC7',
+                      mixBlendMode: 'normal',
+                      isolation: 'isolate',
+                    }}
+                    href="https://www.cuapts.org/"
+                  >
                     here!
                   </a>
                 </p>

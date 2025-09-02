@@ -101,7 +101,7 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
    */
   const advice: AdviceProps = {
     name: 'A Cornell Student',
-    message: 'You should do this and this and this in the housing search process. good luck!',
+    message: 'You should do this and this and this in the housing search process. Good luck!',
     major: 'Real Estate',
     year: '2024',
     apartment: 'Collegetown Crossings',

@@ -29,6 +29,7 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactE
         color: '#000',
         fontSize: '12px',
         fontWeight: '600',
+        lineHeight: '10px',
       }}
     >
       {property.name || `Property at ${property.address}`}
@@ -37,6 +38,7 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactE
       style={{
         color: '#5D5D5D',
         fontSize: '12px',
+        lineHeight: '10px',
       }}
     >
       {property.address}
@@ -46,9 +48,9 @@ const PropertyCard = ({ property }: { property: ApartmentWithId }): React.ReactE
         style={{ display: 'flex', alignItems: 'center', textAlign: 'center', marginRight: '10px' }}
       >
         <img
-          src="https://static-00.iconduck.com/assets.00/money-icon-1024x1024-f6dh1k6o.png"
+          src="https://i.postimg.cc/CKygz1g9/dollar.png"
           alt="$"
-          style={{ width: '13px', height: '13px', marginRight: '4px' }}
+          style={{ width: '14px', height: '14px', marginRight: '4px' }}
         />
         <p style={{ fontWeight: '600', fontSize: '12px', margin: '0', color: '#000' }}>price</p>
       </div>

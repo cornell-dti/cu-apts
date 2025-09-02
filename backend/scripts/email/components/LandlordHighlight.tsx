@@ -17,8 +17,7 @@ type Props = {
  *
  * This component displays a comprehensive section about a specific landlord in the newsletter,
  * including a message from the landlord, their recent or vacant properties, most popular properties,
- * and a featured review. The component organizes this information in a structured layout with
- * consistent styling and responsive property cards.
+ * and a featured review. \
  *
  * @component
  * @param {Object} props - Component properties.
