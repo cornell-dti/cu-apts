@@ -13,13 +13,6 @@ export interface AreaProps {
   properties: ApartmentWithId[];
   activities: Activity[];
 }
-export interface LandlordSpotlightProps {
-  landlord: Landlord;
-  message: string;
-  recentProperties: ApartmentWithId[];
-  lovedProperties: ApartmentWithId[];
-  review: string;
-}
 export interface AdviceProps {
   name: string;
   year?: string;

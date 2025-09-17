@@ -1,7 +1,6 @@
 import { Html, Head, Body, Container, Text } from '@react-email/components';
 import {
   AreaProps,
-  LandlordSpotlightProps,
   AdviceProps,
   ReelsProps,
   FeatureSpotlightProps,
@@ -9,7 +8,6 @@ import {
   SubleaseProps,
 } from './Types';
 import AreaSpotlight from '../components/AreaSpotlight';
-import LandlordHighlight from '../components/LandlordHighlight';
 import NeighborhoodComparison from '../components/NeighborhoodComparison';
 import SubleaseSpotlight from '../components/SubleaseSpotlight';
 import FeatureSpotlight from '../components/FeatureSpotlight';
@@ -19,7 +17,6 @@ import Header from '../components/Header';
 type NewsletterProps = {
   firstName: string;
   introductionMessage: string;
-  landlordSpotlight?: LandlordSpotlightProps[];
   areaSpotlight?: AreaProps;
   advice?: AdviceProps;
   reels?: ReelsProps;
@@ -33,7 +30,7 @@ type NewsletterProps = {
  * Newsletter Component
  *
  * This component generates an email newsletter template for CUApts, featuring multiple optional sections
- * like landlord spotlights, area features, advice from upperclassmen, and new feature announcements.
+ * like area features, advice from upperclassmen, and new feature announcements.
  * The newsletter is responsive and maintains consistent styling using the Work Sans font family.
  * Each section is conditionally rendered based on the provided props.
  *
@@ -41,7 +38,6 @@ type NewsletterProps = {
  * @param {Object} props - Component properties.
  * @param {string} props.firstName - The recipient's first name for personalized greeting.
  * @param {string} props.introductionMessage - Opening message that appears after the greeting.
- * @param {LandlordSpotlightProps[]} [props.landlordSpotlight] - Array of landlord information to showcase (optional).
  * @param {AreaProps} [props.areaSpotlight] - Information about a featured housing area (optional).
  * @param {AdviceProps} [props.advice] - Upperclassmen advice section content (optional).
  * @param {ReelsProps} [props.reels] - Content for featuring video reels (optional).
@@ -54,7 +50,6 @@ const Newsletter: React.FC<NewsletterProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   firstName,
   introductionMessage,
-  landlordSpotlight,
   areaSpotlight,
   advice,
   reels,
@@ -137,26 +132,6 @@ const Newsletter: React.FC<NewsletterProps> = ({
           </strong>{' '}
           {introductionMessage}
         </Text>
-
-        {/* landlord section */}
-        {landlordSpotlight &&
-          landlordSpotlight.map((landlord) => (
-            <div
-              style={{
-                mixBlendMode: 'normal',
-                isolation: 'isolate',
-                colorScheme: 'light only',
-              }}
-            >
-              <LandlordHighlight
-                landlordData={landlord.landlord}
-                landlordMessage={landlord.message}
-                landlordReview={landlord.review}
-                popularProperties={landlord.lovedProperties}
-                recentProperties={landlord.recentProperties}
-              />
-            </div>
-          ))}
 
         {/* area section */}
         {areaSpotlight && (
@@ -401,7 +376,6 @@ const Newsletter: React.FC<NewsletterProps> = ({
 
 Newsletter.defaultProps = {
   // headline: 'Welcome to CUApts',
-  landlordSpotlight: undefined,
   areaSpotlight: undefined,
   advice: undefined,
   reels: undefined,

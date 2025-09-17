@@ -2,7 +2,6 @@
 import { ApartmentWithId } from '@common/types/db-types';
 import {
   AreaProps,
-  LandlordSpotlightProps,
   AdviceProps,
   ReelsProps,
   FeatureSpotlightProps,
@@ -108,45 +107,6 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
   };
 
   /**
-   * LandlordSpotlightProps Interface
-   *
-   * Defines the structure for featuring landlords in the newsletter
-   *
-   * @typedef {Object} LandlordSpotlightProps
-   * @property {Object} landlord - Information about the featured landlord
-   * @property {string} landlord.name - Landlord's name
-   * @property {string} landlord.contact - Contact information for the landlord
-   * @property {number} landlord.avgRating - Average rating (out of 5)
-   * @property {string[]} landlord.photos - Array of photo URLs
-   * @property {string[]} landlord.reviews - Array of review texts
-   * @property {string[]} landlord.properties - Array of property identifiers
-   * @property {string|null} landlord.address - Landlord's address or office location
-   * @property {string} message - Description or introduction to the landlord
-   * @property {ApartmentWithId[]} recentProperties - Recent properties from this landlord
-   * @property {ApartmentWithId[]} lovedProperties - Popular properties from this landlord
-   * @property {string} review - Featured review quote about the landlord
-   */
-  const landlordSpotlight: LandlordSpotlightProps[] = [
-    {
-      landlord: {
-        name: '[Landlord Example]',
-        contact: '',
-        avgRating: 4,
-        photos: [''],
-        reviews: [''],
-        properties: [''],
-        address: null,
-      },
-      message:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. Duis eget augue rhoncus, dapibus orci ut, vestibulum nisi. Suspendisse hendrerit viverra odio a gravida.',
-      recentProperties: recentLandlordProperties,
-      lovedProperties,
-      review:
-        '“Lorem ipsum dolor sit amet, consectetur adipiscing elit lorem. Pellentesque nec porttitor ligula. Duis eget augue”',
-    },
-  ];
-
-  /**
    * ReelsProps Interface
    *
    * Defines the structure for featuring video reels
@@ -230,7 +190,6 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
         introductionMessage={introductionMessage}
         areaSpotlight={area}
         advice={advice}
-        landlordSpotlight={landlordSpotlight}
         reels={reelsSpotlight}
         newFeature={featureSpotlight}
         subleaseSpotlight={sublease}
