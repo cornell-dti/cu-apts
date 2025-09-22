@@ -17,6 +17,7 @@ import {
   CantFindApartmentFormWithId,
   QuestionFormWithId,
   ReviewWithId,
+  ApartmentWithId,
 } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
@@ -81,6 +82,12 @@ const AdminPage = (): ReactElement => {
   const [declinedExpanded, setDeclinedExpanded] = useState(true);
   const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
   const [reportedExpanded, setReportedExpanded] = useState(true);
+  const [apartments, setApartments] = useState<any[]>([]);
+
+  // Debug apartments state changes
+  useEffect(() => {
+    console.log('Apartments loaded:', apartments.length);
+  }, [apartments]);
   const { container, sectionHeader, expand, expandOpen } = useStyles();
   const {
     carouselPhotos,
@@ -153,6 +160,19 @@ const AdminPage = (): ReactElement => {
       });
     });
   }, [toggle]);
+
+  // Load all apartments data
+  useEffect(() => {
+    get<any>(`/api/page-data/home/1000/numReviews`, {
+      callback: (data) => {
+        if (data && data.buildingData && Array.isArray(data.buildingData)) {
+          setApartments(data.buildingData);
+        } else {
+          console.error('Failed to load apartments data');
+        }
+      },
+    });
+  }, []);
 
   const Modals = (
     <>
@@ -346,6 +366,65 @@ const AdminPage = (): ReactElement => {
     </Container>
   );
 
+  //  Data tab
+  const data = (
+    <Container className={container}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h3" style={{ margin: '10px', marginBottom: '30px' }}>
+            <strong>All Apartments ({apartments.length})</strong>
+          </Typography>
+          <List>
+            {apartments.map((apartment, index) => (
+              <ListItem
+                key={index}
+                style={{ borderBottom: '1px solid #e0e0e0', padding: '15px 0' }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="h6" style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                      {apartment.buildingData?.name || 'N/A'}
+                    </Typography>
+                  }
+                  secondary={
+                    <div>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Address:</strong> {apartment.buildingData?.address || 'N/A'}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Location:</strong> {apartment.buildingData?.area || 'N/A'}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Bedrooms:</strong> {apartment.buildingData?.numBeds || 'N/A'}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Bathrooms:</strong> {apartment.buildingData?.numBaths || 'N/A'}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Company:</strong> {apartment.company || 'N/A'}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Reviews:</strong> {apartment.numReviews || 0}
+                      </Typography>
+                      <Typography variant="body1" style={{ marginBottom: '3px' }}>
+                        <strong>Avg Rating:</strong>{' '}
+                        {apartment.avgRating ? apartment.avgRating.toFixed(1) : 'N/A'}
+                      </Typography>
+                      <Typography variant="body1">
+                        <strong>Avg Price:</strong>{' '}
+                        {apartment.avgPrice ? `$${apartment.avgPrice.toFixed(0)}` : 'N/A'}
+                      </Typography>
+                    </div>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+
   return (
     <div>
       <AppBar position="static" elevation={0}>
@@ -358,12 +437,14 @@ const AdminPage = (): ReactElement => {
           >
             <Tab label="Reviews" value="Reviews" />
             <Tab label="Contact" value="Contact" />
+            <Tab label="Data" value="Data" />
           </Tabs>
         </Toolbar>
       </AppBar>
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
+      {selectedTab === 'Data' && data}
       {Modals}
     </div>
   );
