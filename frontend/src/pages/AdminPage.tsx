@@ -57,11 +57,15 @@ const useStyles = makeStyles((theme) => ({
 /**
  * AdminPage Component
  *
- * This component represents a page that only authorized admins can view. The page displays information about reviews, allows admins
- * to approve or decline reviews. The page also displays contact information from the contact modals ("Can't Find Your Apartment" form
- * and "Ask Us a Question" form).
+ * This component represents a page that only authorized admins can view. The page has three main tabs:
  *
- * @returns The rendered AdminPage component.
+ * 1. Reviews - Displays review information and allows admins to approve/decline reviews
+ * 2. Contact - Shows contact form submissions ("Can't Find Your Apartment" and "Ask Us a Question")
+ * 3. Data - Displays a comprehensive list of all apartments with their key details
+ *
+ * Admins can manage content, respond to user inquiries, and view apartment data all in one place.
+ *
+ * @returns The rendered AdminPage component with tabbed navigation between Reviews, Contact, and Data sections.
  */
 const AdminPage = (): ReactElement => {
   const [selectedTab, setSelectedTab] = useState('Reviews');
