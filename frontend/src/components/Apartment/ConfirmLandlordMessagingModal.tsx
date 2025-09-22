@@ -152,6 +152,25 @@ export type ConfirmLandlordMessagingModalProps = {
   triggerErrorToast: () => void;
 };
 
+/**
+ * ConfirmLandlordMessagingModal Component
+ *
+ * Modal for reviewing and confirming the auto-generated email before sending.
+ * Lets the user edit the subject/body, then submits to the backend and
+ * triggers success/error toasts based on the result
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {boolean} props.open - Whether the modal dialog is open.
+ * @param {string|null} props.email - Landlord recipient email; null disables sending.
+ * @param {string} props.subject - Initial subject line to display/edit.
+ * @param {string} props.body - Initial email body to display/edit (truncated to limit).
+ * @param {() => void} props.onClose - Callback to close/dismiss the modal.
+ * @param {boolean} props.isMobile - Responsive flag to render the mobile layout.
+ * @param {() => void} props.triggerToast - Invoked on successful send (e.g., show success toast).
+ * @param {() => void} props.triggerErrorToast - Invoked on failed send (e.g., show error toast).
+ * @returns {ReactElement} ConfirmLandlordMessagingModal component.
+ */
 const ConfirmLandlordMessagingModal = ({
   open,
   email,
@@ -165,6 +184,7 @@ const ConfirmLandlordMessagingModal = ({
   const classes = useStyles({ isMobile });
   const [textSubject, setSubject] = useState(subject);
   const [message, setMessage] = useState(body);
+  const BODY_LIMIT = 2000;
 
   const handleSubmit = async () => {
     try {
@@ -199,7 +219,7 @@ const ConfirmLandlordMessagingModal = ({
 
   useEffect(() => {
     setSubject(subject);
-    setMessage(body);
+    setMessage((body || '').slice(0, BODY_LIMIT));
   }, [subject, body]);
 
   return (
@@ -268,7 +288,9 @@ const ConfirmLandlordMessagingModal = ({
             }}
           >
             <Typography className={classes.bodyText}>Body</Typography>
-            <Typography className={classes.counterText}>{message.length}/2000</Typography>
+            <Typography className={classes.counterText}>
+              {message.length}/{BODY_LIMIT}
+            </Typography>
           </Box>
           <Box
             style={{
@@ -283,7 +305,8 @@ const ConfirmLandlordMessagingModal = ({
               minRows={12}
               maxRows={12}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => setMessage(e.target.value.slice(0, BODY_LIMIT))}
+              inputProps={{ maxLength: BODY_LIMIT }}
               fullWidth
               className={classes.customTextField}
             />

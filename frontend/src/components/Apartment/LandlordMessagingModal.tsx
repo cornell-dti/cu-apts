@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { ReactElement, useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -48,6 +48,7 @@ const useStyles = makeStyles(() => ({
   firstContentDescriptionBox: {
     width: '100%',
     maxWidth: '1004px',
+    marginTop: '5px',
   },
   secondContentBox: {
     width: '100%',
@@ -261,8 +262,8 @@ const useStyles = makeStyles(() => ({
     borderRadius: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '20px' : '30px'),
     fontWeight: 600,
     textTransform: 'none',
-    fontSize: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '12px' : '16px'),
-    lineHeight: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '16px' : '100%'),
+    fontSize: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '12px' : '17px'),
+    lineHeight: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '150%' : '100%'),
     marginLeft: '24px',
     width: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '99px' : '168px'),
     height: ({ isMobile }: { isMobile: boolean }) => (isMobile ? '36px' : '48px'),
@@ -337,6 +338,27 @@ export type LandlordMessagingModalProps = {
   onEmailFailure: () => void;
 };
 
+/**
+ * LandlordMessagingModal Component
+ *
+ * This component creates a new smaller window where a user
+ * can interact with text fields and buttons to curate an email template
+ * with personal information and preferences which can then be sent
+ * to a landlords email from the cuapts email via the website.
+ *
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.aptName - Display name of the apartment/building shown in the email.
+ * @param {boolean} props.open - Whether the modal dialog is open.
+ * @param {string} props.landlord - Landlord or property manager display name used in the email body.
+ * @param {string|null} props.email - Landlord email address; null if unavailable.
+ * @param {() => void} props.onClose - Callback to close/dismiss the modal.
+ * @param {boolean} props.isMobile - Responsive flag to render the mobile layout.
+ * @param {(subject: string, body: string) => void} props.onSubmit - Called when user confirms; receives the composed subject and body.
+ * @param {() => void} props.onEmailSuccess - Invoked when the email send succeeds (e.g., to trigger a success toast).
+ * @param {() => void} props.onEmailFailure - Invoked when the email send fails (e.g., to trigger an error toast).
+ * @returns {ReactElement} LandlordMessagingModal component.
+ */
 const LandlordMessagingModal = ({
   aptName,
   open,
@@ -366,8 +388,22 @@ const LandlordMessagingModal = ({
   const [dateError, setDateError] = useState(false);
   const [subjectError, setSubjectError] = useState(false);
   const [messageError, setMessageError] = useState(false);
+  const BODY_LIMIT = 2000;
+
+  const validatePrereqsForTemplate = () => {
+    const nameValid = nameInputValue.trim() !== '';
+    const phoneValid = phoneInputValue.trim() !== '';
+    const dateValid = !!selectedDate;
+
+    setNameError(!nameValid);
+    setPhoneError(!phoneValid);
+    setDateError(!dateValid);
+
+    return nameValid && phoneValid && dateValid;
+  };
 
   const handleInquiryType = (inquiryType: string) => {
+    if (!validatePrereqsForTemplate()) return;
     if (inquiryType == 'availability') {
       setSubject('Inquiry for ' + aptName + ' Rental Availabilities');
       setMessage(
@@ -488,7 +524,7 @@ const LandlordMessagingModal = ({
             </Typography>
             {!isMobile && (
               <Button
-                style={{ width: '36px', height: '36px', minWidth: '36px', marginLeft: '702px' }}
+                style={{ width: '36px', height: '36px', minWidth: '36px', marginLeft: 'auto' }}
                 onClick={onClose}
               >
                 <img src={closeIcon} style={{ width: '24px', height: '24px' }} />
@@ -923,7 +959,7 @@ const LandlordMessagingModal = ({
                     color: '#999',
                   }}
                 >
-                  {message.length}/2000
+                  {message.length}/{BODY_LIMIT}
                 </Typography>
               </Box>
               <TextField
@@ -934,7 +970,8 @@ const LandlordMessagingModal = ({
                 error={messageError}
                 placeholder="Write your message here"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => setMessage(e.target.value.slice(0, BODY_LIMIT))}
+                inputProps={{ maxLength: BODY_LIMIT }}
                 fullWidth
                 className={classes.customTextField}
               />
@@ -955,10 +992,7 @@ const LandlordMessagingModal = ({
 
             <Button variant="contained" className={classes.submitButton} onClick={handleSubmit}>
               <Box style={{ display: 'flex' }}>
-                <img
-                  src={sendIcon}
-                  style={{ width: '20px', height: '20px', marginRight: '4px', marginTop: '-2px' }}
-                />
+                <img src={sendIcon} style={{ width: '20px', height: '20px', marginRight: '7px' }} />
                 Confirm
               </Box>
             </Button>
