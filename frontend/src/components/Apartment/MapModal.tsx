@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import {
   Box,
   Grid,
@@ -153,6 +153,10 @@ const MapModal = ({
   const mapRef = useRef<google.maps.Map | null>(null);
   const isMediumScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
+  const defaultZoom = isMobile ? 15 : 16;
+  const defaultMarkerSize = isMobile ? 24 : 60;
+
+  const [markerSize, setMarkerSize] = useState(defaultMarkerSize);
   const handleApiLoaded = ({ map, maps }: { map: google.maps.Map; maps: typeof google.maps }) => {
     mapRef.current = map;
   };
@@ -160,7 +164,8 @@ const MapModal = ({
   const handleRecenter = () => {
     if (mapRef.current) {
       mapRef.current.setCenter({ lat: latitude, lng: longitude });
-      mapRef.current.setZoom(16);
+      mapRef.current.setZoom(defaultZoom);
+      setMarkerSize(defaultMarkerSize);
     }
   };
 
@@ -170,6 +175,7 @@ const MapModal = ({
       const newZoom = currentZoom + zoomChange;
       if (newZoom > 11 && newZoom < 20) {
         mapRef.current.setZoom(newZoom);
+        setMarkerSize(markerSize + zoomChange * 2);
       }
     }
   };
@@ -277,7 +283,7 @@ const MapModal = ({
                 onGoogleApiLoaded={handleApiLoaded}
                 yesIWantToUseGoogleMapApiInternals
                 defaultCenter={{ lat: latitude, lng: longitude }}
-                defaultZoom={16}
+                defaultZoom={defaultZoom}
                 options={{
                   fullscreenControl: false,
                   zoomControl: false,
@@ -291,24 +297,34 @@ const MapModal = ({
                   ],
                 }}
               >
-                <Marker lat={latitude} lng={longitude} src={aptIcon} altText="apartment icon" />
+                <Marker
+                  lat={latitude}
+                  lng={longitude}
+                  src={aptIcon}
+                  altText="apartment icon"
+                  size={markerSize}
+                />
+
                 <Marker
                   lat={42.44455308325643}
                   lng={-76.48360496778704}
                   src={schoolIcon}
                   altText="Engineering Quad icon"
+                  size={markerSize}
                 />
                 <Marker
                   lat={42.446768276610875}
                   lng={-76.48505175766948}
                   src={schoolIcon}
                   altText="Ho Plaza icon"
+                  size={markerSize}
                 />
                 <Marker
                   lat={42.448929851009716}
                   lng={-76.47804712490351}
                   src={schoolIcon}
                   altText="Ag Quad icon"
+                  size={markerSize}
                 />
               </GoogleMapReact>
             </div>
