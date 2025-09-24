@@ -20,9 +20,11 @@ const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 type EmailCampaignOptions = {
   subject?: string;
   toEmail?: string;
-  recentLandlordPropertyIDs?: string[];
-  lovedPropertyIds?: string[];
+  nearbyPropertyIDs?: string[];
+  budgetPropertyIDs?: string[];
   recentAreaPropertyIDs?: string[];
+  lovedPropertyIDs?: string[];
+  reviewedPropertyIDs?: string[];
 };
 
 /**
@@ -32,9 +34,11 @@ type EmailCampaignOptions = {
  * @param options - Configuration options for the email campaign
  * @param options.subject - Email subject line (default: 'Check Out These New Apartments!')
  * @param options.toEmail - Primary recipient email address (default: 'laurenpothuru@gmail.com')
- * @param options.recentLandlordPropertyIDs - List of property IDs to feature as recent landlord properties
- * @param options.lovedPropertyIds - List of property IDs to feature as loved properties
+ * @param options.nearbyPropertyIDs - List of property IDs to feature as nearby available properties
+ * @param options.budgetPropertyIDs - List of property IDs to feature as budget-friendly properties
  * @param options.recentAreaPropertyIDs - List of property IDs to feature as recent area properties
+ * @param options.lovedPropertyIDs - List of property IDs to feature as top loved properties
+ * @param options.reviewedPropertyIDs - List of property IDs to feature as most reviewed properties
  * @returns Promise that resolves when all email batches have been sent
  */
 const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<void> => {
@@ -52,8 +56,6 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
     console.error('Missing RESEND_API_KEY in environment variables');
     return;
   }
-
-  // const { API_BASE_URL } = process.env;
 
   /**
    * getPropertiesByIds
@@ -82,19 +84,27 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
   };
 
   // Loads chosen properties
-  const recentLandlordProperties = options.recentLandlordPropertyIDs
-    ? await getPropertiesByIds(options.recentLandlordPropertyIDs)
+  const nearbyProperties = options.nearbyPropertyIDs
+    ? await getPropertiesByIds(options.nearbyPropertyIDs)
     : [];
-  const lovedProperties = options.lovedPropertyIds
-    ? await getPropertiesByIds(options.lovedPropertyIds)
+  const budgetProperties = options.budgetPropertyIDs
+    ? await getPropertiesByIds(options.budgetPropertyIDs)
     : [];
   const recentAreaProperties = options.recentAreaPropertyIDs
     ? await getPropertiesByIds(options.recentAreaPropertyIDs)
     : [];
+  const lovedProperties = options.lovedPropertyIDs
+    ? await getPropertiesByIds(options.lovedPropertyIDs)
+    : [];
+  const reviewedProperties = options.reviewedPropertyIDs
+    ? await getPropertiesByIds(options.reviewedPropertyIDs)
+    : [];
 
-  console.log(
-    `Fetched ${recentLandlordProperties.length} recent properties (landlord highlight), ${lovedProperties.length} loved properties (landlord highlight), and ${recentAreaProperties.length} recent properties (area spotlight).`
-  );
+  console.log(`Fetched ${nearbyProperties.length} nearby properties (recently released spotlight)`);
+  console.log(`Fetched ${budgetProperties.length} budget properties (recently released spotlight)`);
+  console.log(`Fetched ${recentAreaProperties.length} recent area properties (area spotlight)`);
+  console.log(`Fetched ${lovedProperties.length} loved properties (loved spotlight)`);
+  console.log(`Fetched ${reviewedProperties.length} reviewed properties (loved spotlight)`);
 
   const resend = new Resend(apiKey);
 
@@ -135,9 +145,11 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
           // bcc: bccEmails,
           subject,
           react: React.createElement(GenerateNewsletter, {
-            recentLandlordProperties,
-            lovedProperties,
+            nearbyProperties,
+            budgetProperties,
             recentAreaProperties,
+            lovedProperties,
+            reviewedProperties,
           }),
         });
 
@@ -169,9 +181,11 @@ const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<vo
         to: 'laurenpothuru@gmail.com',
         subject,
         react: React.createElement(GenerateNewsletter, {
-          recentLandlordProperties,
-          lovedProperties,
+          nearbyProperties,
+          budgetProperties,
           recentAreaProperties,
+          lovedProperties,
+          reviewedProperties,
         }),
       });
       if (error) {
@@ -202,8 +216,10 @@ async function main() {
     await sendEmailCampaign({
       subject: 'New Apartment Listings Available!',
       recentAreaPropertyIDs: ['12', '2', '24'],
-      lovedPropertyIds: ['23', '24', '24'],
-      recentLandlordPropertyIDs: ['14', '23', '24'],
+      budgetPropertyIDs: ['23', '24', '24'],
+      nearbyPropertyIDs: ['14', '23', '24'],
+      reviewedPropertyIDs: ['1', '2', '3'],
+      lovedPropertyIDs: ['4', '5', '6'],
     });
 
     console.log('Campaign completed successfully!');

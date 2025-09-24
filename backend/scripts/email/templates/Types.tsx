@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
-import { Landlord, ApartmentWithId } from '@common/types/db-types';
+import { ApartmentWithId } from '@common/types/db-types';
 
 export interface Activity {
   name: string;
@@ -13,6 +13,16 @@ export interface AreaProps {
   properties: ApartmentWithId[];
   activities: Activity[];
 }
+export interface RecentPropertiesProps {
+  nearbyProperties: ApartmentWithId[];
+  budgetProperties: ApartmentWithId[];
+}
+export interface LovedPropertiesProps {
+  topProperties: ApartmentWithId[];
+  reviewedProperties: ApartmentWithId[];
+  propertyReview: string;
+}
+
 export interface AdviceProps {
   name: string;
   year?: string;

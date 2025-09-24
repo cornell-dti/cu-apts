@@ -2,6 +2,8 @@
 import { ApartmentWithId } from '@common/types/db-types';
 import {
   AreaProps,
+  RecentPropertiesProps,
+  LovedPropertiesProps,
   AdviceProps,
   ReelsProps,
   FeatureSpotlightProps,
@@ -11,30 +13,34 @@ import {
 import Newsletter from './Newsletter';
 
 interface GenerateNewsletterProps {
-  recentLandlordProperties: ApartmentWithId[];
-  lovedProperties: ApartmentWithId[];
+  nearbyProperties: ApartmentWithId[];
+  budgetProperties: ApartmentWithId[];
   recentAreaProperties: ApartmentWithId[];
+  lovedProperties: ApartmentWithId[];
+  reviewedProperties: ApartmentWithId[];
 }
 
 /**
  * GenerateNewsletter Component
  *
  * This component builds a customizable email newsletter, allowing personalization
- * of various sections like area spotlights, landlord features, advice from students, and more.
+ * of various sections like area spotlights, advice from students, and more.
  * The component takes property data and renders a complete newsletter with optional sections
  * that can be included or excluded as needed.
  *
  * @component
  * @param {Object} props - Component properties
- * @param {ApartmentWithId[]} props.recentLandlordProperties - Latest properties from featured landlord
- * @param {ApartmentWithId[]} props.lovedProperties - Highly-rated or popular properties to showcase
+ * @param {ApartmentWithId[]} props.nearbyProperties - Nearby properties recently released
+ * @param {ApartmentWithId[]} props.budgetProperties - Budget-friendly properties to showcase
  * @param {ApartmentWithId[]} props.recentAreaProperties - Recent listings in the featured area
  * @returns {ReactElement} Complete newsletter with all requested sections
  */
 const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
-  recentLandlordProperties,
-  lovedProperties,
+  nearbyProperties,
+  budgetProperties,
   recentAreaProperties,
+  lovedProperties,
+  reviewedProperties,
 }) => {
   /**
    * The main message at the top of the newsletter.
@@ -107,6 +113,37 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
   };
 
   /**
+   * RecentPropertiesProps Interface
+   *
+   * Defines the structure for featuring recently released/vacant properties in the newsletter
+   *
+   * @typedef {Object} recentPropertiesSpotlight
+   * @property {ApartmentWithId[]} nearbyProperties - Recently released properties close to campus
+   * @property {ApartmentWithId[]} budgetProperties - Budget-friendly recently released properties
+   */
+  const recentPropertiesSpotlight: RecentPropertiesProps = {
+    nearbyProperties,
+    budgetProperties,
+  };
+
+  /**
+   * LovedPropertiesProps Interface
+   *
+   * Defines the structure for featuring top loved properties in the newsletter
+   *
+   * @typedef {Object} LovedPropertiesProps
+   * @property {ApartmentWithId[]} topProperties - Array of top loved properties.
+   * @property {ApartmentWithId[]} reviewedProperties - Array of most reviewed properties.
+   * @property {string} propertyReview - A brief review about a featured property.
+   */
+  const lovedPropertiesSpotlight: LovedPropertiesProps = {
+    topProperties: lovedProperties,
+    reviewedProperties,
+    propertyReview:
+      'This is a great property! I loved living here because of the location and amenities.',
+  };
+
+  /**
    * ReelsProps Interface
    *
    * Defines the structure for featuring video reels
@@ -116,7 +153,8 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
    * @property {string} description - Text description of the featured reel content
    */
   const reelsSpotlight: ReelsProps = {
-    gifUrl: 'https://media.tenor.com/SYuz3k9aVkQAAAAM/iphone-phone.gif',
+    gifUrl:
+      'https://images.squarespace-cdn.com/content/v1/63790add69cad263aad792fc/4a508b5d-f580-4d23-a002-ddfad043061d/IMG_2025.jpg',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque nec porttitor ligula. Duis eget augue rhoncus, ',
   };
@@ -190,6 +228,8 @@ const GenerateNewsletter: React.FC<GenerateNewsletterProps> = ({
         introductionMessage={introductionMessage}
         areaSpotlight={area}
         advice={advice}
+        recentPropertiesSpotlight={recentPropertiesSpotlight}
+        lovedPropertiesSpotlight={lovedPropertiesSpotlight}
         reels={reelsSpotlight}
         newFeature={featureSpotlight}
         subleaseSpotlight={sublease}

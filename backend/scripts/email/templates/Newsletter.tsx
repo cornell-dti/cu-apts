@@ -1,22 +1,28 @@
 import { Html, Head, Body, Container, Text } from '@react-email/components';
 import {
   AreaProps,
+  RecentPropertiesProps,
   AdviceProps,
   ReelsProps,
   FeatureSpotlightProps,
   NeighborhoodCompProps,
   SubleaseProps,
+  LovedPropertiesProps,
 } from './Types';
 import AreaSpotlight from '../components/AreaSpotlight';
+import RecentPropertiesSpotlight from '../components/RecentPropertiesSpotlight';
 import NeighborhoodComparison from '../components/NeighborhoodComparison';
 import SubleaseSpotlight from '../components/SubleaseSpotlight';
 import FeatureSpotlight from '../components/FeatureSpotlight';
 import ReelsFeature from '../components/ReelsFeature';
 import Header from '../components/Header';
+import LovedPropertiesSpotlight from '../components/LovedPropertiesSpotlight';
 
 type NewsletterProps = {
   firstName: string;
   introductionMessage: string;
+  recentPropertiesSpotlight?: RecentPropertiesProps;
+  lovedPropertiesSpotlight?: LovedPropertiesProps;
   areaSpotlight?: AreaProps;
   advice?: AdviceProps;
   reels?: ReelsProps;
@@ -38,6 +44,8 @@ type NewsletterProps = {
  * @param {Object} props - Component properties.
  * @param {string} props.firstName - The recipient's first name for personalized greeting.
  * @param {string} props.introductionMessage - Opening message that appears after the greeting.
+ * @param {RecentPropertiesProps[]} [props.recentPropertiesSpotlight] - Array of recently released/vacant property information to showcase (optional).
+ * @param {LovedPropertiesProps[]} [props.lovedPropertiesSpotlight] - Array of top loved properties information to showcase (optional).
  * @param {AreaProps} [props.areaSpotlight] - Information about a featured housing area (optional).
  * @param {AdviceProps} [props.advice] - Upperclassmen advice section content (optional).
  * @param {ReelsProps} [props.reels] - Content for featuring video reels (optional).
@@ -50,6 +58,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   firstName,
   introductionMessage,
+  recentPropertiesSpotlight,
   areaSpotlight,
   advice,
   reels,
@@ -57,6 +66,7 @@ const Newsletter: React.FC<NewsletterProps> = ({
   neighborhoodComparison,
   subleaseSpotlight,
   headerUrl,
+  lovedPropertiesSpotlight,
 }: NewsletterProps) => (
   <Html>
     <Head>
@@ -132,6 +142,38 @@ const Newsletter: React.FC<NewsletterProps> = ({
           </strong>{' '}
           {introductionMessage}
         </Text>
+
+        {/* Recently Released section */}
+        {recentPropertiesSpotlight && (
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <RecentPropertiesSpotlight
+              nearbyProperties={recentPropertiesSpotlight.nearbyProperties}
+              budgetProperties={recentPropertiesSpotlight.budgetProperties}
+            />
+          </div>
+        )}
+        {/* Loved Properties Section */}
+        {lovedPropertiesSpotlight && (
+          <div
+            style={{
+              mixBlendMode: 'normal',
+              isolation: 'isolate',
+              colorScheme: 'light only',
+            }}
+          >
+            <LovedPropertiesSpotlight
+              topProperties={lovedPropertiesSpotlight.topProperties}
+              reviewedProperties={lovedPropertiesSpotlight.reviewedProperties}
+              propertyReview={lovedPropertiesSpotlight.propertyReview}
+            />
+          </div>
+        )}
 
         {/* area section */}
         {areaSpotlight && (
@@ -375,12 +417,13 @@ const Newsletter: React.FC<NewsletterProps> = ({
 );
 
 Newsletter.defaultProps = {
-  // headline: 'Welcome to CUApts',
+  recentPropertiesSpotlight: undefined,
   areaSpotlight: undefined,
   advice: undefined,
   reels: undefined,
   newFeature: undefined,
   neighborhoodComparison: undefined,
   subleaseSpotlight: undefined,
+  lovedPropertiesSpotlight: undefined,
 };
 export default Newsletter;
