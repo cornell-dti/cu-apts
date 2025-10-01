@@ -1033,11 +1033,9 @@
     "regenerator-runtime" "^0.13.4"
 
 "@babel/runtime@^7.1.2", "@babel/runtime@^7.10.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.13", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.21.0", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.0", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
-  "integrity" "sha512-VtPOkrdPHZsKc/clNqyi9WUA8TINkZ4cGk63UUE3u4pmB2k+ZMQRDuIOagv8UVd6j7k0T3+RRIb7beKTebNbcw=="
-  "resolved" "https://registry.npmjs.org/@babel/runtime/-/runtime-7.27.0.tgz"
-  "version" "7.27.0"
-  dependencies:
-    "regenerator-runtime" "^0.14.0"
+  "integrity" "sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ=="
+  "resolved" "https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.4.tgz"
+  "version" "7.28.4"
 
 "@babel/template@^7.10.4", "@babel/template@^7.16.0", "@babel/template@^7.3.3":
   "integrity" "sha512-MnZdpFD/ZdYhXwiunMqqgyZyucaYsbL0IrjoGjaVhGilz+x8YB++kRfygSOIj1yOtWKPlx7NBp+9I1RQSgsd5A=="
@@ -1645,9 +1643,18 @@
   "integrity" "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="
   "resolved" "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz"
   "version" "1.7.3"
+"@floating-ui/core@^1.7.3":
+  "integrity" "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz"
+  "version" "1.7.3"
   dependencies:
     "@floating-ui/utils" "^0.2.10"
+    "@floating-ui/utils" "^0.2.10"
 
+"@floating-ui/dom@^1.7.4":
+  "integrity" "sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz"
+  "version" "1.7.4"
 "@floating-ui/dom@^1.7.4":
   "integrity" "sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA=="
   "resolved" "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz"
@@ -1655,14 +1662,25 @@
   dependencies:
     "@floating-ui/core" "^1.7.3"
     "@floating-ui/utils" "^0.2.10"
+    "@floating-ui/core" "^1.7.3"
+    "@floating-ui/utils" "^0.2.10"
 
+"@floating-ui/react-dom@^2.1.6":
+  "integrity" "sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.6.tgz"
+  "version" "2.1.6"
 "@floating-ui/react-dom@^2.1.6":
   "integrity" "sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw=="
   "resolved" "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.6.tgz"
   "version" "2.1.6"
   dependencies:
     "@floating-ui/dom" "^1.7.4"
+    "@floating-ui/dom" "^1.7.4"
 
+"@floating-ui/react@^0.27.15":
+  "integrity" "sha512-9O8N4SeG2z++TSM8QA/KTeKFBVCNEz/AGS7gWPJf6KFRzmRWixFRnCnkPHRDwSVZW6QPDO6uT0P2SpWNKCc9/g=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/react/-/react-0.27.16.tgz"
+  "version" "0.27.16"
 "@floating-ui/react@^0.27.15":
   "integrity" "sha512-9O8N4SeG2z++TSM8QA/KTeKFBVCNEz/AGS7gWPJf6KFRzmRWixFRnCnkPHRDwSVZW6QPDO6uT0P2SpWNKCc9/g=="
   "resolved" "https://registry.npmjs.org/@floating-ui/react/-/react-0.27.16.tgz"
@@ -1670,8 +1688,14 @@
   dependencies:
     "@floating-ui/react-dom" "^2.1.6"
     "@floating-ui/utils" "^0.2.10"
+    "@floating-ui/react-dom" "^2.1.6"
+    "@floating-ui/utils" "^0.2.10"
     "tabbable" "^6.0.0"
 
+"@floating-ui/utils@^0.2.10":
+  "integrity" "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="
+  "resolved" "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz"
+  "version" "0.2.10"
 "@floating-ui/utils@^0.2.10":
   "integrity" "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="
   "resolved" "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz"
@@ -3779,7 +3803,7 @@
   "resolved" "https://registry.npmjs.org/babylon/-/babylon-6.18.0.tgz"
   "version" "6.18.0"
 
-"backend@file:/Users/parsatehranipoor/cu-apts/backend":
+"backend@file:/Users/casper/Documents/freshmanSpring/DTI/cu-apts/backend":
   "resolved" "file:backend"
   "version" "1.0.0"
   dependencies:
@@ -5235,9 +5259,9 @@
   "version" "4.1.0"
 
 "dayjs@^1.11.13":
-  "integrity" "sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg=="
-  "resolved" "https://registry.npmjs.org/dayjs/-/dayjs-1.11.13.tgz"
-  "version" "1.11.13"
+  "integrity" "sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA=="
+  "resolved" "https://registry.npmjs.org/dayjs/-/dayjs-1.11.18.tgz"
+  "version" "1.11.18"
 
 "debug@^2.2.0":
   "integrity" "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="
@@ -6735,7 +6759,7 @@
     "inherits" "^2.0.1"
     "readable-stream" "^2.0.0"
 
-"frontend@file:/Users/parsatehranipoor/cu-apts/frontend":
+"frontend@file:/Users/casper/Documents/freshmanSpring/DTI/cu-apts/frontend":
   "resolved" "file:frontend"
   "version" "0.1.0"
   dependencies:
@@ -9799,9 +9823,7 @@
   "version" "2.0.1"
 
 "nodemailer@^6.9.13":
-  "integrity" "sha512-psAuZdTIRN08HKVd/E8ObdV6NO7NTBY3KsC30F7M4H1OnmLCUNaS56FpYxyb26zWLSyYF9Ozch9KYHhHegsiOQ=="
-  "resolved" "https://registry.npmjs.org/nodemailer/-/nodemailer-6.9.16.tgz"
-  "version" "6.9.16"
+  "version" "6.9.15"
 
 "normalize-package-data@^2.3.2", "normalize-package-data@^2.5.0":
   "integrity" "sha512-/5CMN3T0R4XTj4DcGaexo+roZSdSFW/0AOOTROrjxzCG1wrWXEsGbRKevjlIL+ZDE4sZlJr5ED4YW0yqmkK+eA=="
@@ -11463,10 +11485,10 @@
     "regenerator-runtime" "^0.13.7"
     "whatwg-fetch" "^3.4.1"
 
-"react-datepicker@^8.7.0":
-  "integrity" "sha512-r5OJbiLWc3YiVNy69Kau07/aVgVGsFVMA6+nlqCV7vyQ8q0FUOnJ+wAI4CgVxHejG3i5djAEiebrF8/Eip4rIw=="
-  "resolved" "https://registry.npmjs.org/react-datepicker/-/react-datepicker-8.7.0.tgz"
-  "version" "8.7.0"
+"react-datepicker@^8.3.0":
+  "integrity" "sha512-DhfrIJnTPJTUVRtXU7c7zooug40rD6q+Fc8UTCt19dYEotLpDQgTN98MfocY6Rc4S99oOFFEoxyanOM/TKauuw=="
+  "resolved" "https://registry.npmjs.org/react-datepicker/-/react-datepicker-8.3.0.tgz"
+  "version" "8.3.0"
   dependencies:
     "@floating-ui/react" "^0.27.15"
     "clsx" "^2.1.1"
@@ -11803,11 +11825,6 @@
   "integrity" "sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA=="
   "resolved" "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.9.tgz"
   "version" "0.13.9"
-
-"regenerator-runtime@^0.14.0":
-  "integrity" "sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw=="
-  "resolved" "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz"
-  "version" "0.14.1"
 
 "regenerator-transform@^0.14.2":
   "integrity" "sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw=="
