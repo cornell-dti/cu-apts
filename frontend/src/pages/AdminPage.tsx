@@ -4,9 +4,6 @@ import {
   makeStyles,
   Grid,
   Container,
-  List,
-  ListItem,
-  ListItemText,
   AppBar,
   Toolbar,
   Tabs,
@@ -20,6 +17,7 @@ import {
 } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
+import AdminNewsletter from '../components/Admin/AdminNewsletter';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
@@ -346,6 +344,12 @@ const AdminPage = (): ReactElement => {
     </Container>
   );
 
+  const newsletter = (
+    <Container className={container}>
+      <AdminNewsletter />
+    </Container>
+  );
+
   return (
     <div>
       <AppBar position="static" elevation={0}>
@@ -358,12 +362,14 @@ const AdminPage = (): ReactElement => {
           >
             <Tab label="Reviews" value="Reviews" />
             <Tab label="Contact" value="Contact" />
+            <Tab label="Newsletter" value="Newsletter" />
           </Tabs>
         </Toolbar>
       </AppBar>
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
+      {selectedTab === 'Newsletter' && newsletter}
       {Modals}
     </div>
   );
