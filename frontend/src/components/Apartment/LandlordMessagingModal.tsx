@@ -1,4 +1,4 @@
-import React, { ReactElement, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -541,7 +541,7 @@ const LandlordMessagingModal = ({
               }}
             >
               Not sure how to reach out to the landlord? Fill out the form, and we'll create and
-              send a tailored email directly to their inbox.
+              send a tailored email directly to their inbox
             </Typography>
           </Box>
         </Box>
@@ -644,10 +644,11 @@ const LandlordMessagingModal = ({
                   </Typography>
                 )}
               </Box>
+
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <KeyboardDatePicker
                   disableToolbar
-                  variant="inline"
+                  variant="dialog"
                   format="MM/dd/yyyy"
                   id="move-in-date-picker"
                   placeholder="MM/DD/YYYY"
@@ -656,23 +657,11 @@ const LandlordMessagingModal = ({
                   error={dateError}
                   open={isCalendarOpen}
                   onClose={() => setIsCalendarOpen(false)}
-                  PopoverProps={{
-                    anchorEl: pickerRef.current,
-                    anchorOrigin: {
-                      vertical: 'bottom',
-                      horizontal: 'left',
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'left',
-                    },
-                  }}
                   className={isMobile ? classes.datePickerFieldMobile : classes.datePickerField}
                   KeyboardButtonProps={{ style: { display: 'none' } }}
                   TextFieldComponent={(props) => (
                     <TextField
                       {...props}
-                      inputRef={pickerRef}
                       variant="outlined"
                       onClick={() => setIsCalendarOpen(true)}
                       InputProps={{
@@ -1001,7 +990,7 @@ const LandlordMessagingModal = ({
       </DialogContent>
       <ConfirmLandlordMessagingModal
         open={showConfirmModal}
-        email={email}
+        email={'djl364@cornell.edu'}
         subject={subject}
         body={message}
         onClose={() => setShowConfirmModal(false)}

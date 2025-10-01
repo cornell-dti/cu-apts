@@ -80,7 +80,7 @@
     "env-cmd": "^10.1.0",
     "google-map-react": "^2.2.1",
     "nodemailer": "^6.9.13",
-    "react-datepicker": "^8.3.0",
+    "react-datepicker": "^8.7.0",
     "react-google-charts": "^4.0.1",
     "react-infinite-scroll-component": "^6.1.0"
   }
