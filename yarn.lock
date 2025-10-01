@@ -11485,10 +11485,10 @@
     "regenerator-runtime" "^0.13.7"
     "whatwg-fetch" "^3.4.1"
 
-"react-datepicker@^8.3.0":
-  "integrity" "sha512-DhfrIJnTPJTUVRtXU7c7zooug40rD6q+Fc8UTCt19dYEotLpDQgTN98MfocY6Rc4S99oOFFEoxyanOM/TKauuw=="
-  "resolved" "https://registry.npmjs.org/react-datepicker/-/react-datepicker-8.3.0.tgz"
-  "version" "8.3.0"
+"react-datepicker@^8.7.0":
+  "integrity" "sha512-r5OJbiLWc3YiVNy69Kau07/aVgVGsFVMA6+nlqCV7vyQ8q0FUOnJ+wAI4CgVxHejG3i5djAEiebrF8/Eip4rIw=="
+  "resolved" "https://registry.npmjs.org/react-datepicker/-/react-datepicker-8.7.0.tgz"
+  "version" "8.7.0"
   dependencies:
     "@floating-ui/react" "^0.27.15"
     "clsx" "^2.1.1"

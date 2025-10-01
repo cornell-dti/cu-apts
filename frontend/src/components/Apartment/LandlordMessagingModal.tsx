@@ -506,6 +506,21 @@ const LandlordMessagingModal = ({
     }
   };
 
+  const closeAllModals = () => {
+    setShowConfirmModal(false);
+    onClose();
+  };
+
+  const handleConfirmSuccess = () => {
+    if (onEmailSuccess) onEmailSuccess();
+    closeAllModals();
+  };
+
+  const handleConfirmFailure = () => {
+    if (onEmailFailure) onEmailFailure();
+    closeAllModals();
+  };
+
   return (
     <Dialog
       open={open}
@@ -990,13 +1005,13 @@ const LandlordMessagingModal = ({
       </DialogContent>
       <ConfirmLandlordMessagingModal
         open={showConfirmModal}
-        email={'djl364@cornell.edu'}
+        email={email}
         subject={subject}
         body={message}
         onClose={() => setShowConfirmModal(false)}
         isMobile={isMobile}
-        triggerToast={onEmailSuccess}
-        triggerErrorToast={onEmailFailure}
+        triggerToast={handleConfirmSuccess}
+        triggerErrorToast={handleConfirmFailure}
       />
     </Dialog>
   );
