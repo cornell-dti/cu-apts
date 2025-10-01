@@ -1,0 +1,232 @@
+import { Resend } from 'resend';
+import * as dotenv from 'dotenv';
+import fetch, { Headers, Response, Request } from 'node-fetch';
+import * as path from 'path';
+import React from 'react';
+import { ApartmentWithId } from '@common/types/db-types';
+import GenerateNewsletter from './templates/GenerateNewsletter';
+import { getUserBatches, USERS } from './helpers/firebase_users_loader';
+
+// Initialize fetch globals if needed
+if (!global.fetch) {
+  global.fetch = fetch as unknown as typeof global.fetch;
+  global.Headers = Headers as unknown as typeof global.Headers;
+  global.Response = Response as unknown as typeof global.Response;
+  global.Request = Request as unknown as typeof global.Request;
+}
+
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
+type EmailCampaignOptions = {
+  subject?: string;
+  toEmail?: string;
+  nearbyPropertyIDs?: string[];
+  budgetPropertyIDs?: string[];
+  recentAreaPropertyIDs?: string[];
+  lovedPropertyIDs?: string[];
+  reviewedPropertyIDs?: string[];
+};
+
+/**
+ * sendEmailCampaign
+ * Sends a marketing email campaign to batches of users featuring apartment properties.
+ *
+ * @param options - Configuration options for the email campaign
+ * @param options.subject - Email subject line (default: 'Check Out These New Apartments!')
+ * @param options.toEmail - Primary recipient email address (default: 'laurenpothuru@gmail.com')
+ * @param options.nearbyPropertyIDs - List of property IDs to feature as nearby available properties
+ * @param options.budgetPropertyIDs - List of property IDs to feature as budget-friendly properties
+ * @param options.recentAreaPropertyIDs - List of property IDs to feature as recent area properties
+ * @param options.lovedPropertyIDs - List of property IDs to feature as top loved properties
+ * @param options.reviewedPropertyIDs - List of property IDs to feature as most reviewed properties
+ * @returns Promise that resolves when all email batches have been sent
+ */
+const sendEmailCampaign = async (options: EmailCampaignOptions = {}): Promise<void> => {
+  const { subject = 'Check Out These New Apartments!', toEmail = 'laurenpothuru@gmail.com' } =
+    options;
+
+  // Load environment variables
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.dev') });
+
+  const fromEmail = 'updates.cuapts.org';
+  const fromName = 'CU Apts';
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('Missing RESEND_API_KEY in environment variables');
+    return;
+  }
+
+  /**
+   * getPropertiesByIds
+   * Fetches apartment data for a given list of property IDs.
+   *
+   * @param ids - List of apartment IDs to fetch from backend API
+   * @returns List of ApartmentWithId objects
+   *
+   */
+  const getPropertiesByIds = async (ids: string[]): Promise<ApartmentWithId[]> => {
+    try {
+      const idParam = ids.join(',');
+
+      const response = await fetch(`${API_BASE_URL}/api/apts/${idParam}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch property data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data as ApartmentWithId[];
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      return [];
+    }
+  };
+
+  // Loads chosen properties
+  const nearbyProperties = options.nearbyPropertyIDs
+    ? await getPropertiesByIds(options.nearbyPropertyIDs)
+    : [];
+  const budgetProperties = options.budgetPropertyIDs
+    ? await getPropertiesByIds(options.budgetPropertyIDs)
+    : [];
+  const recentAreaProperties = options.recentAreaPropertyIDs
+    ? await getPropertiesByIds(options.recentAreaPropertyIDs)
+    : [];
+  const lovedProperties = options.lovedPropertyIDs
+    ? await getPropertiesByIds(options.lovedPropertyIDs)
+    : [];
+  const reviewedProperties = options.reviewedPropertyIDs
+    ? await getPropertiesByIds(options.reviewedPropertyIDs)
+    : [];
+
+  console.log(`Fetched ${nearbyProperties.length} nearby properties (recently released spotlight)`);
+  console.log(`Fetched ${budgetProperties.length} budget properties (recently released spotlight)`);
+  console.log(`Fetched ${recentAreaProperties.length} recent area properties (area spotlight)`);
+  console.log(`Fetched ${lovedProperties.length} loved properties (loved spotlight)`);
+  console.log(`Fetched ${reviewedProperties.length} reviewed properties (loved spotlight)`);
+
+  const resend = new Resend(apiKey);
+
+  /**
+   * BATCH PROCESSING AND EMAIL SENDING
+   * Processes users in batches and sends emails concurrently:
+   * - Creates batches of 50 users and maps over batches to send emails in parallel
+   * - Uses BCC to hide recipient emails from each other
+   *
+   * To use, uncomment line 191, comment out line 192, and run the file as normal.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const sendBatchEmail = async () => {
+    try {
+      console.log(`Total users available in database: ${USERS.length}`);
+      const validEmails = USERS.filter((user) => user.email && user.email.includes('@'));
+      console.log(`Valid email addresses: ${validEmails.length}`);
+
+      if (validEmails.length === 0) {
+        console.error('No valid email addresses found!');
+        return;
+      }
+
+      const userBatches = await getUserBatches(50);
+      console.log(
+        `Preparing to send emails to ${userBatches.length} batches of users (${50} per batch)`
+      );
+
+      const emailPromises = userBatches.map(async (batch, i) => {
+        const bccEmails = batch.map((user) => user.email);
+        console.log(
+          `Preparing batch ${i + 1}/${userBatches.length} with ${bccEmails.length} recipients`
+        );
+
+        const { data, error } = await resend.emails.send({
+          from: `${fromName} <${fromEmail}>`,
+          to: toEmail,
+          // bcc: bccEmails,
+          subject,
+          react: React.createElement(GenerateNewsletter, {
+            nearbyProperties,
+            budgetProperties,
+            recentAreaProperties,
+            lovedProperties,
+            reviewedProperties,
+          }),
+        });
+
+        if (error) {
+          console.error(`Error sending batch ${i + 1}:`, error);
+        } else {
+          console.log(`Batch ${i + 1} sent successfully! ID:`, data?.id || 'no ID returned');
+        }
+      });
+
+      await Promise.all(emailPromises);
+      console.log('All email batches sent successfully!');
+    } catch (err) {
+      console.error('Exception when sending emails:', err);
+      throw err;
+    }
+  };
+
+  /**
+   * SINGLE TEST EMAIL SENDING
+   * Sends an email to one person (useful for testing email templates).
+   *   To use, uncomment line 192, comment out line 191, edit info below,
+   *   and run the file as normal.
+   */
+  const sendSingleTestEmail = async () => {
+    try {
+      const { data, error } = await resend.emails.send({
+        from: 'updates@cuapts.org',
+        to: 'laurenpothuru@gmail.com',
+        subject,
+        react: React.createElement(GenerateNewsletter, {
+          nearbyProperties,
+          budgetProperties,
+          recentAreaProperties,
+          lovedProperties,
+          reviewedProperties,
+        }),
+      });
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent successfully! ID:', data ? data.id : ' no ID returned.');
+      }
+    } catch (err) {
+      console.error('Exception when sending email:', err);
+    }
+  };
+
+  // sendBatchEmail();
+  sendSingleTestEmail();
+};
+
+/**
+ * Entry point function that executes the email campaign with default settings.
+ * Handles logging and error handling for the campaign process.
+ *
+ * @returns Promise that resolves when the campaign completes
+ */
+async function main() {
+  try {
+    console.log('Starting email campaign...');
+
+    // Customize  email subject
+    await sendEmailCampaign({
+      subject: 'New Apartment Listings Available!',
+      recentAreaPropertyIDs: ['12', '2', '24'],
+      budgetPropertyIDs: ['23', '24', '24'],
+      nearbyPropertyIDs: ['14', '23', '24'],
+      reviewedPropertyIDs: ['1', '2', '3'],
+      lovedPropertyIDs: ['4', '5', '6'],
+    });
+
+    console.log('Campaign completed successfully!');
+  } catch (error) {
+    console.error('Failed to send campaign:', error);
+  }
+}
+
+// Execute main function directly
+main().catch(console.error);
