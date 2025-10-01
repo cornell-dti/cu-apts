@@ -8,8 +8,52 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
+  Modal,
+  Box,
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+const useStyles = makeStyles(() => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    maxWidth: '800px',
+    padding: '20px',
+  },
+  modalBox: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    backgroundColor: 'white',
+    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+    padding: '32px',
+    borderRadius: '8px',
+  },
+  sectionTitle: {
+    marginTop: '20px',
+    marginBottom: '10px',
+  },
+  accordionDetails: {
+    flexDirection: 'column',
+    gap: '15px',
+  },
+  neighborhoodSubtitle: {
+    marginTop: '15px',
+  },
+  sendTitle: {
+    marginTop: '30px',
+    marginBottom: '10px',
+  },
+  buttonContainer: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '10px',
+  },
+}));
 
 /**
  * AdminNewsletter - Displays a form to fill out and send a newsletter.
@@ -17,6 +61,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
  * @returns {ReactElement} - A Material-UI form for newsletter generation
  */
 const AdminNewsletter = () => {
+  const classes = useStyles();
   const [sections, setSections] = useState({
     recentlyReleased: false,
     topLoved: false,
@@ -27,21 +72,38 @@ const AdminNewsletter = () => {
     sublease: false,
     reels: false,
   });
+  const [showModal, setShowModal] = useState(false);
+
+  const openModal = () => setShowModal(true);
+  const closeModal = () => setShowModal(false);
 
   const handleSectionToggle = (section: keyof typeof sections) => {
     setSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-        maxWidth: '800px',
-        padding: '20px',
-      }}
-    >
+    <div className={classes.root}>
+      <Modal
+        open={showModal}
+        onClose={closeModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box className={classes.modalBox}>
+          <Typography variant="h6" component="h2" gutterBottom>
+            IMPORTANT: Confirm Send
+          </Typography>
+          <Typography id="modal-modal-title">
+            This newsletter will be sent to all subscribers. Please make sure that you have tested
+            the content and formatting by sending a single test email to yourself. Are you sure you
+            want to continue?
+          </Typography>
+          <Button variant="contained" color="primary" onClick={closeModal}>
+            Send to all users
+          </Button>
+        </Box>
+      </Modal>
+
       <Typography variant="h4" component="h2">
         Newsletter Generation
       </Typography>
@@ -73,7 +135,7 @@ const AdminNewsletter = () => {
         placeholder="https://example.com/header.jpg"
       />
 
-      <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '10px' }}>
+      <Typography variant="h6" className={classes.sectionTitle}>
         Optional Sections
       </Typography>
 
@@ -93,7 +155,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Recently Released Properties</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Close to Campus Property IDs"
               variant="outlined"
@@ -128,7 +190,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Top Loved Properties</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Highest Rated Property IDs"
               variant="outlined"
@@ -171,7 +233,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Advice from Upperclassmen</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Advice Content"
               variant="outlined"
@@ -206,7 +268,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>New Feature Spotlight</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Feature Image URL"
               variant="outlined"
@@ -248,7 +310,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Neighborhood Comparison</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <Typography variant="subtitle2" color="textSecondary">
               Neighborhood 1
             </Typography>
@@ -274,7 +336,11 @@ const AdminNewsletter = () => {
               placeholder="Describe this neighborhood"
             />
 
-            <Typography variant="subtitle2" color="textSecondary" style={{ marginTop: '15px' }}>
+            <Typography
+              variant="subtitle2"
+              color="textSecondary"
+              className={classes.neighborhoodSubtitle}
+            >
               Neighborhood 2
             </Typography>
             <TextField
@@ -318,7 +384,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Area Spotlight</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Area Name"
               variant="outlined"
@@ -375,7 +441,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Sublease Spotlight</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Sublease Image URL"
               variant="outlined"
@@ -418,7 +484,7 @@ const AdminNewsletter = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Reels</Typography>
           </AccordionSummary>
-          <AccordionDetails style={{ flexDirection: 'column', gap: '15px' }}>
+          <AccordionDetails className={classes.accordionDetails}>
             <TextField
               label="Reel GIF URL"
               variant="outlined"
@@ -439,7 +505,7 @@ const AdminNewsletter = () => {
       </div>
 
       {/* Send Options */}
-      <Typography variant="h6" style={{ marginTop: '30px', marginBottom: '10px' }}>
+      <Typography variant="h6" className={classes.sendTitle}>
         Send Newsletter
       </Typography>
 
@@ -452,11 +518,11 @@ const AdminNewsletter = () => {
         helperText="Send a test to this email address"
       />
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+      <div className={classes.buttonContainer}>
         <Button variant="contained" color="primary">
           Send Test Email
         </Button>
-        <Button variant="contained" color="secondary">
+        <Button variant="contained" color="secondary" onClick={openModal}>
           Send to All Subscribers
         </Button>
       </div>
