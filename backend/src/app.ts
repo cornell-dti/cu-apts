@@ -34,6 +34,9 @@ import { admins } from '../../frontend/src/constants/HomeConsts';
 const cuaptsEmail = process.env.CUAPTS_EMAIL;
 const cuaptsEmailPassword = process.env.CUAPTS_EMAIL_APP_PASSWORD;
 
+// Google Maps API key
+const { REACT_APP_MAPS_API_KEY } = process.env;
+
 // Collections in the Firestore database
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
@@ -495,10 +498,10 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     // Extract all query parameters
     const query = req.query.q as string;
     const locations = req.query.locations as string;
-    const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
-    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
-    const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
-    const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
+    // const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
+    // const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
+    // const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
+    // const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
     const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
     const sortBy = req.query.sortBy || 'numReviews';
 
@@ -1303,6 +1306,254 @@ app.post('/api/add-pending-building', authenticate, async (req, res) => {
 });
 
 /**
+ * Update Apartment Information - Updates the information of an existing apartment.
+ *
+ * @remarks
+ * This endpoint allows admins to update apartment information including name, address,
+ * landlord, amenities, photos, and other details. Only admins can access this endpoint.
+ *
+ * @route PUT /api/admin/update-apartment/:apartmentId
+ *
+ * @input {string} req.params.apartmentId - The ID of the apartment to update
+ * @input {Partial<Apartment>} req.body - The updated apartment information
+ *
+ * @status
+ * - 200: Successfully updated apartment information
+ * - 400: Invalid apartment data or missing required fields
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 404: Apartment not found
+ * - 500: Server error while updating apartment
+ */
+app.put('/api/admin/update-apartment/:apartmentId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const { apartmentId } = req.params;
+    const updatedApartmentData = req.body as Partial<Apartment>;
+
+    // Check if apartment exists
+    const apartmentDoc = buildingsCollection.doc(apartmentId);
+    const apartmentSnapshot = await apartmentDoc.get();
+
+    if (!apartmentSnapshot.exists) {
+      res.status(404).send('Apartment not found');
+      return;
+    }
+
+    // Validate required fields if they're being updated
+    if (updatedApartmentData.name !== undefined && updatedApartmentData.name === '') {
+      res.status(400).send('Error: Apartment name cannot be empty');
+      return;
+    }
+
+    if (updatedApartmentData.address !== undefined && updatedApartmentData.address === '') {
+      res.status(400).send('Error: Apartment address cannot be empty');
+      return;
+    }
+
+    // Update the apartment document
+    await apartmentDoc.update(updatedApartmentData);
+
+    res.status(200).send('Apartment updated successfully');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error updating apartment');
+  }
+});
+
+/**
+ * geocodeAddress – Converts an address to latitude and longitude coordinates using Google Geocoding API.
+ *
+ * @remarks
+ * Makes an HTTP request to the Google Geocoding API to convert an address string into
+ * precise latitude and longitude coordinates.
+ *
+ * @param {string} address - The address to geocode
+ * @return {Promise<{latitude: number, longitude: number}>} - Object containing latitude and longitude
+ */
+async function geocodeAddress(address: string): Promise<{ latitude: number; longitude: number }> {
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address
+    )}&key=${REACT_APP_MAPS_API_KEY}`
+  );
+
+  if (response.data.status !== 'OK' || !response.data.results.length) {
+    throw new Error('Geocoding failed: Invalid address or no results found');
+  }
+
+  const {location} = response.data.results[0].geometry;
+  return {
+    latitude: location.lat,
+    longitude: location.lng,
+  };
+}
+
+/**
+ * Add New Apartment - Creates a new apartment with duplicate checking and distance calculation.
+ *
+ * @remarks
+ * This endpoint allows admins to create new apartments. It includes a multi-step process:
+ * 1. Validates input data and checks for existing apartments at the same coordinates
+ * 2. Calculates latitude/longitude and distance to campus using Google Maps API
+ * 3. Returns preliminary data for admin confirmation
+ * 4. Creates the apartment in the database after confirmation
+ *
+ * @route POST /api/admin/add-apartment
+ *
+ * @input {object} req.body - Apartment creation data containing:
+ *   - name: string (required)
+ *   - address: string (required)
+ *   - landlordId: string (required)
+ *   - numBaths: number (optional)
+ *   - numBeds: number (optional)
+ *   - photos: string[] (optional)
+ *   - area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' (required)
+ *   - confirm: boolean (optional) - if true, creates the apartment; if false, returns preliminary data
+ *
+ * @status
+ * - 200: Successfully created apartment (when confirm=true)
+ * - 201: Preliminary data returned for confirmation (when confirm=false)
+ * - 400: Invalid apartment data, missing required fields, or duplicate apartment found
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error while processing request
+ */
+app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const {
+      name,
+      address,
+      landlordId,
+      numBaths,
+      numBeds,
+      photos = [],
+      area,
+      confirm = false,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !address || !landlordId || !area) {
+      res.status(400).send('Error: Missing required fields (name, address, landlordId, area)');
+      return;
+    }
+
+    // Validate area is one of the allowed values
+    const validAreas = ['COLLEGETOWN', 'WEST', 'NORTH', 'DOWNTOWN', 'OTHER'];
+    if (!validAreas.includes(area)) {
+      res
+        .status(400)
+        .send('Error: Invalid area. Must be one of: COLLEGETOWN, WEST, NORTH, DOWNTOWN, OTHER');
+      return;
+    }
+
+    // Check if landlord exists
+    const landlordDoc = landlordCollection.doc(landlordId);
+    const landlordSnapshot = await landlordDoc.get();
+    if (!landlordSnapshot.exists) {
+      res.status(400).send('Error: Landlord not found');
+      return;
+    }
+
+    // Geocode the address to get coordinates
+    const coordinates = await geocodeAddress(address);
+    const { latitude, longitude } = coordinates;
+
+    // Calculate travel times using the coordinates
+    const { protocol } = req;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
+    const travelTimesResponse = await axios.post(`${baseUrl}/api/calculate-travel-times`, {
+      origin: `${latitude},${longitude}`,
+    });
+
+    const travelTimes = travelTimesResponse.data;
+    const distanceToCampus = travelTimes.hoPlazaWalking;
+
+    // Check for existing apartments at the same coordinates (with small tolerance)
+    const tolerance = 0.0001; // Approximately 11 meters
+    const existingApartments = await buildingsCollection
+      .where('latitude', '>=', latitude - tolerance)
+      .where('latitude', '<=', latitude + tolerance)
+      .where('longitude', '>=', longitude - tolerance)
+      .where('longitude', '<=', longitude + tolerance)
+      .get();
+
+    if (!existingApartments.empty) {
+      res.status(400).send('Error: An apartment already exists at this location');
+      return;
+    }
+
+    // Prepare apartment data
+    const apartmentData: Apartment = {
+      name,
+      address,
+      landlordId,
+      numBaths: numBaths || null,
+      numBeds: numBeds || null,
+      photos,
+      area,
+      latitude,
+      longitude,
+      price: 0, // Default price, can be updated later
+      distanceToCampus,
+    };
+
+    if (!confirm) {
+      // Return preliminary data for admin confirmation
+      res.status(201).json({
+        message: 'Preliminary data calculated. Please confirm to create apartment.',
+        apartmentData,
+        travelTimes,
+        coordinates: { latitude, longitude },
+      });
+      return;
+    }
+
+    // Create the apartment in the database
+    const apartmentDoc = buildingsCollection.doc();
+    await apartmentDoc.set(apartmentData);
+
+    // Update landlord's properties list
+    const landlordData = landlordSnapshot.data();
+    const updatedProperties = [...(landlordData?.properties || []), apartmentDoc.id];
+    await landlordDoc.update({ properties: updatedProperties });
+
+    // Store travel times for the new apartment
+    await travelTimesCollection.doc(apartmentDoc.id).set(travelTimes);
+
+    res.status(200).json({
+      message: 'Apartment created successfully',
+      apartmentId: apartmentDoc.id,
+      apartmentData,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error creating apartment');
+  }
+});
+
+/**
  * Update Pending Building Status - Updates the status of a pending building report.
  *
  * @remarks
@@ -1427,7 +1678,6 @@ app.put(
   }
 );
 
-const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {
   eng_quad: '42.4445,-76.4836', // Duffield Hall
   ag_quad: '42.4489,-76.4780', // Mann Library
