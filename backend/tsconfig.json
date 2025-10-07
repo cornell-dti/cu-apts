@@ -17,8 +17,8 @@
     "resolveJsonModule": true,
     "outDir": "dist",
     "rootDirs": ["./src", "../common"],
-    "baseUrl": "./"
-    
+    "baseUrl": "./",
+    "jsx": "react-jsx" 
   },
   "ts-node": {
     "files": true

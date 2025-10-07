@@ -29,6 +29,8 @@ import authenticate from './auth';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
+import { sendEmailCampaign } from '../scripts/email/emailService';
+import { NewsletterRequest } from '../scripts/email/templates/Types';
 
 // Email environment variables
 const cuaptsEmail = process.env.CUAPTS_EMAIL;
@@ -495,9 +497,13 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     // Extract all query parameters
     const query = req.query.q as string;
     const locations = req.query.locations as string;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
     const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
     const sortBy = req.query.sortBy || 'numReviews';
@@ -1730,6 +1736,72 @@ app.post('/api/create-distance-to-campus', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving/updating Ho Plaza walking times:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Send Newsletter - Sends a newsletter campaign via email.
+ *
+ * @remarks
+ * Allows authenticated users to send test newsletters or broadcast to all subscribers.
+ * Validates required fields and formats property IDs before calling the email service.
+ *
+ * @route POST /api/newsletter/send
+ *
+ * @input {NewsletterRequest} req.body - Newsletter configuration and content
+ *
+ * @status
+ * - 200: Successfully sent newsletter
+ * - 400: Missing required fields (subject or introduction)
+ * - 500: Server error while sending newsletter
+ */
+app.post('/api/newsletter/send', authenticate, async (req, res) => {
+  try {
+    const newsletterData = req.body as NewsletterRequest;
+
+    // Validate required fields
+    if (!newsletterData.subject || !newsletterData.introductionMessage) {
+      return res.status(400).json({
+        error: 'Subject and introduction message are required',
+      });
+    }
+
+    // Extract property IDs from sections
+    const nearbyPropertyIDs = newsletterData.sections.recentlyReleased?.nearbyPropertyIDs || [];
+    const budgetPropertyIDs = newsletterData.sections.recentlyReleased?.budgetPropertyIDs || [];
+    const recentAreaPropertyIDs =
+      newsletterData.sections.areaSpotlight?.recentAreaPropertyIDs || [];
+    const lovedPropertyIDs = newsletterData.sections.topLoved?.lovedPropertyIDs || [];
+    const reviewedPropertyIDs = newsletterData.sections.topLoved?.reviewedPropertyIDs || [];
+
+    // Determine recipient email
+    const toEmail = newsletterData.sendToAll
+      ? 'laurenpothuru@gmail.com' // This will be BCC'd to all users
+      : newsletterData.testEmail || 'laurenpothuru@gmail.com';
+
+    // Call the email service
+    await sendEmailCampaign({
+      subject: newsletterData.subject,
+      toEmail,
+      nearbyPropertyIDs,
+      budgetPropertyIDs,
+      recentAreaPropertyIDs,
+      lovedPropertyIDs,
+      reviewedPropertyIDs,
+      newsletterData,
+    });
+
+    return res.status(200).json({
+      message: newsletterData.sendToAll
+        ? 'Newsletter sent to all subscribers successfully'
+        : 'Test email sent successfully',
+    });
+  } catch (error) {
+    console.error('Error sending newsletter:', error);
+    return res.status(500).json({
+      error: 'Failed to send newsletter',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 });
 
