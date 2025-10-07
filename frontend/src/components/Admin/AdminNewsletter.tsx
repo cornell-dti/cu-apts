@@ -10,9 +10,13 @@ import {
   Typography,
   Modal,
   Box,
+  CircularProgress,
+  Snackbar,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { getUser } from '../../utils/firebase';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -53,15 +57,17 @@ const useStyles = makeStyles(() => ({
     gap: '10px',
     marginTop: '10px',
   },
+  modalButtonContainer: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '20px',
+  },
 }));
 
-/**
- * AdminNewsletter - Displays a form to fill out and send a newsletter.
- *
- * @returns {ReactElement} - A Material-UI form for newsletter generation
- */
 const AdminNewsletter = () => {
   const classes = useStyles();
+
+  // UI state
   const [sections, setSections] = useState({
     recentlyReleased: false,
     topLoved: false,
@@ -73,36 +79,281 @@ const AdminNewsletter = () => {
     reels: false,
   });
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error',
+  });
 
-  const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
+  // Form data state
+  const [formData, setFormData] = useState({
+    subject: '',
+    introductionMessage: '',
+    headerImageUrl: '',
+    testEmail: '',
+    // Recently Released
+    nearbyPropertyIDs: '',
+    budgetPropertyIDs: '',
+    // Top Loved
+    lovedPropertyIDs: '',
+    reviewedPropertyIDs: '',
+    propertyReview: '',
+    // Advice
+    adviceName: '',
+    adviceMessage: '',
+    adviceMajor: '',
+    adviceYear: '',
+    adviceApartment: '',
+    // New Feature
+    featureImgUrl: '',
+    featureTitle: '',
+    featureDescription: '',
+    // Neighborhood
+    neighborhood1Name: '',
+    neighborhood1Image: '',
+    neighborhood1Description: '',
+    neighborhood2Name: '',
+    neighborhood2Image: '',
+    neighborhood2Description: '',
+    // Area Spotlight
+    areaName: '',
+    areaDescription: '',
+    areaImage: '',
+    areaPropertyIDs: '',
+    areaActivities: '',
+    // Sublease
+    subleaseImage: '',
+    subleaseDescription: '',
+    subleasePhone: '',
+    subleaseEmail: '',
+    // Reels
+    reelsGifUrl: '',
+    reelsDescription: '',
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSectionToggle = (section: keyof typeof sections) => {
     setSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const parsePropertyIDs = (ids: string): string[] => {
+    return ids
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id !== '');
+  };
+
+  const parseActivities = (activitiesStr: string) => {
+    if (!activitiesStr.trim()) return [];
+
+    try {
+      // Expect format: "Name1|Address1|ImageUrl1;Name2|Address2|ImageUrl2"
+      return activitiesStr
+        .split(';')
+        .map((activity) => {
+          const [name, address, imgUrl] = activity.split('|').map((s) => s.trim());
+          return { name, address, imgUrl };
+        })
+        .filter((a) => a.name && a.address && a.imgUrl);
+    } catch {
+      return [];
+    }
+  };
+
+  const buildNewsletterPayload = (sendToAll: boolean) => {
+    const payload: any = {
+      subject: formData.subject,
+      introductionMessage: formData.introductionMessage,
+      headerImageUrl: formData.headerImageUrl || undefined,
+      testEmail: formData.testEmail || undefined,
+      sendToAll,
+      sections: {},
+    };
+
+    if (sections.recentlyReleased) {
+      payload.sections.recentlyReleased = {
+        nearbyPropertyIDs: parsePropertyIDs(formData.nearbyPropertyIDs),
+        budgetPropertyIDs: parsePropertyIDs(formData.budgetPropertyIDs),
+      };
+    }
+
+    if (sections.topLoved) {
+      payload.sections.topLoved = {
+        lovedPropertyIDs: parsePropertyIDs(formData.lovedPropertyIDs),
+        reviewedPropertyIDs: parsePropertyIDs(formData.reviewedPropertyIDs),
+        propertyReview: formData.propertyReview,
+      };
+    }
+
+    if (sections.advice) {
+      payload.sections.advice = {
+        name: formData.adviceName,
+        message: formData.adviceMessage,
+        major: formData.adviceMajor,
+        year: formData.adviceYear,
+        apartment: formData.adviceApartment,
+      };
+    }
+
+    if (sections.newFeature) {
+      payload.sections.newFeature = {
+        imgUrl: formData.featureImgUrl,
+        featureName: formData.featureTitle,
+        description: formData.featureDescription,
+      };
+    }
+
+    if (sections.neighborhood) {
+      payload.sections.neighborhood = {
+        name1: formData.neighborhood1Name,
+        name2: formData.neighborhood2Name,
+        description1: formData.neighborhood1Description,
+        description2: formData.neighborhood2Description,
+        image1: formData.neighborhood1Image,
+        image2: formData.neighborhood2Image,
+      };
+    }
+
+    if (sections.areaSpotlight) {
+      payload.sections.areaSpotlight = {
+        name: formData.areaName,
+        description: formData.areaDescription,
+        imageURL: formData.areaImage,
+        recentAreaPropertyIDs: parsePropertyIDs(formData.areaPropertyIDs),
+        activities: parseActivities(formData.areaActivities),
+      };
+    }
+
+    if (sections.sublease) {
+      payload.sections.sublease = {
+        imgUrl: formData.subleaseImage,
+        description: formData.subleaseDescription,
+        phoneNumber: formData.subleasePhone || undefined,
+        email: formData.subleaseEmail,
+      };
+    }
+
+    if (sections.reels) {
+      payload.sections.reels = {
+        gifUrl: formData.reelsGifUrl,
+        description: formData.reelsDescription,
+      };
+    }
+
+    return payload;
+  };
+
+  const sendNewsletter = async (sendToAll: boolean) => {
+    if (!formData.subject || !formData.introductionMessage) {
+      setSnackbar({
+        open: true,
+        message: 'Subject and introduction message are required',
+        severity: 'error',
+      });
+      return;
+    }
+
+    if (!sendToAll && !formData.testEmail) {
+      setSnackbar({
+        open: true,
+        message: 'Test email address is required',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = buildNewsletterPayload(sendToAll);
+
+      // Get Firebase auth token
+      const user = await getUser(true);
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      const token = await user.getIdToken();
+
+      const response = await fetch('/api/newsletter/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send newsletter');
+      }
+
+      setSnackbar({
+        open: true,
+        message: data.message,
+        severity: 'success',
+      });
+
+      if (sendToAll) {
+        setShowModal(false);
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : 'Failed to send newsletter',
+        severity: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={classes.root}>
-      <Modal
-        open={showModal}
-        onClose={closeModal}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+      {/* Confirmation Modal */}
+      <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={classes.modalBox}>
           <Typography variant="h6" component="h2" gutterBottom>
             IMPORTANT: Confirm Send
           </Typography>
-          <Typography id="modal-modal-title">
+          <Typography>
             This newsletter will be sent to all subscribers. Please make sure that you have tested
             the content and formatting by sending a single test email to yourself. Are you sure you
             want to continue?
           </Typography>
-          <Button variant="contained" color="primary" onClick={closeModal}>
-            Send to all users
-          </Button>
+          <div className={classes.modalButtonContainer}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => sendNewsletter(true)}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Send to all users'}
+            </Button>
+            <Button variant="outlined" onClick={() => setShowModal(false)} disabled={loading}>
+              Cancel
+            </Button>
+          </div>
         </Box>
       </Modal>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <Typography variant="h4" component="h2">
         Newsletter Generation
@@ -115,6 +366,8 @@ const AdminNewsletter = () => {
         fullWidth
         required
         placeholder="Enter email subject"
+        value={formData.subject}
+        onChange={(e) => handleInputChange('subject', e.target.value)}
       />
 
       <TextField
@@ -125,6 +378,8 @@ const AdminNewsletter = () => {
         rows={3}
         required
         placeholder="Write the opening message for your newsletter"
+        value={formData.introductionMessage}
+        onChange={(e) => handleInputChange('introductionMessage', e.target.value)}
       />
 
       <TextField
@@ -133,6 +388,8 @@ const AdminNewsletter = () => {
         fullWidth
         type="url"
         placeholder="https://example.com/header.jpg"
+        value={formData.headerImageUrl}
+        onChange={(e) => handleInputChange('headerImageUrl', e.target.value)}
       />
 
       <Typography variant="h6" className={classes.sectionTitle}>
@@ -162,6 +419,8 @@ const AdminNewsletter = () => {
               fullWidth
               placeholder="e.g., 123, 456, 789"
               helperText="Comma-separated property IDs"
+              value={formData.nearbyPropertyIDs}
+              onChange={(e) => handleInputChange('nearbyPropertyIDs', e.target.value)}
             />
             <TextField
               label="Budget Friendly Property IDs"
@@ -169,12 +428,14 @@ const AdminNewsletter = () => {
               fullWidth
               placeholder="e.g., 123, 456, 789"
               helperText="Comma-separated property IDs"
+              value={formData.budgetPropertyIDs}
+              onChange={(e) => handleInputChange('budgetPropertyIDs', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
       </div>
 
-      {/* Top Loved Properties Section */}
+      {/* Top Loved Section */}
       <div>
         <FormControlLabel
           control={
@@ -184,7 +445,7 @@ const AdminNewsletter = () => {
               color="primary"
             />
           }
-          label="Include Top Loved Properties Section"
+          label="Include Top Loved Section"
         />
         <Accordion disabled={!sections.topLoved} expanded={sections.topLoved}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -192,26 +453,32 @@ const AdminNewsletter = () => {
           </AccordionSummary>
           <AccordionDetails className={classes.accordionDetails}>
             <TextField
-              label="Highest Rated Property IDs"
+              label="Loved Property IDs"
               variant="outlined"
               fullWidth
               placeholder="e.g., 123, 456, 789"
               helperText="Comma-separated property IDs"
+              value={formData.lovedPropertyIDs}
+              onChange={(e) => handleInputChange('lovedPropertyIDs', e.target.value)}
             />
             <TextField
-              label="Most Reviewed Property IDs"
+              label="Reviewed Property IDs"
               variant="outlined"
               fullWidth
               placeholder="e.g., 123, 456, 789"
               helperText="Comma-separated property IDs"
+              value={formData.reviewedPropertyIDs}
+              onChange={(e) => handleInputChange('reviewedPropertyIDs', e.target.value)}
             />
             <TextField
-              label="Property Testimony"
+              label="Property Review"
               variant="outlined"
               fullWidth
               multiline
               rows={3}
               placeholder="Enter a testimonial from a resident"
+              value={formData.propertyReview}
+              onChange={(e) => handleInputChange('propertyReview', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -235,18 +502,46 @@ const AdminNewsletter = () => {
           </AccordionSummary>
           <AccordionDetails className={classes.accordionDetails}>
             <TextField
+              label="Student Name"
+              variant="outlined"
+              fullWidth
+              placeholder="e.g., Sarah M."
+              value={formData.adviceName}
+              onChange={(e) => handleInputChange('adviceName', e.target.value)}
+            />
+            <TextField
               label="Advice Content"
               variant="outlined"
               fullWidth
               multiline
               rows={4}
               placeholder="Enter advice from an upperclassman"
+              value={formData.adviceMessage}
+              onChange={(e) => handleInputChange('adviceMessage', e.target.value)}
             />
             <TextField
-              label="Upperclassman Info"
+              label="Major"
               variant="outlined"
               fullWidth
-              placeholder="e.g., Sarah M., Class of 2024"
+              placeholder="e.g., Computer Science"
+              value={formData.adviceMajor}
+              onChange={(e) => handleInputChange('adviceMajor', e.target.value)}
+            />
+            <TextField
+              label="Class Year"
+              variant="outlined"
+              fullWidth
+              placeholder="e.g., 2024"
+              value={formData.adviceYear}
+              onChange={(e) => handleInputChange('adviceYear', e.target.value)}
+            />
+            <TextField
+              label="Apartment Name"
+              variant="outlined"
+              fullWidth
+              placeholder="e.g., Collegetown Crossings"
+              value={formData.adviceApartment}
+              onChange={(e) => handleInputChange('adviceApartment', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -275,12 +570,16 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/feature.jpg"
+              value={formData.featureImgUrl}
+              onChange={(e) => handleInputChange('featureImgUrl', e.target.value)}
             />
             <TextField
               label="Feature Title"
               variant="outlined"
               fullWidth
               placeholder="Enter feature name"
+              value={formData.featureTitle}
+              onChange={(e) => handleInputChange('featureTitle', e.target.value)}
             />
             <TextField
               label="Feature Description"
@@ -289,6 +588,8 @@ const AdminNewsletter = () => {
               multiline
               rows={3}
               placeholder="Describe the new feature"
+              value={formData.featureDescription}
+              onChange={(e) => handleInputChange('featureDescription', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -319,6 +620,8 @@ const AdminNewsletter = () => {
               variant="outlined"
               fullWidth
               placeholder="e.g., Collegetown"
+              value={formData.neighborhood1Name}
+              onChange={(e) => handleInputChange('neighborhood1Name', e.target.value)}
             />
             <TextField
               label="Neighborhood 1 Image URL"
@@ -326,6 +629,8 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/neighborhood1.jpg"
+              value={formData.neighborhood1Image}
+              onChange={(e) => handleInputChange('neighborhood1Image', e.target.value)}
             />
             <TextField
               label="Neighborhood 1 Description"
@@ -334,6 +639,8 @@ const AdminNewsletter = () => {
               multiline
               rows={2}
               placeholder="Describe this neighborhood"
+              value={formData.neighborhood1Description}
+              onChange={(e) => handleInputChange('neighborhood1Description', e.target.value)}
             />
 
             <Typography
@@ -348,6 +655,8 @@ const AdminNewsletter = () => {
               variant="outlined"
               fullWidth
               placeholder="e.g., Downtown"
+              value={formData.neighborhood2Name}
+              onChange={(e) => handleInputChange('neighborhood2Name', e.target.value)}
             />
             <TextField
               label="Neighborhood 2 Image URL"
@@ -355,6 +664,8 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/neighborhood2.jpg"
+              value={formData.neighborhood2Image}
+              onChange={(e) => handleInputChange('neighborhood2Image', e.target.value)}
             />
             <TextField
               label="Neighborhood 2 Description"
@@ -363,6 +674,8 @@ const AdminNewsletter = () => {
               multiline
               rows={2}
               placeholder="Describe this neighborhood"
+              value={formData.neighborhood2Description}
+              onChange={(e) => handleInputChange('neighborhood2Description', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -390,6 +703,8 @@ const AdminNewsletter = () => {
               variant="outlined"
               fullWidth
               placeholder="e.g., West Campus"
+              value={formData.areaName}
+              onChange={(e) => handleInputChange('areaName', e.target.value)}
             />
             <TextField
               label="Area Description"
@@ -398,6 +713,8 @@ const AdminNewsletter = () => {
               multiline
               rows={3}
               placeholder="Describe this area"
+              value={formData.areaDescription}
+              onChange={(e) => handleInputChange('areaDescription', e.target.value)}
             />
             <TextField
               label="Area Image URL"
@@ -405,13 +722,17 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/area.jpg"
+              value={formData.areaImage}
+              onChange={(e) => handleInputChange('areaImage', e.target.value)}
             />
             <TextField
-              label="Recently Released Property IDs"
+              label="Recently Released IDs"
               variant="outlined"
               fullWidth
               placeholder="e.g., 123, 456, 789"
               helperText="Comma-separated property IDs"
+              value={formData.areaPropertyIDs}
+              onChange={(e) => handleInputChange('areaPropertyIDs', e.target.value)}
             />
             <TextField
               label="Things to Do"
@@ -419,7 +740,10 @@ const AdminNewsletter = () => {
               fullWidth
               multiline
               rows={3}
-              placeholder="List activities and attractions in this area"
+              placeholder="Name1|Address1|ImageUrl1;Name2|Address2|ImageUrl2"
+              helperText="Format: Name|Address|ImageUrl separated by semicolons"
+              value={formData.areaActivities}
+              onChange={(e) => handleInputChange('areaActivities', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -448,6 +772,8 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/sublease.jpg"
+              value={formData.subleaseImage}
+              onChange={(e) => handleInputChange('subleaseImage', e.target.value)}
             />
             <TextField
               label="Sublease Description"
@@ -456,13 +782,26 @@ const AdminNewsletter = () => {
               multiline
               rows={3}
               placeholder="Describe the sublease opportunity"
+              value={formData.subleaseDescription}
+              onChange={(e) => handleInputChange('subleaseDescription', e.target.value)}
             />
             <TextField
-              label="Sublease Link"
+              label="Contact Email"
               variant="outlined"
               fullWidth
-              type="url"
-              placeholder="https://example.com/sublease/123"
+              type="email"
+              placeholder="contact@example.com"
+              value={formData.subleaseEmail}
+              onChange={(e) => handleInputChange('subleaseEmail', e.target.value)}
+            />
+            <TextField
+              label="Contact Phone (Optional)"
+              variant="outlined"
+              fullWidth
+              type="tel"
+              placeholder="123-456-7890"
+              value={formData.subleasePhone}
+              onChange={(e) => handleInputChange('subleasePhone', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -491,6 +830,8 @@ const AdminNewsletter = () => {
               fullWidth
               type="url"
               placeholder="https://example.com/reel.gif"
+              value={formData.reelsGifUrl}
+              onChange={(e) => handleInputChange('reelsGifUrl', e.target.value)}
             />
             <TextField
               label="Reel Description"
@@ -499,6 +840,8 @@ const AdminNewsletter = () => {
               multiline
               rows={2}
               placeholder="Describe the reel content"
+              value={formData.reelsDescription}
+              onChange={(e) => handleInputChange('reelsDescription', e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
@@ -516,13 +859,25 @@ const AdminNewsletter = () => {
         type="email"
         placeholder="test@example.com"
         helperText="Send a test to this email address"
+        value={formData.testEmail}
+        onChange={(e) => handleInputChange('testEmail', e.target.value)}
       />
 
       <div className={classes.buttonContainer}>
-        <Button variant="contained" color="primary">
-          Send Test Email
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => sendNewsletter(false)}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Send Test Email'}
         </Button>
-        <Button variant="contained" color="secondary" onClick={openModal}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setShowModal(true)}
+          disabled={loading}
+        >
           Send to All Subscribers
         </Button>
       </div>
