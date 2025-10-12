@@ -69,6 +69,38 @@ app.get('/api/faqs', async (_, res) => {
   res.status(200).send(JSON.stringify(faqs));
 });
 
+/**
+ * Creates a new blog post.
+ *
+ * @remarks
+ * This endpoint allows an authenticated user to create a new blog post.
+ * The request body must include a valid `BlogPost` object containing
+ * at least a `title`, `content`, and `apartment`. If any of these
+ * required fields are missing, the request will fail with a 401 error.
+ *
+ * The new post is initialized with:
+ * - `likes`: 0
+ * - `status`: "PENDING"
+ * - `comments`: an empty array
+ * - `date`: parsed from the request body
+ *
+ * @route POST /api/new-blog-post
+ *
+ * @requestBody
+ * {
+ *   "title": string,
+ *   "content": string,
+ *   "apartment": string,
+ *   "date": string,
+ *   "userId": string,
+ *   ...
+ * }
+ *
+ * @status
+ * - 201: Blog post created successfully. Returns the new document ID.
+ * - 401: Missing fields or authentication error.
+ * - 500: Unexpected server error.
+ */
 app.post('/api/new-blog-post', authenticate, async (req, res) => {
   try {
     const doc = blogPostCollection.doc();
@@ -89,6 +121,29 @@ app.post('/api/new-blog-post', authenticate, async (req, res) => {
     res.status(401).send('Error');
   }
 });
+
+/**
+ * Soft-deletes a blog post by marking it as `DELETED`.
+ *
+ * @remarks
+ * This endpoint allows an authenticated user or admin to mark a blog post
+ * as deleted. The blog post is not permanently removed from the database;
+ * its `status` field is updated to `"DELETED"`.
+ *
+ * Authorization:
+ * - A post can be deleted only by its creator (`userId` === `req.user.uid`)
+ *   or by a user whose email is included in the `admins` list.
+ *
+ * @route PUT /api/delete-blog-post/:blogPostId
+ *
+ * @pathParam blogPostId - The unique ID of the blog post document to delete.
+ *
+ * @status
+ * - 200: Blog post successfully marked as deleted.
+ * - 403: User is not authorized to delete this post.
+ * - 404: Blog post not found.
+ * - 500: Error updating the blog post status.
+ */
 
 app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
   if (!req.user) throw new Error('Not authenticated');
@@ -116,6 +171,29 @@ app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
     res.status(500).send('Error');
   }
 });
+
+/**
+ * Soft-deletes a blog post by marking it as `DELETED`.
+ *
+ * @remarks
+ * This endpoint allows an authenticated user or admin to mark a blog post
+ * as deleted. The blog post is not permanently removed from the database;
+ * its `status` field is updated to `"DELETED"`.
+ *
+ * Authorization:
+ * - A post can be deleted only by its creator (`userId` === `req.user.uid`)
+ *   or by a user whose email is included in the `admins` list.
+ *
+ * @route PUT /api/delete-blog-post/:blogPostId
+ *
+ * @pathParam blogPostId - The unique ID of the blog post document to delete.
+ *
+ * @status
+ * - 200: Blog post successfully marked as deleted.
+ * - 403: User is not authorized to delete this post.
+ * - 404: Blog post not found.
+ * - 500: Error updating the blog post status.
+ */
 
 app.post('/api/edit-blog-post/:blogPostId', authenticate, async (req, res) => {
   if (!req.user) {
