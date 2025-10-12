@@ -33,6 +33,20 @@ export type Review = {
   readonly reports?: readonly ReportEntry[];
 };
 
+export type BlogPost = {
+  readonly apartment: string;
+  readonly comments: string[];
+  readonly content: string;
+  readonly date: Date;
+  readonly likes?: number;
+  readonly photos: string[];
+  readonly status: string;
+  readonly tags: string[];
+  readonly title: string;
+  readonly userId?: string | null;
+  readonly visibility: string;
+};
+
 export type ReviewWithId = Review & Id;
 
 export type ReviewInternal = Review & {};

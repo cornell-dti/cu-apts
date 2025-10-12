@@ -17,6 +17,7 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  BlogPost,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -42,8 +43,8 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
-
 const travelTimesCollection = db.collection('travelTimes');
+const blogPostCollection = db.collection('blogposts');
 
 // Middleware setup
 const app: Express = express();
@@ -66,6 +67,92 @@ app.get('/api/faqs', async (_, res) => {
   });
 
   res.status(200).send(JSON.stringify(faqs));
+});
+
+app.post('/api/new-blog-post', authenticate, async (req, res) => {
+  try {
+    const doc = blogPostCollection.doc();
+    const blogPost = req.body as BlogPost;
+    if (blogPost.apartment === '' || blogPost.content === '' || blogPost.title === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({
+      ...blogPost,
+      date: new Date(blogPost.date),
+      likes: 0,
+      status: 'PENDING',
+      comments: [],
+    });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const { blogPostId } = req.params; // Extract the blog post document ID from the request parameters
+  const { uid, email } = req.user;
+  // Check if the user is an admin or the creator of the blog post
+  const blogPostDoc = blogPostCollection.doc(blogPostId);
+  const blogPostData = (await blogPostDoc.get()).data();
+  if (!blogPostData) {
+    res.status(404).send('Blog Post not found');
+    return;
+  }
+  if (blogPostData?.userId !== uid && !(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
+  try {
+    // Update the status of the blog post document to 'DELETED'
+    await blogPostCollection.doc(blogPostId).update({ status: 'DELETED' });
+    // Send a success response
+    res.status(200).send('Success');
+  } catch (err) {
+    // Handle any errors that may occur during the deletion process
+    console.log(err);
+    res.status(500).send('Error');
+  }
+});
+
+app.post('/api/edit-blog-post/:blogPostId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const { blogPostId } = req.params;
+  try {
+    const blogPostDoc = blogPostCollection.doc(blogPostId); // specific doc for the id
+    const blogPostData = (await blogPostDoc.get()).data();
+    if (!blogPostData?.userId || blogPostData.userId !== req.user.uid) {
+      res.status(401).send('Error: user is not the blog post owner. not authorized');
+      return;
+    }
+    // Don't allow edits if blog post is reported
+    if (blogPostData.status === 'REPORTED') {
+      res.status(403).send('Error: cannot edit a reported blo post');
+      return;
+    }
+    const updatedBlogPost = req.body as BlogPost;
+    if (updatedBlogPost.title === '' || updatedBlogPost.content === '') {
+      res.status(401).send('Error: missing fields');
+      return;
+    }
+    blogPostDoc
+      .update({
+        ...updatedBlogPost,
+        date: new Date(updatedBlogPost.date),
+        status: 'PENDING',
+        comments: blogPostData.comments || [],
+      })
+      .then(() => {
+        res.status(201).send(blogPostId);
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error');
+  }
 });
 
 // API endpoint to post a new review
@@ -1061,10 +1148,9 @@ app.post(
         if (error) {
           console.log('Error sending email:', error);
           return res.status(500).send('Error sending email');
-        } 
-          console.log('Email sent:', info.response);
-          return res.status(200).send('Email sent successfully');
-        
+        }
+        console.log('Email sent:', info.response);
+        return res.status(200).send('Email sent successfully');
       });
     } catch (err) {
       console.log(err);
