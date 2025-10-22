@@ -17,6 +17,7 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  Folder,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -42,7 +43,7 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
-
+const folderCollection = db.collection('folders');
 const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
@@ -219,7 +220,7 @@ app.get('/api/review/like/:userId', authenticate, async (req, res) => {
 });
 
 /**
- * Takes in the location type in the URL and returns the number of reviews made forr that location
+ * Takes in the location type in the URL and returns the number of reviews made for that location
  */
 app.get('/api/review/:location/count', async (req, res) => {
   const { location } = req.params;
@@ -1730,6 +1731,165 @@ app.post('/api/create-distance-to-campus', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving/updating Ho Plaza walking times:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Endpoint to add a new folder for a user
+app.post('/api/folders', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderName } = req.body;
+    if (!folderName || folderName.trim() === '') {
+      return res.status(400).send('Folder name is required');
+    }
+    const newFolderRef = folderCollection.doc();
+
+    // Create a new folder document
+    await newFolderRef.set({
+      name: folderName,
+      userId: uid,
+      createdAt: new Date(),
+    });
+
+    return res.status(201).json({ id: newFolderRef.id, name: folderName });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error creating folder');
+  }
+});
+
+// Endpoint to get all folders for a user
+app.get('/api/folders', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+
+    // Fetch all folders for this user
+    const folderSnapshot = await folderCollection.where('userId', '==', uid).get();
+
+    const folders = folderSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return res.status(200).json(folders);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching folders');
+  }
+});
+
+// Endpoint to delete a folder by ID
+app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to delete this folder');
+    }
+
+    await folderRef.delete();
+    return res.status(200).send('Folder deleted successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error deleting folder');
+  }
+});
+
+// Endpoint to rename a folder by ID
+app.put('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+    const { newName } = req.body;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to rename this folder');
+    }
+
+    await folderRef.update({ name: newName });
+    return res.status(200).send('Folder renamed successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error renaming folder');
+  }
+});
+
+// Endpoint to add an apartment to a folder
+app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId, aptId } = req.body;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to modify this folder');
+    }
+
+    const apartments = folderDoc.data()?.apartments || [];
+    if (apartments.includes(aptId)) {
+      return res.status(400).send('Apartment already in folder');
+    }
+
+    apartments.push(aptId);
+    await folderRef.update({ apartments });
+    return res.status(200).send('Apartment added to folder successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error adding apartment to folder');
+  }
+});
+
+// Endpoint to remove an apartment from a folder
+app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId, aptId } = req.body;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to modify this folder');
+    }
+
+    let apartments = folderDoc.data()?.apartments || [];
+    apartments = apartments.filter((id: string) => id !== aptId);
+    await folderRef.update({ apartments });
+    return res.status(200).send('Apartment removed from folder successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error removing apartment from folder');
   }
 });
 
