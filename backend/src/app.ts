@@ -1912,7 +1912,22 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
     }
 
     const apartments = folderDoc.data()?.apartments || [];
-    return res.status(200).json(apartments);
+    const aptsArr = await Promise.all(
+      apartments.map(async (id: string) => {
+        const snapshot = await buildingsCollection.doc(id).get();
+        if (!snapshot.exists) {
+          console.warn(`Apartment ${id} not found`);
+          return null;
+        }
+        return { id, ...snapshot.data() };
+      })
+    );
+
+    // Filter out any null values from non-existent apartments
+    const validApartments = aptsArr.filter((apt) => apt !== null);
+    const enrichedResults = await pageData(validApartments);
+    console.log('Enriched Results:', enrichedResults);
+    return res.status(200).json(enrichedResults);
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching apartments from folder');

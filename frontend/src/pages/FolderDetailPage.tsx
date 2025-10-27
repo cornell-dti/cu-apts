@@ -14,6 +14,8 @@ import Toast from '../components/utils/Toast';
 import { colors } from '../colors';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../utils/firebase';
+import ApartmentCards from '../components/ApartmentCard/SearchResultsPageApartmentCards';
+import { CardData } from '../App';
 
 type Props = {
   user: firebase.User | null;
@@ -75,7 +77,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const { background, headerStyle, headerContainer, backButton, gridContainer } = useStyles();
 
   const [folder, setFolder] = useState<Folder | null>(null);
-  const [apartments, setApartments] = useState<string[]>([]);
+  const [apartments, setApartments] = useState<CardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showErrorToast, setShowErrorToast] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -191,24 +193,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
           </Box>
         ) : (
           <Grid container spacing={3} className={gridContainer}>
-            {apartments.map((aptId) => (
-              <Grid item xs={12} sm={6} md={4} key={aptId}>
-                <Box
-                  style={{
-                    padding: '2em',
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => history.push(`/apartment/${aptId}`)}
-                >
-                  <Typography variant="h6">Apartment {aptId}</Typography>
-                  <Typography variant="body2" style={{ color: colors.gray2, marginTop: '0.5em' }}>
-                    Click to view details
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
+            <ApartmentCards data={apartments} user={user} setUser={setUser} />
           </Grid>
         )}
 

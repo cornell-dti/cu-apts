@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect } from 'react';
 import NewApartmentCard from './NewApartmentCard';
-import { Grid, Link, makeStyles, Button, Box, Typography } from '@material-ui/core';
+import { Link, makeStyles } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
 import { loadingLength } from '../../constants/HomeConsts';
