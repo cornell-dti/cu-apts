@@ -17,6 +17,9 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  BlogPost,
+  BlogPostInternal,
+  BlogPostWithId,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -42,7 +45,7 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
-
+const blogPostCollection = db.collection('blogposts');
 const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
@@ -66,6 +69,263 @@ app.get('/api/faqs', async (_, res) => {
   });
 
   res.status(200).send(JSON.stringify(faqs));
+});
+
+/**
+ * new-blog-post – Creates a new blog post.
+ *
+ * @remarks
+ * This endpoint creates and adds a new blog post into the products database. If necessary data are not given, the endpoint
+ * will result in an error. Certain fields are defaulted to constant values.
+ *
+ * @route POST /api/new-blog-post
+ *
+ * @status
+ * - 201: Successfully created new blog post.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.post('/api/new-blog-post', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const realUserId = req.user.uid;
+  try {
+    const doc = blogPostCollection.doc();
+    const blogPost = req.body as BlogPost;
+    if (
+      blogPost.content === '' ||
+      blogPost.title === '' ||
+      !blogPost.photos ||
+      !blogPost.tags ||
+      !blogPost.visibility
+    ) {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({
+      ...blogPost,
+      date: new Date(blogPost.date),
+      likes: 0,
+      saves: 0,
+      status: 'PENDING',
+      userId: realUserId,
+    });
+    res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+/**
+ * delete-blog-post/:blogPostId – Deletes a specified blog post.
+ *
+ * @remarks
+ * This endpoint deletes a specified blog post from its ID. The post is removed from the products database.
+ * If no blog post is found or the user is not authorized to delete the review, then an error is thrown.
+ *
+ * @route PUT /api/delete-blog-post/:blogPostId
+ *
+ * @status
+ * - 200: Successfully deleted the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const { blogPostId } = req.params; // Extract the blog post document ID from the request parameters
+  const { email } = req.user;
+  // Check if the user is an admin or the creator of the blog post
+  const blogPostDoc = blogPostCollection.doc(blogPostId);
+  const blogPostData = (await blogPostDoc.get()).data();
+  if (!blogPostData) {
+    res.status(404).send('Blog Post not found');
+    return;
+  }
+  if (!(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
+  try {
+    // Update the status of the blog post document to 'DELETED'
+    await blogPostCollection.doc(blogPostId).update({ status: 'ARCHIVED' });
+    // Send a success response
+    res.status(200).send('Success');
+  } catch (err) {
+    // Handle any errors that may occur during the deletion process
+    console.log(err);
+    res.status(401).send('Error');
+  }
+});
+
+/**
+ * edit-blog-post/:blogPostId – Edits a specified blog post.
+ *
+ * @remarks
+ * This endpoint edits a specified blog post from its ID. The post is edited from the products database.
+ * If no blog post is found or the user is not authorized to edit the review, then an error is thrown.
+ *
+ * @route POST /api/edit-blog-post/:blogPostId
+ *
+ * @status
+ * - 201: Successfully edited the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.post('/api/edit-blog-post/:blogPostId', async (req, res) => {
+  // if (!req.user) {
+  //  throw new Error('not authenticated');
+  // }
+  const { blogPostId } = req.params;
+  // const { email } = req.user;
+  try {
+    const blogPostDoc = blogPostCollection.doc(blogPostId); // specific doc for the id
+    const blogPostData = (await blogPostDoc.get()).data();
+    if (!blogPostData) {
+      res.status(404).send('Blog Post not found');
+      return;
+    }
+    // if (!(email && admins.includes(email))) {
+    //  res.status(401).send('Error: user is not an admin. Not authorized');
+    //  return;
+    // }
+    const updatedBlogPost = req.body as BlogPost;
+    if (updatedBlogPost.content === '' || updatedBlogPost.title === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    blogPostDoc
+      .update({
+        ...updatedBlogPost,
+        date: new Date(updatedBlogPost.date),
+      })
+      .then(() => {
+        res.status(201).send(blogPostId);
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+/**
+ * blog-post-by-id/:blogPostId – Gets a specified blog post.
+ *
+ * @remarks
+ * This endpoint gets a specified blog post from its ID. The post is grabbed from the products database.
+ * If no blog post is found, then an error is thrown.
+ *
+ * @route GET /api/blog-post-by-id/:blogPostId
+ *
+ * @status
+ * - 200: Successfully edited the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post-by-id/:blogPostId', authenticate, async (req, res) => {
+  const { blogPostId } = req.params; // Extract the blog post ID from the request parameters
+  try {
+    const blogPostDoc = await blogPostCollection.doc(blogPostId).get(); // Get the blog post document from Firestore
+    if (!blogPostDoc.exists) {
+      res.status(404).send('Blog Post not found'); // If the document does not exist, return a 404 error
+      return;
+    }
+    const data = blogPostDoc.data();
+    const blogPost = { ...data, date: data?.date.toDate() } as BlogPostInternal; // Convert the Firestore Timestamp to a Date object
+    const blogPostWithId = { ...blogPost, id: blogPostDoc.id } as BlogPostWithId; // Add the document ID to the review data
+    res.status(200).send(JSON.stringify(blogPostWithId)); // Return the review data as a JSON response
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error retrieving Blog Post'); // Handle any errors that occur during the process
+  }
+});
+
+/**
+ * blog-post/like/:userId – Fetches blog posts liked by a user.
+ *
+ * @remarks
+ * This endpoint retrieves blog posts that a user has liked.
+ *
+ * @route GET /api/blog-post/like/:userId
+ *
+ * @status
+ * - 200: Successfully retrieved the blog posts.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post/like/:userId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const realUserId = req.user.uid;
+  const { userId } = req.params;
+  if (userId !== realUserId) {
+    res.status(401).send("Error: user is not authorized to access another user's likes");
+    return;
+  }
+  const likesDoc = await likesCollection.doc(realUserId).get();
+
+  if (likesDoc.exists) {
+    const data = likesDoc.data();
+    if (data) {
+      const blogPostIds = Object.keys(data);
+      const matchingBlogPosts: BlogPostWithId[] = [];
+      if (blogPostIds.length > 0) {
+        const query = blogPostCollection.where(FieldPath.documentId(), 'in', blogPostIds);
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const blogPostData = { ...data, date: data.date.toDate() };
+          matchingBlogPosts.push({ ...blogPostData, id: doc.id } as BlogPostWithId);
+        });
+      }
+      res.status(200).send(JSON.stringify(matchingBlogPosts));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
+});
+
+/**
+ * blog-post/like/:userId – Fetches blog posts saved by a user.
+ *
+ * @remarks
+ * This endpoint retrieves blog posts that a user has saved.
+ *
+ * @route GET /api/blog-post/save/:userId
+ *
+ * @status
+ * - 200: Successfully retrieved the blog posts.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post/save/:userId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const realUserId = req.user.uid;
+  const { userId } = req.params;
+  if (userId !== realUserId) {
+    res.status(401).send("Error: user is not authorized to access another user's saves");
+    return;
+  }
+  const savesDoc = await likesCollection.doc(realUserId).get();
+
+  if (savesDoc.exists) {
+    const data = savesDoc.data();
+    if (data) {
+      const blogPostIds = Object.keys(data);
+      const matchingBlogPosts: BlogPostWithId[] = [];
+      if (blogPostIds.length > 0) {
+        const query = blogPostCollection.where(FieldPath.documentId(), 'in', blogPostIds);
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const blogPostData = { ...data, date: data.date.toDate() };
+          matchingBlogPosts.push({ ...blogPostData, id: doc.id } as BlogPostWithId);
+        });
+      }
+      res.status(200).send(JSON.stringify(matchingBlogPosts));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
 });
 
 // API endpoint to post a new review
