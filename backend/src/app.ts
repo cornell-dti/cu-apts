@@ -1764,7 +1764,6 @@ app.get('/api/folders', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
     const { uid } = req.user;
-
     // Fetch all folders for this user
     const folderSnapshot = await folderCollection.where('userId', '==', uid).get();
 
@@ -1834,11 +1833,12 @@ app.put('/api/folders/:folderId', authenticate, async (req, res) => {
 });
 
 // Endpoint to add an apartment to a folder
-app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, res) => {
+app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
     const { uid } = req.user;
-    const { folderId, aptId } = req.body;
+    const { folderId } = req.params;
+    const { aptId } = req.body;
 
     const folderRef = folderCollection.doc(folderId);
     const folderDoc = await folderRef.get();
@@ -1866,11 +1866,11 @@ app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, r
 });
 
 // Endpoint to remove an apartment from a folder
-app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, res) => {
+app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
     const { uid } = req.user;
-    const { folderId, aptId } = req.body;
+    const { folderId, apartmentId } = req.params;
 
     const folderRef = folderCollection.doc(folderId);
     const folderDoc = await folderRef.get();
@@ -1884,12 +1884,38 @@ app.post('/api/folders/:id/apartments/:apartmentId', authenticate, async (req, r
     }
 
     let apartments = folderDoc.data()?.apartments || [];
-    apartments = apartments.filter((id: string) => id !== aptId);
+    apartments = apartments.filter((id: string) => id !== apartmentId);
     await folderRef.update({ apartments });
     return res.status(200).send('Apartment removed from folder successfully');
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error removing apartment from folder');
+  }
+});
+
+// Endpoint to get all apartments in a folder
+app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to access this folder');
+    }
+
+    const apartments = folderDoc.data()?.apartments || [];
+    return res.status(200).json(apartments);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching apartments from folder');
   }
 });
 

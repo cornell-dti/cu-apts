@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect, useRef } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import {
   IconButton,
   Button,
@@ -45,6 +45,8 @@ import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import AddToFolderModal from '../components/Folder/AddToFolderModal';
+import { FolderOutlined } from '@material-ui/icons';
 
 type Props = {
   user: firebase.User | null;
@@ -157,6 +159,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [showAddToFolderSuccess, setShowAddToFolderSuccess] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
@@ -383,6 +387,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }, toastTime);
   };
 
+  const showAddToFolderSuccessToast = () => {
+    showToast(setShowAddToFolderSuccess);
+  };
+
   const showConfirmationToast = () => {
     showToast(setShowConfirmation);
   };
@@ -482,6 +490,15 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const Modals = landlordData && apt && (
     <>
+      <AddToFolderModal
+        open={showFolderModal}
+        onClose={() => setShowFolderModal(false)}
+        apartmentId={aptId}
+        apartmentName={apt.name}
+        user={user}
+        setUser={setUser}
+        onSuccess={showAddToFolderSuccessToast}
+      />
       <MapModal
         aptName={apt!.name}
         open={mapOpen}
@@ -565,6 +582,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             >
               <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
               {isSaved ? 'Saved' : 'Save'}
+            </Button>
+            <Button
+              disableRipple
+              onClick={() => setShowFolderModal(true)}
+              className={saveButton}
+              color="primary"
+              fullWidth
+              disableElevation
+            >
+              <FolderOutlined className={bookmarkRibbon} /> Save
             </Button>
             <Button
               color="primary"
@@ -766,6 +793,14 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 isOpen={showConfirmation}
                 severity="success"
                 message="Review submitted! Your review is awaiting approval from the admin."
+                time={toastTime}
+              />
+            )}
+            {showAddToFolderSuccess && (
+              <Toast
+                isOpen={showAddToFolderSuccess}
+                severity="success"
+                message="Successfully added to folder(s)!"
                 time={toastTime}
               />
             )}
