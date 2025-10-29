@@ -1734,7 +1734,18 @@ app.post('/api/create-distance-to-campus', async (req, res) => {
   }
 });
 
-// Endpoint to add a new folder for a user
+/**
+ * Add Folder - Creates a new folder assigned to a specific user.
+ *
+ * @route POST /api/folders
+ *
+ * @input {string} req.body - The name of the new folder to be created
+ *
+ * @status
+ * - 201: Successfully created the folder
+ * - 400: Folder name is missing or invalid
+ * - 500: Error creating folder
+ */
 app.post('/api/folders', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1759,7 +1770,15 @@ app.post('/api/folders', authenticate, async (req, res) => {
   }
 });
 
-// Endpoint to get all folders for a user
+/**
+ * Get Folders - Fetches all folders assigned to a specific user.
+ *
+ * @route GET /api/folders
+ *
+ * @status
+ * - 200: Successfully retrieved folders
+ * - 500: Error fetching folders
+ */
 app.get('/api/folders', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1779,7 +1798,19 @@ app.get('/api/folders', authenticate, async (req, res) => {
   }
 });
 
-// Endpoint to delete a folder by ID
+/**
+ * Delete Folder - Deletes a folder by ID.
+ *
+ * @route DELETE /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be deleted
+ *
+ * @status
+ * - 200: Successfully deleted folder
+ * - 403: Unauthorized to delete this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error deleting folder
+ */
 app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1805,7 +1836,19 @@ app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
   }
 });
 
-// Endpoint to rename a folder by ID
+/**
+ * Rename Folder - Renames a folder by ID.
+ *
+ * @route PUT /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be renamed
+ *
+ * @status
+ * - 200: Successfully renamed folder
+ * - 403: Unauthorized to rename this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error renaming folder
+ */
 app.put('/api/folders/:folderId', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1832,7 +1875,21 @@ app.put('/api/folders/:folderId', authenticate, async (req, res) => {
   }
 });
 
-// Endpoint to add an apartment to a folder
+/**
+ * Add Apartment - Adds an apartment to a folder.
+ *
+ * @route POST /api/folders/:folderId/apartments
+ *
+ * @input {string} req.body - The id of the apartment to be added
+ * @input {string} req.params.folderId - The ID of the folder to add the apartment to
+ *
+ * @status
+ * - 200: Successfully added apartment to folder
+ * - 403: Unauthorized to modify this folder (not the owner)
+ * - 404: Folder not found
+ * - 400: Apartment already in folder
+ * - 500: Error adding apartment to folder
+ */
 app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1865,7 +1922,20 @@ app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => 
   }
 });
 
-// Endpoint to remove an apartment from a folder
+/**
+ * Remove Apartment - Removes an apartment from a folder.
+ *
+ * @route DELETE /api/folders/:folderId/apartments/:apartmentId
+ *
+ * @input {string} req.body - The id of the apartment to be removed
+ * @input {string} req.params.folderId - The ID of the folder to remove the apartment from
+ *
+ * @status
+ * - 200: Successfully removed apartment from folder
+ * - 403: Unauthorized to modify this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error removing apartment from folder
+ */
 app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1893,7 +1963,19 @@ app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async
   }
 });
 
-// Endpoint to get all apartments in a folder
+/**
+ * Get Apartments in Folder - Retrieves all apartments in a specific folder.
+ *
+ * @route GET /api/folders/:folderId/apartments
+ *
+ * @input {string} req.params - The folderId of the folder to get apartments from
+ *
+ * @status
+ * - 200: Successfully retrieved apartments from folder
+ * - 403: Unauthorized to access this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching apartments from folder
+ */
 app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
