@@ -197,10 +197,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       <Dialog open={showRemoveApartmentModal} onClose={() => setShowRemoveApartmentModal(false)}>
         <DialogTitle>Remove Apartments from Folder</DialogTitle>
         <DialogContent>
-          <Typography>
-            Select apartments to remove from the folder or click "Remove All" to remove all
-            apartments.
-          </Typography>
+          <Typography>Select apartments to remove from the folder.</Typography>
           <FormGroup>
             {apartments.map((apt) => (
               <Box key={apt.buildingData.id} display="flex" alignItems="center" mt={2}>
@@ -237,13 +234,6 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
             variant="contained"
           >
             Remove Selected
-          </Button>
-          <Button
-            onClick={() => handleRemoveApartments(apartments.map((apt) => apt.buildingData.id))}
-            color="primary"
-            variant="outlined"
-          >
-            Remove All
           </Button>
         </DialogActions>
       </Dialog>
