@@ -8,12 +8,18 @@ import {
   Box,
   IconButton,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Checkbox,
+  FormGroup,
 } from '@material-ui/core';
 import { ArrowBack as ArrowBackIcon } from '@material-ui/icons';
 import Toast from '../components/utils/Toast';
 import { colors } from '../colors';
 import axios from 'axios';
-import { createAuthHeaders, getUser } from '../utils/firebase';
+import { createAuthHeaders } from '../utils/firebase';
 import ApartmentCards from '../components/ApartmentCard/SearchResultsPageApartmentCards';
 import { CardData } from '../App';
 
@@ -81,6 +87,8 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [loading, setLoading] = useState<boolean>(true);
   const [showErrorToast, setShowErrorToast] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [apartmentIdsToRemove, setApartmentIdsToRemove] = useState<string[]>([]);
+  const [showRemoveApartmentModal, setShowRemoveApartmentModal] = useState<boolean>(false);
 
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);
@@ -101,10 +109,6 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const fetchFolderDetails = async () => {
     try {
       setLoading(true);
-      if (!user) {
-        let user = await getUser(true);
-        setUser(user);
-      }
       if (!user) {
         throw new Error('Failed to login');
       }
@@ -141,6 +145,29 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
     history.push('/folders');
   };
 
+  const handleRemoveApartments = async (apartmentIds: string[]) => {
+    try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      const token = await user.getIdToken(true);
+
+      await apartmentIds.map((id) =>
+        axios.delete(`/api/folders/${folderId}/apartments/${id}`, {
+          data: { apartmentIds },
+          ...createAuthHeaders(token),
+        })
+      );
+
+      // Refresh folder details
+      fetchFolderDetails();
+    } catch (error) {
+      console.error('Error removing apartments from folder:', error);
+      showError('Failed to remove apartments from folder');
+    }
+    setShowRemoveApartmentModal(false);
+  };
+
   if (loading) {
     return (
       <div className={background}>
@@ -167,6 +194,59 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
+      <Dialog open={showRemoveApartmentModal} onClose={() => setShowRemoveApartmentModal(false)}>
+        <DialogTitle>Remove Apartments from Folder</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Select apartments to remove from the folder or click "Remove All" to remove all
+            apartments.
+          </Typography>
+          <FormGroup>
+            {apartments.map((apt) => (
+              <Box key={apt.buildingData.id} display="flex" alignItems="center" mt={2}>
+                <Checkbox
+                  onChange={(e) => {
+                    const aptId = apt.buildingData.id;
+                    if (e.target.checked) {
+                      setApartmentIdsToRemove((prev) => [...prev, aptId]);
+                    } else {
+                      setApartmentIdsToRemove((prev) => prev.filter((id) => id !== aptId));
+                    }
+                  }}
+                />
+                <Typography>
+                  <strong>{apt.buildingData.name}</strong> - {apt.buildingData.address}
+                </Typography>
+              </Box>
+            ))}
+          </FormGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setShowRemoveApartmentModal(false)}
+            color="primary"
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={() => handleRemoveApartments(apartmentIdsToRemove)}
+            color="primary"
+            disabled={apartmentIdsToRemove.length === 0}
+            variant="contained"
+          >
+            Remove Selected
+          </Button>
+          <Button
+            onClick={() => handleRemoveApartments(apartments.map((apt) => apt.buildingData.id))}
+            color="primary"
+            variant="outlined"
+          >
+            Remove All
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Box style={{ width: '90%', maxWidth: '1200px' }}>
         <Box className={headerContainer}>
           <IconButton onClick={handleBackClick} className={backButton}>
@@ -180,6 +260,13 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
               {apartments.length} {apartments.length === 1 ? 'apartment' : 'apartments'}
             </Typography>
           </div>
+          <Button
+            variant="outlined"
+            onClick={() => setShowRemoveApartmentModal(true)}
+            style={{ marginLeft: 'auto' }}
+          >
+            Edit Folder
+          </Button>
         </Box>
 
         {apartments.length === 0 ? (
