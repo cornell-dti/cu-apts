@@ -112,18 +112,21 @@ interface CantFindApartmentFormData {
   name: string;
   address: string;
   localPhotos: File[];
+  review: string;
 }
 
 const defaultApartmentForm: CantFindApartmentFormData = {
   name: '',
   address: '',
   localPhotos: [],
+  review: '',
 };
 
 type apartmentFormAction =
   | { type: 'updateApartmentName'; name: string }
   | { type: 'updateApartmentAddress'; address: string }
   | { type: 'updatePhotos'; photos: File[] }
+  | { type: 'updateReview'; review: string }
   | { type: 'reset' };
 
 const apartmentReducer = (
@@ -137,6 +140,8 @@ const apartmentReducer = (
       return { ...state, address: action.address };
     case 'updatePhotos':
       return { ...state, localPhotos: action.photos ? [...action.photos] : [] };
+    case 'updateReview':
+      return { ...state, review: action.review };
     case 'reset':
       return defaultApartmentForm;
     default:
@@ -205,6 +210,7 @@ const ContactModal = ({ user }: Props) => {
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [nameProfanityError, setNameProfanityError] = useState(false);
   const [addressProfanityError, setAddressProfanityError] = useState(false);
+  const [reviewProfanityError, setReviewProfanityError] = useState(false);
 
   //  Question Modal
   const [questionForm, questionDispatch] = useReducer(questionReducer, defaultQuestionForm);
@@ -250,6 +256,7 @@ const ContactModal = ({ user }: Props) => {
     setNameProfanityError(false);
     setAddressProfanityError(false);
     setEmptyNameError(false);
+    setReviewProfanityError(false);
 
     //  Clear question errors
     setEmptyEmailError(false);
@@ -262,6 +269,7 @@ const ContactModal = ({ user }: Props) => {
     name,
     address,
     localPhotos,
+    review,
   }: CantFindApartmentFormData): Promise<CantFindApartmentForm> => {
     const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
@@ -270,6 +278,7 @@ const ContactModal = ({ user }: Props) => {
       address: address,
       photos,
       userId: user?.uid,
+      review: review,
     };
   };
 
@@ -300,6 +309,10 @@ const ContactModal = ({ user }: Props) => {
       type: 'updatePhotos',
       photos: [...apartmentForm.localPhotos, ...newFiles],
     });
+  };
+
+  const updateApartmentReview = (event: React.ChangeEvent<HTMLInputElement>) => {
+    apartmentDispatch({ type: 'updateReview', review: event.target.value });
   };
 
   const removePhoto = (index: number) => {
@@ -358,6 +371,9 @@ const ContactModal = ({ user }: Props) => {
         includesProfanity(data.address)
           ? setAddressProfanityError(true)
           : setAddressProfanityError(false);
+        includesProfanity(data.review)
+          ? setReviewProfanityError(true)
+          : setReviewProfanityError(false);
         if (modalRef.current) {
           modalRef.current.scrollTop = 0;
         }
@@ -533,10 +549,26 @@ const ContactModal = ({ user }: Props) => {
             addressProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
           }
           onChange={updateApartmentAddress}
-          style={{ margin: '0', marginBottom: '30px' }}
+          style={{ margin: '0', marginBottom: '0' }}
           InputProps={{
             style: { fontSize: '13px' },
           }}
+        />
+        <Typography className={bodyText} style={{ marginBottom: '0' }}>
+          Leave a Review (Optional)
+        </Typography>
+        <TextField
+          fullWidth
+          error={reviewProfanityError}
+          id="review"
+          rows={4}
+          multiline
+          placeholder="Share your experience living here!"
+          onChange={updateApartmentReview}
+          style={{ margin: '0', marginBottom: '30px' }}
+          helperText={
+            addressProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
+          }
         />
         <UploadPhotos
           photosLimit={PHOTOS_LIMIT}
