@@ -1,5 +1,4 @@
-import React from 'react'; // not strictly required if using the new JSX transform, but fine to keep
-
-export default function BlogPost() {
-  return null; // temp stub
-}
+import React, { ReactElement, useState, useEffect } from 'react';
+import axios from 'axios';
+import { getUser, createAuthHeaders } from '../../utils/firebase';
+import { Box, Button } from '@material-ui/core';

@@ -160,6 +160,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [mapToggle, setMapToggle] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
+  const handleLike = async (likedId: string, targetType: 'review' | 'blogPost') => {
+    try {
+      const user = await getUser(true); // Forces sign-in if not already
+      if (!user) throw new Error('User not signed in');
+      const token = await user.getIdToken(true);
+      const headers = createAuthHeaders(token);
+      const response = await axios.post(`/api/add-like/`, { likedId, targetType }, headers);
+      console.log('Email sent:', response.data);
+    } catch (error) {}
+  };
+
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
     agQuadWalking: -1,

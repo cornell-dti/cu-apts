@@ -1044,10 +1044,10 @@ const likeHandler =
           t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
         }
       });
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
@@ -1121,10 +1121,10 @@ const saveApartmentHandler =
         t.update(userRef, { apartments: userApartments });
       });
 
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
@@ -1166,10 +1166,10 @@ const saveLandlordHandler =
         t.update(userRef, { landlords: userLandlords });
       });
 
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
@@ -1184,21 +1184,21 @@ const checkSavedApartment = (): RequestHandler => async (req, res) => {
     if (!userRef) {
       throw new Error('User data not found');
     }
-    await db.runTransaction(async (t) => {
+
+    const isSaved = await db.runTransaction(async (t) => {
       const userDoc = await t.get(userRef);
       if (!userDoc.exists) {
         t.set(userRef, { apartments: [] });
+        return false;
       }
       const userApartments = userDoc.data()?.apartments || [];
-      if (userApartments.includes(apartmentId)) {
-        res.status(200).send(JSON.stringify({ result: true }));
-      } else {
-        res.status(200).send(JSON.stringify({ result: false }));
-      }
+      return userApartments.includes(apartmentId);
     });
+
+    return res.status(200).send(JSON.stringify({ result: isSaved }));
   } catch (err) {
     console.error(err);
-    res.status(400).send('Error');
+    return res.status(400).send('Error');
   }
 };
 
@@ -1213,21 +1213,21 @@ const checkSavedLandlord = (): RequestHandler => async (req, res) => {
     if (!userRef) {
       throw new Error('User data not found');
     }
-    await db.runTransaction(async (t) => {
+
+    const isSaved = await db.runTransaction(async (t) => {
       const userDoc = await t.get(userRef);
       if (!userDoc.exists) {
         t.set(userRef, { landlords: [] });
+        return false;
       }
       const userLandlords = userDoc.data()?.landlords || [];
-      if (userLandlords.includes(landlordId)) {
-        res.status(200).send(JSON.stringify({ result: true }));
-      } else {
-        res.status(200).send(JSON.stringify({ result: false }));
-      }
+      return userLandlords.includes(landlordId);
     });
+
+    return res.status(200).send(JSON.stringify({ result: isSaved }));
   } catch (err) {
     console.error(err);
-    res.status(400).send('Error');
+    return res.status(400).send('Error');
   }
 };
 
