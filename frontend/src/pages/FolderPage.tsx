@@ -69,7 +69,9 @@ const useStyles = makeStyles((theme) => ({
  * This component represents a page for user folders.
  * It displays all folders saved by a user, with the option to edit, rename, or delete existing folders.
  *
- * @component
+ * @param {Props} props - Component props
+ * @param {firebase.User | null} props.user - The current logged-in user
+ * @param {function} props.setUser - Function to update the user state
  * @returns ReactElement: The folder page component.
  */
 const FolderPage = ({ user, setUser }: Props): ReactElement => {

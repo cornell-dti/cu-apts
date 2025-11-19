@@ -73,7 +73,9 @@ const useStyles = makeStyles((theme) => ({
  * This component displays the contents of a specific folder,
  * showing all apartments saved in that folder.
  *
- * @component
+ * @oaram {Props} props - Component props
+ * @param {firebase.User | null} props.user - The current logged-in user
+ * @param {function} props.setUser - Function to update the user state
  * @returns ReactElement: The folder detail page component.
  */
 const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {

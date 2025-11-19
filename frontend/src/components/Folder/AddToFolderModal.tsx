@@ -66,6 +66,21 @@ type Props = {
   onSuccess: () => void;
 };
 
+/**
+ * AddToFolderModal
+ * Allows users to add an apartment to their folders or create new folders.
+ *
+ * @param {Props} props- Component props
+ * @param {boolean} props.open - Whether the modal is open
+ * @param {function} props.onClose - Function to call when closing the modal
+ * @param {string} props.apartmentId - ID of the apartment to add to folders
+ * @param {string} props.apartmentName - Name of the apartment to display
+ * @param {firebase.User | null} props.user - Current logged-in user
+ * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to update the user state
+ * @param {function} props.onSuccess - Function to call on successful addition to folders
+ * @returns
+ */
+
 const AddToFolderModal = ({
   open,
   onClose,

@@ -77,7 +77,10 @@ const useStyles = makeStyles((theme) => ({
  *
  * This component represents a folder in the user's folder list.
  *
- * @component
+ * @param {Props} props - Component props
+ * @param {Folder} props.folder - The folder data to display
+ * @param {function} props.onDelete - Callback function when the folder is deleted
+ * @param {function} props.onRename - Callback function when the folder is renamed
  * @returns ReactElement: The FolderCard component.
  */
 const FolderCard = ({ folder, onDelete, onRename }: Props): ReactElement => {
