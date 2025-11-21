@@ -159,6 +159,20 @@ const AdminPage = (): ReactElement => {
   const [migrationSummary, setMigrationSummary] = useState<any>(null);
   const [migrationProgress, setMigrationProgress] = useState<string>('');
 
+  // Create new apartment state
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newApartmentName, setNewApartmentName] = useState('');
+  const [newApartmentAddress, setNewApartmentAddress] = useState('');
+  const [newApartmentLandlordId, setNewApartmentLandlordId] = useState('');
+  const [newApartmentArea, setNewApartmentArea] = useState<
+    'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER'
+  >('COLLEGETOWN');
+  const [createStatus, setCreateStatus] = useState<'idle' | 'preview' | 'creating' | 'error'>(
+    'idle'
+  );
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [createError, setCreateError] = useState('');
+
   // Debug apartments state changes
   useEffect(() => {
     console.log('Apartments loaded:', apartments.length);
@@ -242,6 +256,105 @@ const AdminPage = (): ReactElement => {
       return bNum - aNum;
     }
   });
+
+  // Create new apartment handlers
+  const handleOpenCreateModal = () => {
+    setCreateModalOpen(true);
+    setCreateStatus('idle');
+    setPreviewData(null);
+    setCreateError('');
+    setNewApartmentName('');
+    setNewApartmentAddress('');
+    setNewApartmentLandlordId('');
+    setNewApartmentArea('COLLEGETOWN');
+  };
+
+  const handleCloseCreateModal = () => {
+    setCreateModalOpen(false);
+    setCreateStatus('idle');
+    setPreviewData(null);
+    setCreateError('');
+  };
+
+  const handlePreviewApartment = async () => {
+    if (!newApartmentName.trim() || !newApartmentAddress.trim() || !newApartmentLandlordId.trim()) {
+      setCreateError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setCreateStatus('preview');
+      setCreateError('');
+
+      const user = await getUser();
+      if (!user) {
+        setCreateError('You must be logged in');
+        setCreateStatus('error');
+        return;
+      }
+
+      const token = await user.getIdToken(true);
+      const response = await axios.post(
+        '/api/admin/add-apartment',
+        {
+          name: newApartmentName.trim(),
+          address: newApartmentAddress.trim(),
+          landlordId: newApartmentLandlordId.trim(),
+          area: newApartmentArea,
+          confirm: false, // Preview mode
+        },
+        createAuthHeaders(token)
+      );
+
+      setPreviewData(response.data);
+      setCreateStatus('idle');
+    } catch (error: any) {
+      console.error('Preview error:', error);
+      setCreateError(error.response?.data || error.message || 'Error previewing apartment');
+      setCreateStatus('error');
+    }
+  };
+
+  const handleConfirmCreate = async () => {
+    try {
+      setCreateStatus('creating');
+      setCreateError('');
+
+      const user = await getUser();
+      if (!user) {
+        setCreateError('You must be logged in');
+        setCreateStatus('error');
+        return;
+      }
+
+      const token = await user.getIdToken(true);
+      const response = await axios.post(
+        '/api/admin/add-apartment',
+        {
+          name: newApartmentName.trim(),
+          address: newApartmentAddress.trim(),
+          landlordId: newApartmentLandlordId.trim(),
+          area: newApartmentArea,
+          confirm: true, // Create mode
+        },
+        createAuthHeaders(token)
+      );
+
+      alert(`Apartment created successfully! ID: ${response.data.apartmentId}`);
+      setCreateModalOpen(false);
+      setCreateStatus('idle');
+      setPreviewData(null);
+
+      // Reload apartments list
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error: any) {
+      console.error('Create error:', error);
+      setCreateError(error.response?.data || error.message || 'Error creating apartment');
+      setCreateStatus('error');
+    }
+  };
 
   // Migration handler functions
   const handleMigrationPreview = async () => {
@@ -900,6 +1013,14 @@ const AdminPage = (): ReactElement => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpenCreateModal}
+                style={{ marginRight: '10px' }}
+              >
+                + Create New Apartment
+              </Button>
+              <Button
                 className={sortButton}
                 variant="outlined"
                 startIcon={<SortIcon />}
@@ -1403,6 +1524,134 @@ const AdminPage = (): ReactElement => {
       {selectedTab === 'DevTools' && developerTools}
       {Modals}
       {roomTypesModal}
+
+      {/* Create New Apartment Modal */}
+      <Dialog open={createModalOpen} onClose={handleCloseCreateModal} maxWidth="md" fullWidth>
+        <DialogTitle>Create New Apartment</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} style={{ marginTop: '10px' }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                label="Apartment Name"
+                value={newApartmentName}
+                onChange={(e) => setNewApartmentName(e.target.value)}
+                placeholder="e.g., 112 Edgemoor Lane"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                label="Address"
+                value={newApartmentAddress}
+                onChange={(e) => setNewApartmentAddress(e.target.value)}
+                placeholder="e.g., 112 Edgemoor Lane, Ithaca, NY 14850"
+                helperText="Full address will be used to calculate location and distance"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Landlord ID"
+                value={newApartmentLandlordId}
+                onChange={(e) => setNewApartmentLandlordId(e.target.value)}
+                placeholder="Enter landlord ID"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                select
+                label="Area"
+                value={newApartmentArea}
+                onChange={(e) => setNewApartmentArea(e.target.value as any)}
+                SelectProps={{ native: true }}
+              >
+                <option value="COLLEGETOWN">Collegetown</option>
+                <option value="WEST">West</option>
+                <option value="NORTH">North</option>
+                <option value="DOWNTOWN">Downtown</option>
+                <option value="OTHER">Other</option>
+              </TextField>
+            </Grid>
+
+            {/* Error Display */}
+            {createError && (
+              <Grid item xs={12}>
+                <Box
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#ffebee',
+                    borderRadius: '4px',
+                    color: '#c62828',
+                  }}
+                >
+                  <Typography variant="body2">{createError}</Typography>
+                </Box>
+              </Grid>
+            )}
+
+            {/* Preview Data Display */}
+            {previewData && (
+              <Grid item xs={12}>
+                <Box
+                  style={{
+                    padding: '15px',
+                    backgroundColor: '#e8f5e9',
+                    borderRadius: '4px',
+                    marginTop: '10px',
+                  }}
+                >
+                  <Typography variant="h6" style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+                    Preview - Calculated Location Data
+                  </Typography>
+                  <Typography variant="body2" style={{ marginBottom: '5px' }}>
+                    <strong>Latitude:</strong> {previewData.coordinates?.latitude.toFixed(6)}
+                  </Typography>
+                  <Typography variant="body2" style={{ marginBottom: '5px' }}>
+                    <strong>Longitude:</strong> {previewData.coordinates?.longitude.toFixed(6)}
+                  </Typography>
+                  <Typography variant="body2" style={{ marginBottom: '5px' }}>
+                    <strong>Distance to Campus:</strong>{' '}
+                    {previewData.apartmentData?.distanceToCampus.toFixed(2)} miles
+                  </Typography>
+                  <Typography variant="body2" style={{ marginTop: '10px', fontStyle: 'italic' }}>
+                    Click "Confirm & Create" to save this apartment to the database.
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCreateModal} color="default">
+            Cancel
+          </Button>
+          {!previewData ? (
+            <Button
+              onClick={handlePreviewApartment}
+              color="primary"
+              variant="outlined"
+              disabled={createStatus === 'preview'}
+            >
+              {createStatus === 'preview' ? 'Calculating...' : 'Preview Location'}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleConfirmCreate}
+              color="primary"
+              variant="contained"
+              disabled={createStatus === 'creating'}
+            >
+              {createStatus === 'creating' ? 'Creating...' : 'Confirm & Create'}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
