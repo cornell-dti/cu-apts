@@ -2,6 +2,7 @@ import express, { Express, RequestHandler } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
+import { randomUUID } from 'crypto';
 import {
   Review,
   Landlord,
@@ -17,6 +18,7 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  RoomType,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -1360,10 +1362,75 @@ app.put('/api/admin/update-apartment/:apartmentId', authenticate, async (req, re
       return;
     }
 
-    // Update the apartment document
-    await apartmentDoc.update(updatedApartmentData);
+    // Validate and process roomTypes if provided
+    if (updatedApartmentData.roomTypes !== undefined) {
+      const roomTypes = updatedApartmentData.roomTypes as RoomType[];
 
-    res.status(200).send('Apartment updated successfully');
+      // Generate UUIDs for room types without IDs and validate
+      const processedRoomTypes: RoomType[] = [];
+      const seen = new Set<string>();
+
+      // Validate each room type
+      const validationErrors = roomTypes
+        .map((rt: RoomType): string | null => {
+          // Validate beds, baths, price
+          if (!Number.isInteger(rt.beds) || rt.beds < 1) {
+            return 'Error: Beds must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.baths) || rt.baths < 1) {
+            return 'Error: Baths must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.price) || rt.price < 1) {
+            return 'Error: Price must be an integer >= 1';
+          }
+
+          // Check for duplicates using (beds, baths, price) combination
+          const key = `${rt.beds}-${rt.baths}-${rt.price}`;
+          if (seen.has(key)) {
+            return 'Duplicate room type exists';
+          }
+          seen.add(key);
+
+          // Generate UUID if not provided
+          const id = rt.id && rt.id.trim() !== '' ? rt.id : randomUUID();
+
+          processedRoomTypes.push({
+            id,
+            beds: rt.beds,
+            baths: rt.baths,
+            price: rt.price,
+          });
+
+          return null;
+        })
+        .filter((error: string | null): error is string => error !== null);
+
+      if (validationErrors.length > 0) {
+        res.status(400).send(validationErrors[0]);
+        return;
+      }
+
+      // Create updated data with processed room types
+      const dataToUpdate = {
+        ...updatedApartmentData,
+        roomTypes: processedRoomTypes,
+      };
+
+      // Update the apartment document
+      await apartmentDoc.update(dataToUpdate);
+    } else {
+      // Update the apartment document without roomTypes changes
+      await apartmentDoc.update(updatedApartmentData);
+    }
+
+    // Fetch the updated apartment to return with generated UUIDs
+    const updatedSnapshot = await apartmentDoc.get();
+    const updatedApartment = { id: updatedSnapshot.id, ...updatedSnapshot.data() };
+
+    res.status(200).json({
+      message: 'Apartment updated successfully',
+      apartment: updatedApartment,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error updating apartment');
@@ -1391,7 +1458,7 @@ async function geocodeAddress(address: string): Promise<{ latitude: number; long
     throw new Error('Geocoding failed: Invalid address or no results found');
   }
 
-  const {location} = response.data.results[0].geometry;
+  const { location } = response.data.results[0].geometry;
   return {
     latitude: location.lat,
     longitude: location.lng,
@@ -1444,8 +1511,7 @@ app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
       name,
       address,
       landlordId,
-      numBaths,
-      numBeds,
+      roomTypes = [],
       photos = [],
       area,
       confirm = false,
@@ -1464,6 +1530,50 @@ app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
         .status(400)
         .send('Error: Invalid area. Must be one of: COLLEGETOWN, WEST, NORTH, DOWNTOWN, OTHER');
       return;
+    }
+
+    // Validate and process roomTypes if provided
+    const processedRoomTypes: RoomType[] = [];
+    if (roomTypes && roomTypes.length > 0) {
+      const seen = new Set<string>();
+
+      // Validate each room type
+      const validationErrors = roomTypes
+        .map((rt: RoomType): string | null => {
+          // Validate beds, baths, price
+          if (!Number.isInteger(rt.beds) || rt.beds < 1) {
+            return 'Error: Beds must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.baths) || rt.baths < 1) {
+            return 'Error: Baths must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.price) || rt.price < 1) {
+            return 'Error: Price must be an integer >= 1';
+          }
+
+          // Check for duplicates using (beds, baths, price) combination
+          const key = `${rt.beds}-${rt.baths}-${rt.price}`;
+          if (seen.has(key)) {
+            return 'Duplicate room type exists';
+          }
+          seen.add(key);
+
+          // Generate UUID for each room type
+          processedRoomTypes.push({
+            id: randomUUID(),
+            beds: rt.beds,
+            baths: rt.baths,
+            price: rt.price,
+          });
+
+          return null;
+        })
+        .filter((error: string | null): error is string => error !== null);
+
+      if (validationErrors.length > 0) {
+        res.status(400).send(validationErrors[0]);
+        return;
+      }
     }
 
     // Check if landlord exists
@@ -1509,13 +1619,11 @@ app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
       name,
       address,
       landlordId,
-      numBaths: numBaths || null,
-      numBeds: numBeds || null,
+      roomTypes: processedRoomTypes as readonly RoomType[],
       photos,
       area,
       latitude,
       longitude,
-      price: 0, // Default price, can be updated later
       distanceToCampus,
     };
 
@@ -1550,6 +1658,162 @@ app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Error creating apartment');
+  }
+});
+
+/**
+ * Migrate All Apartments Schema - Migrates all apartments from old schema to new room types schema.
+ *
+ * @remarks
+ * This endpoint performs a one-time migration of all apartments in the database:
+ * 1. Initializes roomTypes as empty array []
+ * 2. Deletes old fields: numBeds, numBaths, price
+ * 3. Processes apartments in batches of 100 (3 batches total for ~300 apartments)
+ * 4. Returns summary of migration success/failures
+ *
+ * @route POST /api/admin/migrate-all-apartments-schema
+ *
+ * @input {object} req.body - Migration options containing:
+ *   - dryRun: boolean (optional) - if true, returns count without making changes
+ *
+ * @status
+ * - 200: Migration completed successfully (returns summary)
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error during migration
+ */
+app.post('/api/admin/migrate-all-apartments-schema', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const { dryRun = false } = req.body;
+
+    // Fetch all apartments
+    const apartmentsSnapshot = await buildingsCollection.get();
+    const totalApartments = apartmentsSnapshot.size;
+
+    if (dryRun) {
+      // Dry run: just return count and preview
+      const sampleApartments = apartmentsSnapshot.docs.slice(0, 3).map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          hasOldSchema: 'numBeds' in data || 'numBaths' in data || 'price' in data,
+          currentData: { numBeds: data.numBeds, numBaths: data.numBaths, price: data.price },
+        };
+      });
+
+      res.status(200).json({
+        dryRun: true,
+        totalApartments,
+        message: `Would migrate ${totalApartments} apartments`,
+        sampleApartments,
+      });
+      return;
+    }
+
+    // Actual migration
+    const startTime = Date.now();
+    const batchSize = 100;
+    const batches = Math.ceil(totalApartments / batchSize);
+
+    let migrated = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    console.log(`Starting migration of ${totalApartments} apartments in ${batches} batches...`);
+
+    // Process in batches
+    const batchIndices = Array.from({ length: batches }, (_, i) => i);
+
+    await batchIndices.reduce(async (promise, batchIndex) => {
+      await promise;
+
+      const batchStartTime = Date.now();
+      const start = batchIndex * batchSize;
+      const end = Math.min(start + batchSize, totalApartments);
+      const batchDocs = apartmentsSnapshot.docs.slice(start, end);
+
+      console.log(
+        `Processing batch ${batchIndex + 1}/${batches} (${batchDocs.length} apartments)...`
+      );
+
+      // Process batch
+      const batch = db.batch();
+
+      batchDocs.forEach((doc) => {
+        try {
+          const data = doc.data();
+
+          // Check for corrupted data
+          if (!data.name || !data.address) {
+            errors.push(`Apartment ${doc.id}: Missing required fields (name or address)`);
+            failed += 1;
+            return;
+          }
+
+          // Create migrated apartment data
+          const migratedData: Record<string, unknown> = {
+            name: data.name,
+            address: data.address,
+            landlordId: data.landlordId || null,
+            roomTypes: [], // Initialize as empty array
+            photos: data.photos || [],
+            area: data.area || 'OTHER',
+            latitude: data.latitude || 0,
+            longitude: data.longitude || 0,
+            distanceToCampus: data.distanceToCampus || 0,
+          };
+
+          // Use batch.set to replace the document entirely (deletes old fields)
+          batch.set(doc.ref, migratedData);
+          migrated += 1;
+        } catch (err) {
+          const errorMsg = `Apartment ${doc.id}: ${
+            err instanceof Error ? err.message : 'Unknown error'
+          }`;
+          errors.push(errorMsg);
+          failed += 1;
+          console.error(errorMsg);
+        }
+      });
+
+      // Commit batch
+      await batch.commit();
+
+      const batchDuration = Date.now() - batchStartTime;
+      console.log(`Batch ${batchIndex + 1}/${batches} completed in ${batchDuration}ms`);
+    }, Promise.resolve());
+
+    const totalDuration = Date.now() - startTime;
+
+    const summary = {
+      success: true,
+      totalApartments,
+      migrated,
+      failed,
+      errors,
+      durationMs: totalDuration,
+      message: `Migration completed: ${migrated} migrated, ${failed} failed`,
+    };
+
+    console.log('Migration summary:', summary);
+
+    res.status(200).json(summary);
+  } catch (err) {
+    console.error('Migration error:', err);
+    res
+      .status(500)
+      .send(`Error during migration: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
 });
 

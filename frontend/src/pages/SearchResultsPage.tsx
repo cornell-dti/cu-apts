@@ -170,14 +170,16 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             {
               item: 'Lowest Price',
               callback: () => {
-                setSortBy('price');
+                // TODO: Phase 4 - Update to sort by room type prices
+                setSortBy('avgPrice');
                 setSortLowToHigh(true);
               },
             },
             {
               item: 'Highest Price',
               callback: () => {
-                setSortBy('price');
+                // TODO: Phase 4 - Update to sort by room type prices
+                setSortBy('avgPrice');
                 setSortLowToHigh(false);
               },
             },

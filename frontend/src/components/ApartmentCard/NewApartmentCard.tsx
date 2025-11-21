@@ -193,7 +193,7 @@ const NewApartmentCard = ({
   user,
   setUser,
 }: Props): ReactElement => {
-  const { id, name, photos, address, numBeds = 0, distanceToCampus = 0 } = buildingData;
+  const { id, name, photos, address, distanceToCampus = 0 } = buildingData;
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
@@ -320,12 +320,13 @@ const NewApartmentCard = ({
               <img src={moneyIcon} alt="money" className={apartmentMoneyIcon} />
               <Typography className={apartmentStatsText}>$2K - $3K</Typography>
             </div>
-            <div className={apartmentStatsContainer}>
+            {/* TODO: Room type display - will be implemented in Phase 3 */}
+            {/* <div className={apartmentStatsContainer}>
               <img src={bedIcon} alt="bed" className={apartmentBedIcon} />
               <Typography className={apartmentStatsText}>
-                {numBeds ? `${numBeds - 1}-${numBeds + 1}` : '0'} bed
+                TBD bed
               </Typography>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

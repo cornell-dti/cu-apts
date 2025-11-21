@@ -353,7 +353,8 @@ const ApartmentCard = ({
               >
                 {`Rating: ${avgRating.toFixed(1)}`}
               </Typography>
-              <Typography
+              {/* TODO: Room type display - will be implemented in Phase 3 */}
+              {/* <Typography
                 variant="h6"
                 className={reviewNum}
                 style={{ fontSize: '10px', lineHeight: 'normal' }}
@@ -373,7 +374,7 @@ const ApartmentCard = ({
                 style={{ fontSize: '10px', lineHeight: 'normal' }}
               >
                 {`Price: ${buildingData.price}`}
-              </Typography>
+              </Typography> */}
             </Grid>
           )}
           {/* Sample Review */}
