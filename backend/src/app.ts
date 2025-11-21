@@ -500,10 +500,10 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     // Extract all query parameters
     const query = req.query.q as string;
     const locations = req.query.locations as string;
-    // const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
-    // const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
-    // const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
-    // const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
+    const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
+    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
+    const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
+    const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
     const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
     const sortBy = req.query.sortBy || 'numReviews';
 
@@ -511,78 +511,148 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     const apts = req.app.get('apts');
     const aptsWithType: ApartmentWithId[] = apts;
 
-    // Start with text search if query is provided
-    let filteredResults: ApartmentWithId[] = [];
+    // STEP 1: Apply text search first
+    let baseResults: ApartmentWithId[] = [];
     if (query && query.trim() !== '') {
       const options = {
         keys: ['name', 'address'],
       };
       const fuse = new Fuse(aptsWithType, options);
       const searchResults = fuse.search(query);
-      filteredResults = searchResults.map((result) => result.item);
+      baseResults = searchResults.map((result) => result.item);
     } else {
       // If no query, start with all apartments
-      filteredResults = aptsWithType;
+      baseResults = aptsWithType;
     }
 
-    // Apply location filter if provided
-    if (locations && locations.trim() !== '') {
+    // STEP 2: Count active filter categories
+    const hasLocation = locations && locations.trim() !== '';
+    const hasPrice = minPrice !== null || maxPrice !== null;
+    const hasBedBath = (bedrooms !== null && bedrooms > 0) || (bathrooms !== null && bathrooms > 0);
+    const activeFilterCount = [hasLocation, hasPrice, hasBedBath].filter(Boolean).length;
+
+    // Helper: Filter by location only
+    const filterByLocation = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasLocation) return [];
       const locationArray = locations.split(',').map((loc) => loc.toUpperCase());
-      filteredResults = filteredResults.filter((apt) =>
-        locationArray.includes(apt.area ? apt.area.toUpperCase() : '')
-      );
+      return apts.filter((apt) => locationArray.includes(apt.area ? apt.area.toUpperCase() : ''));
+    };
+
+    // Helper: Filter by price only
+    const filterByPrice = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasPrice) return [];
+      return apts.filter((apt) => {
+        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
+        return apt.roomTypes.some((roomType) => {
+          if (minPrice !== null && roomType.price < minPrice) return false;
+          if (maxPrice !== null && roomType.price > maxPrice) return false;
+          return true;
+        });
+      });
+    };
+
+    // Helper: Filter by bed/bath only
+    const filterByBedBath = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasBedBath) return [];
+      return apts.filter((apt) => {
+        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
+        return apt.roomTypes.some((roomType) => {
+          if (bedrooms !== null && bedrooms > 0 && roomType.beds !== bedrooms) return false;
+          if (bathrooms !== null && bathrooms > 0 && roomType.baths !== bathrooms) return false;
+          return true;
+        });
+      });
+    };
+
+    // Helper: Filter by ALL criteria (main results)
+    const filterByAll = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      let filtered = apts;
+
+      // Apply location filter
+      if (hasLocation) {
+        filtered = filterByLocation(filtered);
+      }
+
+      // Apply price filter
+      if (hasPrice) {
+        filtered = filterByPrice(filtered);
+      }
+
+      // Apply bed/bath filter
+      if (hasBedBath) {
+        filtered = filterByBedBath(filtered);
+      }
+
+      return filtered;
+    };
+
+    // STEP 3: Calculate results based on active filter count
+    let mainResults: ApartmentWithId[] = [];
+    let additionalLocation: ApartmentWithId[] = [];
+    let additionalPrice: ApartmentWithId[] = [];
+    let additionalBedBath: ApartmentWithId[] = [];
+
+    if (activeFilterCount === 0) {
+      // No filters: return all base results as main
+      mainResults = baseResults;
+    } else if (activeFilterCount === 1) {
+      // 1 filter: main results only, no additional sections
+      mainResults = filterByAll(baseResults);
+    } else {
+      // 2+ filters: calculate main + additional sections
+      // Main: matches ALL filters
+      mainResults = filterByAll(baseResults);
+      const mainIds = new Set(mainResults.map((apt) => apt.id));
+
+      // Additional: each individual filter (excluding main results)
+      if (hasLocation) {
+        additionalLocation = filterByLocation(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
+      if (hasPrice) {
+        additionalPrice = filterByPrice(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
+      if (hasBedBath) {
+        additionalBedBath = filterByBedBath(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
     }
 
-    // TODO: Right now we disable the price filter because of lack of data
-    // Apply price range filters
-    // if (minPrice !== null) {
-    //   filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
-    // }
+    // STEP 4: Enrich all result sections with pageData
+    const enrichMain = await pageData(mainResults);
+    const enrichLocation = await pageData(additionalLocation);
+    const enrichPrice = await pageData(additionalPrice);
+    const enrichBedBath = await pageData(additionalBedBath);
 
-    // if (maxPrice !== null) {
-    //   filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
-    // }
-
-    // Apply bedroom filter
-    // TODO: Right now we disable the bedroom filter because of lack of data
-    // if (bedrooms !== null && bedrooms > 0) {
-    //   filteredResults = filteredResults.filter(
-    //     (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
-    //   );
-    // }
-
-    // // Apply bathroom filter
-    // if (bathrooms !== null && bathrooms > 0) {
-    //   filteredResults = filteredResults.filter(
-    //     (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
-    //   );
-    // }
-
-    // Process the filtered results through pageData to include reviews, ratings, etc.
-    let enrichedResults = await pageData(filteredResults);
-
-    // If size is specified and less than available, slice the results
-    if (size && size > 0 && enrichedResults.length > size) {
+    // STEP 5: Apply sorting and size limit to main results
+    let finalMain = enrichMain;
+    if (size && size > 0 && finalMain.length > size) {
       console.log('endpoint sortBy', sortBy);
       switch (sortBy) {
         case 'numReviews':
-          enrichedResults.sort((a, b) => b.numReviews - a.numReviews);
+          finalMain.sort((a, b) => b.numReviews - a.numReviews);
           break;
         case 'avgRating':
-          enrichedResults.sort((a, b) => b.avgRating - a.avgRating);
+          finalMain.sort((a, b) => b.avgRating - a.avgRating);
           break;
         case 'distanceToCampus':
-          enrichedResults.sort(
+          finalMain.sort(
             (a, b) => a.buildingData.distanceToCampus - b.buildingData.distanceToCampus
           );
           break;
         default:
           break;
       }
-      enrichedResults = enrichedResults.slice(0, size);
+      finalMain = finalMain.slice(0, size);
     }
 
-    res.status(200).send(JSON.stringify(enrichedResults));
+    // STEP 6: Return structured response
+    const response = {
+      main: finalMain,
+      additionalLocation: enrichLocation,
+      additionalPrice: enrichPrice,
+      additionalBedBath: enrichBedBath,
+    };
+
+    res.status(200).send(JSON.stringify(response));
   } catch (err) {
     console.error(err);
     res.status(400).send('Error');

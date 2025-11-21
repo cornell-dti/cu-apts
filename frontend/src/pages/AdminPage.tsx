@@ -15,7 +15,6 @@ import {
   Button,
   TextField,
   Box,
-  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -30,7 +29,6 @@ import {
   CantFindApartmentFormWithId,
   QuestionFormWithId,
   ReviewWithId,
-  ApartmentWithId,
 } from '../../../common/types/db-types';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
@@ -39,7 +37,6 @@ import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
-import SaveIcon from '@material-ui/icons/Save';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SortIcon from '@material-ui/icons/Sort';
 import clsx from 'clsx';
@@ -79,15 +76,6 @@ const useStyles = makeStyles((theme) => ({
   },
   sortButton: {
     marginLeft: theme.spacing(2),
-  },
-  editField: {
-    marginBottom: theme.spacing(1),
-    width: '100%',
-  },
-  editButtons: {
-    display: 'flex',
-    gap: theme.spacing(1),
-    marginTop: theme.spacing(1),
   },
   apartmentCard: {
     borderBottom: '1px solid #e0e0e0',
@@ -139,7 +127,21 @@ const AdminPage = (): ReactElement => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingApartment, setEditingApartment] = useState<string | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [editingRoomTypes, setEditingRoomTypes] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Apartment field editing state
+  const [editingName, setEditingName] = useState('');
+  const [editingAddress, setEditingAddress] = useState('');
+  const [editingLandlordId, setEditingLandlordId] = useState('');
+  const [editingArea, setEditingArea] = useState<
+    'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER'
+  >('COLLEGETOWN');
+  const [editingPhotos, setEditingPhotos] = useState<string[]>([]);
+  const [editingLatitude, setEditingLatitude] = useState(0);
+  const [editingLongitude, setEditingLongitude] = useState(0);
+  const [editingDistance, setEditingDistance] = useState(0);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -163,8 +165,6 @@ const AdminPage = (): ReactElement => {
     expandOpen,
     headerContainer,
     sortButton,
-    editField,
-    editButtons,
     apartmentCard,
     editButton,
   } = useStyles();
@@ -299,14 +299,32 @@ const AdminPage = (): ReactElement => {
 
   // Room Types Edit Handlers
   const handleEditClick = (apartment: any) => {
-    setEditingApartment(apartment.buildingData?.id);
-    setEditingRoomTypes(apartment.buildingData?.roomTypes || []);
+    const aptData = apartment.buildingData;
+    setEditingApartment(aptData?.id || null);
+    setEditingRoomTypes(aptData?.roomTypes || []);
+    setEditingName(aptData?.name || '');
+    setEditingAddress(aptData?.address || '');
+    setEditingLandlordId(aptData?.landlordId || '');
+    setEditingArea(aptData?.area || 'COLLEGETOWN');
+    setEditingPhotos(aptData?.photos || []);
+    setEditingLatitude(aptData?.latitude || 0);
+    setEditingLongitude(aptData?.longitude || 0);
+    setEditingDistance(aptData?.distanceToCampus || 0);
     setEditModalOpen(true);
   };
 
   const handleCancelEdit = () => {
     setEditingApartment(null);
     setEditingRoomTypes([]);
+    setValidationErrors([]);
+    setEditingName('');
+    setEditingAddress('');
+    setEditingLandlordId('');
+    setEditingArea('COLLEGETOWN');
+    setEditingPhotos([]);
+    setEditingLatitude(0);
+    setEditingLongitude(0);
+    setEditingDistance(0);
     setEditModalOpen(false);
   };
 
@@ -318,7 +336,44 @@ const AdminPage = (): ReactElement => {
   };
 
   const handleRemoveRoomType = (index: number) => {
-    setEditingRoomTypes((prev) => prev.filter((_, i) => i !== index));
+    const newRoomTypes = editingRoomTypes.filter((_, i) => i !== index);
+    setEditingRoomTypes(newRoomTypes);
+    setValidationErrors(validateRoomTypes(newRoomTypes));
+  };
+
+  // Validation function
+  const validateRoomTypes = (roomTypes: any[]): string[] => {
+    const errors: string[] = [];
+
+    // Check for invalid values
+    roomTypes.forEach((rt, index) => {
+      if (!rt.beds || rt.beds < 1 || !Number.isInteger(rt.beds)) {
+        errors.push(`Row ${index + 1}: Beds must be a whole number ≥ 1`);
+      }
+      if (!rt.baths || rt.baths < 1 || !Number.isInteger(rt.baths)) {
+        errors.push(`Row ${index + 1}: Baths must be a whole number ≥ 1`);
+      }
+      if (!rt.price || rt.price < 1 || !Number.isInteger(rt.price)) {
+        errors.push(`Row ${index + 1}: Price must be a whole number ≥ 1`);
+      }
+    });
+
+    // Check for duplicates
+    const seen = new Map<string, number>();
+    roomTypes.forEach((rt, index) => {
+      const key = `${rt.beds}-${rt.baths}-${rt.price}`;
+      if (seen.has(key)) {
+        errors.push(
+          `Duplicate room type: ${rt.beds} bed${rt.beds > 1 ? 's' : ''}, ${rt.baths} bath${
+            rt.baths > 1 ? 's' : ''
+          }, $${rt.price} (rows ${seen.get(key)! + 1} and ${index + 1})`
+        );
+      } else {
+        seen.set(key, index);
+      }
+    });
+
+    return errors;
   };
 
   const handleRoomTypeChange = (
@@ -329,13 +384,32 @@ const AdminPage = (): ReactElement => {
     const numValue = parseInt(value) || 1;
     if (numValue < 1) return; // Enforce >= 1 constraint
 
-    setEditingRoomTypes((prev) =>
-      prev.map((rt, i) => (i === index ? { ...rt, [field]: numValue } : rt))
+    const newRoomTypes = editingRoomTypes.map((rt, i) =>
+      i === index ? { ...rt, [field]: numValue } : rt
     );
+    setEditingRoomTypes(newRoomTypes);
+    setValidationErrors(validateRoomTypes(newRoomTypes));
   };
 
   const handleSaveEdit = async () => {
     if (!editingApartment) return;
+
+    // Validate before saving
+    const errors = validateRoomTypes(editingRoomTypes);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    // Validate required fields
+    if (!editingName.trim()) {
+      alert('Apartment name is required');
+      return;
+    }
+    if (!editingAddress.trim()) {
+      alert('Address is required');
+      return;
+    }
 
     try {
       const user = await getUser();
@@ -344,21 +418,20 @@ const AdminPage = (): ReactElement => {
         return;
       }
 
-      // Check for duplicate room types
-      const seen = new Set<string>();
-      for (const rt of editingRoomTypes) {
-        const key = `${rt.beds}-${rt.baths}-${rt.price}`;
-        if (seen.has(key)) {
-          alert(`Duplicate room type exists: ${rt.beds} beds, ${rt.baths} baths, $${rt.price}`);
-          return;
-        }
-        seen.add(key);
-      }
-
       const token = await user.getIdToken(true);
       const response = await axios.put(
         `/api/admin/update-apartment/${editingApartment}`,
-        { roomTypes: editingRoomTypes },
+        {
+          name: editingName.trim(),
+          address: editingAddress.trim(),
+          landlordId: editingLandlordId.trim() || null,
+          area: editingArea,
+          photos: editingPhotos,
+          latitude: editingLatitude,
+          longitude: editingLongitude,
+          distanceToCampus: editingDistance,
+          roomTypes: editingRoomTypes,
+        },
         createAuthHeaders(token)
       );
 
@@ -936,9 +1009,9 @@ const AdminPage = (): ReactElement => {
 
   // Room Types Edit Modal
   const roomTypesModal = (
-    <Dialog open={editModalOpen} onClose={handleCancelEdit} maxWidth="md" fullWidth>
+    <Dialog open={editModalOpen} onClose={handleCancelEdit} maxWidth="lg" fullWidth>
       <DialogTitle>
-        Edit Room Types
+        Edit Apartment
         {editingApartment && (
           <Typography variant="body2" style={{ color: '#666', marginTop: '5px' }}>
             Apartment ID: {editingApartment}
@@ -946,6 +1019,113 @@ const AdminPage = (): ReactElement => {
         )}
       </DialogTitle>
       <DialogContent>
+        {/* Apartment Information Section */}
+        <Box style={{ marginBottom: '30px' }}>
+          <Typography variant="h6" style={{ marginBottom: '15px', fontWeight: 'bold' }}>
+            Apartment Information
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Name"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                required
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Address"
+                value={editingAddress}
+                onChange={(e) => setEditingAddress(e.target.value)}
+                required
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Landlord ID"
+                value={editingLandlordId}
+                onChange={(e) => setEditingLandlordId(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="Area"
+                value={editingArea}
+                onChange={(e) => setEditingArea(e.target.value as any)}
+                SelectProps={{ native: true }}
+                size="small"
+              >
+                <option value="COLLEGETOWN">Collegetown</option>
+                <option value="WEST">West</option>
+                <option value="NORTH">North</option>
+                <option value="DOWNTOWN">Downtown</option>
+                <option value="OTHER">Other</option>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Latitude"
+                value={editingLatitude}
+                onChange={(e) => setEditingLatitude(parseFloat(e.target.value) || 0)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Longitude"
+                value={editingLongitude}
+                onChange={(e) => setEditingLongitude(parseFloat(e.target.value) || 0)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Distance to Campus (mi)"
+                value={editingDistance}
+                onChange={(e) => setEditingDistance(parseFloat(e.target.value) || 0)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Photo URLs (comma-separated)"
+                value={editingPhotos.join(', ')}
+                onChange={(e) =>
+                  setEditingPhotos(
+                    e.target.value
+                      .split(',')
+                      .map((url) => url.trim())
+                      .filter(Boolean)
+                  )
+                }
+                size="small"
+                multiline
+                rows={2}
+              />
+            </Grid>
+          </Grid>
+        </Box>
+
+        {/* Room Types Section */}
+        <Typography variant="h6" style={{ marginBottom: '15px', fontWeight: 'bold' }}>
+          Room Types
+        </Typography>
         {editingRoomTypes.length === 0 ? (
           <Typography variant="body1" style={{ color: '#999', padding: '20px 0' }}>
             No room types. Click "Add Room Type" below to add one.
@@ -1035,12 +1215,46 @@ const AdminPage = (): ReactElement => {
             + Add Room Type
           </Button>
         </Box>
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <Box
+            style={{
+              marginTop: '20px',
+              padding: '12px',
+              backgroundColor: '#ffebee',
+              borderRadius: '4px',
+              border: '1px solid #ef5350',
+            }}
+          >
+            <Typography
+              variant="body2"
+              style={{ fontWeight: 'bold', color: '#c62828', marginBottom: '8px' }}
+            >
+              Please fix the following errors:
+            </Typography>
+            {validationErrors.map((error, idx) => (
+              <Typography
+                key={idx}
+                variant="body2"
+                style={{ color: '#c62828', fontSize: '13px', marginLeft: '8px' }}
+              >
+                • {error}
+              </Typography>
+            ))}
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancelEdit} color="default">
           Cancel
         </Button>
-        <Button onClick={handleSaveEdit} color="primary" variant="contained">
+        <Button
+          onClick={handleSaveEdit}
+          color="primary"
+          variant="contained"
+          disabled={validationErrors.length > 0}
+        >
           Save Changes
         </Button>
       </DialogActions>
@@ -1053,7 +1267,7 @@ const AdminPage = (): ReactElement => {
         <Toolbar>
           <Tabs
             value={selectedTab}
-            onChange={(event, newValue) => setSelectedTab(newValue)}
+            onChange={(_event, newValue) => setSelectedTab(newValue)}
             aria-label="navigation tabs"
             variant="fullWidth"
           >

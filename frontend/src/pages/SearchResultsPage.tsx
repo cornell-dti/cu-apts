@@ -77,6 +77,9 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const path = useLocation();
   const [pathName] = useState(path.pathname);
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
+  const [additionalLocation, setAdditionalLocation] = useState<CardData[]>([]);
+  const [additionalPrice, setAdditionalPrice] = useState<CardData[]>([]);
+  const [additionalBedBath, setAdditionalBedBath] = useState<CardData[]>([]);
   const [sortBy, setSortBy] = useState<keyof CardData | keyof ApartmentWithId | 'originalOrder'>(
     'originalOrder'
   );
@@ -134,8 +137,28 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
 
     params.append('sortLowToHigh', filters.initialSortLowToHigh.toString());
 
-    get<CardData[]>(`/api/search-with-query-and-filters?${params.toString()}&size=21`, {
-      callback: setSearchResults,
+    get<{
+      main: CardData[];
+      additionalLocation: CardData[];
+      additionalPrice: CardData[];
+      additionalBedBath: CardData[];
+    }>(`/api/search-with-query-and-filters?${params.toString()}&size=21`, {
+      callback: (data) => {
+        // Defensive: handle both old and new API response formats
+        if (data && typeof data === 'object' && 'main' in data) {
+          setSearchResults(data.main || []);
+          setAdditionalLocation(data.additionalLocation || []);
+          setAdditionalPrice(data.additionalPrice || []);
+          setAdditionalBedBath(data.additionalBedBath || []);
+        } else {
+          // Fallback for unexpected response format
+          console.warn('Unexpected API response format:', data);
+          setSearchResults([]);
+          setAdditionalLocation([]);
+          setAdditionalPrice([]);
+          setAdditionalBedBath([]);
+        }
+      },
     });
 
     setSortBy(filters.initialSortBy);
@@ -146,6 +169,32 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
 
   const saveResultsCount = (count: number) => {
     sessionStorage.setItem(`resultsCount_search_${query}`, count.toString());
+  };
+
+  // Helper: Generate section title for additional results
+  const getAdditionalSectionTitle = (type: 'location' | 'price' | 'bedBath'): string => {
+    if (type === 'location' && filters.locations && filters.locations.length > 0) {
+      return `More at ${filters.locations.join(', ')}`;
+    }
+    if (type === 'price' && (filters.minPrice || filters.maxPrice)) {
+      const min = filters.minPrice ? `$${filters.minPrice}` : '';
+      const max = filters.maxPrice ? `$${filters.maxPrice}` : '';
+      if (min && max) return `More within ${min} - ${max}`;
+      if (min) return `More above ${min}`;
+      if (max) return `More under ${max}`;
+    }
+    if (type === 'bedBath') {
+      const bedText =
+        filters.bedrooms > 0 ? `${filters.bedrooms} bedroom${filters.bedrooms > 1 ? 's' : ''}` : '';
+      const bathText =
+        filters.bathrooms > 0
+          ? `${filters.bathrooms} bathroom${filters.bathrooms > 1 ? 's' : ''}`
+          : '';
+      if (bedText && bathText) return `More with ${bedText} and ${bathText}`;
+      if (bedText) return `More with ${bedText}`;
+      if (bathText) return `More with ${bathText}`;
+    }
+    return '';
   };
 
   const sortSection = () => {
@@ -170,7 +219,6 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             {
               item: 'Lowest Price',
               callback: () => {
-                // TODO: Phase 4 - Update to sort by room type prices
                 setSortBy('avgPrice');
                 setSortLowToHigh(true);
               },
@@ -178,7 +226,6 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             {
               item: 'Highest Price',
               callback: () => {
-                // TODO: Phase 4 - Update to sort by room type prices
                 setSortBy('avgPrice');
                 setSortLowToHigh(false);
               },
@@ -221,6 +268,7 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
       {!isMobile ? (
         <div className={mainContent}>
           <div className={searchResultsContainer}>
+            {/* Main Results */}
             <SearchResultsPageApartmentCards
               user={user}
               setUser={setUser}
@@ -228,6 +276,63 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
               sortMethod={sortBy}
               orderLowToHigh={sortLowToHigh}
             />
+
+            {/* Additional Location Section */}
+            {additionalLocation.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('location')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalLocation}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Price Section */}
+            {additionalPrice.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('price')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalPrice}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Bed/Bath Section */}
+            {additionalBedBath.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('bedBath')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalBedBath}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
           </div>
           <div className={mapContainer}>
             <SearchResultsMap
@@ -260,6 +365,7 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             />
           </div>
           <div className={searchResultsContainer} style={{ width: '100%', maxWidth: '100%' }}>
+            {/* Main Results */}
             <SearchResultsPageApartmentCards
               user={user}
               setUser={setUser}
@@ -267,6 +373,63 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
               sortMethod={sortBy}
               orderLowToHigh={sortLowToHigh}
             />
+
+            {/* Additional Location Section */}
+            {additionalLocation.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('location')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalLocation}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Price Section */}
+            {additionalPrice.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('price')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalPrice}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Bed/Bath Section */}
+            {additionalBedBath.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('bedBath')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalBedBath}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
           </div>
         </div>
       )}
