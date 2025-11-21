@@ -147,6 +147,11 @@ const AdminPage = (): ReactElement => {
   const [currentPage, setCurrentPage] = useState(1);
   const apartmentsPerPage = 50;
 
+  // Search and filter state for Apartment Data tab
+  const [searchName, setSearchName] = useState('');
+  const [searchAddress, setSearchAddress] = useState('');
+  const [roomTypeFilter, setRoomTypeFilter] = useState<'all' | 'with' | 'without'>('all');
+
   // Migration state
   const [migrationStatus, setMigrationStatus] = useState<
     'idle' | 'preview' | 'running' | 'complete' | 'error'
@@ -183,8 +188,34 @@ const AdminPage = (): ReactElement => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
-  // First, sort all apartments by ID to get the correct page ranges
-  const allApartmentsSorted = [...apartments].sort((a, b) => {
+  // Apply search and filter
+  const filteredApartments = apartments.filter((apt) => {
+    const aptData = apt.buildingData;
+    if (!aptData) return false;
+
+    // Apply name search
+    if (searchName && !aptData.name?.toLowerCase().includes(searchName.toLowerCase())) {
+      return false;
+    }
+
+    // Apply address search
+    if (searchAddress && !aptData.address?.toLowerCase().includes(searchAddress.toLowerCase())) {
+      return false;
+    }
+
+    // Apply room type filter
+    if (roomTypeFilter === 'with' && (!aptData.roomTypes || aptData.roomTypes.length === 0)) {
+      return false;
+    }
+    if (roomTypeFilter === 'without' && aptData.roomTypes && aptData.roomTypes.length > 0) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Sort all apartments by ID to get the correct page ranges
+  const allApartmentsSorted = [...filteredApartments].sort((a, b) => {
     const aId = a.buildingData?.id || '';
     const bId = b.buildingData?.id || '';
     const aNum = parseInt(aId, 10) || 0;
@@ -192,24 +223,11 @@ const AdminPage = (): ReactElement => {
     return aNum - bNum; // Always sort ascending to get correct page ranges
   });
 
-  // Filter test apartments (IDs > 1000)
-  const testApartments = allApartmentsSorted.filter((apt) => {
-    const id = parseInt(apt.buildingData?.id || '0', 10);
-    return id > 1000;
-  });
-
-  // Determine if we're showing test apartments or regular apartments
-  const isTestPage = currentPage > Math.ceil(allApartmentsSorted.length / apartmentsPerPage);
-  const apartmentsToShow = isTestPage ? testApartments : allApartmentsSorted;
-
-  // Pagination logic - get the correct apartments for the current page
-  const regularPages = Math.ceil(allApartmentsSorted.length / apartmentsPerPage);
-  const testPages = Math.ceil(testApartments.length / apartmentsPerPage);
-  const totalPages = regularPages + (testPages > 0 ? 1 : 0); // +1 for test apartments page
-
-  const startIndex = isTestPage ? 0 : (currentPage - 1) * apartmentsPerPage;
-  const endIndex = isTestPage ? apartmentsPerPage : startIndex + apartmentsPerPage;
-  const pageApartments = apartmentsToShow.slice(startIndex, endIndex);
+  // Pagination logic
+  const totalPages = Math.ceil(allApartmentsSorted.length / apartmentsPerPage);
+  const startIndex = (currentPage - 1) * apartmentsPerPage;
+  const endIndex = startIndex + apartmentsPerPage;
+  const pageApartments = allApartmentsSorted.slice(startIndex, endIndex);
 
   // Then sort within the page based on the sort order
   const currentPageApartments = [...pageApartments].sort((a, b) => {
@@ -462,17 +480,9 @@ const AdminPage = (): ReactElement => {
   };
 
   const getPageRange = (page: number) => {
-    const regularPages = Math.ceil(allApartmentsSorted.length / apartmentsPerPage);
-
-    if (page > regularPages) {
-      // This is the test apartments page
-      return `Test (${testApartments.length})`;
-    } else {
-      // Regular page
-      const start = (page - 1) * apartmentsPerPage + 1;
-      const end = Math.min(page * apartmentsPerPage, allApartmentsSorted.length);
-      return `${start}-${end}`;
-    }
+    const start = (page - 1) * apartmentsPerPage + 1;
+    const end = Math.min(page * apartmentsPerPage, allApartmentsSorted.length);
+    return `${start}-${end}`;
   };
 
   // calls the APIs and the callback function to set the reviews for each review type
@@ -883,14 +893,9 @@ const AdminPage = (): ReactElement => {
                 <strong>All Apartments ({apartments.length})</strong>
               </Typography>
               <Typography variant="body2" style={{ color: '#666', marginLeft: '10px' }}>
-                Sorted within page: {sortOrder === 'asc' ? 'Ascending' : 'Descending'} |
-                {isTestPage ? (
-                  <>Showing: Test Apartments ({testApartments.length})</>
-                ) : (
-                  <>
-                    Showing: {getPageRange(currentPage)} of {apartments.length}
-                  </>
-                )}
+                Sorted within page: {sortOrder === 'asc' ? 'Ascending' : 'Descending'} | Showing:{' '}
+                {getPageRange(currentPage)} of {filteredApartments.length} filtered (
+                {apartments.length} total)
               </Typography>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -906,6 +911,67 @@ const AdminPage = (): ReactElement => {
             </div>
           </div>
 
+          {/* Search and Filter Controls */}
+          <Box
+            style={{
+              marginBottom: '20px',
+              padding: '15px',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              backgroundColor: '#f9f9f9',
+            }}
+          >
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Search by Name"
+                  variant="outlined"
+                  value={searchName}
+                  onChange={(e) => {
+                    setSearchName(e.target.value);
+                    setCurrentPage(1); // Reset to first page on search
+                  }}
+                  placeholder="Enter apartment name..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Search by Address"
+                  variant="outlined"
+                  value={searchAddress}
+                  onChange={(e) => {
+                    setSearchAddress(e.target.value);
+                    setCurrentPage(1); // Reset to first page on search
+                  }}
+                  placeholder="Enter address..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  select
+                  label="Room Types Filter"
+                  variant="outlined"
+                  value={roomTypeFilter}
+                  onChange={(e) => {
+                    setRoomTypeFilter(e.target.value as 'all' | 'with' | 'without');
+                    setCurrentPage(1); // Reset to first page on filter change
+                  }}
+                  SelectProps={{ native: true }}
+                >
+                  <option value="all">All Apartments</option>
+                  <option value="with">With Room Types</option>
+                  <option value="without">Without Room Types</option>
+                </TextField>
+              </Grid>
+            </Grid>
+          </Box>
+
           {/* Pagination Buttons */}
           <div
             style={{
@@ -916,92 +982,144 @@ const AdminPage = (): ReactElement => {
               justifyContent: 'center',
             }}
           >
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              const regularPages = Math.ceil(allApartmentsSorted.length / apartmentsPerPage);
-              const isTestPageButton = page > regularPages;
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? 'contained' : 'outlined'}
+                color={currentPage === page ? 'primary' : 'default'}
+                size="small"
+                onClick={() => handlePageChange(page)}
+                style={{ minWidth: '80px' }}
+              >
+                {getPageRange(page)}
+              </Button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {currentPageApartments.map((apartment, index) => {
+              const aptData = apartment.buildingData;
+              const hasRoomTypes = aptData?.roomTypes && aptData.roomTypes.length > 0;
 
               return (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? 'contained' : 'outlined'}
-                  color={
-                    currentPage === page ? 'primary' : isTestPageButton ? 'secondary' : 'default'
-                  }
-                  size="small"
-                  onClick={() => handlePageChange(page)}
+                <Box
+                  key={index}
                   style={{
-                    minWidth: '80px',
-                    ...(isTestPageButton && { fontWeight: 'bold' }),
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    backgroundColor: '#fff',
+                    position: 'relative',
                   }}
                 >
-                  {getPageRange(page)}
-                </Button>
+                  {/* Edit Button */}
+                  <IconButton
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      backgroundColor: '#f5f5f5',
+                    }}
+                    onClick={() => handleEditClick(apartment)}
+                    size="small"
+                    title="Edit apartment"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+
+                  {/* Apartment Name and ID */}
+                  <Typography
+                    variant="h6"
+                    style={{ fontWeight: 'bold', marginBottom: '12px', paddingRight: '50px' }}
+                  >
+                    {aptData?.name || 'N/A'}
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      style={{ color: '#666', marginLeft: '12px', fontWeight: 'normal' }}
+                    >
+                      ID: {aptData?.id || 'N/A'}
+                    </Typography>
+                  </Typography>
+
+                  {/* Main Info Grid */}
+                  <Grid container spacing={2}>
+                    {/* Left Column - Location Info */}
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box>
+                        <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                          ADDRESS
+                        </Typography>
+                        <Typography variant="body1" style={{ marginBottom: '8px' }}>
+                          {aptData?.address || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                          AREA
+                        </Typography>
+                        <Typography variant="body1">{aptData?.area || 'N/A'}</Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* Middle Column - Room Types & Company */}
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box>
+                        <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                          ROOM TYPES
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          style={{
+                            marginBottom: '8px',
+                            color: hasRoomTypes ? '#000' : '#999',
+                            fontStyle: hasRoomTypes ? 'normal' : 'italic',
+                          }}
+                        >
+                          {hasRoomTypes
+                            ? `${aptData.roomTypes.length} type${
+                                aptData.roomTypes.length > 1 ? 's' : ''
+                              }`
+                            : 'No room types'}
+                        </Typography>
+                        <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                          COMPANY
+                        </Typography>
+                        <Typography variant="body1">{apartment.company || 'N/A'}</Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* Right Column - Stats */}
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Box>
+                        <Grid container spacing={2}>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                              REVIEWS
+                            </Typography>
+                            <Typography variant="body1">{apartment.numReviews || 0}</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                              AVG RATING
+                            </Typography>
+                            <Typography variant="body1">
+                              {apartment.avgRating ? apartment.avgRating.toFixed(1) : 'N/A'}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" style={{ color: '#666', fontSize: '12px' }}>
+                              AVG PRICE
+                            </Typography>
+                            <Typography variant="body1">
+                              {apartment.avgPrice ? `$${apartment.avgPrice.toFixed(0)}` : 'N/A'}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
               );
             })}
           </div>
-          <List>
-            {currentPageApartments.map((apartment, index) => {
-              return (
-                <ListItem key={index} className={apartmentCard}>
-                  <IconButton
-                    className={editButton}
-                    onClick={() => handleEditClick(apartment)}
-                    size="small"
-                    title="Edit room types"
-                  >
-                    <EditIcon />
-                  </IconButton>
-
-                  <ListItemText
-                    primary={
-                      <Typography variant="h6" style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                        {apartment.buildingData?.name || 'N/A'}
-                      </Typography>
-                    }
-                    secondary={
-                      <div>
-                        <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                          <strong>Apartment ID:</strong> {apartment.buildingData?.id || 'N/A'}
-                        </Typography>
-                        <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                          <strong>Address:</strong> {apartment.buildingData?.address || 'N/A'}
-                        </Typography>
-                        <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                          <strong>Location:</strong> {apartment.buildingData?.area || 'N/A'}
-                        </Typography>
-
-                        <div>
-                          <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                            <strong>Room Types:</strong>{' '}
-                            {apartment.buildingData?.roomTypes &&
-                            apartment.buildingData.roomTypes.length > 0
-                              ? `${apartment.buildingData.roomTypes.length} type${
-                                  apartment.buildingData.roomTypes.length > 1 ? 's' : ''
-                                }`
-                              : 'No room types'}
-                          </Typography>
-                          <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                            <strong>Company:</strong> {apartment.company || 'N/A'}
-                          </Typography>
-                          <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                            <strong>Reviews:</strong> {apartment.numReviews || 0}
-                          </Typography>
-                          <Typography variant="body1" style={{ marginBottom: '3px' }}>
-                            <strong>Avg Rating:</strong>{' '}
-                            {apartment.avgRating ? apartment.avgRating.toFixed(1) : 'N/A'}
-                          </Typography>
-                          <Typography variant="body1">
-                            <strong>Avg Price:</strong>{' '}
-                            {apartment.avgPrice ? `$${apartment.avgPrice.toFixed(0)}` : 'N/A'}
-                          </Typography>
-                        </div>
-                      </div>
-                    }
-                  />
-                </ListItem>
-              );
-            })}
-          </List>
         </Grid>
       </Grid>
     </Container>
@@ -1273,7 +1391,7 @@ const AdminPage = (): ReactElement => {
           >
             <Tab label="Reviews" value="Reviews" />
             <Tab label="Contact" value="Contact" />
-            <Tab label="Data" value="Data" />
+            <Tab label="Apartment Data" value="Data" />
             <Tab label="Dev Tools" value="DevTools" />
           </Tabs>
         </Toolbar>
