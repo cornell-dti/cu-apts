@@ -28,16 +28,34 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     gap: '12px',
-    height: '80vh',
+    height: 'calc(100vh - 200px)',
+    marginBottom: '40px',
   },
   searchResultsContainer: {
-    flex: 1,
+    flex: 3,
+    overflowY: 'auto',
+    paddingRight: '8px',
+    '&::-webkit-scrollbar': {
+      width: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: '#f1f1f1',
+      borderRadius: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: '#888',
+      borderRadius: '4px',
+      '&:hover': {
+        background: '#555',
+      },
+    },
   },
   mapContainer: {
-    flex: 1,
+    flex: 2,
     height: '100%',
-    width: '100%',
-    minHeight: '300px',
+    maxWidth: '650px',
+    position: 'sticky',
+    top: 0,
   },
   sortDropDown: {
     display: 'flex',
@@ -269,13 +287,33 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
         <div className={mainContent}>
           <div className={searchResultsContainer}>
             {/* Main Results */}
-            <SearchResultsPageApartmentCards
-              user={user}
-              setUser={setUser}
-              data={searchResults}
-              sortMethod={sortBy}
-              orderLowToHigh={sortLowToHigh}
-            />
+            {searchResults.length === 0 ? (
+              <div
+                style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                }}
+              >
+                <Typography variant="h5" style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  No exact matching apartments found
+                </Typography>
+                <Typography variant="body1" style={{ color: '#666' }}>
+                  Try adjusting your filters or check the additional results below for similar
+                  apartments.
+                </Typography>
+              </div>
+            ) : (
+              <SearchResultsPageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={searchResults}
+                sortMethod={sortBy}
+                orderLowToHigh={sortLowToHigh}
+              />
+            )}
 
             {/* Additional Location Section */}
             {additionalLocation.length > 0 && (
@@ -366,13 +404,33 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
           </div>
           <div className={searchResultsContainer} style={{ width: '100%', maxWidth: '100%' }}>
             {/* Main Results */}
-            <SearchResultsPageApartmentCards
-              user={user}
-              setUser={setUser}
-              data={searchResults}
-              sortMethod={sortBy}
-              orderLowToHigh={sortLowToHigh}
-            />
+            {searchResults.length === 0 ? (
+              <div
+                style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                }}
+              >
+                <Typography variant="h5" style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  No exact matching apartments found
+                </Typography>
+                <Typography variant="body1" style={{ color: '#666' }}>
+                  Try adjusting your filters or check the additional results below for similar
+                  apartments.
+                </Typography>
+              </div>
+            ) : (
+              <SearchResultsPageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={searchResults}
+                sortMethod={sortBy}
+                orderLowToHigh={sortLowToHigh}
+              />
+            )}
 
             {/* Additional Location Section */}
             {additionalLocation.length > 0 && (
