@@ -166,7 +166,6 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       }
       const token = await user.getIdToken(true);
 
-      // Fetch specific folder by ID
       const folderResponse = await axios.get(`/api/folders/${folderId}`, createAuthHeaders(token));
       setFolder(folderResponse.data);
     } catch (error) {
@@ -188,11 +187,13 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       }
       const token = await user.getIdToken(true);
 
-      await apartmentIds.map((id) =>
-        axios.delete(`/api/folders/${folderId}/apartments/${id}`, {
-          data: { apartmentIds },
-          ...createAuthHeaders(token),
-        })
+      await Promise.all(
+        apartmentIds.map((id) =>
+          axios.delete(`/api/folders/${folderId}/apartments/${id}`, {
+            data: { apartmentIds },
+            ...createAuthHeaders(token),
+          })
+        )
       );
 
       // Refresh folder details
@@ -203,6 +204,29 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
     }
     setShowRemoveApartmentModal(false);
   };
+
+  const fetchApartmentsInFolder = async (folder: Folder) => {
+    try {
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+
+      const token = await user.getIdToken(true);
+      const res = await axios.get(`/api/folders/${folder.id}/apartments`, createAuthHeaders(token));
+
+      setApartments(res.data);
+      setSavedAptsData(res.data);
+    } catch (error) {
+      console.error('Error fetching apartments in folder:', error);
+      showError('Failed to load apartments in folder');
+    }
+  };
+
+  useEffect(() => {
+    if (folder) {
+      fetchApartmentsInFolder(folder);
+    }
+  }, [folder]);
 
   if (loading) {
     return (
