@@ -11,11 +11,11 @@ import {
   DialogContent,
   DialogActions,
 } from '@material-ui/core';
-import Toast from '../components/utils/Toast';
-import { colors } from '../colors';
-import FolderCard from '../components/Folder/FolderCard';
+import Toast from '../utils/Toast';
+import { colors } from '../../colors';
+import FolderCard from './FolderCard';
 import axios from 'axios';
-import { createAuthHeaders, getUser } from '../utils/firebase';
+import { createAuthHeaders, getUser } from '../../utils/firebase';
 
 type Props = {
   user: firebase.User | null;
@@ -32,9 +32,6 @@ type Folder = {
 
 const useStyles = makeStyles((theme) => ({
   background: {
-    backgroundColor: colors.gray3,
-    minHeight: '100vh',
-    width: '100%',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
@@ -64,17 +61,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 /**
- * FolderPage Component
+ * FolderSection Component
  *
- * This component represents a page for user folders.
- * It displays all folders saved by a user, with the option to edit, rename, or delete existing folders.
+ * This component displays all folders saved by a user, with the option to edit, rename, or delete existing folders.
  *
  * @param {Props} props - Component props
  * @param {firebase.User | null} props.user - The current logged-in user
  * @param {function} props.setUser - Function to update the user state
  * @returns ReactElement: The folder page component.
  */
-const FolderPage = ({ user, setUser }: Props): ReactElement => {
+const FolderSection = ({ user, setUser }: Props): ReactElement => {
   const toastTime = 3500;
   const { background, headerStyle, headerContainer, gridContainer, createButton } = useStyles();
 
@@ -207,10 +203,10 @@ const FolderPage = ({ user, setUser }: Props): ReactElement => {
 
   return (
     <div className={background}>
-      <Box style={{ width: '90%', maxWidth: '1200px' }}>
+      <Box style={{ width: '100%', maxWidth: '1200px' }}>
         <Box className={headerContainer}>
           <Typography variant="h3" className={headerStyle}>
-            My Folders
+            My Folders ({folders.length})
           </Typography>
           <Typography variant="body1" style={{ marginTop: '1em', color: colors.gray1 }}>
             Organize your saved apartments into folders
@@ -309,4 +305,4 @@ const FolderPage = ({ user, setUser }: Props): ReactElement => {
   );
 };
 
-export default FolderPage;
+export default FolderSection;

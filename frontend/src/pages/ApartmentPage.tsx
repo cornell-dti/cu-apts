@@ -46,7 +46,7 @@ import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import AddToFolderModal from '../components/Folder/AddToFolderModal';
-import { FolderOutlined } from '@material-ui/icons';
+import { set } from 'date-fns';
 
 type Props = {
   user: firebase.User | null;
@@ -162,7 +162,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showAddToFolderSuccess, setShowAddToFolderSuccess] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
-  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
@@ -316,7 +315,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   useEffect(() => {
     const checkIfSaved = async () => {
       try {
-        if (user) {
+        if (user && aptId) {
           const token = await user.getIdToken(true);
           const response = await axios.post(
             '/api/check-saved-apartment',
@@ -328,11 +327,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           setIsSaved(false);
         }
       } catch (err) {
-        throw new Error('Error with checking if apartment is saved');
+        console.error('Error checking if apartment is saved:', err);
+        setIsSaved(false);
       }
     };
+
     checkIfSaved();
-  }, [user, setUser, aptId]);
+  }, [user, aptId, showAddToFolderSuccess]);
 
   useEffect(() => {
     window.scrollTo({
@@ -411,10 +412,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowReportSuccessConfirmation);
   };
 
-  const showSaveSuccessToast = () => {
-    showToast(setShowSaveSuccess);
-  };
-
   const likeHelper = (dislike = false) => {
     return async (reviewId: string) => {
       setLikeStatuses((reviews) => ({ ...reviews, [reviewId]: true }));
@@ -450,28 +447,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const addLike = likeHelper(false);
 
   const removeLike = likeHelper(true);
-
-  const handleSaveToggle = async () => {
-    const newIsSaved = !isSaved;
-    try {
-      if (!user) {
-        let user = await getUser(true);
-        setUser(user);
-      }
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
-      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
-      await axios.post(endpoint, { apartmentId: aptId }, createAuthHeaders(token));
-      setIsSaved((prevIsSaved) => !prevIsSaved);
-      if (newIsSaved) {
-        showSaveSuccessToast();
-      }
-    } catch (err) {
-      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
-    }
-  };
 
   const openReviewModal = async () => {
     let user = await getUser(true);
@@ -572,26 +547,19 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 style={{ width: '107px', height: '43px' }}
               />
             </IconButton> */}
+
             <Button
               disableRipple
-              onClick={handleSaveToggle}
+              onClick={() => {
+                setShowFolderModal(true);
+              }}
               className={saveButton}
               color="primary"
               fullWidth
               disableElevation
             >
-              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
+              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} alt="" />
               {isSaved ? 'Saved' : 'Save'}
-            </Button>
-            <Button
-              disableRipple
-              onClick={() => setShowFolderModal(true)}
-              className={saveButton}
-              color="primary"
-              fullWidth
-              disableElevation
-            >
-              <FolderOutlined className={bookmarkRibbon} /> Save
             </Button>
             <Button
               color="primary"
@@ -800,8 +768,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
               <Toast
                 isOpen={showAddToFolderSuccess}
                 severity="success"
-                message="Successfully added to folder(s)!"
+                message={`You have saved ${apt?.name}. View your folders `}
                 time={toastTime}
+                linkMessage="here"
+                link="/bookmarks"
               />
             )}
             {showSignInError && (
@@ -836,16 +806,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
-            {showSaveSuccess && (
-              <Toast
-                isOpen={showSaveSuccess}
-                severity="success"
-                message={`You have bookmarked ${apt?.name}. View your bookmarks `}
-                time={toastTime}
-                linkMessage="here"
-                link="/bookmarks"
-              />
-            )}
+
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
                 <Grid

@@ -29,7 +29,6 @@ import defaultProfilePic from '../../../assets/cuapts-bear.png';
 import { ReactComponent as ProfileIcon } from '../../../assets/profile-icon.svg';
 import { ReactComponent as BookmarkIcon } from '../../../assets/bookmark.svg';
 import { ReactComponent as SignOutIcon } from '../../../assets/signout.svg';
-import { Folder } from '@material-ui/icons';
 
 export type NavbarButton = {
   label: string;
@@ -306,13 +305,9 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
       label: 'Bookmarks',
       href: `/bookmarks`,
     };
-    const folders: NavbarButton = {
-      label: 'folders',
-      href: `/folders`,
-    };
     //Sets headers data depending on whether menu drawer is open or not. If open, add profile and bookmarks page buttons.
     const displayHeadersData =
-      drawerOpen && user ? [...headersData, profile, bookmarks, folders] : headersData;
+      drawerOpen && user ? [...headersData, profile, bookmarks] : headersData;
     return (
       <ThemeProvider theme={muiTheme}>
         <Grid className={searchDrawer}>
@@ -353,13 +348,11 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
   });
 
   /** This function navigates the user to the page depending on the dropdown button pressed */
-  const dropDownButtonClick = async (button: 'profile' | 'bookmarks' | 'folders' | 'signOut') => {
+  const dropDownButtonClick = async (button: 'profile' | 'bookmarks' | 'signOut') => {
     if (button === 'profile') {
       history.push(`/profile`);
     } else if (button === 'bookmarks') {
       history.push(`/bookmarks`);
-    } else if (button === 'folders') {
-      history.push(`/folders`);
     } else {
       signOut();
       history.push('/');
@@ -425,15 +418,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                     Bookmarks
                   </Button>
                 </li>
-                <li>
-                  <Button
-                    className={dropDownButtons}
-                    onClick={() => dropDownButtonClick('folders')}
-                  >
-                    <Folder className={dropDownIcons} />
-                    Folders
-                  </Button>
-                </li>
+
                 <li>
                   {' '}
                   <Button

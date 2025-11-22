@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
 /**
  * FolderCard Component
  *
- * This component represents a folder in the user's folder list.
+ * A card component that displays folder information and provides options to rename or delete the folder.
  *
  * @param {Props} props - Component props
  * @param {Folder} props.folder - The folder data to display
@@ -124,8 +124,7 @@ const FolderCard = ({ folder, onDelete, onRename }: Props): ReactElement => {
   };
 
   const handleCardClick = () => {
-    // Navigate to folder detail page using React Router
-    history.push(`/folders/${folder.id}`);
+    history.push(`/bookmarks/${folder.id}`);
   };
 
   const apartmentCount = folder.apartments?.length || 0;

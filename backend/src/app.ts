@@ -1798,6 +1798,42 @@ app.get('/api/folders', authenticate, async (req, res) => {
   }
 });
 
+/** Get Folder By ID - Fetches a specific folder by ID.
+ *
+ * @route GET /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be fetched
+ *
+ * @status
+ * - 200: Successfully retrieved folder
+ * - 403: Unauthorized to access this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching folder
+ */
+app.get('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to access this folder');
+    }
+
+    return res.status(200).json({ id: folderDoc.id, ...folderDoc.data() });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching folder');
+  }
+});
+
 /**
  * Delete Folder - Deletes a folder by ID.
  *

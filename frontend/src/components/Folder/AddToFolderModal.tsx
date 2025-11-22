@@ -93,26 +93,38 @@ const AddToFolderModal = ({
   const classes = useStyles();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
+  const [initialFolders, setInitialFolders] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [showCreateNew, setShowCreateNew] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [error, setError] = useState('');
 
+  // Reset state when modal opens
   useEffect(() => {
     if (open) {
       fetchFolders();
+      setError('');
+      setShowCreateNew(false);
+      setNewFolderName('');
     }
-  }, [open]);
+  }, [open, apartmentId]);
 
   const fetchFolders = async () => {
     try {
       setLoading(true);
-      if (!user) {
+      let currentUser = user;
+
+      if (!currentUser) {
         const loggedInUser = await getUser(true);
         setUser(loggedInUser);
-        if (!loggedInUser) return;
+        currentUser = loggedInUser;
+        if (!currentUser) {
+          setError('Please sign in to save apartments');
+          return;
+        }
       }
-      const token = await user!.getIdToken(true);
+
+      const token = await currentUser.getIdToken(true);
       const response = await axios.get('/api/folders', createAuthHeaders(token));
       setFolders(response.data);
 
@@ -124,6 +136,7 @@ const AddToFolderModal = ({
         }
       });
       setSelectedFolders(preSelected);
+      setInitialFolders(new Set(preSelected)); // Store initial state to detect changes
     } catch (err) {
       console.error('Error fetching folders:', err);
       setError('Failed to load folders');
@@ -149,42 +162,67 @@ const AddToFolderModal = ({
       setError('Folder name cannot be empty');
       return;
     }
+
     try {
-      if (!user) {
+      setLoading(true);
+      let currentUser = user;
+
+      if (!currentUser) {
         const loggedInUser = await getUser(true);
         setUser(loggedInUser);
-        if (!loggedInUser) return;
+        currentUser = loggedInUser;
+        if (!currentUser) {
+          setError('Please sign in to create folders');
+          return;
+        }
       }
-      const token = await user!.getIdToken(true);
+
+      const token = await currentUser.getIdToken(true);
       const response = await axios.post(
         '/api/folders',
-        { folderName: newFolderName },
+        { folderName: newFolderName.trim() },
         createAuthHeaders(token)
       );
+
       const newFolder = response.data;
       setFolders([...folders, newFolder]);
       setSelectedFolders((prev) => new Set(prev).add(newFolder.id));
       setNewFolderName('');
       setShowCreateNew(false);
+      setError('');
     } catch (err) {
       console.error('Error creating folder:', err);
       setError('Failed to create folder');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      if (!user) {
+      setError('');
+
+      let currentUser = user;
+
+      if (!currentUser) {
         const loggedInUser = await getUser(true);
         setUser(loggedInUser);
-        if (!loggedInUser) return;
+        currentUser = loggedInUser;
+        if (!currentUser) {
+          setError('Please sign in to save apartments');
+          return;
+        }
       }
-      const token = await user!.getIdToken(true);
 
-      // Determine which folders need to be added/removed
+      const token = await currentUser.getIdToken(true);
+
+      // Determine which folders currently contain this apartment
       const currentFolders = folders.filter((f) => f.apartments?.includes(apartmentId));
       const currentFolderIds = new Set(currentFolders.map((f) => f.id));
+
+      // Track if any changes were made
+      let changesMade = false;
 
       // Add apartment to newly selected folders
       for (const folderId of selectedFolders) {
@@ -194,6 +232,7 @@ const AddToFolderModal = ({
             { aptId: apartmentId },
             createAuthHeaders(token)
           );
+          changesMade = true;
         }
       }
 
@@ -204,17 +243,30 @@ const AddToFolderModal = ({
             `/api/folders/${folder.id}/apartments/${apartmentId}`,
             createAuthHeaders(token)
           );
+          changesMade = true;
         }
       }
 
-      onSuccess();
+      // Only trigger success callback if changes were made
+      if (changesMade) {
+        onSuccess();
+      }
+
       onClose();
     } catch (err) {
       console.error('Error updating folders:', err);
-      setError('Failed to update folders');
+      setError('Failed to update folders. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const hasChanges = () => {
+    if (selectedFolders.size !== initialFolders.size) return true;
+    for (const folderId of selectedFolders) {
+      if (!initialFolders.has(folderId)) return true;
+    }
+    return false;
   };
 
   return (
@@ -245,7 +297,9 @@ const AddToFolderModal = ({
                 />
                 <ListItemText
                   primary={folder.name}
-                  secondary={`${folder.apartments?.length || 0} apartments`}
+                  secondary={`${folder.apartments?.length || 0} apartment${
+                    folder.apartments?.length === 1 ? '' : 's'
+                  }`}
                 />
               </ListItem>
             ))}
@@ -288,7 +342,14 @@ const AddToFolderModal = ({
                 <Button onClick={handleCreateFolder} className={classes.addButton} size="small">
                   Create
                 </Button>
-                <Button onClick={() => setShowCreateNew(false)} size="small">
+                <Button
+                  onClick={() => {
+                    setShowCreateNew(false);
+                    setNewFolderName('');
+                    setError('');
+                  }}
+                  size="small"
+                >
                   Cancel
                 </Button>
               </Box>
@@ -297,8 +358,10 @@ const AddToFolderModal = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} color="primary" disabled={loading}>
+        <Button onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} color="primary" disabled={loading || !hasChanges()}>
           {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>

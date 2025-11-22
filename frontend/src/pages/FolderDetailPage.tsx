@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useHistory, Link } from 'react-router-dom';
 import {
   Button,
   Grid,
@@ -15,13 +15,18 @@ import {
   Checkbox,
   FormGroup,
 } from '@material-ui/core';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import { Link as RouterLink } from 'react-router-dom';
 import { ArrowBack as ArrowBackIcon } from '@material-ui/icons';
 import Toast from '../components/utils/Toast';
 import { colors } from '../colors';
 import axios from 'axios';
 import { createAuthHeaders } from '../utils/firebase';
-import ApartmentCards from '../components/ApartmentCard/SearchResultsPageApartmentCards';
 import { CardData } from '../App';
+import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
+import { AptSortFields, sortApartments } from '../utils/sortApartments';
+import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 
 type Props = {
   user: firebase.User | null;
@@ -34,6 +39,31 @@ type Folder = {
   userId: string;
   createdAt: any;
   apartments?: string[];
+};
+const ToggleButton = ({
+  text,
+  callback,
+  icon,
+}: {
+  text: string;
+  callback: () => void;
+  icon: React.ReactElement;
+}) => {
+  return (
+    <Button
+      style={{
+        backgroundColor: 'white',
+        borderRadius: '9px',
+        textTransform: 'initial',
+      }}
+      variant="outlined"
+      color="secondary"
+      onClick={callback}
+      endIcon={icon}
+    >
+      {text}
+    </Button>
+  );
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -82,6 +112,13 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const { folderId } = useParams<{ folderId: string }>();
   const history = useHistory();
   const toastTime = 3500;
+  const defaultShow = 6;
+  const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
+
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
+
+  const [sortAptsBy, setSortAptsBy] = useState<AptSortFields>('numReviews');
   const { background, headerStyle, headerContainer, backButton, gridContainer } = useStyles();
 
   const [folder, setFolder] = useState<Folder | null>(null);
@@ -91,6 +128,19 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [apartmentIdsToRemove, setApartmentIdsToRemove] = useState<string[]>([]);
   const [showRemoveApartmentModal, setShowRemoveApartmentModal] = useState<boolean>(false);
+  // handle toggle
+  const handleViewAll = () => {
+    setAptsToShow(aptsToShow + (savedAptsData.length - defaultShow));
+  };
+  const handleCollapse = () => {
+    setAptsToShow(defaultShow);
+  };
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 600);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);
@@ -106,7 +156,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
 
   useEffect(() => {
     fetchFolderDetails();
-  }, [folderId]);
+  }, [folderId, user]);
 
   const fetchFolderDetails = async () => {
     try {
@@ -116,25 +166,9 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       }
       const token = await user.getIdToken(true);
 
-      // Fetch folder info
-      const folderResponse = await axios.get('/api/folders', createAuthHeaders(token));
-      const folders = folderResponse.data;
-      const currentFolder = folders.find((f: Folder) => f.id === folderId);
-
-      if (!currentFolder) {
-        showError('Folder not found');
-        history.push('/folders');
-        return;
-      }
-
-      setFolder(currentFolder);
-
-      // Fetch apartments in folder
-      const apartmentsResponse = await axios.get(
-        `/api/folders/${folderId}/apartments`,
-        createAuthHeaders(token)
-      );
-      setApartments(apartmentsResponse.data);
+      // Fetch specific folder by ID
+      const folderResponse = await axios.get(`/api/folders/${folderId}`, createAuthHeaders(token));
+      setFolder(folderResponse.data);
     } catch (error) {
       console.error('Error fetching folder details:', error);
       showError('Failed to load folder details');
@@ -144,7 +178,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   };
 
   const handleBackClick = () => {
-    history.push('/folders');
+    history.push('/bookmarks');
   };
 
   const handleRemoveApartments = async (apartmentIds: string[]) => {
@@ -259,21 +293,73 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
           >
             Edit Folder
           </Button>
+          <Box>
+            <DropDownWithLabel
+              label="Sort by"
+              menuItems={[
+                {
+                  item: 'Review Count',
+                  callback: () => {
+                    setSortAptsBy('numReviews');
+                  },
+                },
+                {
+                  item: 'Rating',
+                  callback: () => {
+                    setSortAptsBy('avgRating');
+                  },
+                },
+              ]}
+              isMobile={isMobile}
+            />
+          </Box>
         </Box>
 
-        {apartments.length === 0 ? (
-          <Box style={{ textAlign: 'center', marginTop: '3em' }}>
-            <Typography variant="h5" style={{ color: colors.gray1 }}>
-              No apartments in this folder
-            </Typography>
-            <Typography variant="body1" style={{ color: colors.gray2, marginTop: '1em' }}>
-              Add apartments to this folder from the apartment pages
-            </Typography>
-          </Box>
-        ) : (
-          <Grid container spacing={3} className={gridContainer}>
-            <ApartmentCards data={apartments} user={user} setUser={setUser} />
+        {apartments.length > 0 ? (
+          <Grid container spacing={4} className={gridContainer}>
+            {apartments &&
+              sortApartments(apartments, sortAptsBy, false)
+                .slice(0, aptsToShow)
+                .map(({ buildingData, numReviews, company }, index) => {
+                  const { id } = buildingData;
+                  return (
+                    <Grid item xs={12} md={4} key={index}>
+                      <Link
+                        {...{
+                          to: `/apartment/${id}`,
+                          style: { textDecoration: 'none' },
+                          component: RouterLink,
+                        }}
+                      >
+                        <BookmarkAptCard
+                          key={index}
+                          numReviews={numReviews}
+                          buildingData={buildingData}
+                          company={company}
+                        />
+                      </Link>
+                    </Grid>
+                  );
+                })}
+            <Grid item container xs={12} justifyContent="center">
+              {savedAptsData.length > defaultShow &&
+                (savedAptsData.length > aptsToShow ? (
+                  <ToggleButton
+                    text="View All"
+                    callback={handleViewAll}
+                    icon={<KeyboardArrowDownIcon />}
+                  />
+                ) : (
+                  <ToggleButton
+                    text="Collapse"
+                    callback={handleCollapse}
+                    icon={<KeyboardArrowUpIcon />}
+                  />
+                ))}
+            </Grid>
           </Grid>
+        ) : (
+          <Typography paragraph>You have not saved any apartments.</Typography>
         )}
 
         {showErrorToast && (
