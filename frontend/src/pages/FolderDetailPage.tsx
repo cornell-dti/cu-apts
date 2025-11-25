@@ -348,20 +348,14 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
                   const { id } = buildingData;
                   return (
                     <Grid item xs={12} md={4} key={index}>
-                      <Link
-                        {...{
-                          to: `/apartment/${id}`,
-                          style: { textDecoration: 'none' },
-                          component: RouterLink,
-                        }}
-                      >
+                      <div onClick={() => history.push(`/apartment/${id}`)}>
                         <BookmarkAptCard
                           key={index}
                           numReviews={numReviews}
                           buildingData={buildingData}
                           company={company}
                         />
-                      </Link>
+                      </div>
                     </Grid>
                   );
                 })}
