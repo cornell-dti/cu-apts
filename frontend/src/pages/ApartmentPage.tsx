@@ -385,7 +385,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   };
 
-  type Fields = keyof typeof reviewData[0];
+  type Fields = keyof (typeof reviewData)[0];
 
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);

@@ -155,7 +155,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   }, [user, toggle, savedAPI, sortAptsBy]);
 
   // Define the type of the properties used for sorting reviews
-  type Fields = keyof typeof helpfulReviewsData[0];
+  type Fields = keyof (typeof helpfulReviewsData)[0];
 
   // Function to handle "Show More" button click
   const handleShowMoreLess = () => {
