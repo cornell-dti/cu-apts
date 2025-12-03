@@ -7,11 +7,8 @@ import expandIcon from '../../assets/expand-button.svg';
 import zoomInIcon from '../../assets/zoom-in-icon.png';
 import zoomOutIcon from '../../assets/zoom-out-icon.png';
 import blackPinIcon from '../../assets/ph_map-pin-fill.svg';
-import { config } from 'dotenv';
 import { Marker } from './Marker';
 import { LocationTravelTimes } from '../../../../common/types/db-types';
-
-config();
 
 export type BaseProps = {
   readonly address: string | null;

@@ -69,7 +69,11 @@
     ]
   },
   "engines": {
-    "node": "16.x"
+    "node": ">=18"
+  },
+  "resolutions": {
+    "@types/react": "17.0.80",
+    "@types/react-dom": "17.0.25"
   },
   "dependencies": {
     "bad-words": "^3.0.4",
