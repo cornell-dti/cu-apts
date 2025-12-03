@@ -4,9 +4,7 @@ import {
   makeStyles,
   Grid,
   Container,
-  List,
-  ListItem,
-  ListItemText,
+  Box,
   AppBar,
   Toolbar,
   Tabs,
@@ -18,12 +16,16 @@ import {
   QuestionFormWithId,
   ReviewWithId,
 } from '../../../common/types/db-types';
+import { TextField, MenuItem } from '@material-ui/core';
+import axios from 'axios';
+import { getUser, createAuthHeaders } from '../utils/firebase';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Editor } from '@tinymce/tinymce-react';
 import clsx from 'clsx';
 import { colors } from '../colors';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
@@ -89,6 +91,61 @@ const AdminPage = (): ReactElement => {
     showPhotoCarousel,
     closePhotoCarousel,
   } = usePhotoCarousel([]);
+  const [blogTitle, setBlogTitle] = useState('');
+  const [blogApartment, setBlogApartment] = useState('');
+  const [blogTags, setBlogTags] = useState(''); // comma-separated string
+  const [blogVisibility, setBlogVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
+  const [blogContent, setBlogContent] = useState(''); // TinyMCE HTML
+  const [blogSaving, setBlogSaving] = useState(false);
+  const [blogError, setBlogError] = useState<string | null>(null);
+  const [blogSuccess, setBlogSuccess] = useState<string | null>(null);
+
+  const handleCreateBlogPost = async () => {
+    setBlogError(null);
+    setBlogSuccess(null);
+
+    if (!blogTitle.trim() || !blogContent.trim()) {
+      setBlogError('Title and content are required.');
+      return;
+    }
+
+    try {
+      setBlogSaving(true);
+      const user = await getUser(true);
+      if (!user) {
+        throw new Error('You must be logged in as an admin to create a blog post.');
+      }
+      const token = await user.getIdToken(true);
+
+      const payload = {
+        title: blogTitle.trim(),
+        apartment: blogApartment.trim(),
+        tags: blogTags
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
+        visibility: blogVisibility,
+        content: blogContent, // <-- TinyMCE HTML here
+        userId: user.uid,
+        photos: [], // you can wire this up later
+      };
+
+      await axios.post('/api/blog-post', payload, createAuthHeaders(token));
+
+      setBlogSuccess('Blog post created!');
+      // clear form
+      setBlogTitle('');
+      setBlogApartment('');
+      setBlogTags('');
+      setBlogVisibility('PUBLIC');
+      setBlogContent('');
+    } catch (err) {
+      console.error(err);
+      setBlogError('Failed to create blog post. Please try again.');
+    } finally {
+      setBlogSaving(false);
+    }
+  };
 
   useTitle('Admin');
 
@@ -346,6 +403,148 @@ const AdminPage = (): ReactElement => {
     </Container>
   );
 
+  const blogPosts = (
+    <Container className={container}>
+      <Box mt={4} mb={4}>
+        <Typography variant="h3" style={{ marginBottom: '24px' }}>
+          <strong>Create Blog Post</strong>
+        </Typography>
+
+        <Box display="flex" flexDirection="column" gridGap={24}>
+          <TextField
+            label="Title"
+            variant="outlined"
+            fullWidth
+            value={blogTitle}
+            onChange={(e) => setBlogTitle(e.target.value)}
+          />
+
+          <TextField
+            label="Associated Apartment (optional)"
+            variant="outlined"
+            fullWidth
+            value={blogApartment}
+            onChange={(e) => setBlogApartment(e.target.value)}
+          />
+
+          <TextField
+            label="Tags (comma separated)"
+            variant="outlined"
+            fullWidth
+            helperText="Example: Move-in, Finances, Tips"
+            value={blogTags}
+            onChange={(e) => setBlogTags(e.target.value)}
+          />
+
+          <TextField
+            select
+            label="Visibility"
+            variant="outlined"
+            fullWidth
+            value={blogVisibility}
+            onChange={(e) => setBlogVisibility(e.target.value as 'PUBLIC' | 'PRIVATE')}
+          >
+            <MenuItem value="PUBLIC">Public</MenuItem>
+            <MenuItem value="PRIVATE">Private</MenuItem>
+          </TextField>
+
+          <Box mt={2}>
+            <Typography variant="h6" style={{ marginBottom: '8px' }}>
+              Content
+            </Typography>
+
+            <Editor
+              apiKey="nlqgp4abfsx0n7eulsckg9qd2g31788bz0y3gxatyvj8m41p"
+              value={blogContent}
+              onEditorChange={(newContent: any) => setBlogContent(newContent)}
+              init={{
+                plugins: [
+                  'anchor',
+                  'autolink',
+                  'charmap',
+                  'codesample',
+                  'emoticons',
+                  'link',
+                  'lists',
+                  'media',
+                  'searchreplace',
+                  'table',
+                  'visualblocks',
+                  'wordcount',
+                  'checklist',
+                  'mediaembed',
+                  'casechange',
+                  'formatpainter',
+                  'pageembed',
+                  'a11ychecker',
+                  'tinymcespellchecker',
+                  'permanentpen',
+                  'powerpaste',
+                  'advtable',
+                  'advcode',
+                  'advtemplate',
+                  'ai',
+                  'uploadcare',
+                  'mentions',
+                  'tinycomments',
+                  'tableofcontents',
+                  'footnotes',
+                  'mergetags',
+                  'autocorrect',
+                  'typography',
+                  'inlinecss',
+                  'markdown',
+                  'importword',
+                  'exportword',
+                  'exportpdf',
+                ],
+                toolbar:
+                  'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
+                  'link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | ' +
+                  'align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                tinycomments_mode: 'embedded',
+                tinycomments_author: 'Admin',
+                mergetags_list: [
+                  { value: 'First.Name', title: 'First Name' },
+                  { value: 'Email', title: 'Email' },
+                ],
+                ai_request: (request: any, respondWith: any) =>
+                  respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+                uploadcare_public_key: 'f03b2a7ec47c7aa9f975',
+              }}
+              initialValue="Welcome to TinyMCE!"
+            />
+          </Box>
+
+          {blogError && (
+            <Typography color="error" style={{ marginTop: '8px' }}>
+              {blogError}
+            </Typography>
+          )}
+          {blogSuccess && (
+            <Typography style={{ marginTop: '8px', color: 'green' }}>{blogSuccess}</Typography>
+          )}
+
+          <Box mt={2}>
+            <IconButton
+              color="primary"
+              onClick={handleCreateBlogPost}
+              disabled={blogSaving}
+              style={{
+                backgroundColor: colors.red1,
+                color: 'white',
+                borderRadius: 8,
+                padding: '8px 24px',
+              }}
+            >
+              {blogSaving ? 'Saving…' : 'Publish Post'}
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
+  );
+
   return (
     <div>
       <AppBar position="static" elevation={0}>
@@ -358,12 +557,14 @@ const AdminPage = (): ReactElement => {
           >
             <Tab label="Reviews" value="Reviews" />
             <Tab label="Contact" value="Contact" />
+            <Tab label="BlogPost" value="BlogPost" />
           </Tabs>
         </Toolbar>
       </AppBar>
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
+      {selectedTab === 'BlogPost' && blogPosts}
       {Modals}
     </div>
   );

@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import './App.scss';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import FAQPage from './pages/FAQPage';
+import BlogPostPage from './pages/BlogPostPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
@@ -73,9 +73,9 @@ const home: NavbarButton = {
   href: '/',
 };
 
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
+const blogs: NavbarButton = {
+  label: 'Advice',
+  href: '/blogs',
 };
 
 export type CardData = {
@@ -91,7 +91,7 @@ export type LocationCardData = {
   location: string;
 };
 
-const headersData = [home, faq];
+const headersData = [home, blogs];
 
 hotjar.initialize(HJID, HJSV);
 
@@ -113,7 +113,7 @@ const App = (): ReactElement => {
           <Switch>
             <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
 
-            <Route exact path="/faq" component={FAQPage} />
+            <Route exact path="/blogs" component={BlogPostPage} />
             <Route
               exact
               path="/reviews"
@@ -149,7 +149,6 @@ const App = (): ReactElement => {
             {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
-        {pathname !== '/faq' && <Footer />}
         <ContactModal user={user} />
       </ModalProvider>
     </ThemeProvider>

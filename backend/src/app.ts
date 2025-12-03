@@ -92,10 +92,10 @@ app.post('/api/new-blog-post', authenticate, async (req, res) => {
     const blogPost = req.body as BlogPost;
     if (
       blogPost.content === '' ||
+      blogPost.blurb === '' ||
       blogPost.title === '' ||
       !blogPost.photos ||
-      !blogPost.tags ||
-      !blogPost.visibility
+      !blogPost.tags
     ) {
       res.status(401).send('Error: missing fields');
     }
@@ -104,7 +104,7 @@ app.post('/api/new-blog-post', authenticate, async (req, res) => {
       date: new Date(blogPost.date),
       likes: 0,
       saves: 0,
-      status: 'PENDING',
+      visibility: 'ARCHIVED',
       userId: realUserId,
     });
     res.status(201).send(doc.id);
@@ -145,7 +145,7 @@ app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
   }
   try {
     // Update the status of the blog post document to 'DELETED'
-    await blogPostCollection.doc(blogPostId).update({ status: 'ARCHIVED' });
+    await blogPostCollection.doc(blogPostId).update({ visibility: 'ARCHIVED' });
     // Send a success response
     res.status(200).send('Success');
   } catch (err) {
@@ -169,7 +169,7 @@ app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
  * - 404: Blog post could not be found from ID.
  * - 401: Error due to unauthorized access or authentication issues.
  */
-app.post('/api/edit-blog-post/:blogPostId', async (req, res) => {
+app.post('/api/edit-blog-post/:blogPostId', authenticate, async (req, res) => {
   // if (!req.user) {
   //  throw new Error('not authenticated');
   // }
@@ -258,12 +258,12 @@ app.get('/api/blog-post/like/:userId', authenticate, async (req, res) => {
     res.status(401).send("Error: user is not authorized to access another user's likes");
     return;
   }
-  const likesDoc = await likesCollection.doc(realUserId).get();
+  const likesDoc = await likesCollection.doc(userId).get();
 
   if (likesDoc.exists) {
     const data = likesDoc.data();
     if (data) {
-      const blogPostIds = Object.keys(data);
+      const blogPostIds = data.blogPosts;
       const matchingBlogPosts: BlogPostWithId[] = [];
       if (blogPostIds.length > 0) {
         const query = blogPostCollection.where(FieldPath.documentId(), 'in', blogPostIds);
@@ -326,6 +326,21 @@ app.get('/api/blog-post/save/:userId', authenticate, async (req, res) => {
   }
 
   res.status(200).send(JSON.stringify([]));
+});
+
+/**
+ * blog-posts – Gets all visible blog posts for the Advice page.
+ *
+ * @route GET /api/blog-posts
+ */
+app.get('/api/blog-posts', async (req, res) => {
+  const blogPostDocs = (await blogPostCollection.where('visibility', '==', 'ACTIVATED').get()).docs;
+  const blogPosts: BlogPost[] = blogPostDocs.map((doc) => {
+    const data = doc.data();
+    const blogPost = { ...data } as BlogPostInternal;
+    return { ...blogPost, id: doc.id } as BlogPostWithId;
+  });
+  res.status(200).send(JSON.stringify(blogPosts));
 });
 
 // API endpoint to post a new review

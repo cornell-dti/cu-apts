@@ -35,10 +35,10 @@ export type Review = {
 
 export type BlogPost = {
   readonly content: string;
+  readonly blurb: string;
   readonly date: Date;
   readonly likes?: number;
   readonly photos: string[];
-  readonly status: string;
   readonly tags: string[];
   readonly title: string;
   readonly userId?: string | null;
