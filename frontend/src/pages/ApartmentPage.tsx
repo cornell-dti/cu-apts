@@ -46,7 +46,6 @@ import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import AddToFolderPopover from '../components/Folder/AddToFolderPopover';
-import { set } from 'date-fns';
 
 type Props = {
   user: firebase.User | null;

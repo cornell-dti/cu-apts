@@ -7,125 +7,190 @@ import {
   Box,
   CircularProgress,
   Typography,
+  IconButton,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import { getUser, createAuthHeaders } from '../../utils/firebase';
 import { colors } from '../../colors';
+import CloseIcon from '@material-ui/icons/Close';
+import AddIcon from '@material-ui/icons/Add';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { FolderRounded } from '@material-ui/icons';
 
 const useStyles = makeStyles({
   popoverPaper: {
-    width: 240,
+    width: 300,
     borderRadius: 8,
-    padding: '16px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    padding: '20px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.45)',
+    zIndex: 1300,
   },
-  headerRow: {
-    marginBottom: 12,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   headerTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 700,
-    color: '#333',
+    color: '#1a1a1a',
+  },
+  closeButton: {
+    padding: 4,
+    marginRight: -8,
   },
   listItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    padding: '8px 0',
-    cursor: 'pointer',
-    borderBottom: `1px solid #f0f0f0`,
-    '&:last-child': {
-      borderBottom: 'none',
+    gap: 12,
+    padding: '12px 0',
+    borderBottom: '1px solid #f0f0f0',
+    transition: 'background-color 0.2s',
+    borderRadius: 4,
+    marginBottom: 4,
+    '&:hover': {
+      backgroundColor: '#f9f9f9',
+    },
+    '&:hover $saveButton': {
+      opacity: 1,
     },
   },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 3,
-    border: '2px solid #999',
+  folderIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 4,
+    color: colors.red1,
+
     flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s',
   },
-  checkboxChecked: {
-    backgroundColor: colors.red1,
-    borderColor: colors.red1,
-  },
-  checkmark: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
+  folderInfo: {
+    flex: 1,
+    minWidth: 0,
   },
   folderName: {
     fontSize: 14,
-    color: '#333',
-    flex: 1,
+    fontWeight: 500,
+    color: '#1a1a1a',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  saveButton: {
+    minWidth: 70,
+    height: 32,
+    borderRadius: 16,
+    textTransform: 'none',
+    fontSize: 13,
+    fontWeight: 600,
+    flexShrink: 0,
+    transition: 'all 0.2s',
+    opacity: 0,
+  },
+  saveButtonUnsaved: {
+    border: `1.5px solid ${colors.red1}`,
+    color: colors.red1,
+    backgroundColor: 'white',
+    '&:hover': {
+      backgroundColor: '#fff5f5',
+    },
+  },
+  saveButtonSaved: {
+    backgroundColor: colors.red1,
+    color: 'white',
+    opacity: 1,
+    '&:hover': {
+      backgroundColor: '#c41e3a',
+    },
   },
   createNewRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    padding: '12px 0 4px',
+    gap: 12,
+    padding: '12px 0',
     cursor: 'pointer',
     marginTop: 8,
-    '&:hover $addIcon': {
-      backgroundColor: '#e0e0e0',
+    transition: 'background-color 0.2s',
+    borderRadius: 4,
+    '&:hover': {
+      backgroundColor: '#f9f9f9',
     },
   },
-  addIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 3,
-    border: '2px solid #999',
-    flexShrink: 0,
+  addIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: '#f5f5f5',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 18,
-    color: '#999',
-    lineHeight: 1,
-    transition: 'background-color 0.2s',
+    flexShrink: 0,
   },
   createFolderModal: {
     padding: 0,
   },
-  footerError: {
-    padding: '8px 0 0',
-    color: colors.red1,
-    fontSize: 12,
-  },
-  modalActions: {
-    marginTop: 12,
+  modalHeader: {
     display: 'flex',
-    justifyContent: 'flex-end',
-    gap: 8,
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  cancelButton: {
-    textTransform: 'none',
+  backButton: {
+    padding: 4,
+    marginLeft: -8,
+    marginRight: 8,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: '#1a1a1a',
+  },
+  inputLabel: {
     fontSize: 13,
-    color: '#666',
-    padding: '4px 12px',
-  },
-  redButton: {
-    color: 'white',
-    backgroundColor: colors.red1,
-    borderRadius: 4,
-    textTransform: 'none',
-    padding: '6px 16px',
     fontWeight: 600,
-    fontSize: 13,
-    '&:hover': {
-      backgroundColor: '#c41e3a',
-    },
+    color: '#333',
+    marginBottom: 8,
   },
   inputField: {
     '& .MuiOutlinedInput-root': {
       borderRadius: 4,
       fontSize: 14,
     },
+  },
+  modalActions: {
+    marginTop: 16,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  cancelButton: {
+    textTransform: 'none',
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#666',
+    padding: '8px 20px',
+    borderRadius: 20,
+    border: '1.5px solid #ddd',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+    },
+  },
+  createButton: {
+    color: 'white',
+    backgroundColor: colors.red1,
+    borderRadius: 20,
+    textTransform: 'none',
+    padding: '8px 24px',
+    fontWeight: 600,
+    fontSize: 14,
+    '&:hover': {
+      backgroundColor: '#c41e3a',
+    },
+  },
+  footerError: {
+    padding: '8px 0 0',
+    color: colors.red1,
+    fontSize: 12,
   },
 });
 
@@ -163,9 +228,6 @@ export default function AddToFolderPopover({
   const [createMode, setCreateMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
-  // -------------------------------
-  // FETCH FOLDERS
-  // -------------------------------
   useEffect(() => {
     if (open) {
       fetchFolders();
@@ -200,9 +262,6 @@ export default function AddToFolderPopover({
     }
   };
 
-  // -------------------------------
-  // SAVE/UNSAVE HANDLER
-  // -------------------------------
   const handleSave = async (folderId: string) => {
     try {
       let u = user;
@@ -240,9 +299,6 @@ export default function AddToFolderPopover({
     }
   };
 
-  // -------------------------------
-  // CREATE NEW FOLDER
-  // -------------------------------
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
       setError('Folder name cannot be empty.');
@@ -302,14 +358,23 @@ export default function AddToFolderPopover({
         onClick: (e) => e.stopPropagation(),
       }}
     >
-      {/* HEADER */}
-      <Box className={classes.headerRow}>
-        <Typography className={classes.headerTitle}>Save to Folder</Typography>
-      </Box>
-
-      {/* CREATE MODE */}
       {createMode ? (
         <Box className={classes.createFolderModal}>
+          <Box className={classes.modalHeader}>
+            <IconButton
+              className={classes.backButton}
+              onClick={() => setCreateMode(false)}
+              size="small"
+            >
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+            <Typography className={classes.modalTitle}>Create Folder</Typography>
+          </Box>
+
+          <Box mb={1}>
+            <Typography className={classes.inputLabel}>Name</Typography>
+          </Box>
+
           <TextField
             fullWidth
             variant="outlined"
@@ -325,7 +390,7 @@ export default function AddToFolderPopover({
             <Button className={classes.cancelButton} onClick={() => setCreateMode(false)}>
               Cancel
             </Button>
-            <Button className={classes.redButton} onClick={handleCreateFolder}>
+            <Button className={classes.createButton} onClick={handleCreateFolder}>
               Create
             </Button>
           </div>
@@ -334,38 +399,48 @@ export default function AddToFolderPopover({
         </Box>
       ) : (
         <>
-          {/* LOADING */}
+          <Box className={classes.header}>
+            <Typography className={classes.headerTitle}>Save to Folder</Typography>
+            <IconButton className={classes.closeButton} onClick={onClose} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
           {loading ? (
             <Box display="flex" justifyContent="center" p={3}>
               <CircularProgress size={30} />
             </Box>
           ) : (
             <Box>
-              {/* LIST OF FOLDERS */}
               <List disablePadding>
                 {folders.map((folder) => {
                   const saved = folder.apartments?.includes(apartmentId);
 
                   return (
-                    <div
-                      key={folder.id}
-                      className={classes.listItem}
-                      onClick={() => handleSave(folder.id)}
-                    >
-                      <div
-                        className={`${classes.checkbox} ${saved ? classes.checkboxChecked : ''}`}
-                      >
-                        {saved && <span className={classes.checkmark}>✓</span>}
+                    <div key={folder.id} className={classes.listItem}>
+                      <FolderRounded className={classes.folderIcon} />
+                      <div className={classes.folderInfo}>
+                        <div className={classes.folderName}>{folder.name}</div>
                       </div>
-                      <span className={classes.folderName}>{folder.name}</span>
+                      <Button
+                        className={`${classes.saveButton} ${
+                          saved ? classes.saveButtonSaved : classes.saveButtonUnsaved
+                        }`}
+                        onClick={() => handleSave(folder.id)}
+                      >
+                        {saved ? 'Saved' : 'Save'}
+                      </Button>
                     </div>
                   );
                 })}
 
-                {/* + CREATE NEW */}
                 <div className={classes.createNewRow} onClick={() => setCreateMode(true)}>
-                  <div className={classes.addIcon}>+</div>
-                  <span className={classes.folderName}>Create New Folder</span>
+                  <div className={classes.addIconWrapper}>
+                    <AddIcon />
+                  </div>
+                  <div className={classes.folderInfo}>
+                    <div className={classes.folderName}>Create New Folder</div>
+                  </div>
                 </div>
               </List>
             </Box>

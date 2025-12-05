@@ -296,7 +296,7 @@ const NewApartmentCard = ({
                 className={saveRibbonIcon}
               >
                 <img
-                  src={savedIsHovered || isSaved ? saved : unsaved}
+                  src={savedIsHovered ? saved : unsaved}
                   alt="Save"
                   style={{ width: 20, height: 20 }}
                 />
