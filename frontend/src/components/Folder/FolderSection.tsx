@@ -16,6 +16,7 @@ import { colors } from '../../colors';
 import FolderCard from './FolderCard';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
+import { AddRounded } from '@material-ui/icons';
 
 type Props = {
   user: firebase.User | null;
@@ -51,12 +52,28 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: '2em',
   },
   createButton: {
-    backgroundColor: colors.red1,
-    color: 'white',
+    backgroundColor: colors.white,
+    color: colors.gray1,
+    borderRadius: 4,
+    textTransform: 'none',
+    padding: '40px 40px',
+    fontSize: 75,
+    border: `1px solid ${colors.gray3}`,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    boxShadow: '0 2px 2px rgba(0,0,0,0.1)',
+
+    height: '200px',
+    width: '200px',
+    minWidth: '80px',
+    transition: 'transform 0.2s, box-shadow 0.2s',
     '&:hover': {
-      backgroundColor: colors.red2,
+      transform: 'translateY(-4px)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
-    marginBottom: '2em',
   },
 }));
 
@@ -208,18 +225,7 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
           <Typography variant="h3" className={headerStyle}>
             My Folders ({folders.length})
           </Typography>
-          <Typography variant="body1" style={{ marginTop: '1em', color: colors.gray1 }}>
-            Organize your saved apartments into folders
-          </Typography>
         </Box>
-
-        <Button
-          variant="contained"
-          className={createButton}
-          onClick={() => setShowCreateDialog(true)}
-        >
-          + Create New Folder
-        </Button>
 
         {loading ? (
           <Typography>Loading folders...</Typography>
@@ -233,16 +239,22 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3} className={gridContainer}>
+          <Grid container spacing={1} className={gridContainer}>
             {folders.map((folder) => (
               <Grid item xs={12} sm={6} md={4} key={folder.id}>
                 <FolderCard
+                  user={user}
                   folder={folder}
                   onDelete={handleDeleteFolder}
                   onRename={handleRenameFolder}
                 />
               </Grid>
             ))}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box className={createButton} onClick={() => setShowCreateDialog(true)}>
+                <AddRounded style={{ fontSize: 80 }} />
+              </Box>
+            </Grid>
           </Grid>
         )}
 

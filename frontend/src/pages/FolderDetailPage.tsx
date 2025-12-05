@@ -95,6 +95,12 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'flex-start',
     marginBottom: '3em',
   },
+  editButton: {
+    backgroundColor: colors.gray5,
+    border: `0px solid ${colors.gray4}`,
+    padding: '10px 19px',
+    borderRadius: 7,
+  },
 }));
 
 /**
@@ -109,6 +115,7 @@ const useStyles = makeStyles((theme) => ({
  * @returns ReactElement: The folder detail page component.
  */
 const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
+  const classes = useStyles();
   const { folderId } = useParams<{ folderId: string }>();
   const history = useHistory();
   const toastTime = 3500;
@@ -116,7 +123,6 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
 
   const [sortAptsBy, setSortAptsBy] = useState<AptSortFields>('numReviews');
   const { background, headerStyle, headerContainer, backButton, gridContainer } = useStyles();
@@ -130,7 +136,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [showRemoveApartmentModal, setShowRemoveApartmentModal] = useState<boolean>(false);
   // handle toggle
   const handleViewAll = () => {
-    setAptsToShow(aptsToShow + (savedAptsData.length - defaultShow));
+    setAptsToShow(aptsToShow + (apartments.length - defaultShow));
   };
   const handleCollapse = () => {
     setAptsToShow(defaultShow);
@@ -215,7 +221,6 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       const res = await axios.get(`/api/folders/${folder.id}/apartments`, createAuthHeaders(token));
 
       setApartments(res.data);
-      setSavedAptsData(res.data);
     } catch (error) {
       console.error('Error fetching apartments in folder:', error);
       showError('Failed to load apartments in folder');
@@ -310,14 +315,8 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
               {apartments.length} {apartments.length === 1 ? 'apartment' : 'apartments'}
             </Typography>
           </div>
-          <Button
-            variant="outlined"
-            onClick={() => setShowRemoveApartmentModal(true)}
-            style={{ marginLeft: 'auto' }}
-          >
-            Edit Folder
-          </Button>
-          <Box>
+
+          <Box style={{ marginLeft: 'auto' }}>
             <DropDownWithLabel
               label="Sort by"
               menuItems={[
@@ -337,6 +336,9 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
               isMobile={isMobile}
             />
           </Box>
+          <Button onClick={() => setShowRemoveApartmentModal(true)} className={classes.editButton}>
+            Edit
+          </Button>
         </Box>
 
         {apartments.length > 0 ? (
@@ -360,8 +362,8 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
                   );
                 })}
             <Grid item container xs={12} justifyContent="center">
-              {savedAptsData.length > defaultShow &&
-                (savedAptsData.length > aptsToShow ? (
+              {apartments.length > defaultShow &&
+                (apartments.length > aptsToShow ? (
                   <ToggleButton
                     text="View All"
                     callback={handleViewAll}

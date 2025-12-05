@@ -1,4 +1,5 @@
 import React, { ReactElement, useState } from 'react';
+import apartmentDefaultImage from '../../assets/apartment-placeholder.svg';
 import {
   Card,
   CardContent,
@@ -14,10 +15,14 @@ import {
   TextField,
   Button,
   makeStyles,
+  Box,
 } from '@material-ui/core';
 import { MoreVert as MoreVertIcon, Folder as FolderIcon } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { colors } from '../../colors';
+import axios from 'axios';
+import { createAuthHeaders } from '../../utils/firebase';
+import { CardData } from '../../App';
 
 type Folder = {
   id: string;
@@ -31,11 +36,13 @@ type Props = {
   folder: Folder;
   onDelete: (folderId: string) => void;
   onRename: (folderId: string, newName: string) => void;
+  user: firebase.User | null;
 };
 
 const useStyles = makeStyles((theme) => ({
   card: {
-    height: '100%',
+    height: '300px',
+    width: '300px',
     display: 'flex',
     flexDirection: 'column',
     cursor: 'pointer',
@@ -57,18 +64,40 @@ const useStyles = makeStyles((theme) => ({
   },
   folderInfo: {
     flex: 1,
+    width: '300px',
   },
   folderName: {
     fontWeight: 600,
-    marginBottom: '0.5em',
+    marginBottom: '0.1em',
   },
   apartmentCount: {
     color: colors.gray2,
     fontSize: '0.9em',
+    marginBottom: '0.5em',
   },
   cardActions: {
     justifyContent: 'flex-end',
     padding: '8px 16px',
+  },
+  apartmentThumbnail: {
+    width: '47%',
+    height: '47%',
+    borderRadius: 4,
+    margin: '0.2em',
+  },
+  apartmentThumbnails: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    width: '300px',
+    height: '300px',
+    overflow: 'hidden',
+    alignContent: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'transform 0.2s',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+    },
   },
 }));
 
@@ -83,13 +112,15 @@ const useStyles = makeStyles((theme) => ({
  * @param {function} props.onRename - Callback function when the folder is renamed
  * @returns ReactElement: The FolderCard component.
  */
-const FolderCard = ({ folder, onDelete, onRename }: Props): ReactElement => {
+const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement => {
   const classes = useStyles();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showRenameDialog, setShowRenameDialog] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>(folder.name);
+
+  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -129,26 +160,102 @@ const FolderCard = ({ folder, onDelete, onRename }: Props): ReactElement => {
 
   const apartmentCount = folder.apartments?.length || 0;
 
+  const fetchApartmentInformation = async () => {
+    if (!user) return;
+    const token = await user.getIdToken(true);
+    const res = await axios.get(`/api/folders/${folder.id}/apartments`, createAuthHeaders(token));
+    setSavedAptsData(res.data);
+  };
+
+  const displayFolderThumbnail = () => {
+    try {
+      fetchApartmentInformation();
+      if (savedAptsData && savedAptsData.length > 0) {
+        const numPlaceholders = savedAptsData.length < 4 ? 4 - savedAptsData.length : 0;
+        return (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '2px',
+              height: '300px',
+              width: '300px',
+            }}
+          >
+            {savedAptsData.slice(0, 4).map((apartment) => (
+              <img
+                key={apartment.buildingData.id}
+                src={
+                  apartment.buildingData.photos.length > 0
+                    ? apartment.buildingData.photos[0]
+                    : apartmentDefaultImage
+                }
+                alt="Apartment Thumbnail"
+                style={{ width: '48%', height: '48%', objectFit: 'cover', borderRadius: '4px' }}
+              />
+            ))}
+            {Array.from({ length: numPlaceholders }).map((_, idx) => (
+              <div
+                key={`placeholder-${idx}`}
+                style={{
+                  width: '48%',
+                  height: '48%',
+                  borderRadius: '4px',
+                  background: 'white',
+                }}
+              />
+            ))}
+          </div>
+        );
+      }
+    } catch (error) {
+      return (
+        <>
+          <img
+            className={classes.apartmentThumbnail}
+            src={apartmentDefaultImage}
+            alt="Apartment Thumbnail"
+          />
+          <img
+            className={classes.apartmentThumbnail}
+            src={apartmentDefaultImage}
+            alt="Apartment Thumbnail"
+          />
+          <img
+            className={classes.apartmentThumbnail}
+            src={apartmentDefaultImage}
+            alt="Apartment Thumbnail"
+          />
+          <img
+            className={classes.apartmentThumbnail}
+            src={apartmentDefaultImage}
+            alt="Apartment Thumbnail"
+          />
+        </>
+      );
+    }
+  };
+
   return (
     <>
-      <Card className={classes.card} onClick={handleCardClick}>
-        <CardContent className={classes.cardContent}>
-          <FolderIcon className={classes.folderIcon} />
-          <div className={classes.folderInfo}>
-            <Typography variant="h6" className={classes.folderName}>
-              {folder.name}
-            </Typography>
-            <Typography className={classes.apartmentCount}>
-              {apartmentCount} {apartmentCount === 1 ? 'apartment' : 'apartments'}
-            </Typography>
-          </div>
-        </CardContent>
-        <CardActions className={classes.cardActions}>
+      <div className={classes.folderInfo}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6" className={classes.folderName}>
+            {folder.name}
+          </Typography>
           <IconButton size="small" onClick={handleMenuOpen} aria-label="folder options">
             <MoreVertIcon />
           </IconButton>
-        </CardActions>
-      </Card>
+        </div>
+
+        <Typography className={classes.apartmentCount}>
+          {apartmentCount} {apartmentCount === 1 ? 'apartment' : 'apartments'}
+        </Typography>
+      </div>
+
+      <Box className={classes.apartmentThumbnails} onClick={handleCardClick}>
+        <div>{displayFolderThumbnail()}</div>
+      </Box>
 
       {/* Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
