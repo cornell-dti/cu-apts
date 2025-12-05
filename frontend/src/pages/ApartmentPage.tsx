@@ -45,7 +45,7 @@ import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
-import AddToFolderModal from '../components/Folder/AddToFolderModal';
+import AddToFolderPopover from '../components/Folder/AddToFolderPopover';
 import { set } from 'date-fns';
 
 type Props = {
@@ -159,7 +159,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
-  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
   const [showAddToFolderSuccess, setShowAddToFolderSuccess] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
 
@@ -465,14 +465,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const Modals = landlordData && apt && (
     <>
-      <AddToFolderModal
-        open={showFolderModal}
-        onClose={() => setShowFolderModal(false)}
-        apartmentId={aptId}
+      <AddToFolderPopover
+        anchorEl={folderAnchorEl}
+        onClose={() => setFolderAnchorEl(null)}
+        apartmentId={apt.id}
         apartmentName={apt.name}
         user={user}
         setUser={setUser}
-        onSuccess={showAddToFolderSuccessToast}
+        onSuccess={() => {
+          setIsSaved(true);
+        }}
       />
       <MapModal
         aptName={apt!.name}
@@ -550,8 +552,8 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
             <Button
               disableRipple
-              onClick={() => {
-                setShowFolderModal(true);
+              onClick={(e) => {
+                setFolderAnchorEl(e.currentTarget);
               }}
               className={saveButton}
               color="primary"
