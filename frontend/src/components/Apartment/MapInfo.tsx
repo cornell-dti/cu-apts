@@ -31,6 +31,14 @@ export type distanceProps = {
   walkDistance: number | undefined;
 };
 
+/**
+ * WalkDistanceInfo – Displays walking distance to a campus location.
+ *
+ * @param {string} props.location – The name of the campus location.
+ * @param {number | undefined} props.walkDistance – Walking time in minutes.
+ *
+ * @return {JSX.Element} – A row showing the location and walk time.
+ */
 const WalkDistanceInfo = ({ location, walkDistance }: distanceProps) => {
   return (
     <div>

@@ -45,6 +45,8 @@ import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 type Props = {
   user: firebase.User | null;

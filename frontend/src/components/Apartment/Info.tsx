@@ -25,12 +25,33 @@ type Props = {
   readonly address: string | null;
 };
 
+/**
+ * InfoItem – Renders a single list item displaying text information.
+ *
+ * @param {string} props.text – The text content to display.
+ *
+ * @return {JSX.Element} – A ListItem component with the text.
+ */
 const InfoItem = ({ text }: { text: string }) => (
   <ListItem disableGutters>
     <ListItemText primary={text} />
   </ListItem>
 );
 
+/**
+ * Info – Displays landlord contact information with links to their page and contact.
+ *
+ * @remarks
+ * This component shows the landlord name and address, with buttons to visit
+ * the landlord's page or contact them directly.
+ *
+ * @param {string | null} props.landlordId – The unique identifier for the landlord.
+ * @param {string | null} props.landlord – The name of the landlord or renting company.
+ * @param {string | null} props.contact – Contact URL for the landlord.
+ * @param {string | null} props.address – The address of the apartment.
+ *
+ * @return {ReactElement} – The rendered Info component.
+ */
 export default function Info({ landlordId, landlord, contact, address }: Props): ReactElement {
   const { title } = useStyles();
 
