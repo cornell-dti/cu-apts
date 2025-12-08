@@ -302,7 +302,6 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
   }
 
   const likeCount = post.likes ?? 0;
-  const saveCount = post.saves ?? 0;
   const commentCount = 5; // placeholder
   const displayDate = new Date(post.date).toLocaleDateString('en-US', {
     month: 'long',
