@@ -16,6 +16,13 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { useTitle } from '../utils';
 
+/**
+ * BlogPost type
+ *
+ * Represents a single blog post as returned by the backend API and consumed
+ * by the blog listing page. Includes metadata used for filtering, sorting,
+ * and display in the card grid.
+ */
 type BlogPost = {
   readonly id: string;
   readonly content: string;
@@ -30,6 +37,7 @@ type BlogPost = {
   readonly saves: number;
 };
 
+// Styles for the BlogPostPage component
 const useStyles = makeStyles(() => ({
   background: {
     backgroundColor: '#FFFFFF',
@@ -196,17 +204,37 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+// Labels for the blog post filter tabs
 const TABS = ['All', 'Most Popular', 'Tips & Tricks', 'Finances', 'Landlords', 'Op-Eds'];
 
+/**
+ * BlogPostPage Component
+ *
+ * This component represents the main blog landing page for apartment advice.
+ * It fetches and displays blog posts in a responsive card grid, supports
+ * searching by title, filtering by topic tab, and optionally sorting by
+ * popularity. Users can click a card to navigate to a full blog post view.
+ *
+ * @component
+ * @returns BlogPostPage The BlogPostPage component.
+ */
 const BlogPostPage = (): ReactElement => {
   const classes = useStyles();
   const history = useHistory();
+
+  // Set the page title using the useTitle custom hook
   useTitle('APT Advice');
 
+  // State to store all blog posts loaded from the API
   const [posts, setPosts] = useState<BlogPost[]>([]);
+
+  // State to store the current search query entered by the user
   const [search, setSearch] = useState('');
+
+  // State to track which tab is currently active
   const [activeTab, setActiveTab] = useState<string>('All');
 
+  // Fetch blog posts when the component mounts
   useEffect(() => {
     axios
       .get<BlogPost[]>('/api/blog-posts')
@@ -217,6 +245,7 @@ const BlogPostPage = (): ReactElement => {
       });
   }, []);
 
+  // Helper function to determine whether a post belongs in the selected tab
   const tabMatchesPost = (post: BlogPost, tab: string) => {
     if (tab === 'All') return true;
     if (tab === 'Most Popular') return true;
@@ -224,6 +253,7 @@ const BlogPostPage = (): ReactElement => {
     return (post.tags || []).some((x) => x?.toLowerCase() === t);
   };
 
+  // Memoized list of posts filtered by the active tab and search query
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase();
 
@@ -234,6 +264,7 @@ const BlogPostPage = (): ReactElement => {
     });
   }, [posts, search, activeTab]);
 
+  // Apply additional sorting when the "Most Popular" tab is active
   const visiblePosts =
     activeTab === 'Most Popular'
       ? [...filteredPosts].sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0))
@@ -241,7 +272,9 @@ const BlogPostPage = (): ReactElement => {
 
   return (
     <Box className={classes.background}>
+      {/* Page container that constrains content width and centers the layout */}
       <Box className={classes.pageContainer}>
+        {/* Page header and search bar section */}
         <Box style={{ width: '688px', height: '200px' }}>
           <Box style={{ width: '576px', height: '92px' }}>
             <Typography className={classes.header}>Advice for All Things Apartment</Typography>
@@ -268,6 +301,7 @@ const BlogPostPage = (): ReactElement => {
           </Box>
         </Box>
 
+        {/* Row of filter tabs for switching between categories */}
         <Box className={classes.tabsRow}>
           {TABS.map((t) => (
             <Button
@@ -282,6 +316,7 @@ const BlogPostPage = (): ReactElement => {
           ))}
         </Box>
 
+        {/* Grid of blog post cards */}
         <Grid container className={classes.cardsGrid} spacing={4}>
           {visiblePosts.map((post) => {
             const hero = post.photos?.[0] ?? '';
@@ -294,7 +329,7 @@ const BlogPostPage = (): ReactElement => {
                   disableTouchRipple
                   focusRipple={false}
                   onClick={() => {
-                    // SAME TAB, full-page route:
+                    // Navigate to the full blog post view in the same tab
                     history.push(`/apt-advice/${post.id}`);
                   }}
                 >
@@ -311,6 +346,7 @@ const BlogPostPage = (): ReactElement => {
                       <Typography className={classes.cardDescription}>{post.blurb}</Typography>
                     </Box>
 
+                    {/* Footer with likes and saves summary */}
                     <Box className={classes.cardFooter}>
                       <Box className={classes.footerItem}>
                         <FavoriteBorderIcon className={classes.footerIcon} />
@@ -328,6 +364,7 @@ const BlogPostPage = (): ReactElement => {
             );
           })}
 
+          {/* Fallback message when no posts match the current filters */}
           {visiblePosts.length === 0 && (
             <Grid item xs={12}>
               <Typography>No posts found.</Typography>

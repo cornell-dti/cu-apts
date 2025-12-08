@@ -9,6 +9,13 @@ import { useParams, useHistory } from 'react-router-dom';
 import { useTitle } from '../utils';
 import heroImage from '../assets/blog-hero.jpg';
 
+/**
+ * BlogPost type
+ *
+ * Represents a single blog post as returned by the backend API and
+ * consumed by the blog post detail page. Includes metadata and content
+ * used for rendering the hero, article body, and related article cards.
+ */
 type BlogPost = {
   readonly id: string;
   readonly content: string;
@@ -25,11 +32,18 @@ type BlogPost = {
 
 type RouteParams = { postId: string };
 
+/**
+ * Props for the BlogPostDetailPage component.
+ *
+ * @property user - The currently authenticated Firebase user, if any.
+ * @property setUser - Setter for updating the authenticated user in parent state.
+ */
 type Props = {
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
+// Styles for the BlogPostDetailPage component
 const useStyles = makeStyles(() => ({
   pageBackground: {
     backgroundColor: '#F3F4F6',
@@ -221,16 +235,35 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+/**
+ * BlogPostDetailPage Component
+ *
+ * This component represents the detail view for a single blog post.
+ * It fetches the article by ID, renders a hero section with metadata,
+ * displays the full HTML content of the post, and surfaces a short list
+ * of related articles at the bottom of the page.
+ *
+ * @component
+ * @param user - The currently authenticated Firebase user.
+ * @param setUser - Function to update the authenticated user in parent state.
+ * @returns BlogPostDetailPage The BlogPostDetailPage component.
+ */
 const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
   const classes = useStyles();
   const { postId } = useParams<RouteParams>();
   const history = useHistory();
 
+  // State holding the primary blog post being viewed
   const [post, setPost] = useState<BlogPost | null>(null);
+
+  // State containing the list of all blog posts (used to show "More Articles")
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
+
+  // Loading and error state for network requests
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch the current post and the list of all posts when the route parameter changes
   useEffect(() => {
     let isMounted = true;
 
@@ -239,11 +272,12 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
         setLoading(true);
         setError(null);
 
-        // ✅ call the route your backend actually exposes
+        // Fetch the primary blog post by ID
         const res = await axios.get<BlogPost>(`/api/blog-post-by-id/${postId}`);
         if (!isMounted) return;
         setPost(res.data);
 
+        // Fetch all blog posts for the "More Articles Like This" section
         const listRes = await axios.get<BlogPost[]>('/api/blog-posts');
         if (!isMounted) return;
         setAllPosts(listRes.data);
@@ -262,13 +296,16 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
     };
   }, [postId]);
 
+  // Set the page title based on the loaded blog post
   useTitle(post?.title || 'APT Advice');
 
+  // Derive a small list of "more articles" that excludes the current one
   const moreArticles = useMemo(
     () => allPosts.filter((p) => p.id !== postId).slice(0, 2),
     [allPosts, postId]
   );
 
+  // Render a simple loading state while data is being fetched
   if (loading) {
     return (
       <Box className={classes.pageBackground}>
@@ -281,6 +318,7 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
     );
   }
 
+  // Render an error or not-found state if the article cannot be loaded
   if (error || !post) {
     return (
       <Box className={classes.pageBackground}>
@@ -301,6 +339,7 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
     );
   }
 
+  // Prepare display values for the hero metadata
   const likeCount = post.likes ?? 0;
   const commentCount = 5; // placeholder
   const displayDate = new Date(post.date).toLocaleDateString('en-US', {
@@ -309,12 +348,13 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
     year: 'numeric',
   });
 
+  // Fallback hero image if the post does not have a photo
   const hero = post.photos?.[0] || heroImage;
 
   return (
     <Box className={classes.pageBackground}>
       <Box className={classes.frame}>
-        {/* HERO */}
+        {/* HERO SECTION */}
         <Box className={classes.heroWrapper}>
           <img src={hero} alt={post.title} className={classes.heroImage} />
 
@@ -346,13 +386,15 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
           </Box>
         </Box>
 
-        {/* BODY + MORE */}
+        {/* ARTICLE BODY + "MORE ARTICLES" SECTION */}
         <Box className={classes.body}>
+          {/* Main article content, rendered from HTML provided by the backend */}
           <div
             className={classes.articleContent}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
+          {/* Section showing additional related articles */}
           <Box className={classes.moreSection}>
             <Typography className={classes.moreTitle}>More Articles Like This</Typography>
 
