@@ -57,10 +57,11 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: '3em',
   },
   createButton: {
+    marginTop: '55px',
     width: '100%',
     aspectRatio: '1',
     backgroundColor: '#fff',
-    border: '2px dashed #d0d0d0',
+    border: '1px solid #d0d0d0',
     borderRadius: '8px',
     cursor: 'pointer',
     display: 'flex',
@@ -68,8 +69,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     transition: 'all 0.2s ease',
     '&:hover': {
-      backgroundColor: '#f9f9f9',
-      borderColor: '#a0a0a0',
+      transform: 'translateY(-4px)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
   },
   createIcon: {
@@ -149,7 +150,7 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
     try {
       setLoading(true);
       if (!user) {
-        let user = await getUser(false);
+        let user = await getUser(true);
         setUser(user);
       }
       if (!user) {
