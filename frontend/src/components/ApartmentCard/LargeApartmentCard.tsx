@@ -12,8 +12,6 @@ import {
 } from '@material-ui/core';
 import savedIcon from '../../assets/apartment-card-saved-icon-filled.svg';
 import unsavedIcon from '../../assets/apartment-card-saved-icon-unfilled.svg';
-import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
-import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId, DetailedRating, ReviewWithId } from '../../../../common/types/db-types';

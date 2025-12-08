@@ -1,9 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import apartmentDefaultImage from '../../assets/apartment-placeholder.svg';
 import {
-  Card,
-  CardContent,
-  CardActions,
   Typography,
   IconButton,
   Menu,
@@ -15,9 +12,8 @@ import {
   TextField,
   Button,
   makeStyles,
-  Box,
 } from '@material-ui/core';
-import { MoreVert as MoreVertIcon, Folder as FolderIcon } from '@material-ui/icons';
+import { MoreVert as MoreVertIcon } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { colors } from '../../colors';
 import axios from 'axios';
@@ -40,64 +36,56 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme) => ({
-  card: {
-    height: '300px',
-    width: '300px',
+  folderContainer: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
+    marginBottom: '1.5em',
+  },
+  folderHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '0.5em',
+    paddingLeft: '4px',
+  },
+  folderName: {
+    fontWeight: 600,
+    fontSize: '1rem',
+    color: '#000',
+  },
+  apartmentCount: {
+    color: '#666',
+    fontSize: '0.875rem',
+    marginTop: '0.25em',
+  },
+  thumbnailGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+    width: '100%',
+    aspectRatio: '1',
     cursor: 'pointer',
-    transition: 'transform 0.2s, box-shadow 0.2s',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    backgroundColor: '#f5f5f5',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+
     '&:hover': {
       transform: 'translateY(-4px)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
   },
-  cardContent: {
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1em',
-  },
-  folderIcon: {
-    fontSize: '3em',
-    color: colors.red1,
-  },
-  folderInfo: {
-    flex: 1,
-    width: '300px',
-  },
-  folderName: {
-    fontWeight: 600,
-    marginBottom: '0.1em',
-  },
-  apartmentCount: {
-    color: colors.gray2,
-    fontSize: '0.9em',
-    marginBottom: '0.5em',
-  },
-  cardActions: {
-    justifyContent: 'flex-end',
-    padding: '8px 16px',
-  },
   apartmentThumbnail: {
-    width: '47%',
-    height: '47%',
-    borderRadius: 4,
-    margin: '0.2em',
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
-  apartmentThumbnails: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    width: '300px',
-    height: '300px',
-    overflow: 'hidden',
-    alignContent: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'transform 0.2s',
-    '&:hover': {
-      transform: 'translateY(-4px)',
-    },
+  placeholderThumbnail: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
   },
 }));
 
@@ -172,93 +160,52 @@ const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement =
   }, []);
 
   const displayFolderThumbnail = () => {
-    try {
-      if (savedAptsData && savedAptsData.length > 0) {
-        const numPlaceholders = savedAptsData.length < 4 ? 4 - savedAptsData.length : 0;
-        return (
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '2px',
-              height: '300px',
-              width: '300px',
-            }}
-          >
-            {savedAptsData.slice(0, 4).map((apartment) => (
-              <img
-                key={apartment.buildingData.id}
-                src={
-                  apartment.buildingData.photos.length > 0
-                    ? apartment.buildingData.photos[0]
-                    : apartmentDefaultImage
-                }
-                alt="Apartment Thumbnail"
-                style={{ width: '48%', height: '48%', objectFit: 'cover', borderRadius: '4px' }}
-              />
-            ))}
-            {Array.from({ length: numPlaceholders }).map((_, idx) => (
-              <div
-                key={`placeholder-${idx}`}
-                style={{
-                  width: '48%',
-                  height: '48%',
-                  borderRadius: '4px',
-                  background: 'white',
-                }}
-              />
-            ))}
-          </div>
+    const thumbnails = [];
+    const maxThumbnails = 4;
+
+    if (savedAptsData && savedAptsData.length > 0) {
+      // Add actual apartment images
+      for (let i = 0; i < Math.min(savedAptsData.length, maxThumbnails); i++) {
+        const apartment = savedAptsData[i];
+        thumbnails.push(
+          <img
+            key={apartment.buildingData.id}
+            src={
+              apartment.buildingData.photos.length > 0
+                ? apartment.buildingData.photos[0]
+                : apartmentDefaultImage
+            }
+            alt="Apartment Thumbnail"
+            className={classes.apartmentThumbnail}
+          />
         );
       }
-    } catch (error) {
-      return (
-        <>
-          <img
-            className={classes.apartmentThumbnail}
-            src={apartmentDefaultImage}
-            alt="Apartment Thumbnail"
-          />
-          <img
-            className={classes.apartmentThumbnail}
-            src={apartmentDefaultImage}
-            alt="Apartment Thumbnail"
-          />
-          <img
-            className={classes.apartmentThumbnail}
-            src={apartmentDefaultImage}
-            alt="Apartment Thumbnail"
-          />
-          <img
-            className={classes.apartmentThumbnail}
-            src={apartmentDefaultImage}
-            alt="Apartment Thumbnail"
-          />
-        </>
-      );
     }
+
+    // Fill remaining slots with placeholders
+    const remainingSlots = maxThumbnails - thumbnails.length;
+    for (let i = 0; i < remainingSlots; i++) {
+      thumbnails.push(<div key={`placeholder-${i}`} className={classes.placeholderThumbnail} />);
+    }
+
+    return thumbnails;
   };
 
   return (
-    <>
-      <div className={classes.folderInfo}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6" className={classes.folderName}>
-            {folder.name}
-          </Typography>
-          <IconButton size="small" onClick={handleMenuOpen} aria-label="folder options">
-            <MoreVertIcon />
-          </IconButton>
+    <div className={classes.folderContainer}>
+      <div className={classes.folderHeader}>
+        <div>
+          <Typography className={classes.folderName}>{folder.name}</Typography>
+          <Typography className={classes.apartmentCount}>{apartmentCount} Saved</Typography>
         </div>
-
-        <Typography className={classes.apartmentCount}>
-          {apartmentCount} {apartmentCount === 1 ? 'apartment' : 'apartments'}
-        </Typography>
+        <IconButton size="small" onClick={handleMenuOpen} aria-label="folder options">
+          <MoreVertIcon />
+        </IconButton>
       </div>
 
-      <Box className={classes.apartmentThumbnails} onClick={handleCardClick}>
-        <div>{displayFolderThumbnail()}</div>
-      </Box>
+      <div className={classes.thumbnailGrid} onClick={handleCardClick}>
+        {displayFolderThumbnail()}
+      </div>
 
       {/* Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
@@ -318,7 +265,7 @@ const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement =
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   );
 };
 

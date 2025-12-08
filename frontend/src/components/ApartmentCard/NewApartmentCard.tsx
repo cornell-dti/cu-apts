@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState } from 'react';
 import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import {
   Card,

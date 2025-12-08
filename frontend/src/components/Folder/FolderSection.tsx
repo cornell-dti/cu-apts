@@ -1,7 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import {
   Button,
-  Grid,
   makeStyles,
   Typography,
   Box,
@@ -12,7 +11,6 @@ import {
   DialogActions,
 } from '@material-ui/core';
 import Toast from '../utils/Toast';
-import { colors } from '../../colors';
 import FolderCard from './FolderCard';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
@@ -36,45 +34,61 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginTop: '10px',
+    padding: '0 20px',
+    marginTop: '20px',
   },
-  gridContainer: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    marginBottom: '3em',
-  },
-  headerStyle: {
-    fontFamily: 'Work Sans',
-    fontWeight: 800,
+  container: {
+    width: '100%',
+    maxWidth: '1200px',
   },
   headerContainer: {
-    marginTop: '2em',
     marginBottom: '2em',
   },
+  headerStyle: {
+    fontFamily: 'Work Sans, sans-serif',
+    fontWeight: 600,
+    fontSize: '1.5rem',
+    color: '#000',
+  },
+  gridContainer: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '24px',
+    marginBottom: '3em',
+  },
   createButton: {
-    marginTop: '1em',
-    backgroundColor: colors.white,
-    color: colors.gray1,
-    borderRadius: 4,
-    textTransform: 'none',
-    padding: '40px 40px',
-    fontSize: 75,
-    border: `1px solid ${colors.gray3}`,
+    width: '100%',
+    aspectRatio: '1',
+    backgroundColor: '#fff',
+    border: '2px dashed #d0d0d0',
+    borderRadius: '8px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-
-    boxShadow: '0 2px 2px rgba(0,0,0,0.1)',
-
-    height: '200px',
-    width: '200px',
-    minWidth: '80px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
+    transition: 'all 0.2s ease',
     '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+      backgroundColor: '#f9f9f9',
+      borderColor: '#a0a0a0',
     },
+  },
+  createIcon: {
+    fontSize: '64px',
+    color: '#999',
+  },
+  emptyState: {
+    textAlign: 'center',
+    marginTop: '4em',
+    padding: '2em',
+  },
+  emptyStateTitle: {
+    color: '#666',
+    fontWeight: 500,
+    marginBottom: '0.5em',
+  },
+  emptyStateText: {
+    color: '#999',
+    fontSize: '0.95rem',
   },
 }));
 
@@ -90,7 +104,7 @@ const useStyles = makeStyles((theme) => ({
  */
 const FolderSection = ({ user, setUser }: Props): ReactElement => {
   const toastTime = 3500;
-  const { background, headerStyle, headerContainer, gridContainer, createButton } = useStyles();
+  const classes = useStyles();
 
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -220,43 +234,40 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
   };
 
   return (
-    <div className={background}>
-      <Box style={{ width: '100%', maxWidth: '1200px' }}>
-        <Box className={headerContainer}>
-          <Typography variant="h3" className={headerStyle}>
-            My Folders ({folders.length})
+    <div className={classes.background}>
+      <Box className={classes.container}>
+        <Box className={classes.headerContainer}>
+          <Typography className={classes.headerStyle}>
+            Saved Properties and Landlords ({folders.length})
           </Typography>
         </Box>
 
         {loading ? (
           <Typography>Loading folders...</Typography>
         ) : folders.length === 0 ? (
-          <Box style={{ textAlign: 'center', marginTop: '3em' }}>
-            <Typography variant="h5" style={{ color: colors.gray1 }}>
+          <Box className={classes.emptyState}>
+            <Typography variant="h5" className={classes.emptyStateTitle}>
               No folders yet
             </Typography>
-            <Typography variant="body1" style={{ color: colors.gray2, marginTop: '1em' }}>
+            <Typography className={classes.emptyStateText}>
               Create your first folder to start organizing apartments
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={1} className={gridContainer}>
+          <div className={classes.gridContainer}>
             {folders.map((folder) => (
-              <Grid item xs={12} sm={6} md={4} key={folder.id}>
-                <FolderCard
-                  user={user}
-                  folder={folder}
-                  onDelete={handleDeleteFolder}
-                  onRename={handleRenameFolder}
-                />
-              </Grid>
+              <FolderCard
+                key={folder.id}
+                user={user}
+                folder={folder}
+                onDelete={handleDeleteFolder}
+                onRename={handleRenameFolder}
+              />
             ))}
-            <Grid item xs={12} sm={6} md={4}>
-              <Box className={createButton} onClick={() => setShowCreateDialog(true)}>
-                <AddRounded style={{ fontSize: 80 }} />
-              </Box>
-            </Grid>
-          </Grid>
+            <Box className={classes.createButton} onClick={() => setShowCreateDialog(true)}>
+              <AddRounded className={classes.createIcon} />
+            </Box>
+          </div>
         )}
 
         {/* Create Folder Dialog */}
