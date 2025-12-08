@@ -3,6 +3,7 @@ import './App.scss';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import BlogPostPage from './pages/BlogPostPage';
+import BlogPostDetailPage from './pages/BlogPostDetailPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
@@ -114,6 +115,9 @@ const App = (): ReactElement => {
             <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
 
             <Route exact path="/blogs" component={BlogPostPage} />
+            <Route path="/apt-advice/:postId">
+              <BlogPostDetailPage user={user} setUser={setUser} />
+            </Route>
             <Route
               exact
               path="/reviews"

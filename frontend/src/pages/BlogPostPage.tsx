@@ -7,22 +7,15 @@ import {
   TextField,
   InputAdornment,
   Button,
-  Chip,
   ButtonBase,
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import BookmarkBorderIcon from '@material-ui/icons/BookmarkBorder';
-import { colors } from '../colors';
-import { useTitle } from '../utils';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom';
+import { useTitle } from '../utils';
 
-type Props = {
-  user: firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-};
-
-// Matches your backend shape (db-types BlogPostWithId)
 type BlogPost = {
   readonly id: string;
   readonly content: string;
@@ -59,21 +52,20 @@ const useStyles = makeStyles(() => ({
   searchWrap: {
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E7EB', // subtle gray like the design
+    border: '1px solid #E5E7EB',
     boxShadow: '0px 8px 24px rgba(0,0,0,0.06)',
-    overflow: 'hidden', // <-- this prevents the “leak”
+    overflow: 'hidden',
   },
   searchField: {
-    // keep the TextField itself “invisible”, wrapper handles visuals
     '& .MuiOutlinedInput-root': {
       backgroundColor: 'transparent',
       borderRadius: 10,
     },
     '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none', // <-- remove MUI’s fieldset border
+      border: 'none',
     },
     '& .MuiOutlinedInput-input': {
-      padding: '20px 24px', // adjust height/feel here
+      padding: '20px 24px',
       fontFamily: 'Work Sans',
       fontSize: 18,
     },
@@ -111,30 +103,23 @@ const useStyles = makeStyles(() => ({
     marginTop: '64px',
     marginBottom: '40px',
   },
-
-  // Whole card = button
   cardButton: {
     width: '100%',
-    display: 'inline-flex', // so padding wraps tightly around inner content
+    display: 'inline-flex',
     alignItems: 'stretch',
     justifyContent: 'flex-start',
     textAlign: 'left',
     backgroundColor: 'transparent',
     borderRadius: '12px',
-
-    padding: '12px 12px 0px 12px', // <-- THIS is the inner padding you want
+    padding: '12px 12px 0px 12px',
     boxSizing: 'border-box',
-
-    border: '1px solid transparent', // <-- border lives on the button now
+    border: '1px solid transparent',
     transition: 'border-color 150ms ease, box-shadow 150ms ease',
-
     outline: 'none',
     '&:focus': { outline: 'none' },
     '&:focus-visible': { outline: 'none' },
     '& .MuiTouchRipple-root': { display: 'none' },
   },
-
-  // hover/focus should target the button itself now
   cardInteractive: {
     '&:hover': {
       borderColor: '#EB5757',
@@ -145,8 +130,6 @@ const useStyles = makeStyles(() => ({
       boxShadow: '0px 12px 30px rgba(0,0,0,0.10)',
     },
   },
-
-  // make the inner card the fixed size, but NO border/shadow here
   card: {
     width: '411px',
     height: '563px',
@@ -156,7 +139,6 @@ const useStyles = makeStyles(() => ({
     backgroundColor: 'transparent',
     boxSizing: 'border-box',
   },
-
   cardImage: {
     position: 'relative',
     width: '100%',
@@ -165,13 +147,12 @@ const useStyles = makeStyles(() => ({
     overflow: 'hidden',
     border: '1px solid #ECECEC',
     backgroundColor: '#F3F4F6',
-  },
-
-  cardBody: {
-    padding: '0 12px 12px 12px',
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
+    '& img': {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      display: 'block',
+    },
   },
   cardTitle: {
     fontFamily: 'Work Sans',
@@ -186,28 +167,13 @@ const useStyles = makeStyles(() => ({
     lineHeight: '28px',
     fontWeight: 400,
     color: '#5D5D5D',
-
     overflow: 'hidden',
     display: '-webkit-box',
     WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: 5, // <- number of lines before "..."
-  },
-  tagsRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  tagChip: {
-    height: 24,
-    borderRadius: 999,
-    backgroundColor: '#F3F4F6',
-    color: '#111827',
-    fontFamily: 'Work Sans',
-    fontWeight: 500,
+    WebkitLineClamp: 5,
   },
   cardFooter: {
-    marginTop: 'auto', // <-- pushes footer to the bottom
+    marginTop: 'auto',
     marginBottom: '28px',
     display: 'flex',
     alignItems: 'center',
@@ -232,8 +198,9 @@ const useStyles = makeStyles(() => ({
 
 const TABS = ['All', 'Most Popular', 'Tips & Tricks', 'Finances', 'Landlords', 'Op-Eds'];
 
-const BlogPostPage = ({ user, setUser }: Props): ReactElement => {
+const BlogPostPage = (): ReactElement => {
   const classes = useStyles();
+  const history = useHistory();
   useTitle('APT Advice');
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -263,7 +230,6 @@ const BlogPostPage = ({ user, setUser }: Props): ReactElement => {
     return posts.filter((post) => {
       const matchesTab = tabMatchesPost(post, activeTab);
       const matchesSearch = q.length === 0 || post.title.toLowerCase().includes(q);
-
       return matchesTab && matchesSearch;
     });
   }, [posts, search, activeTab]);
@@ -316,7 +282,7 @@ const BlogPostPage = ({ user, setUser }: Props): ReactElement => {
           ))}
         </Box>
 
-        <Grid container className={classes.cardsGrid}>
+        <Grid container className={classes.cardsGrid} spacing={4}>
           {visiblePosts.map((post) => {
             const hero = post.photos?.[0] ?? '';
 
@@ -328,13 +294,13 @@ const BlogPostPage = ({ user, setUser }: Props): ReactElement => {
                   disableTouchRipple
                   focusRipple={false}
                   onClick={() => {
-                    // TODO: navigate to post detail page
-                    console.log('clicked post', post.id);
+                    // SAME TAB, full-page route:
+                    history.push(`/apt-advice/${post.id}`);
                   }}
                 >
                   <Box className={classes.card}>
                     <Box className={classes.cardImage}>
-                      {hero ? <img src={hero} alt={post.title} /> : null}
+                      {hero && <img src={hero} alt={post.title} />}
                     </Box>
 
                     <Box style={{ marginTop: '24px', maxWidth: '100%' }}>

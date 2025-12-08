@@ -218,21 +218,32 @@ app.post('/api/edit-blog-post/:blogPostId', authenticate, async (req, res) => {
  * - 404: Blog post could not be found from ID.
  * - 401: Error due to unauthorized access or authentication issues.
  */
-app.get('/api/blog-post-by-id/:blogPostId', authenticate, async (req, res) => {
-  const { blogPostId } = req.params; // Extract the blog post ID from the request parameters
+app.get('/api/blog-post-by-id/:blogPostId', async (req, res) => {
+  const { blogPostId } = req.params;
+
   try {
-    const blogPostDoc = await blogPostCollection.doc(blogPostId).get(); // Get the blog post document from Firestore
+    const blogPostDoc = await blogPostCollection.doc(blogPostId).get();
     if (!blogPostDoc.exists) {
-      res.status(404).send('Blog Post not found'); // If the document does not exist, return a 404 error
+      res.status(404).send('Blog Post not found');
       return;
     }
+
     const data = blogPostDoc.data();
-    const blogPost = { ...data, date: data?.date.toDate() } as BlogPostInternal; // Convert the Firestore Timestamp to a Date object
-    const blogPostWithId = { ...blogPost, id: blogPostDoc.id } as BlogPostWithId; // Add the document ID to the review data
-    res.status(200).send(JSON.stringify(blogPostWithId)); // Return the review data as a JSON response
+
+    let blogPost: BlogPostInternal;
+    if (data?.date && typeof (data.date as any).toDate === 'function') {
+      // Firestore Timestamp -> Date
+      blogPost = { ...data, date: data.date.toDate() } as BlogPostInternal;
+    } else {
+      // Already a Date or missing
+      blogPost = { ...data } as BlogPostInternal;
+    }
+
+    const blogPostWithId = { ...blogPost, id: blogPostDoc.id } as BlogPostWithId;
+    res.status(200).json(blogPostWithId);
   } catch (err) {
-    console.error(err);
-    res.status(401).send('Error retrieving Blog Post'); // Handle any errors that occur during the process
+    console.error('Error retrieving Blog Post', err);
+    res.status(500).send('Error retrieving Blog Post');
   }
 });
 
