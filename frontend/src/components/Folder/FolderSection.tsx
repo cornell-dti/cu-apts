@@ -52,6 +52,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: '2em',
   },
   createButton: {
+    marginTop: '1em',
     backgroundColor: colors.white,
     color: colors.gray1,
     borderRadius: 4,
@@ -134,13 +135,13 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
     try {
       setLoading(true);
       if (!user) {
-        let user = await getUser(true);
+        let user = await getUser(false);
         setUser(user);
       }
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       const response = await axios.get('/api/folders', createAuthHeaders(token));
       setFolders(response.data);
     } catch (error) {
@@ -158,13 +159,13 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
     }
     try {
       if (!user) {
-        let user = await getUser(true);
+        let user = await getUser(false);
         setUser(user);
       }
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       const response = await axios.post(
         '/api/folders',
         { folderName: newFolderName },
@@ -183,32 +184,32 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
   const handleDeleteFolder = async (folderId: string) => {
     try {
       if (!user) {
-        let user = await getUser(true);
+        let user = await getUser(false);
         setUser(user);
       }
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       await axios.delete(`/api/folders/${folderId}`, createAuthHeaders(token));
       setFolders(folders.filter((f) => f.id !== folderId));
       showDeleteSuccessConfirmationToast();
     } catch (error) {
       console.error('Error deleting folder:', error);
-      showError('Failed to delete folder');
+      showError('Failed to delete folder: ' + (error as Error).message);
     }
   };
 
   const handleRenameFolder = async (folderId: string, newName: string) => {
     try {
       if (!user) {
-        let user = await getUser(true);
+        let user = await getUser(false);
         setUser(user);
       }
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       await axios.put(`/api/folders/${folderId}`, { newName }, createAuthHeaders(token));
       setFolders(folders.map((f) => (f.id === folderId ? { ...f, name: newName } : f)));
       showRenameSuccessConfirmationToast();

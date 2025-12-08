@@ -162,7 +162,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
 
   useEffect(() => {
     fetchFolderDetails();
-  }, [folderId, user]);
+  }, [folderId]);
 
   const fetchFolderDetails = async () => {
     try {
@@ -170,10 +170,15 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
 
       const folderResponse = await axios.get(`/api/folders/${folderId}`, createAuthHeaders(token));
-      setFolder(folderResponse.data);
+      setFolder((prev) => {
+        if (JSON.stringify(prev) === JSON.stringify(folderResponse.data)) {
+          return prev; // No change, avoid re-render
+        }
+        return folderResponse.data;
+      });
     } catch (error) {
       console.error('Error fetching folder details:', error);
       showError('Failed to load folder details');
@@ -191,7 +196,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       if (!user) {
         throw new Error('User not authenticated');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
 
       await Promise.all(
         apartmentIds.map((id) =>
@@ -217,7 +222,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
         throw new Error('Failed to login');
       }
 
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       const res = await axios.get(`/api/folders/${folder.id}/apartments`, createAuthHeaders(token));
 
       setApartments(res.data);
@@ -231,7 +236,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
     if (folder) {
       fetchApartmentsInFolder(folder);
     }
-  }, [folder]);
+  }, [folder?.id]);
 
   if (loading) {
     return (

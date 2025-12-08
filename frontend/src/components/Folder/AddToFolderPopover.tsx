@@ -243,7 +243,7 @@ export default function AddToFolderPopover({
       let u = user;
 
       if (!u) {
-        const logged = await getUser(true);
+        const logged = await getUser(false);
         setUser(logged);
         u = logged;
         if (!u) {
@@ -252,7 +252,7 @@ export default function AddToFolderPopover({
         }
       }
 
-      const token = await u.getIdToken(true);
+      const token = await u.getIdToken(false);
       const response = await axios.get('/api/folders', createAuthHeaders(token));
       setFolders(response.data);
     } catch (err) {
@@ -266,7 +266,7 @@ export default function AddToFolderPopover({
     try {
       let u = user;
       if (!u) {
-        const logged = await getUser(true);
+        const logged = await getUser(false);
         setUser(logged);
         u = logged;
         if (!u) {
@@ -275,7 +275,7 @@ export default function AddToFolderPopover({
         }
       }
 
-      const token = await u.getIdToken(true);
+      const token = await u.getIdToken(false);
       const folder = folders.find((f) => f.id === folderId);
       const alreadySaved = folder?.apartments?.includes(apartmentId);
 
@@ -317,7 +317,7 @@ export default function AddToFolderPopover({
         }
       }
 
-      const token = await u.getIdToken(true);
+      const token = await u.getIdToken(false);
       const response = await axios.post(
         '/api/folders',
         { folderName: newFolderName.trim() },

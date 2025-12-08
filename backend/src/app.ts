@@ -2044,7 +2044,6 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
     // Filter out any null values from non-existent apartments
     const validApartments = aptsArr.filter((apt) => apt !== null);
     const enrichedResults = await pageData(validApartments);
-    console.log('Enriched Results:', enrichedResults);
     return res.status(200).json(enrichedResults);
   } catch (err) {
     console.error(err);

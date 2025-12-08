@@ -226,33 +226,33 @@ const NewApartmentCard = ({
     apartmentStatsText,
   } = useStyles();
 
-  useEffect(() => {
-    const checkIfSaved = async () => {
-      try {
-        if (user) {
-          const token = await user.getIdToken(true);
-          const response = await axios.post(
-            '/api/check-saved-apartment',
-            { apartmentId: id },
-            createAuthHeaders(token)
-          );
-          setIsSaved(response.data.result);
-        } else {
-          setIsSaved(false);
-        }
-      } catch (err) {
-        throw new Error('Error with checking if apartment is saved');
-      }
-    };
-    checkIfSaved();
-  }, [user, setUser, id]);
+  // useEffect(() => {
+  //   const checkIfSaved = async () => {
+  //     try {
+  //       if (user) {
+  //         const token = await user.getIdToken(false);
+  //         const response = await axios.post(
+  //           '/api/check-saved-apartment',
+  //           { apartmentId: id },
+  //           createAuthHeaders(token)
+  //         );
+  //         setIsSaved(response.data.result);
+  //       } else {
+  //         setIsSaved(false);
+  //       }
+  //     } catch (err) {
+  //       throw new Error('Error with checking if apartment is saved');
+  //     }
+  //   };
+  //   checkIfSaved();
+  // }, [user, setUser, id]);
 
   function handleFolderSuccess(): void {
     // Refresh the saved state after folder operations
     const checkIfSaved = async () => {
       try {
         if (user) {
-          const token = await user.getIdToken(true);
+          const token = await user.getIdToken(false);
           const response = await axios.post(
             '/api/check-saved-apartment',
             { apartmentId: id },

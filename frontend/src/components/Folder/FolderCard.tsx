@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import apartmentDefaultImage from '../../assets/apartment-placeholder.svg';
 import {
   Card,
@@ -162,14 +162,17 @@ const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement =
 
   const fetchApartmentInformation = async () => {
     if (!user) return;
-    const token = await user.getIdToken(true);
+    const token = await user.getIdToken(false);
     const res = await axios.get(`/api/folders/${folder.id}/apartments`, createAuthHeaders(token));
     setSavedAptsData(res.data);
   };
 
+  useEffect(() => {
+    fetchApartmentInformation();
+  }, []);
+
   const displayFolderThumbnail = () => {
     try {
-      fetchApartmentInformation();
       if (savedAptsData && savedAptsData.length > 0) {
         const numPlaceholders = savedAptsData.length < 4 ? 4 - savedAptsData.length : 0;
         return (
