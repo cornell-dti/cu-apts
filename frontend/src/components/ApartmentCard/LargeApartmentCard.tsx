@@ -327,10 +327,7 @@ const NewApartmentCard = ({
                 onMouseLeave={() => setSavedIsHovered(false)}
                 className={saveRibbonIcon}
               >
-                <img
-                  src={savedIsHovered || isSaved ? saved : unsaved}
-                  alt={isSaved ? 'Saved' : 'Unsaved'}
-                />
+                <img src={savedIsHovered ? saved : unsaved} alt={'Save'} />
               </IconButton>
             </div>
             <Typography className={apartmentAddress}>{address}</Typography>

@@ -826,6 +826,10 @@ app.put('/api/delete-review/:reviewId', authenticate, async (req, res) => {
 /**
  * Handles saving or removing saved apartments for a user in the database.
  *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ * Use the new folder-based endpoints (`POST /api/folders/:folderId/apartments`
+ * and `DELETE /api/folders/:folderId/apartments/:apartmentId`) instead.
+ *
  * @param add - If true, the apartment is added to the user's saved list. If false, it is removed.
  */
 const saveApartmentHandler =
@@ -871,6 +875,7 @@ const saveApartmentHandler =
 /**
  * Handles saving or removing saved landlords for a user in the database.
  *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
  * @param add - If true, the landlord is added to the user's saved list. If false, it is removed.
  */
 const saveLandlordHandler =
@@ -913,7 +918,11 @@ const saveLandlordHandler =
     }
   };
 
-// Function to check if a user has an apartment saved or not
+/**
+ *  Function to check if a user has an apartment saved or not
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
+
 const checkSavedApartment = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -942,7 +951,10 @@ const checkSavedApartment = (): RequestHandler => async (req, res) => {
   }
 };
 
-// Function to check if a user has an landlord saved or not
+/**
+ * Function to check if a user has an landlord saved or not
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 const checkSavedLandlord = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -971,27 +983,45 @@ const checkSavedLandlord = (): RequestHandler => async (req, res) => {
   }
 };
 
-// Endpoint for checking if an apartment is saved by a user
+/**
+ *
+ * Endpoint for checking if an apartment is saved by a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/check-saved-apartment', authenticate, checkSavedApartment());
 // This endpoint uses authentication middleware to ensure that the user is logged in.
 // The checkSavedApartment() function is then called to check if a specific apartment is saved by the user.
 
-// Endpoint for checking if a landlord is saved by a user
+/**
+ *
+ * Endpoint for checking if an landlord is saved by a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/check-saved-landlord', authenticate, checkSavedLandlord());
 // Similar to the above endpoint, this one checks if a specific landlord is saved by the user.
 // It also uses authentication to ensure that the request is made by a logged-in user.
 
-// Endpoint for adding a saved apartment for a user
+/**
+ * Endpoint for adding a saved apartment for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
 // This endpoint allows authenticated users to add an apartment to their list of saved apartments.
 // The saveApartmentHandler function is used with a parameter of 'true' to signify adding a save.
 
-// Endpoint for removing a saved apartment for a user
+/**
+ * Endpoint for removing a saved apartment for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
 // This endpoint allows authenticated users to remove an apartment from their list of saved apartments.
 // The saveApartmentHandler function is used with a parameter of 'false' to signify removing a save.
 
-// Endpoint to get a list of saved apartments for a user
+/**
+ *  Endpoint to get a list of saved apartments for a user
+ *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.get('/api/saved-apartments', authenticate, async (req, res) => {
   if (!req.user) throw new Error('Not authenticated');
   const { uid } = req.user; // Extracting user ID from the request
@@ -1012,8 +1042,16 @@ app.get('/api/saved-apartments', authenticate, async (req, res) => {
   return res.status(200).send(data);
 });
 
-// Endpoints for adding and removing saved landlords for a user
+/**
+ * Endpoint for adding a saved landlord for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
+
+/**
+ * Endpoint for removing a saved landlord for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
 // These endpoints allow for adding and removing landlords to/from a user's saved list.
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
