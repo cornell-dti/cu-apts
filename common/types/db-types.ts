@@ -38,12 +38,12 @@ export type BlogPost = {
   readonly blurb: string;
   readonly date: Date;
   readonly likes?: number;
-  readonly photos: string[];
   readonly tags: string[];
   readonly title: string;
   readonly userId?: string | null;
   readonly visibility: string;
   readonly saves: number;
+  readonly coverImageUrl: string;
 };
 
 export type ReviewWithId = Review & Id;

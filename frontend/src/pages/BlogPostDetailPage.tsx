@@ -1,71 +1,55 @@
-// src/pages/BlogPostDetailPage.tsx
+// BlogPostDetailPage.tsx
+
 import React, { ReactElement, useEffect, useMemo, useState } from 'react';
-import { Box, Chip, Grid, makeStyles, Typography, ButtonBase } from '@material-ui/core';
+import { Box, Chip, makeStyles, Typography, ButtonBase } from '@material-ui/core';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import BookmarkBorderIcon from '@material-ui/icons/BookmarkBorder';
-import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import axios from 'axios';
 import { useParams, useHistory } from 'react-router-dom';
 import { useTitle } from '../utils';
 import heroImage from '../assets/blog-hero.jpg';
+import firebase from 'firebase/app';
 
-/**
- * BlogPost type
- *
- * Represents a single blog post as returned by the backend API and
- * consumed by the blog post detail page. Includes metadata and content
- * used for rendering the hero, article body, and related article cards.
- */
 type BlogPost = {
   readonly id: string;
-  readonly content: string;
+  readonly content: string; // TinyMCE HTML string
   readonly blurb: string;
   readonly date: Date | string;
   readonly likes?: number;
-  readonly photos: string[];
   readonly tags: string[];
   readonly title: string;
   readonly userId?: string | null;
   readonly visibility: string;
   readonly saves: number;
+
+  // NEW: you’re saving this from AdminPage
+  readonly coverImageUrl?: string;
+
+  // Optional: keep if your backend still returns photos
+  readonly photos?: string[];
 };
 
 type RouteParams = { postId: string };
 
-/**
- * Props for the BlogPostDetailPage component.
- *
- * @property user - The currently authenticated Firebase user, if any.
- * @property setUser - Setter for updating the authenticated user in parent state.
- */
-type Props = {
-  user: firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-};
-
-// Styles for the BlogPostDetailPage component
 const useStyles = makeStyles(() => ({
-  pageBackground: {
-    backgroundColor: '#F3F4F6',
+  pageRoot: {
+    backgroundColor: '#FFFFFF',
     minHeight: '100vh',
     width: '100%',
-    padding: '40px 0',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  frame: {
-    width: '100%',
-    maxWidth: 1200,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    overflow: 'hidden',
-    boxShadow: '0px 24px 60px rgba(0,0,0,0.08)',
   },
   heroWrapper: {
     position: 'relative',
     width: '100%',
-    height: 360,
+    height: '614px',
     overflow: 'hidden',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      background: 'rgba(0,0,0,0.45)',
+      zIndex: 1,
+      pointerEvents: 'none',
+    },
   },
   heroImage: {
     width: '100%',
@@ -75,63 +59,74 @@ const useStyles = makeStyles(() => ({
   },
   heroOverlay: {
     position: 'absolute',
-    left: 72,
-    bottom: 48,
+    inset: 0,
+    display: 'flex',
     color: '#FFFFFF',
-    maxWidth: 480,
+    zIndex: 2,
+  },
+  heroOverlayInner: {
+    marginTop: '321px',
+    marginLeft: '169px',
+    width: '610px',
+    height: '240px',
   },
   heroTitle: {
     fontFamily: 'Work Sans',
     fontWeight: 600,
-    fontSize: 28,
+    fontSize: '30px',
     lineHeight: '36px',
-    marginBottom: 12,
+    marginBottom: '16px',
   },
   tagRow: {
     display: 'flex',
-    gap: 8,
-    marginBottom: 16,
+    gap: '8px',
+    marginBottom: '32px',
+    flexWrap: 'wrap',
   },
   tagChipRed: {
-    height: 28,
-    borderRadius: 999,
-    backgroundColor: '#EB5757',
-    color: '#FFFFFF',
     fontFamily: 'Work Sans',
-    fontWeight: 500,
-    fontSize: 12,
-  },
-  tagChipOrange: {
-    height: 28,
-    borderRadius: 999,
-    backgroundColor: '#F2994A',
+    height: '40px',
+    width: '129px',
+    borderRadius: '8px',
+    backgroundColor: '#9C3B29',
     color: '#FFFFFF',
-    fontFamily: 'Work Sans',
-    fontWeight: 500,
-    fontSize: 12,
+    fontWeight: 600,
+    fontSize: '16px',
+    lineHeight: '24px',
   },
-  heroMetaRow: {
+  heroMetaRowTop: {
+    fontFamily: 'Work Sans',
+    fontSize: '22px',
+    fontWeight: 500,
+    lineHeight: '32px',
+    marginBottom: '16px',
+  },
+  heroMetaRowBottom: {
     display: 'flex',
     alignItems: 'center',
-    gap: 24,
-    fontFamily: 'Work Sans',
-    fontSize: 14,
+    gap: '24px',
   },
   heroMetaItem: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
+    fontFamily: 'Work Sans',
+    fontSize: '22px',
+    fontWeight: 400,
+    lineHeight: '32px',
   },
   heroMetaIcon: {
-    width: 20,
-    height: 20,
+    width: 23,
+    height: 21,
   },
-  body: {
-    padding: '40px 96px 56px 96px',
+  contentContainer: {
+    width: '100%',
+    maxWidth: '1102px',
+    margin: '69px 169px',
   },
+
+  // IMPORTANT: this styles the HTML you injected from TinyMCE
   articleContent: {
-    maxWidth: 800,
-    margin: '0 auto',
     fontFamily: 'Work Sans',
     '& h2': {
       fontFamily: 'Work Sans',
@@ -160,110 +155,174 @@ const useStyles = makeStyles(() => ({
       borderTop: '1px solid #E5E7EB',
       margin: '32px 0',
     },
+    '& a': {
+      color: '#9C3B29',
+      textDecoration: 'underline',
+    },
+    '& img': {
+      maxWidth: '100%',
+      height: 'auto',
+      borderRadius: 12,
+      display: 'block',
+      margin: '16px 0',
+    },
+    // In case your templates use figure blocks
+    '& figure': {
+      margin: '16px 0',
+    },
   },
+
   moreSection: {
-    maxWidth: 960,
-    margin: '56px auto 0',
-    borderTop: '1px solid #E5E7EB',
-    paddingTop: 32,
+    maxWidth: '1102px',
+    marginTop: '72px',
+    borderTop: '1px solid #C4C4C4',
   },
   moreTitle: {
+    marginLeft: '12px',
     fontFamily: 'Work Sans',
     fontWeight: 600,
-    fontSize: 16,
-    marginBottom: 24,
+    fontSize: '22px',
+    lineHeight: '32px',
+    marginTop: '72px',
+    marginBottom: '32px',
+  },
+  moreCardsWrap: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '110px',
+    marginLeft: '12px',
+    alignItems: 'flex-start',
   },
   moreCardButton: {
-    width: '100%',
+    backgroundColor: 'transparent !important',
+    borderRadius: '24px',
     textAlign: 'left',
-    borderRadius: 16,
-    overflow: 'hidden',
-    border: '1px solid #E5E7EB',
-    boxShadow: '0px 16px 40px rgba(0,0,0,0.06)',
-    backgroundColor: '#FFFFFF',
-    display: 'block',
+    width: '490px',
+    overflow: 'visible',
+    outline: 'none',
+    WebkitTapHighlightColor: 'transparent',
+
+    '&:hover, &:active, &:focus, &:focus-visible, &.Mui-focusVisible': {
+      backgroundColor: 'transparent !important',
+    },
+
+    '& .MuiTouchRipple-root': { display: 'none' },
+
+    '&:hover $moreCardOuter:after, &:focus-visible $moreCardOuter:after, &.Mui-focusVisible $moreCardOuter:after':
+      {
+        borderColor: '#EB5757',
+        boxShadow: '0px 12px 30px rgba(0,0,0,0.10)',
+      },
   },
-  moreCardInner: {
+  moreCardOuter: {
+    width: '490px',
+    boxSizing: 'border-box',
+    borderRadius: '24px',
+    backgroundColor: 'transparent',
+    position: 'relative',
+    overflow: 'visible',
+
+    '&:after': {
+      content: '""',
+      position: 'absolute',
+      top: -12,
+      left: -12,
+      right: -12,
+      bottom: -12,
+      borderRadius: '24px',
+      border: '1px solid transparent',
+      boxShadow: 'none',
+      transition: 'border-color 150ms ease, box-shadow 150ms ease',
+      pointerEvents: 'none',
+    },
+  },
+  moreCard: {
+    width: '490px',
     display: 'flex',
-    padding: 16,
-    gap: 24,
+    flexDirection: 'column',
+    borderRadius: '12px',
+    backgroundColor: 'transparent',
+    boxSizing: 'border-box',
   },
-  moreImageWrapper: {
-    width: 260,
-    height: 180,
-    borderRadius: 12,
+  moreCardImage: {
+    width: '490px',
+    height: '317px',
+    marginTop: '24px',
+    borderRadius: '12px',
     overflow: 'hidden',
+    border: '1px solid #ECECEC',
     backgroundColor: '#F3F4F6',
-    flexShrink: 0,
+    '& img': {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      display: 'block',
+    },
   },
-  moreImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  moreCardBody: {
-    flex: 1,
+  moreCardText: {
+    width: '490px',
+    height: '160',
+    marginTop: '24px',
     display: 'flex',
     flexDirection: 'column',
   },
   moreCardTitle: {
     fontFamily: 'Work Sans',
     fontWeight: 600,
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: '22px',
+    lineHeight: '32px',
+    color: '#000000',
+    overflow: 'hidden',
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    WebkitLineClamp: 1,
   },
-  moreCardBlurb: {
+  moreCardDescription: {
+    marginTop: '16px',
     fontFamily: 'Work Sans',
-    fontSize: 13,
-    lineHeight: '20px',
-    color: '#4B5563',
-    marginBottom: 16,
+    fontSize: '18px',
+    lineHeight: '28px',
+    fontWeight: 400,
+    color: '#5D5D5D',
+    overflow: 'hidden',
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    WebkitLineClamp: 4,
   },
-  moreFooterRow: {
-    marginTop: 'auto',
+  moreCardFooter: {
+    marginTop: '24px',
+    marginBottom: '28px',
     display: 'flex',
     alignItems: 'center',
-    gap: 24,
-    fontFamily: 'Work Sans',
-    fontSize: 13,
+    gap: '24px',
     color: '#000000',
   },
   moreFooterItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: 6,
+    gap: '8px',
+    fontFamily: 'Work Sans',
+    fontSize: '18px',
+    lineHeight: '28px',
+    color: '#000000',
+    fontWeight: 400,
+  },
+  moreFooterIcon: {
+    width: 24,
+    height: 21.5,
   },
 }));
 
-/**
- * BlogPostDetailPage Component
- *
- * This component represents the detail view for a single blog post.
- * It fetches the article by ID, renders a hero section with metadata,
- * displays the full HTML content of the post, and surfaces a short list
- * of related articles at the bottom of the page.
- *
- * @component
- * @param user - The currently authenticated Firebase user.
- * @param setUser - Function to update the authenticated user in parent state.
- * @returns BlogPostDetailPage The BlogPostDetailPage component.
- */
-const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
+const BlogPostDetailPage = (): ReactElement => {
   const classes = useStyles();
   const { postId } = useParams<RouteParams>();
   const history = useHistory();
 
-  // State holding the primary blog post being viewed
   const [post, setPost] = useState<BlogPost | null>(null);
-
-  // State containing the list of all blog posts (used to show "More Articles")
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
-
-  // Loading and error state for network requests
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch the current post and the list of all posts when the route parameter changes
   useEffect(() => {
     let isMounted = true;
 
@@ -272,12 +331,10 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
         setLoading(true);
         setError(null);
 
-        // Fetch the primary blog post by ID
         const res = await axios.get<BlogPost>(`/api/blog-post-by-id/${postId}`);
         if (!isMounted) return;
         setPost(res.data);
 
-        // Fetch all blog posts for the "More Articles Like This" section
         const listRes = await axios.get<BlogPost[]>('/api/blog-posts');
         if (!isMounted) return;
         setAllPosts(listRes.data);
@@ -296,143 +353,137 @@ const BlogPostDetailPage = ({ user, setUser }: Props): ReactElement => {
     };
   }, [postId]);
 
-  // Set the page title based on the loaded blog post
   useTitle(post?.title || 'APT Advice');
 
-  // Derive a small list of "more articles" that excludes the current one
   const moreArticles = useMemo(
     () => allPosts.filter((p) => p.id !== postId).slice(0, 2),
     [allPosts, postId]
   );
 
-  // Render a simple loading state while data is being fetched
   if (loading) {
     return (
-      <Box className={classes.pageBackground}>
-        <Box className={classes.frame}>
-          <Box padding={4}>
-            <Typography>Loading…</Typography>
-          </Box>
+      <Box className={classes.pageRoot}>
+        <Box className={classes.contentContainer}>
+          <Typography>Loading…</Typography>
         </Box>
       </Box>
     );
   }
 
-  // Render an error or not-found state if the article cannot be loaded
   if (error || !post) {
     return (
-      <Box className={classes.pageBackground}>
-        <Box className={classes.frame}>
-          <Box padding={4}>
-            <Typography color="error" style={{ marginBottom: 16 }}>
-              {error ?? 'Article not found.'}
-            </Typography>
-            <Typography
-              style={{ cursor: 'pointer', color: '#EB5757' }}
-              onClick={() => history.push('/blogs')}
-            >
-              ← Back to all advice articles
-            </Typography>
-          </Box>
+      <Box className={classes.pageRoot}>
+        <Box className={classes.contentContainer}>
+          <Typography color="error" style={{ marginBottom: 16 }}>
+            {error ?? 'Article not found.'}
+          </Typography>
+          <Typography
+            style={{ cursor: 'pointer', color: '#EB5757' }}
+            onClick={() => history.push('/blogs')}
+          >
+            ← Back to all advice articles
+          </Typography>
         </Box>
       </Box>
     );
   }
 
-  // Prepare display values for the hero metadata
   const likeCount = post.likes ?? 0;
-  const commentCount = 5; // placeholder
+  const saveCount = post.saves ?? 0;
+
   const displayDate = new Date(post.date).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   });
 
-  // Fallback hero image if the post does not have a photo
-  const hero = post.photos?.[0] || heroImage;
+  // ✅ FIX: use coverImageUrl first (since that’s what you save)
+  const hero = post.coverImageUrl || post.photos?.[0] || heroImage;
 
   return (
-    <Box className={classes.pageBackground}>
-      <Box className={classes.frame}>
-        {/* HERO SECTION */}
-        <Box className={classes.heroWrapper}>
-          <img src={hero} alt={post.title} className={classes.heroImage} />
+    <Box className={classes.pageRoot}>
+      <Box className={classes.heroWrapper}>
+        <img src={hero} alt={post.title} className={classes.heroImage} />
 
-          <Box className={classes.heroOverlay}>
+        <Box className={classes.heroOverlay}>
+          <Box className={classes.heroOverlayInner}>
             <Typography className={classes.heroTitle}>{post.title}</Typography>
 
             <Box className={classes.tagRow}>
-              <Chip label="Most Popular" className={classes.tagChipRed} />
-              {post.tags
-                .filter((t) => t.toLowerCase() === 'tips & tricks')
-                .map((t) => (
-                  <Chip key={t} label={t} className={classes.tagChipOrange} />
-                ))}
+              {(post.tags ?? []).filter(Boolean).map((t, idx) => (
+                <Chip key={`${t}-${idx}`} label={t} className={classes.tagChipRed} />
+              ))}
             </Box>
 
-            <Box className={classes.heroMetaRow}>
+            <Box className={classes.heroMetaRowTop}>
               <span>Published {displayDate}</span>
+            </Box>
 
+            <Box className={classes.heroMetaRowBottom}>
               <Box className={classes.heroMetaItem}>
                 <FavoriteBorderIcon className={classes.heroMetaIcon} />
                 <span>{likeCount}</span>
               </Box>
 
               <Box className={classes.heroMetaItem}>
-                <ChatBubbleOutlineIcon className={classes.heroMetaIcon} />
-                <span>{commentCount}</span>
+                <BookmarkBorderIcon className={classes.heroMetaIcon} />
+                <span>{saveCount}</span>
               </Box>
             </Box>
           </Box>
         </Box>
+      </Box>
 
-        {/* ARTICLE BODY + "MORE ARTICLES" SECTION */}
-        <Box className={classes.body}>
-          {/* Main article content, rendered from HTML provided by the backend */}
-          <div
-            className={classes.articleContent}
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+      <Box className={classes.contentContainer}>
+        {/* ✅ This is how you display TinyMCE HTML */}
+        <div
+          className={classes.articleContent}
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
-          {/* Section showing additional related articles */}
-          <Box className={classes.moreSection}>
-            <Typography className={classes.moreTitle}>More Articles Like This</Typography>
+        <Box className={classes.moreSection}>
+          <Typography className={classes.moreTitle}>More Articles Like This</Typography>
 
-            <Grid container spacing={4}>
-              {moreArticles.map((p) => {
-                const img = p.photos?.[0] || heroImage;
-                return (
-                  <Grid item xs={12} md={6} key={p.id}>
-                    <ButtonBase
-                      className={classes.moreCardButton}
-                      onClick={() => history.push(`/apt-advice/${p.id}`)}
-                    >
-                      <Box className={classes.moreCardInner}>
-                        <Box className={classes.moreImageWrapper}>
-                          <img src={img} alt={p.title} className={classes.moreImage} />
+          <Box className={classes.moreCardsWrap}>
+            {moreArticles.map((p) => {
+              const img = p.coverImageUrl || p.photos?.[0] || heroImage;
+
+              return (
+                <ButtonBase
+                  key={p.id}
+                  className={classes.moreCardButton}
+                  disableRipple
+                  disableTouchRipple
+                  focusRipple={false}
+                  onClick={() => history.push(`/apt-advice/${p.id}`)}
+                >
+                  <Box className={classes.moreCardOuter}>
+                    <Box className={classes.moreCard}>
+                      <Box className={classes.moreCardImage}>
+                        {img && <img src={img} alt={p.title} />}
+                      </Box>
+
+                      <Box className={classes.moreCardText}>
+                        <Typography className={classes.moreCardTitle}>{p.title}</Typography>
+                        <Typography className={classes.moreCardDescription}>{p.blurb}</Typography>
+                      </Box>
+
+                      <Box className={classes.moreCardFooter}>
+                        <Box className={classes.moreFooterItem}>
+                          <FavoriteBorderIcon className={classes.moreFooterIcon} />
+                          <span>{p.likes ?? 0}</span>
                         </Box>
 
-                        <Box className={classes.moreCardBody}>
-                          <Typography className={classes.moreCardTitle}>{p.title}</Typography>
-                          <Typography className={classes.moreCardBlurb}>{p.blurb}</Typography>
-
-                          <Box className={classes.moreFooterRow}>
-                            <Box className={classes.moreFooterItem}>
-                              <FavoriteBorderIcon style={{ width: 18, height: 18 }} />
-                              <span>{p.likes ?? 0}</span>
-                            </Box>
-                            <Box className={classes.moreFooterItem}>
-                              <BookmarkBorderIcon style={{ width: 18, height: 18 }} />
-                              <span>{p.saves ?? 0}</span>
-                            </Box>
-                          </Box>
+                        <Box className={classes.moreFooterItem}>
+                          <BookmarkBorderIcon className={classes.moreFooterIcon} />
+                          <span>{p.saves ?? 0}</span>
                         </Box>
                       </Box>
-                    </ButtonBase>
-                  </Grid>
-                );
-              })}
-            </Grid>
+                    </Box>
+                  </Box>
+                </ButtonBase>
+              );
+            })}
           </Box>
         </Box>
       </Box>

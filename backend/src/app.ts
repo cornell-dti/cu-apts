@@ -94,23 +94,22 @@ app.post('/api/new-blog-post', authenticate, async (req, res) => {
       blogPost.content === '' ||
       blogPost.blurb === '' ||
       blogPost.title === '' ||
-      !blogPost.photos ||
+      !blogPost.coverImageUrl ||
       !blogPost.tags
     ) {
       res.status(401).send('Error: missing fields');
     }
     doc.set({
       ...blogPost,
-      date: new Date(blogPost.date),
+      date: new Date(),
       likes: 0,
       saves: 0,
-      visibility: 'ARCHIVED',
       userId: realUserId,
     });
-    res.status(201).send(doc.id);
+    return res.status(201).send(doc.id);
   } catch (err) {
     console.error(err);
-    res.status(401).send('Error');
+    return res.status(401).send('Error');
   }
 });
 

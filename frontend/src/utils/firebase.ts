@@ -73,4 +73,18 @@ const uploadFile = async (file: File) => {
   return await result.ref.getDownloadURL();
 };
 
-export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
+const uploadBlogCoverAndSave = async (postId: string, file: File) => {
+  const storageRef = storage.ref();
+  const fileRef = storageRef.child(`blogcovers/${postId}/cover_${Date.now()}_${file.name}`);
+
+  await fileRef.put(file);
+  const url = await fileRef.getDownloadURL();
+
+  await firestore.collection('blogposts').doc(postId).update({
+    coverImageUrl: url,
+  });
+
+  return url;
+};
+
+export { uploadBlogCoverAndSave, createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };

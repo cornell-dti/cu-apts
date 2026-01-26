@@ -116,7 +116,7 @@ const App = (): ReactElement => {
 
             <Route exact path="/blogs" component={BlogPostPage} />
             <Route path="/apt-advice/:postId">
-              <BlogPostDetailPage user={user} setUser={setUser} />
+              <BlogPostDetailPage />
             </Route>
             <Route
               exact

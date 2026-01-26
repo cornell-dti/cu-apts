@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import {
   Typography,
   makeStyles,
@@ -22,7 +22,9 @@ import {
   ReviewWithId,
 } from '../../../common/types/db-types';
 import axios from 'axios';
-import { getUser, createAuthHeaders, uploadFile } from '../utils/firebase';
+import { getUser, createAuthHeaders } from '../utils/firebase';
+import firebase from 'firebase/app';
+import 'firebase/storage';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
@@ -101,38 +103,44 @@ const AdminPage = (): ReactElement => {
   const [blogContent, setBlogContent] = useState<string>(''); // TinyMCE HTML
   const [blogTags, setBlogTags] = useState<string[]>([]);
 
-  const [photoUrlInput, setPhotoUrlInput] = useState('');
-  const [blogPhotos, setBlogPhotos] = useState<string[]>([]);
-
+  const [coverImageUrl, setCoverImageUrl] = useState('');
   const [blogSaving, setBlogSaving] = useState(false);
   const [blogError, setBlogError] = useState<string | null>(null);
   const [blogSuccess, setBlogSuccess] = useState<string | null>(null);
 
-  const normalize = (s: string) => s.trim().replace(/\s+/g, ' ');
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
 
-  const addPhotoUrl = (raw: string) => {
-    const url = normalize(raw);
-    if (!url) return;
+  const pickCoverImage = () => coverInputRef.current?.click();
 
-    if (!/^https?:\/\/.+/i.test(url)) {
-      setBlogError('Photo must be a valid URL.');
-      return;
+  const onCoverFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // optional: local preview while uploading
+    setCoverPreviewUrl(URL.createObjectURL(file));
+
+    try {
+      setBlogError(null);
+      setCoverUploading(true);
+
+      const safeName = file.name.replace(/\s+/g, '_');
+      const path = `blog-covers/${Date.now()}-${safeName}`;
+
+      const storageRef = firebase.storage().ref().child(path);
+      await storageRef.put(file);
+      const url = await storageRef.getDownloadURL();
+
+      setCoverImageUrl(url);
+      setBlogSuccess('Cover image uploaded!');
+    } catch (err) {
+      console.error(err);
+      setBlogError('Failed to upload cover image.');
+    } finally {
+      setCoverUploading(false);
+      e.target.value = '';
     }
-
-    setBlogPhotos((prev) => (prev.includes(url) ? prev : [...prev, url]));
-  };
-
-  const removePhotoUrl = (url: string) => setBlogPhotos((prev) => prev.filter((x) => x !== url));
-
-  const tinyMceImagesUploadHandler = async (blobInfo: any, progress: (p: number) => void) => {
-    const blob = blobInfo.blob();
-    const file = new File([blob], blobInfo.filename(), { type: blob.type });
-    progress?.(10);
-
-    const url = await uploadFile(file); // your existing Firebase Storage uploader
-    progress?.(100);
-
-    return url; // TinyMCE will insert <img src="...">
   };
 
   const svgPlaceholder = (w: number, h: number, label: string) => {
@@ -162,8 +170,8 @@ const AdminPage = (): ReactElement => {
     setBlogError(null);
     setBlogSuccess(null);
 
-    if (!blogTitle.trim() || !blogBlurb.trim() || !blogContent.trim()) {
-      setBlogError('Title, blurb, and content are required.');
+    if (!blogTitle.trim() || !blogBlurb.trim() || !blogContent.trim() || !coverImageUrl.trim()) {
+      setBlogError('Title, blurb, cover image, and content are required.');
       return;
     }
 
@@ -179,14 +187,14 @@ const AdminPage = (): ReactElement => {
         blurb: blogBlurb.trim(),
         content: blogContent,
         tags: blogTags.map((t) => t.trim()).filter(Boolean),
-        photos: blogPhotos,
+        coverImageUrl: coverImageUrl.trim(),
         visibility: blogVisibility, // "ACTIVATED" | "ARCHIVED"
         userId: user.uid,
         likes: 0,
         saves: 0,
       };
 
-      await axios.post('/api/blog-post', payload, createAuthHeaders(token));
+      await axios.post('/api/new-blog-post', payload, createAuthHeaders(token));
 
       setBlogSuccess('Blog post created!');
       setBlogTitle('');
@@ -194,8 +202,7 @@ const AdminPage = (): ReactElement => {
       setBlogContent('');
       setBlogVisibility('ACTIVATED');
       setBlogTags([]);
-      setBlogPhotos([]);
-      setPhotoUrlInput('');
+      setCoverImageUrl('');
     } catch (err) {
       console.error(err);
       setBlogError('Failed to create blog post. Please try again.');
@@ -513,49 +520,56 @@ const AdminPage = (): ReactElement => {
             />
           </Box>
 
-          {/* Photos (URLs) */}
-          <Box>
-            <Box display="flex" gridGap={12}>
-              <TextField
-                label="Photo URL"
-                variant="outlined"
-                fullWidth
-                value={photoUrlInput}
-                onChange={(e) => setPhotoUrlInput(e.target.value)}
-                helperText="Paste a Firebase Storage download URL and click Add"
-                InputLabelProps={{ shrink: true }}
-              />
+          <Box width="100%">
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={onCoverFileSelected}
+            />
+
+            <TextField
+              label="Cover Image URL"
+              variant="outlined"
+              fullWidth
+              required
+              value={coverImageUrl}
+              onChange={(e) => setCoverImageUrl(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <Box mt={1} display="flex" justifyContent="flex-end">
               <Button
                 variant="contained"
-                onClick={() => {
-                  setBlogError(null);
-                  addPhotoUrl(photoUrlInput);
-                  setPhotoUrlInput('');
+                onClick={pickCoverImage}
+                disabled={coverUploading}
+                style={{
+                  backgroundColor: colors.red1,
+                  color: 'white',
+                  height: 40,
+                  borderRadius: 8,
+                  padding: '0 18px',
                 }}
-                style={{ backgroundColor: colors.red1, color: 'white' }}
               >
-                Add
+                {coverUploading ? 'Uploading…' : 'Upload'}
               </Button>
             </Box>
 
-            <Box mt={1} display="flex" flexDirection="column" gridGap={8}>
-              {blogPhotos.map((url) => (
-                <Box
-                  key={url}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  style={{ border: '1px solid #E5E7EB', borderRadius: 8, padding: 12 }}
-                >
-                  <Box style={{ maxWidth: '75%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <Typography variant="body2" noWrap>
-                      {url}
-                    </Typography>
-                  </Box>
-                  <Button onClick={() => removePhotoUrl(url)}>Remove</Button>
-                </Box>
-              ))}
-            </Box>
+            {(coverPreviewUrl || coverImageUrl) && (
+              <Box mt={2}>
+                <img
+                  src={coverImageUrl || coverPreviewUrl || ''}
+                  alt="Cover preview"
+                  style={{
+                    maxWidth: 420,
+                    width: '100%',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                  }}
+                />
+              </Box>
+            )}
           </Box>
 
           {/* Content */}
@@ -578,16 +592,14 @@ const AdminPage = (): ReactElement => {
                   'emoticons',
                   'link',
                   'lists',
-                  'media',
                   'searchreplace',
                   'table',
                   'visualblocks',
                   'wordcount',
-                  'image',
                   'template',
                 ],
                 toolbar:
-                  'undo redo | blocks | bold italic underline | link media table image | ' +
+                  'undo redo | blocks | bold italic underline | link table | ' +
                   'align | bullist numlist | removeformat | template',
                 templates: [
                   // ---------------------------
@@ -1001,13 +1013,6 @@ const AdminPage = (): ReactElement => {
                     `,
                   },
                 ],
-                automatic_uploads: true,
-                images_upload_handler: (blobInfo, success, failure, progress) => {
-                  tinyMceImagesUploadHandler(blobInfo, progress as any)
-                    .then((url) => success(url))
-                    .catch((err) => failure(err?.message ?? 'Image upload failed'));
-                },
-                paste_data_images: true,
               }}
               initialValue=""
             />
