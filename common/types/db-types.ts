@@ -51,6 +51,12 @@ export type Landlord = {
 export type LandlordWithId = Landlord & Id;
 export type LandlordWithLabel = LandlordWithId & { readonly label: 'LANDLORD' };
 
+export type Tag = {
+  readonly name: string;
+};
+
+export type TagWithId = Tag & Id;
+
 export type Apartment = {
   readonly name: string;
   readonly address: string; // may change to placeID for Google Maps integration
@@ -58,6 +64,7 @@ export type Apartment = {
   readonly numBaths: number | null;
   readonly numBeds: number | null;
   readonly photos: readonly string[]; // can be empty
+  readonly tags?: readonly string[];
   readonly area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER';
   readonly latitude: number;
   readonly longitude: number;

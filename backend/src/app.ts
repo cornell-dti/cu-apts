@@ -12,6 +12,7 @@ import {
   LandlordWithLabel,
   ApartmentWithLabel,
   ApartmentWithId,
+  TagWithId,
   CantFindApartmentForm,
   CantFindApartmentFormWithId,
   QuestionForm,
@@ -38,6 +39,7 @@ const cuaptsEmailPassword = process.env.CUAPTS_EMAIL_APP_PASSWORD;
 const reviewCollection = db.collection('reviews');
 const landlordCollection = db.collection('landlords');
 const buildingsCollection = db.collection('buildings');
+const tagsCollection = db.collection('tags');
 const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
@@ -66,6 +68,34 @@ app.get('/api/faqs', async (_, res) => {
   });
 
   res.status(200).send(JSON.stringify(faqs));
+});
+
+// API endpoint to create a new tag (or return existing)
+app.post('/api/tags', async (req, res) => {
+  try {
+    const { name } = req.body as { name?: unknown };
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      res.status(400).send('Error: invalid tag name');
+      return;
+    }
+
+    const trimmedName = name.trim();
+    const normalizedName = trimmedName.toLowerCase();
+
+    const existing = await tagsCollection.where('normalizedName', '==', normalizedName).get();
+    if (!existing.empty) {
+      const doc = existing.docs[0];
+      res.status(200).send(JSON.stringify({ id: doc.id, name: doc.data()?.name } as TagWithId));
+      return;
+    }
+
+    const doc = tagsCollection.doc();
+    await doc.set({ name: trimmedName, normalizedName });
+    res.status(200).send(JSON.stringify({ id: doc.id, name: trimmedName } as TagWithId));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
 });
 
 // API endpoint to post a new review
@@ -271,6 +301,95 @@ app.get('/api/apts/:ids', async (req, res) => {
     res.status(200).send(JSON.stringify(aptsArr));
   } catch (err) {
     res.status(400).send(err);
+  }
+});
+
+// API endpoint to get tags for a specific apartment
+app.get('/api/apts/:id/tags', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const snapshot = await buildingsCollection.doc(id).get();
+    if (!snapshot.exists) {
+      res.status(400).send('Invalid id');
+      return;
+    }
+
+    const tags = snapshot.data()?.tags as readonly string[] | undefined;
+    if (!tags || tags.length === 0) {
+      res.status(200).send(JSON.stringify([]));
+      return;
+    }
+
+    const tagDocs = await Promise.all(
+      tags.map(async (tagId) => [tagId, await tagsCollection.doc(tagId).get()] as const)
+    );
+    const result: TagWithId[] = tagDocs
+      .filter(([, doc]) => doc.exists)
+      .map(([tagId, doc]) => ({ id: tagId, name: doc.data()?.name } as TagWithId))
+      .filter((tag) => typeof tag.name === 'string');
+
+    res.status(200).send(JSON.stringify(result));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+// API endpoint to add a tag to a specific apartment
+app.post('/api/apts/:id/tags/:tagId', async (req, res) => {
+  try {
+    const { id, tagId } = req.params;
+    const buildingRef = buildingsCollection.doc(id);
+    const buildingDoc = await buildingRef.get();
+    if (!buildingDoc.exists) {
+      res.status(400).send('Invalid id');
+      return;
+    }
+
+    const tagDoc = await tagsCollection.doc(tagId).get();
+    if (!tagDoc.exists) {
+      res.status(400).send('Invalid tag id');
+      return;
+    }
+
+    const existingTags = (buildingDoc.data()?.tags as readonly string[] | undefined) || [];
+    if (existingTags.includes(tagId)) {
+      res.status(200).send(JSON.stringify([...existingTags]));
+      return;
+    }
+
+    const updatedTags = [...existingTags, tagId];
+    await buildingRef.update({ tags: updatedTags });
+    res.status(200).send(JSON.stringify(updatedTags));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
+// API endpoint to remove a tag from a specific apartment
+app.delete('/api/apts/:id/tags/:tagId', async (req, res) => {
+  try {
+    const { id, tagId } = req.params;
+    const buildingRef = buildingsCollection.doc(id);
+    const buildingDoc = await buildingRef.get();
+    if (!buildingDoc.exists) {
+      res.status(400).send('Invalid id');
+      return;
+    }
+
+    const existingTags = (buildingDoc.data()?.tags as readonly string[] | undefined) || [];
+    if (!existingTags.includes(tagId)) {
+      res.status(200).send(JSON.stringify([...existingTags]));
+      return;
+    }
+
+    const updatedTags = existingTags.filter((t) => t !== tagId);
+    await buildingRef.update({ tags: updatedTags });
+    res.status(200).send(JSON.stringify(updatedTags));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
   }
 });
 
