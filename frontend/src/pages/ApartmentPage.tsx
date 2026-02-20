@@ -551,7 +551,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
             <Button
               disableRipple
-              onClick={(e) => {
+              onMouseEnter={(e) => {
                 setFolderAnchorEl(e.currentTarget);
               }}
               className={saveButton}
