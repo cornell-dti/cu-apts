@@ -33,7 +33,7 @@ const CSV_HEADERS = [
 ];
 
 // escape CSV field values
-const escapeCSVField = (value: unknown): string => {
+export const escapeCSVField = (value: unknown): string => {
   const str = value === null || value === undefined ? '' : String(value);
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
@@ -91,7 +91,11 @@ const exportApartments = async () => {
   process.exit(0);
 };
 
-exportApartments().catch((err) => {
-  console.error('Export failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  exportApartments().catch((err) => {
+    console.error('Export failed:', err);
+    process.exit(1);
+  });
+}
+
+export default exportApartments;

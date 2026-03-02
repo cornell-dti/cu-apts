@@ -55,7 +55,7 @@ type ValidationError = {
 };
 
 // Parse a raw CSV line into an array of field values
-const parseCSVLine = (line: string): string[] => {
+export const parseCSVLine = (line: string): string[] => {
   const fields: string[] = [];
   let current = '';
   let inQuotes = false;
@@ -84,7 +84,7 @@ const parseCSVLine = (line: string): string[] => {
 };
 
 // Parse and validate the CSV file
-const parseCSV = (csvContent: string): { rows: ParsedRow[]; errors: ValidationError[] } => {
+export const parseCSV = (csvContent: string): { rows: ParsedRow[]; errors: ValidationError[] } => {
   const lines = csvContent.split('\n').filter((line) => line.trim() !== '');
 
   if (lines.length < 2) {
@@ -305,7 +305,9 @@ const updateApartments = async () => {
   process.exit(failCount > 0 ? 1 : 0);
 };
 
-updateApartments().catch((err) => {
-  console.error('Script failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  updateApartments().catch((err) => {
+    console.error('Script failed:', err);
+    process.exit(1);
+  });
+}
