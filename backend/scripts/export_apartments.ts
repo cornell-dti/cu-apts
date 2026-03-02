@@ -17,8 +17,7 @@ import { db } from '../src/firebase-config';
 
 const buildingCollection = db.collection('buildings');
 
-const AREA_VALUES = ['COLLEGETOWN', 'WEST', 'NORTH', 'DOWNTOWN', 'OTHER'];
-
+// TODO: might have to change header fields or order (talk with business)
 const CSV_HEADERS = [
   'id',
   'name',
@@ -33,7 +32,7 @@ const CSV_HEADERS = [
   'distanceToCampus',
 ];
 
-// Escape a CSV field value — wraps in quotes if it contains commas, quotes, or newlines
+// escape CSV field values
 const escapeCSVField = (value: unknown): string => {
   const str = value === null || value === undefined ? '' : String(value);
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -80,7 +79,7 @@ const exportApartments = async () => {
   const outputPath = path.join(__dirname, 'apartments_export.csv');
   fs.writeFileSync(outputPath, rows.join('\n'), 'utf8');
 
-  console.log(`✅ Export complete: ${outputPath}`);
+  console.log(`Export complete: ${outputPath}`);
   console.log(`   ${snapshot.docs.length} apartments exported.`);
   console.log('');
   console.log('Next steps:');

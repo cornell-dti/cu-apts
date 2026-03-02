@@ -54,7 +54,7 @@ type ValidationError = {
   reason: string;
 };
 
-// Parse a raw CSV line into an array of field values, respecting quoted fields
+// Parse a raw CSV line into an array of field values
 const parseCSVLine = (line: string): string[] => {
   const fields: string[] = [];
   let current = '';
@@ -83,7 +83,7 @@ const parseCSVLine = (line: string): string[] => {
   return fields;
 };
 
-// Parse and validate the CSV file, returning rows ready for Firestore update
+// Parse and validate the CSV file
 const parseCSV = (csvContent: string): { rows: ParsedRow[]; errors: ValidationError[] } => {
   const lines = csvContent.split('\n').filter((line) => line.trim() !== '');
 
@@ -119,7 +119,7 @@ const parseCSV = (csvContent: string): { rows: ParsedRow[]; errors: ValidationEr
 
   for (let i = 1; i < lines.length; i += 1) {
     const fields = parseCSVLine(lines[i]);
-    const rowNum = i + 1; // 1-indexed, accounting for header row
+    const rowNum = i + 1; // (1 index bc of header)
 
     const id = fields[idx('id')]?.trim();
     if (!id) {
@@ -135,7 +135,6 @@ const parseCSV = (csvContent: string): { rows: ParsedRow[]; errors: ValidationEr
     const updates: ApartmentUpdate = {};
     let rowHasError = false;
 
-    // Helper to add an error for this row
     const addError = (field: string, value: string, reason: string) => {
       errors.push({ row: rowNum, id, field, value, reason });
       rowHasError = true;
@@ -249,7 +248,7 @@ const updateApartments = async () => {
   const csvPath = path.join(__dirname, 'apartments_export.csv');
 
   if (!fs.existsSync(csvPath)) {
-    console.error(`❌ CSV file not found at: ${csvPath}`);
+    console.error(`CSV file not found at: ${csvPath}`);
     console.error('   Run export_apartments.ts first to generate the file.');
     process.exit(1);
   }
@@ -259,9 +258,9 @@ const updateApartments = async () => {
   console.log('Parsing CSV...');
   const { rows, errors } = parseCSV(csvContent);
 
-  // If there are validation errors, print them all and abort before touching the database
+  // print all validation errors and abort before touching the database
   if (errors.length > 0) {
-    console.error(`\n❌ Found ${errors.length} validation error(s). No changes have been made.\n`);
+    console.error(`\n Found ${errors.length} validation error(s). No changes have been made.\n`);
     errors.forEach((e) => {
       console.error(`  Row ${e.row} (id: ${e.id}) — ${e.field}: "${e.value}" — ${e.reason}`);
     });
