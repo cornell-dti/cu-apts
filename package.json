@@ -68,6 +68,9 @@
       "yarn workspace backend lint:fix"
     ]
   },
+  "resolutions": {
+    "@types/react": "^17.0.80"
+  },
   "engines": {
     "node": "16.x"
   },
