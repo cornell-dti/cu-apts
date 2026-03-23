@@ -567,7 +567,7 @@ const ContactModal = ({ user }: Props) => {
           onChange={updateApartmentReview}
           style={{ margin: '0', marginBottom: '30px' }}
           helperText={
-            addressProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
+            reviewProfanityError ? ' This contains profanity. Please edit it and try again.' : ''
           }
         />
         <UploadPhotos

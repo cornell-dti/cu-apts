@@ -3,7 +3,7 @@ import { CardData } from '../../App';
 import aptIcon from '../../assets/location-pin.svg';
 import mapPinIcon from '../../assets/map-pin.svg';
 import NewApartmentCard from '../ApartmentCard/NewApartmentCard';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { Link } from '@material-ui/core';
 
 type markerWithCardProp = {
