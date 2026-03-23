@@ -44,6 +44,8 @@ import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
+import LandlordMessagingModal from '../components/Apartment/LandlordMessagingModal';
+import ConfirmLandlordMessagingModal from '../components/Apartment/ConfirmLandlordMessagingModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import firebase from 'firebase/app';
 import 'firebase/auth';
@@ -131,6 +133,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [landlordMessagingOpen, setLandLordMessagingOpen] = useState(false);
+  const [showConfirmMessaging, setShowConfirmMessaging] = useState(false);
+  const [lastSubject, setLastSubject] = useState('');
+  const [lastBody, setLastBody] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -160,6 +166,17 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
+  const [landlordMessagingToggle, setLandLordMessagingToggle] = useState(false);
+  const [showLandlordEmailSuccess, setShowLandlordEmailSuccess] = useState(false);
+  const [showLandlordEmailError, setShowLandlordEmailError] = useState(false);
+
+  const showLandlordEmailSuccessToast = () => {
+    showToast(setShowLandlordEmailSuccess);
+  };
+
+  const showLandlordEmailErrorToast = () => {
+    showToast(setShowLandlordEmailError);
+  };
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
   const dummyTravelTimes: LocationTravelTimes = {
@@ -482,6 +499,11 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setMapToggle((prev) => !prev);
   };
 
+  const handleLandLordMessagingModalClose = () => {
+    setLandLordMessagingOpen(false);
+    setLandLordMessagingToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
       <MapModal
@@ -493,6 +515,32 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         latitude={apt!.latitude}
         travelTimes={travelTimes}
         isMobile={isMobile}
+      />
+      <LandlordMessagingModal
+        aptName={apt!.name}
+        open={landlordMessagingOpen}
+        landlord={landlordData.name}
+        email={landlordData.contact}
+        onClose={handleLandLordMessagingModalClose}
+        isMobile={isMobile}
+        onSubmit={(subject: string, body: string) => {
+          setLandLordMessagingOpen(false);
+          setLastSubject(subject);
+          setLastBody(body);
+          setShowConfirmMessaging(true);
+        }}
+        onEmailSuccess={showLandlordEmailSuccessToast}
+        onEmailFailure={showLandlordEmailErrorToast}
+      />
+      <ConfirmLandlordMessagingModal
+        open={showConfirmMessaging}
+        email={landlordData.contact}
+        subject={lastSubject}
+        body={lastBody}
+        isMobile={isMobile}
+        onClose={() => setShowConfirmMessaging(false)}
+        triggerToast={showLandlordEmailSuccessToast}
+        triggerErrorToast={showLandlordEmailErrorToast}
       />
       <ReviewModal
         open={reviewOpen}
@@ -732,7 +780,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       <AptInfo
         landlordId={apt!.landlordId}
         landlord={landlordData.name}
-        contact={landlordData.contact}
+        contact={() => setLandLordMessagingOpen(true)}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
         longitude={apt!.longitude}
@@ -800,6 +848,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 isOpen={showReportSuccessConfirmation}
                 severity="success"
                 message="Review successfully reported!"
+                time={toastTime}
+              />
+            )}
+            {showLandlordEmailError && (
+              <Toast
+                isOpen={showLandlordEmailError}
+                severity="error"
+                message="Error sending email. Please try again."
+                time={toastTime}
+              />
+            )}
+            {showLandlordEmailSuccess && (
+              <Toast
+                isOpen={showLandlordEmailSuccess}
+                severity="success"
+                message="Email successfully sent to the landlord!"
                 time={toastTime}
               />
             )}

@@ -7,7 +7,7 @@ import { CardData } from '../../App';
 type Props = {
   readonly landlordId: string | null;
   readonly landlord: string;
-  readonly contact: string | null;
+  readonly contact: () => void;
   readonly address: string | null;
   readonly buildings: CardData[];
   readonly latitude?: number;
