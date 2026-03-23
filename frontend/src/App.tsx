@@ -99,13 +99,35 @@ hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const { pathname } = useLocation();
+
   useEffect(() => {
     const setData = async () => {
       await axios.post('/api/set-data');
     };
     setData();
   }, []);
+
+  // Check admin status whenever user changes — checks both hardcoded list and Firestore whitelist
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdminUser(false);
+        return;
+      }
+      try {
+        const token = await user.getIdToken();
+        const response = await axios.get('/api/is-admin', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIsAdminUser(response.data.isAdmin === true);
+      } catch {
+        setIsAdminUser(false);
+      }
+    };
+    checkAdmin();
+  }, [user]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -155,7 +177,7 @@ const App = (): ReactElement => {
               path="/search"
               component={() => <SearchResultsPage user={user} setUser={setUser} />}
             />
-            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
+            {(isAdmin(user) || isAdminUser) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
         <ContactModal user={user} />

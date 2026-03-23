@@ -183,6 +183,17 @@ const AdminPage = (): ReactElement => {
   const [initStatus, setInitStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [initResults, setInitResults] = useState<string[]>([]);
 
+  // Admin whitelist state
+  type WhitelistEntry = { id: string; email: string; addedAt?: string; addedBy?: string };
+  const [superadmins, setSuperadmins] = useState<string[]>([]);
+  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
+  const [whitelistLoading, setWhitelistLoading] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [whitelistError, setWhitelistError] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmRemoveEmail, setConfirmRemoveEmail] = useState<string | null>(null);
+
   // Debug apartments state changes
   useEffect(() => {
     console.log('Apartments loaded:', apartments.length);
@@ -552,6 +563,65 @@ const AdminPage = (): ReactElement => {
       console.error('Migration error:', error);
       setMigrationProgress(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setMigrationStatus('error');
+    }
+  };
+
+  const fetchWhitelist = async () => {
+    setWhitelistLoading(true);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      const response = await axios.get('/api/admin/whitelist', createAuthHeaders(token));
+      setSuperadmins(response.data.superadmins ?? []);
+      setWhitelist(response.data.whitelist ?? []);
+    } catch (err) {
+      setWhitelistError('Failed to load whitelist.');
+    } finally {
+      setWhitelistLoading(false);
+    }
+  };
+
+  const handleAddAdmin = async () => {
+    if (!newAdminEmail.trim()) return;
+    setAddingAdmin(true);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      await axios.post(
+        '/api/admin/whitelist',
+        { email: newAdminEmail.trim().toLowerCase() },
+        createAuthHeaders(token)
+      );
+      setNewAdminEmail('');
+      await fetchWhitelist();
+    } catch (err: any) {
+      setWhitelistError(err?.response?.data || 'Failed to add admin.');
+    } finally {
+      setAddingAdmin(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (email: string, id: string) => {
+    setRemovingId(id);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      await axios.delete(
+        `/api/admin/whitelist/${encodeURIComponent(email)}`,
+        createAuthHeaders(token)
+      );
+      setConfirmRemoveEmail(null);
+      await fetchWhitelist();
+    } catch (err: any) {
+      setWhitelistError(err?.response?.data || 'Failed to remove admin.');
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -1768,6 +1838,140 @@ const AdminPage = (): ReactElement => {
     </Container>
   );
 
+  // Admin Management tab
+  const adminManagement = (
+    <Container className={container}>
+      <Box mt={4} mb={4}>
+        <Typography variant="h3" style={{ marginBottom: '8px' }}>
+          <strong>Admin Management</strong>
+        </Typography>
+        <Typography variant="body2" style={{ color: '#666', marginBottom: '24px' }}>
+          Manage who can access the admin panel. Superadmins are hardcoded in the codebase and
+          cannot be removed here. Whitelist admins are stored in Firestore and can be added or
+          removed at any time.
+        </Typography>
+
+        {whitelistError && (
+          <Typography variant="body2" style={{ color: 'red', marginBottom: '16px' }}>
+            {whitelistError}
+          </Typography>
+        )}
+
+        {/* Add new admin */}
+        <Box
+          style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'flex-start',
+            marginBottom: '32px',
+          }}
+        >
+          <TextField
+            label="Cornell email"
+            variant="outlined"
+            size="small"
+            value={newAdminEmail}
+            onChange={(e) => setNewAdminEmail(e.target.value)}
+            placeholder="netid@cornell.edu"
+            style={{ width: '300px' }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddAdmin}
+            disabled={addingAdmin || !newAdminEmail.trim()}
+          >
+            {addingAdmin ? 'Adding…' : 'Add Admin'}
+          </Button>
+          <Button variant="outlined" onClick={fetchWhitelist} disabled={whitelistLoading}>
+            {whitelistLoading ? 'Loading…' : 'Refresh'}
+          </Button>
+        </Box>
+
+        {/* Superadmins (read-only) */}
+        <Typography variant="h5" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+          Superadmins (hardcoded)
+        </Typography>
+        <Table size="small" style={{ marginBottom: '32px' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Email</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {superadmins.map((email) => (
+              <TableRow key={email}>
+                <TableCell>{email}</TableCell>
+                <TableCell style={{ color: '#888' }}>
+                  Superadmin — edit HomeConsts.ts to remove
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {/* Firestore whitelist */}
+        <Typography variant="h5" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+          Whitelist Admins (Firestore)
+        </Typography>
+        {whitelist.length === 0 && !whitelistLoading ? (
+          <Typography variant="body2" style={{ color: '#888', marginBottom: '16px' }}>
+            No whitelist admins yet. Click "Refresh" to load or add one above.
+          </Typography>
+        ) : (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Email</TableCell>
+                <TableCell>Added By</TableCell>
+                <TableCell>Added At</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {whitelist.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{entry.email}</TableCell>
+                  <TableCell>{entry.addedBy ?? '—'}</TableCell>
+                  <TableCell>
+                    {entry.addedAt ? new Date(entry.addedAt).toLocaleDateString() : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {confirmRemoveEmail === entry.email ? (
+                      <Box style={{ display: 'flex', gap: '8px' }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="secondary"
+                          disabled={removingId === entry.id}
+                          onClick={() => handleRemoveAdmin(entry.email, entry.id)}
+                        >
+                          {removingId === entry.id ? 'Removing…' : 'Confirm Remove'}
+                        </Button>
+                        <Button size="small" onClick={() => setConfirmRemoveEmail(null)}>
+                          Cancel
+                        </Button>
+                      </Box>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setConfirmRemoveEmail(entry.email)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Box>
+    </Container>
+  );
+
   //  Data tab
   const data = (
     <Container className={container}>
@@ -2288,6 +2492,7 @@ const AdminPage = (): ReactElement => {
             <Tab label="Blog Posts" value="BlogPost" />
             <Tab label="Apartment Data" value="Data" />
             <Tab label="Dev Tools" value="DevTools" />
+            <Tab label="Admin Management" value="AdminManagement" />
           </Tabs>
         </Toolbar>
       </AppBar>
@@ -2297,6 +2502,7 @@ const AdminPage = (): ReactElement => {
       {selectedTab === 'BlogPost' && blogPosts}
       {selectedTab === 'Data' && data}
       {selectedTab === 'DevTools' && developerTools}
+      {selectedTab === 'AdminManagement' && adminManagement}
       {Modals}
       {roomTypesModal}
 

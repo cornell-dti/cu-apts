@@ -32,6 +32,7 @@ import axios from 'axios';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
+import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
@@ -53,6 +54,7 @@ const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
 const blogPostCollection = db.collection('blogposts');
 const folderCollection = db.collection('folders');
+const adminWhitelistCollection = db.collection('adminWhitelist');
 const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
@@ -3019,6 +3021,115 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching apartments from folder');
+  }
+});
+
+/**
+ * Is Admin – Returns whether the authenticated user has admin privileges.
+ *
+ * @route GET /api/is-admin
+ *
+ * @status
+ * - 200: { isAdmin: boolean }
+ * - 401: Not authenticated
+ */
+app.get('/api/is-admin', authenticate, async (req, res) => {
+  try {
+    if (!req.user?.email) return res.status(200).json({ isAdmin: false });
+    const adminStatus = await isAdminEmail(req.user.email);
+    return res.status(200).json({ isAdmin: adminStatus });
+  } catch (err) {
+    console.error(err);
+    return res.status(200).json({ isAdmin: false });
+  }
+});
+
+/**
+ * Get Admin Whitelist – Returns all emails in the Firestore adminWhitelist plus hardcoded superadmins.
+ *
+ * @route GET /api/admin/whitelist
+ *
+ * @status
+ * - 200: { superadmins: string[], whitelist: { id: string, email: string }[] }
+ * - 403: Not an admin
+ */
+app.get('/api/admin/whitelist', authenticateAdmin, async (req, res) => {
+  try {
+    const snapshot = await adminWhitelistCollection.orderBy('addedAt', 'asc').get();
+    const whitelist = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json({ superadmins: admins, whitelist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching admin whitelist');
+  }
+});
+
+/**
+ * Add Admin – Adds an email to the Firestore adminWhitelist.
+ *
+ * @route POST /api/admin/whitelist
+ *
+ * @input {string} req.body.email – The Cornell email to add.
+ *
+ * @status
+ * - 201: Admin added successfully
+ * - 400: Missing or invalid email
+ * - 409: Email already in whitelist or superadmin list
+ * - 403: Not an admin
+ */
+app.post('/api/admin/whitelist', authenticateAdmin, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string' || !email.endsWith('@cornell.edu')) {
+      return res.status(400).send('Valid Cornell email required');
+    }
+    if (admins.includes(email)) {
+      return res.status(409).send('Email is already a superadmin');
+    }
+    const existing = await adminWhitelistCollection.where('email', '==', email).limit(1).get();
+    if (!existing.empty) {
+      return res.status(409).send('Email is already in the whitelist');
+    }
+    const docRef = await adminWhitelistCollection.add({
+      email,
+      addedAt: new Date(),
+      addedBy: req.user!.email,
+    });
+    return res.status(201).json({ id: docRef.id, email });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error adding admin');
+  }
+});
+
+/**
+ * Remove Admin – Removes an email from the Firestore adminWhitelist.
+ *
+ * @route DELETE /api/admin/whitelist/:email
+ *
+ * @input {string} req.params.email – URL-encoded email to remove.
+ *
+ * @status
+ * - 200: Admin removed
+ * - 400: Email is a superadmin (cannot remove via UI)
+ * - 404: Email not found in whitelist
+ * - 403: Not an admin
+ */
+app.delete('/api/admin/whitelist/:email', authenticateAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    if (admins.includes(email)) {
+      return res.status(400).send('Cannot remove a superadmin via this endpoint');
+    }
+    const snapshot = await adminWhitelistCollection.where('email', '==', email).limit(1).get();
+    if (snapshot.empty) {
+      return res.status(404).send('Email not found in whitelist');
+    }
+    await snapshot.docs[0].ref.delete();
+    return res.status(200).send('Admin removed successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error removing admin');
   }
 });
 
