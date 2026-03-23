@@ -31,6 +31,14 @@ export type distanceProps = {
   walkDistance: number | undefined;
 };
 
+/**
+ * WalkDistanceInfo – Displays walking distance to a campus location.
+ *
+ * @param {string} props.location – The name of the campus location.
+ * @param {number | undefined} props.walkDistance – Walking time in minutes.
+ *
+ * @return {JSX.Element} – A row showing the location and walk time.
+ */
 const WalkDistanceInfo = ({ location, walkDistance }: distanceProps) => {
   return (
     <div>
@@ -127,23 +135,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 /**
- * `MapInfo` Component - Displays map and location information of an apartment.
+ * MapInfo – Displays map and location information of an apartment.
  *
  * @remarks
- * This component is used in the ApartmentPage to display the map and location
- * information of each apartment, including its location on Google Map, address,
- * and time required for walking to campus from different Cornell landmarks.
- * It uses Material-UI components for consistent styling and Google Maps React
- * for map functionality.
+ * This component renders an interactive Google Map alongside walking distances
+ * to key Cornell landmarks (Engineering Quad, Ho Plaza, Ag Quad). It supports
+ * zoom controls, map re-centering, and an expand button for a fullscreen view.
  *
- * @param Props - Contains:
- *   - `address`: The address of the apartment.
- *   - `latitude`: The latitude of the apartment location.
- *   - `longitude`: The longitude of the apartment location.
- *   - `travelTimes`: The travel times from the apartment to campus landmarks.
- *   - `handleClick`: Function to handle clicking the expand button to show full screen map view.
- *   - `mapToggle`: Boolean toggle used by parent component to trigger resetting map zoom/center.
- *   - `isMobile`: Boolean indicating if viewing on mobile device.
+ * @param {string | null} props.address – The address of the apartment.
+ * @param {number} props.latitude – The latitude of the apartment location.
+ * @param {number} props.longitude – The longitude of the apartment location.
+ * @param {LocationTravelTimes} props.travelTimes – Walking times from the apartment to campus landmarks.
+ * @param {() => void} props.handleClick – Handler for the expand button to show a fullscreen map view.
+ * @param {boolean} props.mapToggle – Toggle used by the parent to reset map zoom and center.
+ * @param {boolean} props.isMobile – Whether the component is being viewed on a mobile device.
+ *
+ * @return {ReactElement} – The rendered MapInfo component.
  */
 function MapInfo({
   address,
