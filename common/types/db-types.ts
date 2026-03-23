@@ -106,3 +106,9 @@ export type QuestionForm = {
 };
 
 export type QuestionFormWithId = QuestionForm & Id;
+
+export type Folder = {
+  readonly name: string;
+  readonly userId: string;
+  readonly apartments: string[];
+};

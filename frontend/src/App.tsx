@@ -6,6 +6,7 @@ import FAQPage from './pages/FAQPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
+import FolderDetailPage from './pages/FolderDetailPage';
 import BookmarksPage from './pages/BookmarksPage';
 import { ThemeProvider } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
@@ -133,6 +134,10 @@ const App = (): ReactElement => {
               path="/profile"
               component={() => <ProfilePage user={user} setUser={setUser} />}
             />
+
+            <Route path="/bookmarks/:folderId">
+              <FolderDetailPage user={user} setUser={setUser} />
+            </Route>
             <Route
               path="/bookmarks"
               component={() => <BookmarksPage user={user} setUser={setUser} />}

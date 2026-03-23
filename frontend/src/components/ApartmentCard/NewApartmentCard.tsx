@@ -1,5 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
-import { get } from '../../utils/call';
+import React, { ReactElement, useState } from 'react';
 import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import {
   Card,
@@ -16,6 +15,7 @@ import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId } from '../../../../common/types/db-types';
+import AddToFolderPopover from '../Folder/AddToFolderPopover';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
 import { formatPriceRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
@@ -202,6 +202,7 @@ const NewApartmentCard = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
+  const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
 
   // Get price range from room types
   const roomTypeRange = getRoomTypeRange(roomTypes);
@@ -232,105 +233,132 @@ const NewApartmentCard = ({
     apartmentStatsText,
   } = useStyles();
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   const checkIfSaved = async () => {
+  //     try {
+  //       if (user) {
+  //         const token = await user.getIdToken(false);
+  //         const response = await axios.post(
+  //           '/api/check-saved-apartment',
+  //           { apartmentId: id },
+  //           createAuthHeaders(token)
+  //         );
+  //         setIsSaved(response.data.result);
+  //       } else {
+  //         setIsSaved(false);
+  //       }
+  //     } catch (err) {
+  //       throw new Error('Error with checking if apartment is saved');
+  //     }
+  //   };
+  //   checkIfSaved();
+  // }, [user, setUser, id]);
+
+  function handleFolderSuccess(): void {
+    // Refresh the saved state after folder operations
     const checkIfSaved = async () => {
       try {
         if (user) {
-          const token = await user.getIdToken(true);
+          const token = await user.getIdToken(false);
           const response = await axios.post(
             '/api/check-saved-apartment',
             { apartmentId: id },
             createAuthHeaders(token)
           );
           setIsSaved(response.data.result);
-        } else {
-          setIsSaved(false);
         }
       } catch (err) {
-        throw new Error('Error with checking if apartment is saved');
+        console.error('Error checking if apartment is saved');
       }
     };
     checkIfSaved();
-  }, [user, setUser, id]);
-
-  const handleSaveToggle = async (event: React.MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    const newIsSaved = !isSaved;
-    try {
-      if (!user) {
-        let user = await getUser(true);
-        setUser(user);
-      }
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
-      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
-      await axios.post(endpoint, { apartmentId: id }, createAuthHeaders(token));
-      setIsSaved((prevIsSaved) => !prevIsSaved);
-    } catch (err) {
-      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
-    }
-  };
+  }
 
   return (
-    <Card
-      className={isHovered ? redHighlight : root}
-      variant="outlined"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className={cardContainer}>
-        <CardMedia className={apartmentImageContainer}>
-          <IconButton
-            disableRipple
-            onClick={handleSaveToggle}
-            onMouseEnter={() => setSavedIsHovered(true)}
-            onMouseLeave={() => setSavedIsHovered(false)}
-            className={saveRibbonIcon}
-          >
-            <img
-              src={savedIsHovered || isSaved ? saved : unsaved}
-              alt={isSaved ? 'Saved' : 'Unsaved'}
+    <>
+      <Card
+        className={isHovered ? redHighlight : root}
+        variant="outlined"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className={cardContainer}>
+          <CardMedia className={apartmentImageContainer}>
+            {isHovered && (
+              <IconButton
+                disableRipple
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  setSavedIsHovered(true);
+                  setFolderAnchorEl(e.currentTarget);
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  setSavedIsHovered(false);
+                }}
+                className={saveRibbonIcon}
+              >
+                <img
+                  src={savedIsHovered ? saved : unsaved}
+                  alt="Save"
+                  style={{ width: 20, height: 20 }}
+                />
+              </IconButton>
+            )}
+
+            <img src={img} alt="apartment" className={apartmentImage} />
+            <AddToFolderPopover
+              anchorEl={folderAnchorEl}
+              onClose={() => {
+                setFolderAnchorEl(null);
+                setSavedIsHovered(false);
+              }}
+              apartmentId={buildingData.id}
+              apartmentName={buildingData.name}
+              user={user}
+              setUser={setUser}
+              onSuccess={handleFolderSuccess}
             />
-          </IconButton>
-          <img src={img} alt="apartment" className={apartmentImage} />
-        </CardMedia>
-        <div className={apartmentInfo}>
-          <div className={apartmentBackground}>
-            <div className={apartmentText}>
-              {/* <Typography>{distanceToCampus} miles away</Typography> */}
-              <Typography
-                className={apartmentName}
-                style={{ fontSize: name.length > 19 ? '13px' : '14px' }}
-              >
-                {name.slice(0, 20) + (name.length > 20 ? '...' : '')}
-              </Typography>
-              <Typography
-                className={apartmentAddress}
-                style={{ fontSize: name.length > 19 ? '12.5px' : '14px' }}
-              >
-                {address}
-              </Typography>
-              <Typography className={apartmentReviews}>
-                {numReviews} {numReviews === 1 ? 'review' : 'reviews'}
-              </Typography>
+          </CardMedia>
+          <div className={apartmentInfo}>
+            <div className={apartmentBackground}>
+              <div className={apartmentText}>
+                {/* <Typography>{distanceToCampus} miles away</Typography> */}
+                <Typography
+                  className={apartmentName}
+                  style={{ fontSize: name.length > 19 ? '13px' : '14px' }}
+                >
+                  {name.slice(0, 20) + (name.length > 20 ? '...' : '')}
+                </Typography>
+                <Typography
+                  className={apartmentAddress}
+                  style={{ fontSize: name.length > 19 ? '12.5px' : '14px' }}
+                >
+                  {address}
+                </Typography>
+                <Typography className={apartmentReviews}>
+                  {numReviews} {numReviews === 1 ? 'review' : 'reviews'}
+                </Typography>
+              </div>
+              <div className={apartmentRatingSection}>
+                <FavoriteIcon fontSize="default" className={apartmentRatingIcon} />
+                <Typography className={apartmentRating}>{avgRating.toFixed(1)}</Typography>
+              </div>
             </div>
-            <div className={apartmentRatingSection}>
-              <FavoriteIcon fontSize="default" className={apartmentRatingIcon} />
-              <Typography className={apartmentRating}>{avgRating.toFixed(1)}</Typography>
-            </div>
-          </div>
-          <div className={apartmentStats}>
-            <div className={apartmentStatsContainer}>
-              <img src={moneyIcon} alt="money" className={apartmentMoneyIcon} />
-              <Typography className={apartmentStatsText}>{priceDisplay}</Typography>
+            <div className={apartmentStats}>
+              <div className={apartmentStatsContainer}>
+                <img src={moneyIcon} alt="money" className={apartmentMoneyIcon} />
+                <Typography className={apartmentStatsText}>{priceDisplay}</Typography>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </>
   );
 };
 

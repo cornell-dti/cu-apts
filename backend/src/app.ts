@@ -19,6 +19,7 @@ import {
   QuestionFormWithId,
   LocationTravelTimes,
   RoomType,
+  Folder,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -47,7 +48,7 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
-
+const folderCollection = db.collection('folders');
 const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
@@ -224,7 +225,7 @@ app.get('/api/review/like/:userId', authenticate, async (req, res) => {
 });
 
 /**
- * Takes in the location type in the URL and returns the number of reviews made forr that location
+ * Takes in the location type in the URL and returns the number of reviews made for that location
  */
 app.get('/api/review/:location/count', async (req, res) => {
   const { location } = req.params;
@@ -2415,6 +2416,323 @@ app.post('/api/create-distance-to-campus', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving/updating Ho Plaza walking times:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Add Folder - Creates a new folder assigned to a specific user.
+ *
+ * @route POST /api/folders
+ *
+ * @input {string} req.body - The name of the new folder to be created
+ *
+ * @status
+ * - 201: Successfully created the folder
+ * - 400: Folder name is missing or invalid
+ * - 500: Error creating folder
+ */
+app.post('/api/folders', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderName } = req.body;
+    if (!folderName || folderName.trim() === '') {
+      return res.status(400).send('Folder name is required');
+    }
+    const newFolderRef = folderCollection.doc();
+
+    // Create a new folder document
+    await newFolderRef.set({
+      name: folderName,
+      userId: uid,
+      createdAt: new Date(),
+    });
+
+    return res.status(201).json({ id: newFolderRef.id, name: folderName });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error creating folder');
+  }
+});
+
+/**
+ * Get Folders - Fetches all folders assigned to a specific user.
+ *
+ * @route GET /api/folders
+ *
+ * @status
+ * - 200: Successfully retrieved folders
+ * - 500: Error fetching folders
+ */
+app.get('/api/folders', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    // Fetch all folders for this user
+    const folderSnapshot = await folderCollection.where('userId', '==', uid).get();
+
+    const folders = folderSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return res.status(200).json(folders);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching folders');
+  }
+});
+
+/** Get Folder By ID - Fetches a specific folder by ID.
+ *
+ * @route GET /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be fetched
+ *
+ * @status
+ * - 200: Successfully retrieved folder
+ * - 403: Unauthorized to access this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching folder
+ */
+app.get('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to access this folder');
+    }
+
+    return res.status(200).json({ id: folderDoc.id, ...folderDoc.data() });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching folder');
+  }
+});
+
+/**
+ * Delete Folder - Deletes a folder by ID.
+ *
+ * @route DELETE /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be deleted
+ *
+ * @status
+ * - 200: Successfully deleted folder
+ * - 403: Unauthorized to delete this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error deleting folder
+ */
+app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to delete this folder');
+    }
+
+    await folderRef.delete();
+    return res.status(200).send('Folder deleted successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error deleting folder');
+  }
+});
+
+/**
+ * Rename Folder - Renames a folder by ID.
+ *
+ * @route PUT /api/folders/:folderId
+ *
+ * @input {string} req.params.folderId - The ID of the folder to be renamed
+ *
+ * @status
+ * - 200: Successfully renamed folder
+ * - 403: Unauthorized to rename this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error renaming folder
+ */
+app.put('/api/folders/:folderId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+    const { newName } = req.body;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to rename this folder');
+    }
+
+    await folderRef.update({ name: newName });
+    return res.status(200).send('Folder renamed successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error renaming folder');
+  }
+});
+
+/**
+ * Add Apartment - Adds an apartment to a folder.
+ *
+ * @route POST /api/folders/:folderId/apartments
+ *
+ * @input {string} req.body - The id of the apartment to be added
+ * @input {string} req.params.folderId - The ID of the folder to add the apartment to
+ *
+ * @status
+ * - 200: Successfully added apartment to folder
+ * - 403: Unauthorized to modify this folder (not the owner)
+ * - 404: Folder not found
+ * - 400: Apartment already in folder
+ * - 500: Error adding apartment to folder
+ */
+app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+    const { aptId } = req.body;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to modify this folder');
+    }
+
+    const apartments = folderDoc.data()?.apartments || [];
+    if (apartments.includes(aptId)) {
+      return res.status(400).send('Apartment already in folder');
+    }
+
+    apartments.push(aptId);
+    await folderRef.update({ apartments });
+    return res.status(200).send('Apartment added to folder successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error adding apartment to folder');
+  }
+});
+
+/**
+ * Remove Apartment - Removes an apartment from a folder.
+ *
+ * @route DELETE /api/folders/:folderId/apartments/:apartmentId
+ *
+ * @input {string} req.body - The id of the apartment to be removed
+ * @input {string} req.params.folderId - The ID of the folder to remove the apartment from
+ *
+ * @status
+ * - 200: Successfully removed apartment from folder
+ * - 403: Unauthorized to modify this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error removing apartment from folder
+ */
+app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId, apartmentId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to modify this folder');
+    }
+
+    let apartments = folderDoc.data()?.apartments || [];
+    apartments = apartments.filter((id: string) => id !== apartmentId);
+    await folderRef.update({ apartments });
+    return res.status(200).send('Apartment removed from folder successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error removing apartment from folder');
+  }
+});
+
+/**
+ * Get Apartments in Folder - Retrieves all apartments in a specific folder.
+ *
+ * @route GET /api/folders/:folderId/apartments
+ *
+ * @input {string} req.params - The folderId of the folder to get apartments from
+ *
+ * @status
+ * - 200: Successfully retrieved apartments from folder
+ * - 403: Unauthorized to access this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching apartments from folder
+ */
+app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to access this folder');
+    }
+
+    const apartments = folderDoc.data()?.apartments || [];
+    const aptsArr = await Promise.all(
+      apartments.map(async (id: string) => {
+        const snapshot = await buildingsCollection.doc(id).get();
+        if (!snapshot.exists) {
+          console.warn(`Apartment ${id} not found`);
+          return null;
+        }
+        return { id, ...snapshot.data() };
+      })
+    );
+
+    // Filter out any null values from non-existent apartments
+    const validApartments = aptsArr.filter((apt) => apt !== null);
+    const enrichedResults = await pageData(validApartments);
+    return res.status(200).json(enrichedResults);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching apartments from folder');
   }
 });
 

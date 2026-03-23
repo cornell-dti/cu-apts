@@ -1,11 +1,8 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Button, Grid, Link, makeStyles, Typography, Box } from '@material-ui/core';
+import { Button, Grid, makeStyles, Typography, Box } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
-import { CardData } from '../App';
 import { get } from '../utils/call';
-import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
-import { Link as RouterLink } from 'react-router-dom';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
@@ -14,10 +11,10 @@ import { createAuthHeaders, getUser } from '../utils/firebase';
 import ReviewComponent from '../components/Review/Review';
 import { sortReviews } from '../utils/sortReviews';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
-import { AptSortFields, sortApartments } from '../utils/sortApartments';
 import Toast from '../components/utils/Toast';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
+import FolderSection from '../components/Folder/FolderSection';
 
 type Props = {
   user: firebase.User | null;
@@ -83,23 +80,9 @@ const ToggleButton = ({
  * @returns BookmarksPage The BookmarksPage component.
  */
 const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
-  const { background, headerStyle, headerContainer, gridContainer } = useStyles();
-  const defaultShow = 6;
+  const { background, headerStyle, headerContainer } = useStyles();
   const toastTime = 3500;
   const savedAPI = '/api/saved-apartments';
-
-  const [aptsToShow, setAptsToShow] = useState<number>(defaultShow);
-  const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
-  // handle sort (either number of reviews or average rate)
-  const [sortAptsBy, setSortAptsBy] = useState<AptSortFields>('numReviews');
-
-  // handle toggle
-  const handleViewAll = () => {
-    setAptsToShow(aptsToShow + (savedAptsData.length - defaultShow));
-  };
-  const handleCollapse = () => {
-    setAptsToShow(defaultShow);
-  };
 
   /**** Helpful reviews ****/
   const [helpfulReviewsData, setHelpfulReviewsData] = useState<ReviewWithId[]>([]);
@@ -140,19 +123,9 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
           },
           createAuthHeaders(token)
         );
-        // this is here so we can get the token when it's fetched and not cause an unauthorized error
-        get<CardData[]>(
-          savedAPI,
-          {
-            callback: (data) => {
-              setSavedAptsData(data);
-            },
-          },
-          createAuthHeaders(token)
-        );
       });
     }
-  }, [user, toggle, savedAPI, sortAptsBy]);
+  }, [user, toggle, savedAPI]);
 
   // Define the type of the properties used for sorting reviews
   type Fields = keyof typeof helpfulReviewsData[0];
@@ -259,88 +232,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         />
       )}
       <Grid item xs={11} sm={11} md={9}>
-        <Box
-          display="flex"
-          flexDirection={isMobile ? 'column' : 'row'}
-          justifyContent="space-between"
-          alignItems="center"
-          className={headerContainer}
-        >
-          <Box>
-            <Typography variant="h3" className={headerStyle}>
-              Saved Properties and Landlords ({savedAptsData.length})
-            </Typography>
-          </Box>
-
-          <Box>
-            <DropDownWithLabel
-              label="Sort by"
-              menuItems={[
-                {
-                  item: 'Review Count',
-                  callback: () => {
-                    setSortAptsBy('numReviews');
-                  },
-                },
-                {
-                  item: 'Rating',
-                  callback: () => {
-                    setSortAptsBy('avgRating');
-                  },
-                },
-              ]}
-              isMobile={isMobile}
-            />
-          </Box>
-        </Box>
-
-        {savedAptsData.length > 0 ? (
-          <Grid container spacing={4} className={gridContainer}>
-            {savedAptsData &&
-              sortApartments(savedAptsData, sortAptsBy, false)
-                .slice(0, aptsToShow)
-                .map(({ buildingData, numReviews, company }, index) => {
-                  const { id } = buildingData;
-                  return (
-                    <Grid item xs={12} md={4} key={index}>
-                      <Link
-                        {...{
-                          to: `/apartment/${id}`,
-                          style: { textDecoration: 'none' },
-                          component: RouterLink,
-                        }}
-                      >
-                        <BookmarkAptCard
-                          key={index}
-                          numReviews={numReviews}
-                          buildingData={buildingData}
-                          company={company}
-                        />
-                      </Link>
-                    </Grid>
-                  );
-                })}
-            <Grid item container xs={12} justifyContent="center">
-              {savedAptsData.length > defaultShow &&
-                (savedAptsData.length > aptsToShow ? (
-                  <ToggleButton
-                    text="View All"
-                    callback={handleViewAll}
-                    icon={<KeyboardArrowDownIcon />}
-                  />
-                ) : (
-                  <ToggleButton
-                    text="Collapse"
-                    callback={handleCollapse}
-                    icon={<KeyboardArrowUpIcon />}
-                  />
-                ))}
-            </Grid>
-          </Grid>
-        ) : (
-          <Typography paragraph>You have not saved any apartments.</Typography>
-        )}
-
+        <FolderSection user={user} setUser={setUser} />
         <Box
           display="flex"
           flexDirection={isMobile ? 'column' : 'row'}
