@@ -45,6 +45,8 @@ import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 type Props = {
   user: firebase.User | null;
@@ -159,7 +161,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [isSaved, setIsSaved] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
@@ -542,20 +543,31 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           <Grid item style={{ marginLeft: 'auto' }}>
+            {/* <IconButton
+              disableRipple
+              onClick={handleSaveToggle}
+              style={{
+                padding: 15,
+                backgroundColor: 'transparent',
+              }}
+            >
+              <img
+                src={isSaved ? saved : unsaved}
+                alt={isSaved ? 'Saved' : 'Unsaved'}
+                style={{ width: '107px', height: '43px' }}
+              />
+            </IconButton> */}
             <Button
               disableRipple
               onClick={handleSaveToggle}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
               className={saveButton}
               color="primary"
               fullWidth
               disableElevation
             >
-              <img src={isHovered ? saved : unsaved} className={bookmarkRibbon} alt="Save" />
-              Save
+              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
+              {isSaved ? 'Saved' : 'Save'}
             </Button>
-
             <Button
               color="primary"
               className={reviewButton}

@@ -283,7 +283,10 @@ const NewApartmentCard = ({
             onMouseLeave={() => setSavedIsHovered(false)}
             className={saveRibbonIcon}
           >
-            <img src={savedIsHovered ? saved : unsaved} alt={'Save'} />
+            <img
+              src={savedIsHovered || isSaved ? saved : unsaved}
+              alt={isSaved ? 'Saved' : 'Unsaved'}
+            />
           </IconButton>
           <img src={img} alt="apartment" className={apartmentImage} />
         </CardMedia>
