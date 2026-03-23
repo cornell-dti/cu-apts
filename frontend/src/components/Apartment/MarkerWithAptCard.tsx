@@ -2,6 +2,9 @@ import React from 'react';
 import { CardData } from '../../App';
 import aptIcon from '../../assets/location-pin.svg';
 import mapPinIcon from '../../assets/map-pin.svg';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+
 import NewApartmentCard from '../ApartmentCard/NewApartmentCard';
 
 type markerWithCardProp = {

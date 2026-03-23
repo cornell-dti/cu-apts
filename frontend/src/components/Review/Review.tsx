@@ -41,6 +41,8 @@ import ReviewHeader from './ReviewHeader';
 import ReviewModal from '../LeaveReview/ReviewModal';
 import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
 import OptionMenu from '../utils/OptionMenu';

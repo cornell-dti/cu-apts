@@ -13,6 +13,8 @@ import SearchResultsPageApartmentCards from '../components/ApartmentCard/SearchR
 import SearchResultsMap from '../components/Search/SearchResultsMap';
 import SortDropDown from '../components/Search/SortDropDown';
 import { ApartmentWithId } from '../../../common/types/db-types';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const useStyles = makeStyles({
   header: {
