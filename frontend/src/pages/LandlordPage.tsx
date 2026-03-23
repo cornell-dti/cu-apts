@@ -244,7 +244,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   }, [user, setUser, landlordId]);
 
   // Define the type of the properties used for sorting reviews
-  type Fields = keyof (typeof reviewData)[0];
+  type Fields = keyof typeof reviewData[0];
 
   // Function to display a toast message and hide it after a certain time
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {

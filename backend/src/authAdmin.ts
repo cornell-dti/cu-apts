@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { auth , db } from './firebase-config';
+import { auth, db } from './firebase-config';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 const adminWhitelistCollection = db.collection('adminWhitelist');
