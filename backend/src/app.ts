@@ -1832,11 +1832,24 @@ app.post('/api/admin/migrate-all-apartments-schema', authenticate, async (req, r
           }
 
           // Create migrated apartment data
+          // If old schema fields exist, preserve them as a single RoomType entry
+          const legacyRoomType =
+            data.numBeds != null && data.numBaths != null && data.price != null
+              ? [
+                  {
+                    id: `${doc.id  }_legacy`,
+                    beds: data.numBeds,
+                    baths: data.numBaths,
+                    price: data.price,
+                  },
+                ]
+              : [];
+
           const migratedData: Record<string, unknown> = {
             name: data.name,
             address: data.address,
             landlordId: data.landlordId || null,
-            roomTypes: [], // Initialize as empty array
+            roomTypes: legacyRoomType,
             photos: data.photos || [],
             area: data.area || 'OTHER',
             latitude: data.latitude || 0,
