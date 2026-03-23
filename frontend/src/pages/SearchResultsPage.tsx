@@ -27,16 +27,34 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     gap: '12px',
-    height: '80vh',
+    height: 'calc(100vh - 200px)',
+    marginBottom: '40px',
   },
   searchResultsContainer: {
-    flex: 1,
+    flex: 3,
+    overflowY: 'auto',
+    paddingRight: '8px',
+    '&::-webkit-scrollbar': {
+      width: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: '#f1f1f1',
+      borderRadius: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: '#888',
+      borderRadius: '4px',
+      '&:hover': {
+        background: '#555',
+      },
+    },
   },
   mapContainer: {
-    flex: 1,
+    flex: 2,
     height: '100%',
-    width: '100%',
-    minHeight: '300px',
+    maxWidth: '650px',
+    position: 'sticky',
+    top: 0,
   },
   sortDropDown: {
     display: 'flex',
@@ -76,6 +94,9 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const path = useLocation();
   const [pathName] = useState(path.pathname);
   const [searchResults, setSearchResults] = useState<CardData[]>([]);
+  const [additionalLocation, setAdditionalLocation] = useState<CardData[]>([]);
+  const [additionalPrice, setAdditionalPrice] = useState<CardData[]>([]);
+  const [additionalBedBath, setAdditionalBedBath] = useState<CardData[]>([]);
   const [sortBy, setSortBy] = useState<keyof CardData | keyof ApartmentWithId | 'originalOrder'>(
     'originalOrder'
   );
@@ -134,8 +155,28 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
 
     params.append('sortLowToHigh', filters.initialSortLowToHigh.toString());
 
-    get<CardData[]>(`/api/search-with-query-and-filters?${params.toString()}&size=21`, {
-      callback: setSearchResults,
+    get<{
+      main: CardData[];
+      additionalLocation: CardData[];
+      additionalPrice: CardData[];
+      additionalBedBath: CardData[];
+    }>(`/api/search-with-query-and-filters?${params.toString()}&size=21`, {
+      callback: (data) => {
+        // Defensive: handle both old and new API response formats
+        if (data && typeof data === 'object' && 'main' in data) {
+          setSearchResults(data.main || []);
+          setAdditionalLocation(data.additionalLocation || []);
+          setAdditionalPrice(data.additionalPrice || []);
+          setAdditionalBedBath(data.additionalBedBath || []);
+        } else {
+          // Fallback for unexpected response format
+          console.warn('Unexpected API response format:', data);
+          setSearchResults([]);
+          setAdditionalLocation([]);
+          setAdditionalPrice([]);
+          setAdditionalBedBath([]);
+        }
+      },
     });
 
     setSortBy(filters.initialSortBy);
@@ -146,6 +187,32 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
 
   const saveResultsCount = (count: number) => {
     sessionStorage.setItem(`resultsCount_search_${query}`, count.toString());
+  };
+
+  // Helper: Generate section title for additional results
+  const getAdditionalSectionTitle = (type: 'location' | 'price' | 'bedBath'): string => {
+    if (type === 'location' && filters.locations && filters.locations.length > 0) {
+      return `More at ${filters.locations.join(', ')}`;
+    }
+    if (type === 'price' && (filters.minPrice || filters.maxPrice)) {
+      const min = filters.minPrice ? `$${filters.minPrice}` : '';
+      const max = filters.maxPrice ? `$${filters.maxPrice}` : '';
+      if (min && max) return `More within ${min} - ${max}`;
+      if (min) return `More above ${min}`;
+      if (max) return `More under ${max}`;
+    }
+    if (type === 'bedBath') {
+      const bedText =
+        filters.bedrooms > 0 ? `${filters.bedrooms} bedroom${filters.bedrooms > 1 ? 's' : ''}` : '';
+      const bathText =
+        filters.bathrooms > 0
+          ? `${filters.bathrooms} bathroom${filters.bathrooms > 1 ? 's' : ''}`
+          : '';
+      if (bedText && bathText) return `More with ${bedText} and ${bathText}`;
+      if (bedText) return `More with ${bedText}`;
+      if (bathText) return `More with ${bathText}`;
+    }
+    return '';
   };
 
   const sortSection = () => {
@@ -170,14 +237,14 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             {
               item: 'Lowest Price',
               callback: () => {
-                setSortBy('price');
+                setSortBy('avgPrice');
                 setSortLowToHigh(true);
               },
             },
             {
               item: 'Highest Price',
               callback: () => {
-                setSortBy('price');
+                setSortBy('avgPrice');
                 setSortLowToHigh(false);
               },
             },
@@ -219,13 +286,92 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
       {!isMobile ? (
         <div className={mainContent}>
           <div className={searchResultsContainer}>
-            <SearchResultsPageApartmentCards
-              user={user}
-              setUser={setUser}
-              data={searchResults}
-              sortMethod={sortBy}
-              orderLowToHigh={sortLowToHigh}
-            />
+            {/* Main Results */}
+            {searchResults.length === 0 ? (
+              <div
+                style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                }}
+              >
+                <Typography variant="h5" style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  No exact matching apartments found
+                </Typography>
+                <Typography variant="body1" style={{ color: '#666' }}>
+                  Try adjusting your filters or check the additional results below for similar
+                  apartments.
+                </Typography>
+              </div>
+            ) : (
+              <SearchResultsPageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={searchResults}
+                sortMethod={sortBy}
+                orderLowToHigh={sortLowToHigh}
+              />
+            )}
+
+            {/* Additional Location Section */}
+            {additionalLocation.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('location')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalLocation}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Price Section */}
+            {additionalPrice.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('price')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalPrice}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Bed/Bath Section */}
+            {additionalBedBath.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('bedBath')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalBedBath}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
             <div style={{ textAlign: 'center', marginTop: '50px' }}>
               <Typography variant="body1" color="textSecondary">
                 Can't find your apartment? Tell us about it{' '}
@@ -274,19 +420,93 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             />
           </div>
           <div className={searchResultsContainer} style={{ width: '100%', maxWidth: '100%' }}>
-            <SearchResultsPageApartmentCards
-              user={user}
-              setUser={setUser}
-              data={searchResults}
-              sortMethod={sortBy}
-              orderLowToHigh={sortLowToHigh}
-            />
-            <div
-              style={{
-                textAlign: 'center',
-                marginTop: '10px',
-              }}
-            >
+            {/* Main Results */}
+            {searchResults.length === 0 ? (
+              <div
+                style={{
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                }}
+              >
+                <Typography variant="h5" style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                  No exact matching apartments found
+                </Typography>
+                <Typography variant="body1" style={{ color: '#666' }}>
+                  Try adjusting your filters or check the additional results below for similar
+                  apartments.
+                </Typography>
+              </div>
+            ) : (
+              <SearchResultsPageApartmentCards
+                user={user}
+                setUser={setUser}
+                data={searchResults}
+                sortMethod={sortBy}
+                orderLowToHigh={sortLowToHigh}
+              />
+            )}
+
+            {/* Additional Location Section */}
+            {additionalLocation.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('location')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalLocation}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Price Section */}
+            {additionalPrice.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('price')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalPrice}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            {/* Additional Bed/Bath Section */}
+            {additionalBedBath.length > 0 && (
+              <>
+                <Typography
+                  variant="h5"
+                  style={{ marginTop: '40px', marginBottom: '20px', fontWeight: 'bold' }}
+                >
+                  {getAdditionalSectionTitle('bedBath')}
+                </Typography>
+                <SearchResultsPageApartmentCards
+                  user={user}
+                  setUser={setUser}
+                  data={additionalBedBath}
+                  sortMethod={sortBy}
+                  orderLowToHigh={sortLowToHigh}
+                />
+              </>
+            )}
+
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
               <Typography variant="body1" color="textSecondary">
                 Can't find your apartment? Tell us about it{' '}
                 <span

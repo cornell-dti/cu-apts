@@ -2,6 +2,7 @@ import express, { Express, RequestHandler } from 'express';
 import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
+import { randomUUID } from 'crypto';
 import {
   Review,
   Landlord,
@@ -17,6 +18,7 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  RoomType,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -33,6 +35,9 @@ import { admins } from '../../frontend/src/constants/HomeConsts';
 // Email environment variables
 const cuaptsEmail = process.env.CUAPTS_EMAIL;
 const cuaptsEmailPassword = process.env.CUAPTS_EMAIL_APP_PASSWORD;
+
+// Google Maps API key
+const { REACT_APP_MAPS_API_KEY } = process.env;
 
 // Collections in the Firestore database
 const reviewCollection = db.collection('reviews');
@@ -506,78 +511,148 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     const apts = req.app.get('apts');
     const aptsWithType: ApartmentWithId[] = apts;
 
-    // Start with text search if query is provided
-    let filteredResults: ApartmentWithId[] = [];
+    // STEP 1: Apply text search first
+    let baseResults: ApartmentWithId[] = [];
     if (query && query.trim() !== '') {
       const options = {
         keys: ['name', 'address'],
       };
       const fuse = new Fuse(aptsWithType, options);
       const searchResults = fuse.search(query);
-      filteredResults = searchResults.map((result) => result.item);
+      baseResults = searchResults.map((result) => result.item);
     } else {
       // If no query, start with all apartments
-      filteredResults = aptsWithType;
+      baseResults = aptsWithType;
     }
 
-    // Apply location filter if provided
-    if (locations && locations.trim() !== '') {
+    // STEP 2: Count active filter categories
+    const hasLocation = locations && locations.trim() !== '';
+    const hasPrice = minPrice !== null || maxPrice !== null;
+    const hasBedBath = (bedrooms !== null && bedrooms > 0) || (bathrooms !== null && bathrooms > 0);
+    const activeFilterCount = [hasLocation, hasPrice, hasBedBath].filter(Boolean).length;
+
+    // Helper: Filter by location only
+    const filterByLocation = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasLocation) return [];
       const locationArray = locations.split(',').map((loc) => loc.toUpperCase());
-      filteredResults = filteredResults.filter((apt) =>
-        locationArray.includes(apt.area ? apt.area.toUpperCase() : '')
-      );
+      return apts.filter((apt) => locationArray.includes(apt.area ? apt.area.toUpperCase() : ''));
+    };
+
+    // Helper: Filter by price only
+    const filterByPrice = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasPrice) return [];
+      return apts.filter((apt) => {
+        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
+        return apt.roomTypes.some((roomType) => {
+          if (minPrice !== null && roomType.price < minPrice) return false;
+          if (maxPrice !== null && roomType.price > maxPrice) return false;
+          return true;
+        });
+      });
+    };
+
+    // Helper: Filter by bed/bath only
+    const filterByBedBath = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      if (!hasBedBath) return [];
+      return apts.filter((apt) => {
+        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
+        return apt.roomTypes.some((roomType) => {
+          if (bedrooms !== null && bedrooms > 0 && roomType.beds !== bedrooms) return false;
+          if (bathrooms !== null && bathrooms > 0 && roomType.baths !== bathrooms) return false;
+          return true;
+        });
+      });
+    };
+
+    // Helper: Filter by ALL criteria (main results)
+    const filterByAll = (apts: ApartmentWithId[]): ApartmentWithId[] => {
+      let filtered = apts;
+
+      // Apply location filter
+      if (hasLocation) {
+        filtered = filterByLocation(filtered);
+      }
+
+      // Apply price filter
+      if (hasPrice) {
+        filtered = filterByPrice(filtered);
+      }
+
+      // Apply bed/bath filter
+      if (hasBedBath) {
+        filtered = filterByBedBath(filtered);
+      }
+
+      return filtered;
+    };
+
+    // STEP 3: Calculate results based on active filter count
+    let mainResults: ApartmentWithId[] = [];
+    let additionalLocation: ApartmentWithId[] = [];
+    let additionalPrice: ApartmentWithId[] = [];
+    let additionalBedBath: ApartmentWithId[] = [];
+
+    if (activeFilterCount === 0) {
+      // No filters: return all base results as main
+      mainResults = baseResults;
+    } else if (activeFilterCount === 1) {
+      // 1 filter: main results only, no additional sections
+      mainResults = filterByAll(baseResults);
+    } else {
+      // 2+ filters: calculate main + additional sections
+      // Main: matches ALL filters
+      mainResults = filterByAll(baseResults);
+      const mainIds = new Set(mainResults.map((apt) => apt.id));
+
+      // Additional: each individual filter (excluding main results)
+      if (hasLocation) {
+        additionalLocation = filterByLocation(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
+      if (hasPrice) {
+        additionalPrice = filterByPrice(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
+      if (hasBedBath) {
+        additionalBedBath = filterByBedBath(baseResults).filter((apt) => !mainIds.has(apt.id));
+      }
     }
 
-    // TODO: Right now we disable the price filter because of lack of data
-    // Apply price range filters
-    // if (minPrice !== null) {
-    //   filteredResults = filteredResults.filter((apt) => apt.price >= minPrice);
-    // }
+    // STEP 4: Enrich all result sections with pageData
+    const enrichMain = await pageData(mainResults);
+    const enrichLocation = await pageData(additionalLocation);
+    const enrichPrice = await pageData(additionalPrice);
+    const enrichBedBath = await pageData(additionalBedBath);
 
-    // if (maxPrice !== null) {
-    //   filteredResults = filteredResults.filter((apt) => apt.price <= maxPrice);
-    // }
-
-    // Apply bedroom filter
-    // TODO: Right now we disable the bedroom filter because of lack of data
-    // if (bedrooms !== null && bedrooms > 0) {
-    //   filteredResults = filteredResults.filter(
-    //     (apt) => apt.numBeds !== null && apt.numBeds >= bedrooms
-    //   );
-    // }
-
-    // // Apply bathroom filter
-    // if (bathrooms !== null && bathrooms > 0) {
-    //   filteredResults = filteredResults.filter(
-    //     (apt) => apt.numBaths !== null && apt.numBaths >= bathrooms
-    //   );
-    // }
-
-    // Process the filtered results through pageData to include reviews, ratings, etc.
-    let enrichedResults = await pageData(filteredResults);
-
-    // If size is specified and less than available, slice the results
-    if (size && size > 0 && enrichedResults.length > size) {
+    // STEP 5: Apply sorting and size limit to main results
+    let finalMain = enrichMain;
+    if (size && size > 0 && finalMain.length > size) {
       console.log('endpoint sortBy', sortBy);
       switch (sortBy) {
         case 'numReviews':
-          enrichedResults.sort((a, b) => b.numReviews - a.numReviews);
+          finalMain.sort((a, b) => b.numReviews - a.numReviews);
           break;
         case 'avgRating':
-          enrichedResults.sort((a, b) => b.avgRating - a.avgRating);
+          finalMain.sort((a, b) => b.avgRating - a.avgRating);
           break;
         case 'distanceToCampus':
-          enrichedResults.sort(
+          finalMain.sort(
             (a, b) => a.buildingData.distanceToCampus - b.buildingData.distanceToCampus
           );
           break;
         default:
           break;
       }
-      enrichedResults = enrichedResults.slice(0, size);
+      finalMain = finalMain.slice(0, size);
     }
 
-    res.status(200).send(JSON.stringify(enrichedResults));
+    // STEP 6: Return structured response
+    const response = {
+      main: finalMain,
+      additionalLocation: enrichLocation,
+      additionalPrice: enrichPrice,
+      additionalBedBath: enrichBedBath,
+    };
+
+    res.status(200).send(JSON.stringify(response));
   } catch (err) {
     console.error(err);
     res.status(400).send('Error');
@@ -1391,6 +1466,529 @@ app.post('/api/add-pending-building', authenticate, async (req, res) => {
 });
 
 /**
+ * Update Apartment Information - Updates the information of an existing apartment.
+ *
+ * @remarks
+ * This endpoint allows admins to update apartment information including name, address,
+ * landlord, amenities, photos, and other details. Only admins can access this endpoint.
+ *
+ * @route PUT /api/admin/update-apartment/:apartmentId
+ *
+ * @input {string} req.params.apartmentId - The ID of the apartment to update
+ * @input {Partial<Apartment>} req.body - The updated apartment information
+ *
+ * @status
+ * - 200: Successfully updated apartment information
+ * - 400: Invalid apartment data or missing required fields
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 404: Apartment not found
+ * - 500: Server error while updating apartment
+ */
+app.put('/api/admin/update-apartment/:apartmentId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const { apartmentId } = req.params;
+    const updatedApartmentData = req.body as Partial<Apartment>;
+
+    // Check if apartment exists
+    const apartmentDoc = buildingsCollection.doc(apartmentId);
+    const apartmentSnapshot = await apartmentDoc.get();
+
+    if (!apartmentSnapshot.exists) {
+      res.status(404).send('Apartment not found');
+      return;
+    }
+
+    // Validate required fields if they're being updated
+    if (updatedApartmentData.name !== undefined && updatedApartmentData.name === '') {
+      res.status(400).send('Error: Apartment name cannot be empty');
+      return;
+    }
+
+    if (updatedApartmentData.address !== undefined && updatedApartmentData.address === '') {
+      res.status(400).send('Error: Apartment address cannot be empty');
+      return;
+    }
+
+    // Validate and process roomTypes if provided
+    if (updatedApartmentData.roomTypes !== undefined) {
+      const roomTypes = updatedApartmentData.roomTypes as RoomType[];
+
+      // Generate UUIDs for room types without IDs and validate
+      const processedRoomTypes: RoomType[] = [];
+      const seen = new Set<string>();
+
+      // Validate each room type
+      const validationErrors = roomTypes
+        .map((rt: RoomType): string | null => {
+          // Validate beds, baths, price
+          if (!Number.isInteger(rt.beds) || rt.beds < 1) {
+            return 'Error: Beds must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.baths) || rt.baths < 1) {
+            return 'Error: Baths must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.price) || rt.price < 1) {
+            return 'Error: Price must be an integer >= 1';
+          }
+
+          // Check for duplicates using (beds, baths, price) combination
+          const key = `${rt.beds}-${rt.baths}-${rt.price}`;
+          if (seen.has(key)) {
+            return 'Duplicate room type exists';
+          }
+          seen.add(key);
+
+          // Generate UUID if not provided
+          const id = rt.id && rt.id.trim() !== '' ? rt.id : randomUUID();
+
+          processedRoomTypes.push({
+            id,
+            beds: rt.beds,
+            baths: rt.baths,
+            price: rt.price,
+          });
+
+          return null;
+        })
+        .filter((error: string | null): error is string => error !== null);
+
+      if (validationErrors.length > 0) {
+        res.status(400).send(validationErrors[0]);
+        return;
+      }
+
+      // Create updated data with processed room types
+      const dataToUpdate = {
+        ...updatedApartmentData,
+        roomTypes: processedRoomTypes,
+      };
+
+      // Update the apartment document
+      await apartmentDoc.update(dataToUpdate);
+    } else {
+      // Update the apartment document without roomTypes changes
+      await apartmentDoc.update(updatedApartmentData);
+    }
+
+    // Fetch the updated apartment to return with generated UUIDs
+    const updatedSnapshot = await apartmentDoc.get();
+    const updatedApartment = { id: updatedSnapshot.id, ...updatedSnapshot.data() };
+
+    res.status(200).json({
+      message: 'Apartment updated successfully',
+      apartment: updatedApartment,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error updating apartment');
+  }
+});
+
+/**
+ * geocodeAddress – Converts an address to latitude and longitude coordinates using Google Geocoding API.
+ *
+ * @remarks
+ * Makes an HTTP request to the Google Geocoding API to convert an address string into
+ * precise latitude and longitude coordinates.
+ *
+ * @param {string} address - The address to geocode
+ * @return {Promise<{latitude: number, longitude: number}>} - Object containing latitude and longitude
+ */
+async function geocodeAddress(address: string): Promise<{ latitude: number; longitude: number }> {
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address
+    )}&key=${REACT_APP_MAPS_API_KEY}`
+  );
+
+  if (response.data.status !== 'OK' || !response.data.results.length) {
+    throw new Error('Geocoding failed: Invalid address or no results found');
+  }
+
+  const { location } = response.data.results[0].geometry;
+  return {
+    latitude: location.lat,
+    longitude: location.lng,
+  };
+}
+
+/**
+ * Add New Apartment - Creates a new apartment with duplicate checking and distance calculation.
+ *
+ * @remarks
+ * This endpoint allows admins to create new apartments. It includes a multi-step process:
+ * 1. Validates input data and checks for existing apartments at the same coordinates
+ * 2. Calculates latitude/longitude and distance to campus using Google Maps API
+ * 3. Returns preliminary data for admin confirmation
+ * 4. Creates the apartment in the database after confirmation
+ *
+ * @route POST /api/admin/add-apartment
+ *
+ * @input {object} req.body - Apartment creation data containing:
+ *   - name: string (required)
+ *   - address: string (required)
+ *   - landlordId: string (required)
+ *   - numBaths: number (optional)
+ *   - numBeds: number (optional)
+ *   - photos: string[] (optional)
+ *   - area: 'COLLEGETOWN' | 'WEST' | 'NORTH' | 'DOWNTOWN' | 'OTHER' (required)
+ *   - confirm: boolean (optional) - if true, creates the apartment; if false, returns preliminary data
+ *
+ * @status
+ * - 200: Successfully created apartment (when confirm=true)
+ * - 201: Preliminary data returned for confirmation (when confirm=false)
+ * - 400: Invalid apartment data, missing required fields, or duplicate apartment found
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error while processing request
+ */
+app.post('/api/admin/add-apartment', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const {
+      name,
+      address,
+      landlordId,
+      roomTypes = [],
+      photos = [],
+      area,
+      confirm = false,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !address || !landlordId || !area) {
+      res.status(400).send('Error: Missing required fields (name, address, landlordId, area)');
+      return;
+    }
+
+    // Validate area is one of the allowed values
+    const validAreas = ['COLLEGETOWN', 'WEST', 'NORTH', 'DOWNTOWN', 'OTHER'];
+    if (!validAreas.includes(area)) {
+      res
+        .status(400)
+        .send('Error: Invalid area. Must be one of: COLLEGETOWN, WEST, NORTH, DOWNTOWN, OTHER');
+      return;
+    }
+
+    // Validate and process roomTypes if provided
+    const processedRoomTypes: RoomType[] = [];
+    if (roomTypes && roomTypes.length > 0) {
+      const seen = new Set<string>();
+
+      // Validate each room type
+      const validationErrors = roomTypes
+        .map((rt: RoomType): string | null => {
+          // Validate beds, baths, price
+          if (!Number.isInteger(rt.beds) || rt.beds < 1) {
+            return 'Error: Beds must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.baths) || rt.baths < 1) {
+            return 'Error: Baths must be an integer >= 1';
+          }
+          if (!Number.isInteger(rt.price) || rt.price < 1) {
+            return 'Error: Price must be an integer >= 1';
+          }
+
+          // Check for duplicates using (beds, baths, price) combination
+          const key = `${rt.beds}-${rt.baths}-${rt.price}`;
+          if (seen.has(key)) {
+            return 'Duplicate room type exists';
+          }
+          seen.add(key);
+
+          // Generate UUID for each room type
+          processedRoomTypes.push({
+            id: randomUUID(),
+            beds: rt.beds,
+            baths: rt.baths,
+            price: rt.price,
+          });
+
+          return null;
+        })
+        .filter((error: string | null): error is string => error !== null);
+
+      if (validationErrors.length > 0) {
+        res.status(400).send(validationErrors[0]);
+        return;
+      }
+    }
+
+    // Check if landlord exists
+    const landlordDoc = landlordCollection.doc(landlordId);
+    const landlordSnapshot = await landlordDoc.get();
+    if (!landlordSnapshot.exists) {
+      res.status(400).send('Error: Landlord not found');
+      return;
+    }
+
+    // Geocode the address to get coordinates
+    const coordinates = await geocodeAddress(address);
+    const { latitude, longitude } = coordinates;
+
+    // Calculate travel times using the coordinates
+    const { protocol } = req;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
+    const travelTimesResponse = await axios.post(`${baseUrl}/api/calculate-travel-times`, {
+      origin: `${latitude},${longitude}`,
+    });
+
+    const travelTimes = travelTimesResponse.data;
+    const distanceToCampus = travelTimes.hoPlazaWalking;
+
+    // Check for existing apartments at the same coordinates (with small tolerance)
+    const tolerance = 0.0001; // Approximately 11 meters
+    const existingApartments = await buildingsCollection
+      .where('latitude', '>=', latitude - tolerance)
+      .where('latitude', '<=', latitude + tolerance)
+      .where('longitude', '>=', longitude - tolerance)
+      .where('longitude', '<=', longitude + tolerance)
+      .get();
+
+    if (!existingApartments.empty) {
+      res.status(400).send('Error: An apartment already exists at this location');
+      return;
+    }
+
+    // Prepare apartment data
+    const apartmentData: Apartment = {
+      name,
+      address,
+      landlordId,
+      roomTypes: processedRoomTypes as readonly RoomType[],
+      photos,
+      area,
+      latitude,
+      longitude,
+      distanceToCampus,
+    };
+
+    if (!confirm) {
+      // Return preliminary data for admin confirmation
+      res.status(201).json({
+        message: 'Preliminary data calculated. Please confirm to create apartment.',
+        apartmentData,
+        travelTimes,
+        coordinates: { latitude, longitude },
+      });
+      return;
+    }
+
+    // Create the apartment in the database
+    const apartmentDoc = buildingsCollection.doc();
+    await apartmentDoc.set(apartmentData);
+
+    // Update landlord's properties list
+    const landlordData = landlordSnapshot.data();
+    const updatedProperties = [...(landlordData?.properties || []), apartmentDoc.id];
+    await landlordDoc.update({ properties: updatedProperties });
+
+    // Store travel times for the new apartment
+    await travelTimesCollection.doc(apartmentDoc.id).set(travelTimes);
+
+    res.status(200).json({
+      message: 'Apartment created successfully',
+      apartmentId: apartmentDoc.id,
+      apartmentData,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error creating apartment');
+  }
+});
+
+/**
+ * Migrate All Apartments Schema - Migrates all apartments from old schema to new room types schema.
+ *
+ * @remarks
+ * This endpoint performs a one-time migration of all apartments in the database:
+ * 1. Initializes roomTypes as empty array []
+ * 2. Deletes old fields: numBeds, numBaths, price
+ * 3. Processes apartments in batches of 100 (3 batches total for ~300 apartments)
+ * 4. Returns summary of migration success/failures
+ *
+ * @route POST /api/admin/migrate-all-apartments-schema
+ *
+ * @input {object} req.body - Migration options containing:
+ *   - dryRun: boolean (optional) - if true, returns count without making changes
+ *
+ * @status
+ * - 200: Migration completed successfully (returns summary)
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error during migration
+ */
+app.post('/api/admin/migrate-all-apartments-schema', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  const isAdmin = email && admins.includes(email);
+
+  if (!isAdmin) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const { dryRun = false } = req.body;
+
+    // Fetch all apartments
+    const apartmentsSnapshot = await buildingsCollection.get();
+    const totalApartments = apartmentsSnapshot.size;
+
+    if (dryRun) {
+      // Dry run: just return count and preview
+      const sampleApartments = apartmentsSnapshot.docs.slice(0, 3).map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          hasOldSchema: 'numBeds' in data || 'numBaths' in data || 'price' in data,
+          currentData: { numBeds: data.numBeds, numBaths: data.numBaths, price: data.price },
+        };
+      });
+
+      res.status(200).json({
+        dryRun: true,
+        totalApartments,
+        message: `Would migrate ${totalApartments} apartments`,
+        sampleApartments,
+      });
+      return;
+    }
+
+    // Actual migration
+    const startTime = Date.now();
+    const batchSize = 100;
+    const batches = Math.ceil(totalApartments / batchSize);
+
+    let migrated = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    console.log(`Starting migration of ${totalApartments} apartments in ${batches} batches...`);
+
+    // Process in batches
+    const batchIndices = Array.from({ length: batches }, (_, i) => i);
+
+    await batchIndices.reduce(async (promise, batchIndex) => {
+      await promise;
+
+      const batchStartTime = Date.now();
+      const start = batchIndex * batchSize;
+      const end = Math.min(start + batchSize, totalApartments);
+      const batchDocs = apartmentsSnapshot.docs.slice(start, end);
+
+      console.log(
+        `Processing batch ${batchIndex + 1}/${batches} (${batchDocs.length} apartments)...`
+      );
+
+      // Process batch
+      const batch = db.batch();
+
+      batchDocs.forEach((doc) => {
+        try {
+          const data = doc.data();
+
+          // Check for corrupted data
+          if (!data.name || !data.address) {
+            errors.push(`Apartment ${doc.id}: Missing required fields (name or address)`);
+            failed += 1;
+            return;
+          }
+
+          // Create migrated apartment data
+          // If old schema fields exist, preserve them as a single RoomType entry
+          const legacyRoomType =
+            data.numBeds != null && data.numBaths != null && data.price != null
+              ? [
+                  {
+                    id: `${doc.id}_legacy`,
+                    beds: data.numBeds,
+                    baths: data.numBaths,
+                    price: data.price,
+                  },
+                ]
+              : [];
+
+          const migratedData: Record<string, unknown> = {
+            name: data.name,
+            address: data.address,
+            landlordId: data.landlordId || null,
+            roomTypes: legacyRoomType,
+            photos: data.photos || [],
+            area: data.area || 'OTHER',
+            latitude: data.latitude || 0,
+            longitude: data.longitude || 0,
+            distanceToCampus: data.distanceToCampus || 0,
+          };
+
+          // Use batch.set to replace the document entirely (deletes old fields)
+          batch.set(doc.ref, migratedData);
+          migrated += 1;
+        } catch (err) {
+          const errorMsg = `Apartment ${doc.id}: ${
+            err instanceof Error ? err.message : 'Unknown error'
+          }`;
+          errors.push(errorMsg);
+          failed += 1;
+          console.error(errorMsg);
+        }
+      });
+
+      // Commit batch
+      await batch.commit();
+
+      const batchDuration = Date.now() - batchStartTime;
+      console.log(`Batch ${batchIndex + 1}/${batches} completed in ${batchDuration}ms`);
+    }, Promise.resolve());
+
+    const totalDuration = Date.now() - startTime;
+
+    const summary = {
+      success: true,
+      totalApartments,
+      migrated,
+      failed,
+      errors,
+      durationMs: totalDuration,
+      message: `Migration completed: ${migrated} migrated, ${failed} failed`,
+    };
+
+    console.log('Migration summary:', summary);
+
+    res.status(200).json(summary);
+  } catch (err) {
+    console.error('Migration error:', err);
+    res
+      .status(500)
+      .send(`Error during migration: ${err instanceof Error ? err.message : 'Unknown error'}`);
+  }
+});
+
+/**
  * Update Pending Building Status - Updates the status of a pending building report.
  *
  * @remarks
@@ -1515,7 +2113,6 @@ app.put(
   }
 );
 
-const { REACT_APP_MAPS_API_KEY } = process.env;
 const LANDMARKS = {
   eng_quad: '42.4445,-76.4836', // Duffield Hall
   ag_quad: '42.4489,-76.4780', // Mann Library

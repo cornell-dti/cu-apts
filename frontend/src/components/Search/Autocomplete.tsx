@@ -55,11 +55,26 @@ const defaultFilters: FilterState = {
 
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [openFilter, setOpenFilter] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isSearchResults = location.pathname.startsWith('/search');
+
+  // Initialize filters and query from URL if on search results page
+  const getInitialState = () => {
+    if (isSearchResults) {
+      const params = new URLSearchParams(location.search);
+      const query = params.get('q') || '';
+      const filtersParam = params.get('filters');
+      const filters = filtersParam ? JSON.parse(decodeURIComponent(filtersParam)) : defaultFilters;
+      return { query, filters };
+    }
+    return { query: '', filters: defaultFilters };
+  };
+
+  const initialState = getInitialState();
+  const [filters, setFilters] = useState<FilterState>(initialState.filters);
+  const [initialQuery] = useState(initialState.query);
+  const [openFilter, setOpenFilter] = useState(false);
 
   const useStyles = makeStyles((theme) => ({
     menuList: {
@@ -181,13 +196,42 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const [focus, setFocus] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const history = useHistory();
+
+  // Update query and filters when URL changes (for search results page)
+  useEffect(() => {
+    if (isSearchResults) {
+      const params = new URLSearchParams(location.search);
+      const urlQuery = params.get('q') || '';
+      const filtersParam = params.get('filters');
+      const urlFilters = filtersParam
+        ? JSON.parse(decodeURIComponent(filtersParam))
+        : defaultFilters;
+
+      // Mark that this update is from URL, not user typing
+      setIsUserTyping(false);
+      setQuery(urlQuery);
+      setFilters(urlFilters);
+      setOpenMenu(false);
+
+      // Blur the input to ensure dropdown doesn't show
+      setTimeout(() => {
+        if (inputRef.current) {
+          const textField = inputRef.current.querySelector('input');
+          if (textField) {
+            textField.blur();
+          }
+        }
+      }, 0);
+    }
+  }, [location.search, isSearchResults]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -217,13 +261,13 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     if (event.key === 'ArrowDown') {
       setFocus(true);
     } else if (event.key === 'Enter' && checkIfSearchable()) {
-      setFocus(true);
+      setFocus(false);
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
-      history.push(`/search?q=${query}&filters=${filterParams}`);
-      setQuery('');
+      setIsUserTyping(false);
       setOpenMenu(false);
+      history.push(`/search?q=${query}&filters=${filterParams}`);
     }
   }
 
@@ -232,8 +276,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
+      setIsUserTyping(false);
+      setOpenMenu(false);
       history.push(`/search?q=${query}&filters=${filterParams}`);
-      setQuery('');
     }
   };
 
@@ -251,6 +296,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     setQuery(query);
     setSelected(null);
     setOpenFilter(false);
+    setIsUserTyping(true); // Mark that user is actively typing
     if (query !== '') {
       setLoading(true);
     } else {
@@ -288,9 +334,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                 autoFocusItem={focus}
                 onKeyDown={handleListKeyDown}
               >
-                {options.length === 0 ? (
+                {options.length === 0 && query.trim().length > 0 ? (
                   <MenuItem disabled>No search results.</MenuItem>
-                ) : (
+                ) : options.length === 0 ? null : (
                   options.map(({ id, name, address, label }, index) => {
                     return (
                       <Link
@@ -340,12 +386,13 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   useEffect(() => {
     if (query === '') {
       setOpenMenu(false);
-    } else if (selected === null) {
+    } else if (selected === null && isUserTyping) {
+      // Only open menu if user is actively typing, not from URL
       setOpenMenu(true);
     } else {
       setOpenMenu(false);
     }
-  }, [query, selected]);
+  }, [query, selected, isUserTyping]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -578,6 +625,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
             open={openFilter}
             handleSearch={handleSearchIconClick}
             isMobile={isMobile}
+            isSearchResultsPage={isSearchResults}
           />
         </div>
       </ClickAwayListener>

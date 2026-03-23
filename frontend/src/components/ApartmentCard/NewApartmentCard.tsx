@@ -18,6 +18,7 @@ import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { ApartmentWithId } from '../../../../common/types/db-types';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
+import { formatPriceRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -193,7 +194,7 @@ const NewApartmentCard = ({
   user,
   setUser,
 }: Props): ReactElement => {
-  const { id, name, photos, address, numBeds = 0, distanceToCampus = 0 } = buildingData;
+  const { id, name, photos, address, distanceToCampus = 0, roomTypes } = buildingData;
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
@@ -201,6 +202,12 @@ const NewApartmentCard = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
+
+  // Get price range from room types
+  const roomTypeRange = getRoomTypeRange(roomTypes);
+  const priceDisplay = roomTypeRange
+    ? formatPriceRange(roomTypeRange.minPrice, roomTypeRange.maxPrice)
+    : 'Coming soon';
 
   const {
     root,
@@ -318,13 +325,7 @@ const NewApartmentCard = ({
           <div className={apartmentStats}>
             <div className={apartmentStatsContainer}>
               <img src={moneyIcon} alt="money" className={apartmentMoneyIcon} />
-              <Typography className={apartmentStatsText}>$2K - $3K</Typography>
-            </div>
-            <div className={apartmentStatsContainer}>
-              <img src={bedIcon} alt="bed" className={apartmentBedIcon} />
-              <Typography className={apartmentStatsText}>
-                {numBeds ? `${numBeds - 1}-${numBeds + 1}` : '0'} bed
-              </Typography>
+              <Typography className={apartmentStatsText}>{priceDisplay}</Typography>
             </div>
           </div>
         </div>
