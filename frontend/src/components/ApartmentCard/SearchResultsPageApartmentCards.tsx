@@ -47,16 +47,9 @@ const useStyles = makeStyles({
   cardsContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '12px',
+    columnGap: '6px',
+    rowGap: '12px',
     padding: '4px',
-    height: '600px',
-    overflowY: 'auto',
-    scrollbarWidth: 'none', // Firefox
-    '&::-webkit-scrollbar': {
-      // Chrome, Safari, Edge
-      display: 'none',
-    },
-    '-ms-overflow-style': 'none',
     '@media (max-width: 600px)': {
       gridTemplateColumns: 'repeat(2, 1fr)',
       gap: '4px',
@@ -129,27 +122,23 @@ const ApartmentCards = ({
             ({ buildingData, numReviews, company, avgRating }, index) => {
               const { id } = buildingData;
               return (
-                <>
-                  <div key={index}>
-                    <Link
-                      {...{
-                        to: `/apartment/${id}`,
-                        style: { textDecoration: 'none' },
-                        component: RouterLink,
-                      }}
-                    >
-                      <NewApartmentCard
-                        key={index}
-                        numReviews={numReviews}
-                        avgRating={avgRating ?? 0}
-                        buildingData={buildingData}
-                        company={company}
-                        user={user}
-                        setUser={setUser}
-                      />
-                    </Link>
-                  </div>
-                </>
+                <Link
+                  key={index}
+                  {...{
+                    to: `/apartment/${id}`,
+                    style: { textDecoration: 'none', display: 'block' },
+                    component: RouterLink,
+                  }}
+                >
+                  <NewApartmentCard
+                    numReviews={numReviews}
+                    avgRating={avgRating ?? 0}
+                    buildingData={buildingData}
+                    company={company}
+                    user={user}
+                    setUser={setUser}
+                  />
+                </Link>
               );
             }
           )}

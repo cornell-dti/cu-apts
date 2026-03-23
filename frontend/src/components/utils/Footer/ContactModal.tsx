@@ -22,6 +22,8 @@ import { QuestionForm } from '../../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../../utils/firebase';
 import { includesProfanity } from '../../../utils/profanity';
 import { ReactComponent as XIcon } from '../../../assets/xIcon.svg';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const PHOTOS_LIMIT = 3;
 const PHOTO_MAX_MB = 10;

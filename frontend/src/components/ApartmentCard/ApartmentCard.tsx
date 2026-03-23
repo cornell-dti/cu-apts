@@ -21,6 +21,9 @@ import HeartRating from '../utils/HeartRating';
 import { getAverageRating } from '../../utils/average';
 import { colors } from '../../colors';
 import { Link as RouterLink } from 'react-router-dom';
+import { formatPriceRange, formatBedsRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -353,27 +356,46 @@ const ApartmentCard = ({
               >
                 {`Rating: ${avgRating.toFixed(1)}`}
               </Typography>
-              <Typography
-                variant="h6"
-                className={reviewNum}
-                style={{ fontSize: '10px', lineHeight: 'normal' }}
-              >
-                {`Beds: ${buildingData.numBeds}`}
-              </Typography>
-              <Typography
-                variant="h6"
-                className={reviewNum}
-                style={{ fontSize: '10px', lineHeight: 'normal' }}
-              >
-                {`Baths: ${buildingData.numBaths}`}
-              </Typography>
-              <Typography
-                variant="h6"
-                className={reviewNum}
-                style={{ fontSize: '10px', lineHeight: 'normal' }}
-              >
-                {`Price: ${buildingData.price}`}
-              </Typography>
+              {/* Room Types Display */}
+              {(() => {
+                const roomTypeRange = getRoomTypeRange(buildingData.roomTypes);
+                if (!roomTypeRange) {
+                  // No room types - show coming soon message
+                  return (
+                    <Typography
+                      variant="h6"
+                      className={reviewNum}
+                      style={{
+                        fontSize: '10px',
+                        lineHeight: 'normal',
+                        fontStyle: 'italic',
+                        color: '#999',
+                      }}
+                    >
+                      Room type information coming soon
+                    </Typography>
+                  );
+                }
+                // Has room types - show price and beds
+                return (
+                  <>
+                    <Typography
+                      variant="h6"
+                      className={reviewNum}
+                      style={{ fontSize: '10px', lineHeight: 'normal' }}
+                    >
+                      {formatPriceRange(roomTypeRange.minPrice, roomTypeRange.maxPrice)}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      className={reviewNum}
+                      style={{ fontSize: '10px', lineHeight: 'normal' }}
+                    >
+                      {formatBedsRange(roomTypeRange.minBeds, roomTypeRange.maxBeds)}
+                    </Typography>
+                  </>
+                );
+              })()}
             </Grid>
           )}
           {/* Sample Review */}

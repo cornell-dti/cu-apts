@@ -18,6 +18,9 @@ import { ApartmentWithId } from '../../../../common/types/db-types';
 import AddToFolderPopover from '../Folder/AddToFolderPopover';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
+import { formatPriceRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -193,7 +196,7 @@ const NewApartmentCard = ({
   user,
   setUser,
 }: Props): ReactElement => {
-  const { id, name, photos, address, numBeds = 0, distanceToCampus = 0 } = buildingData;
+  const { id, name, photos, address, distanceToCampus = 0, roomTypes } = buildingData;
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const img = photos.length > 0 ? photos[0] : ApartmentImg;
@@ -202,6 +205,13 @@ const NewApartmentCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
   const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
+  const [numBeds, setNumBeds] = useState<number | null>(null);
+
+  // Get price range from room types
+  const roomTypeRange = getRoomTypeRange(roomTypes);
+  const priceDisplay = roomTypeRange
+    ? formatPriceRange(roomTypeRange.minPrice, roomTypeRange.maxPrice)
+    : 'Coming soon';
 
   const {
     root,
