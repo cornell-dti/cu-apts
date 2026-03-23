@@ -852,7 +852,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
             {showLandlordEmailError && (
               <Toast
                 isOpen={showLandlordEmailError}
-                severity="success"
+                severity="error"
                 message="Error sending email. Please try again."
                 time={toastTime}
               />

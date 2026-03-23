@@ -201,10 +201,8 @@ const ConfirmLandlordMessagingModal = ({
       const headers = createAuthHeaders(token);
 
       const response = await axios.post(
-        `/api/send-email-to-landlord/${encodeURIComponent(email)}/${encodeURIComponent(
-          message
-        )}/${encodeURIComponent(textSubject)}`,
-        {},
+        `/api/send-email-to-landlord`,
+        { landlordEmail: email, message, subject: textSubject },
         headers
       );
 
