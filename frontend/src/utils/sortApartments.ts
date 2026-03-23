@@ -1,5 +1,7 @@
 import { CardData } from '../App';
 import { ApartmentWithId } from '../../../common/types/db-types';
+import { getMinPrice, getMaxPrice } from './roomTypeUtils';
+
 export type AptSortFields = keyof CardData | keyof ApartmentWithId | 'originalOrder';
 
 /**
@@ -8,6 +10,9 @@ export type AptSortFields = keyof CardData | keyof ApartmentWithId | 'originalOr
  * @remarks
  * Creates a shallow copy of the input array and sorts it based on either CardData or ApartmentWithId properties.
  * If the property values are equal, sorts by apartment ID as a tiebreaker.
+ * For price sorting, uses room types data to get min/max prices:
+ * - orderLowToHigh = true: Uses minimum price from room types (cheapest option)
+ * - orderLowToHigh = false: Uses maximum price from room types (most expensive option)
  *
  * @param {CardData[]} arr - Array of apartment card data to sort
  * @param {AptSortFields} property - Property to sort apartments by
@@ -24,8 +29,22 @@ const sortApartments = (arr: CardData[], property: AptSortFields, orderLowToHigh
   return clonedArr.sort((r1, r2) => {
     let first, second;
 
+    // Special handling for price sorting with room types
+    if (property === 'avgPrice') {
+      const roomTypes1 = r1.buildingData?.roomTypes;
+      const roomTypes2 = r2.buildingData?.roomTypes;
+
+      // For lowest price sorting, use min price; for highest price, use max price
+      if (orderLowToHigh) {
+        first = getMinPrice(roomTypes1 || []) ?? r1.avgPrice ?? 0;
+        second = getMinPrice(roomTypes2 || []) ?? r2.avgPrice ?? 0;
+      } else {
+        first = getMaxPrice(roomTypes1 || []) ?? r1.avgPrice ?? 0;
+        second = getMaxPrice(roomTypes2 || []) ?? r2.avgPrice ?? 0;
+      }
+    }
     //if property is a key of ApartmentWithId, then sort by that property using r1?.buildingData[property]
-    if (property in r1.buildingData) {
+    else if (property in r1.buildingData) {
       const prop = property as keyof ApartmentWithId;
       first = r1.buildingData?.[prop] ?? 0;
       second = r2.buildingData?.[prop] ?? 0;

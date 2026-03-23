@@ -418,6 +418,7 @@ const NavBar = ({ headersData, user, setUser }: Props): ReactElement => {
                     Bookmarks
                   </Button>
                 </li>
+
                 <li>
                   {' '}
                   <Button

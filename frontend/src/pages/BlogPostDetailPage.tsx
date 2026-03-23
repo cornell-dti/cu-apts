@@ -8,7 +8,6 @@ import axios from 'axios';
 import { useParams, useHistory } from 'react-router-dom';
 import { useTitle } from '../utils';
 import heroImage from '../assets/blog-hero.jpg';
-import firebase from 'firebase/app';
 
 type BlogPost = {
   readonly id: string;
