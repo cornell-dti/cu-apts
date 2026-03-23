@@ -1,5 +1,5 @@
 import { ScrapedProperty } from './types';
-import { scrapePJApts } from './agencies/pjapts';
+import scrapePJApts from './agencies/pjapts';
 
 /**
  * Registry of all supported agencies.
@@ -19,14 +19,14 @@ export type OrchestratorOptions = {
 
 export type OrchestratorResult = {
   results: ScrapedProperty[];
-  /** Agencies that threw an unrecoverable error */
+  // Agencies that threw an unrecoverable error
   errors: { agency: string; message: string }[];
 };
 
 /**
  * Runs the requested scrapers in parallel.
  * Per-agency errors are caught and surfaced in `errors` rather than
- * propagating — so one broken agency doesn't abort the whole run.
+ * propagating
  */
 export async function runScrapers(options: OrchestratorOptions): Promise<OrchestratorResult> {
   const requested = options.agencies === 'all' ? SUPPORTED_AGENCIES : options.agencies;
