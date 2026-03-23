@@ -7,6 +7,8 @@
     "add_buildings": "ts-node scripts/add_buildings.ts",
     "add_landlords": "ts-node scripts/add_landlords.ts",
     "add_reviews": "ts-node scripts/add_reviews_nodups.ts",
+    "export_apartments": "env-cmd -f ../.env.prod ts-node scripts/export_apartments.ts",
+    "update_apartments": "env-cmd -f ../.env.prod ts-node scripts/update_apartments_from_csv.ts",
     "build": "tsc",
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
