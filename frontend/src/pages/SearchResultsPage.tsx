@@ -4,15 +4,14 @@ import { useLocation } from 'react-router-dom';
 import { get } from '../utils/call';
 import { colors } from '../colors';
 import { CardData } from '../App';
-import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useTitle } from '../utils';
-import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 import { defaultFilters } from '../components/Search/FilterSection';
 import Autocomplete from '../components/Search/Autocomplete';
 import SearchResultsPageApartmentCards from '../components/ApartmentCard/SearchResultsPageApartmentCards';
 import SearchResultsMap from '../components/Search/SearchResultsMap';
 import SortDropDown from '../components/Search/SortDropDown';
 import { ApartmentWithId } from '../../../common/types/db-types';
+import { useModal } from '../components/utils/Footer/ContactModalContext';
 
 const useStyles = makeStyles({
   header: {
@@ -94,6 +93,7 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   }, [path.search]);
 
   const isMobile = useMediaQuery('(max-width:600px)');
+  const { openModal } = useModal();
 
   useTitle('Search Result');
 
@@ -226,6 +226,22 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
               sortMethod={sortBy}
               orderLowToHigh={sortLowToHigh}
             />
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+              <Typography variant="body1" color="textSecondary">
+                Can't find your apartment? Tell us about it{' '}
+                <span
+                  onClick={openModal}
+                  style={{
+                    color: colors.red1,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                  }}
+                >
+                  here
+                </span>
+                !
+              </Typography>
+            </div>
           </div>
           <div className={mapContainer}>
             <SearchResultsMap
@@ -265,6 +281,27 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
               sortMethod={sortBy}
               orderLowToHigh={sortLowToHigh}
             />
+            <div
+              style={{
+                textAlign: 'center',
+                marginTop: '10px',
+              }}
+            >
+              <Typography variant="body1" color="textSecondary">
+                Can't find your apartment? Tell us about it{' '}
+                <span
+                  onClick={openModal}
+                  style={{
+                    color: colors.red1,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                  }}
+                >
+                  here
+                </span>
+                !
+              </Typography>
+            </div>
           </div>
         </div>
       )}

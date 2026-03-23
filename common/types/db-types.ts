@@ -87,6 +87,7 @@ export type CantFindApartmentForm = {
   readonly address: string;
   readonly photos: readonly string[];
   readonly userId?: string | null;
+  readonly review: string;
 };
 
 export type CantFindApartmentFormWithId = CantFindApartmentForm & Id;
