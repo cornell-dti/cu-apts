@@ -184,7 +184,13 @@ const AdminPage = (): ReactElement => {
   const [initResults, setInitResults] = useState<string[]>([]);
 
   // Admin whitelist state
-  type WhitelistEntry = { id: string; email: string; addedAt?: string; addedBy?: string };
+  type FirestoreTimestamp = { _seconds: number; _nanoseconds: number };
+  type WhitelistEntry = {
+    id: string;
+    email: string;
+    addedAt?: string | FirestoreTimestamp;
+    addedBy?: string;
+  };
   const [superadmins, setSuperadmins] = useState<string[]>([]);
   const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
   const [whitelistLoading, setWhitelistLoading] = useState(false);
@@ -1935,7 +1941,13 @@ const AdminPage = (): ReactElement => {
                   <TableCell>{entry.email}</TableCell>
                   <TableCell>{entry.addedBy ?? '—'}</TableCell>
                   <TableCell>
-                    {entry.addedAt ? new Date(entry.addedAt).toLocaleDateString() : '—'}
+                    {entry.addedAt
+                      ? new Date(
+                          typeof entry.addedAt === 'object'
+                            ? entry.addedAt._seconds * 1000
+                            : entry.addedAt
+                        ).toLocaleDateString()
+                      : '—'}
                   </TableCell>
                   <TableCell>
                     {confirmRemoveEmail === entry.email ? (
