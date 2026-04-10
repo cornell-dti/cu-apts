@@ -1,5 +1,4 @@
 import firebase from 'firebase/app';
-import { config } from 'dotenv';
 import { AxiosRequestConfig } from 'axios';
 import { Likes } from '../../../common/types/db-types';
 import { v4 as uuid } from 'uuid';
@@ -8,8 +7,6 @@ import 'firebase/auth'; // for authentication
 import 'firebase/storage'; // for storage
 import 'firebase/database'; // for realtime database
 import 'firebase/firestore'; // for cloud firestore
-
-config();
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -76,4 +73,18 @@ const uploadFile = async (file: File) => {
   return await result.ref.getDownloadURL();
 };
 
-export { createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
+const uploadBlogCoverAndSave = async (postId: string, file: File) => {
+  const storageRef = storage.ref();
+  const fileRef = storageRef.child(`blogcovers/${postId}/cover_${Date.now()}_${file.name}`);
+
+  await fileRef.put(file);
+  const url = await fileRef.getDownloadURL();
+
+  await firestore.collection('blogposts').doc(postId).update({
+    coverImageUrl: url,
+  });
+
+  return url;
+};
+
+export { uploadBlogCoverAndSave, createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
