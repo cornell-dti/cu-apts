@@ -292,7 +292,7 @@ const ContactModal = ({ user }: Props) => {
       return;
     }
 
-    const newFiles = [...files].slice(0, availablePhotos);
+    const newFiles = Array.from(files).slice(0, availablePhotos);
     const bigPhoto = newFiles.find((newFiles) => newFiles.size > PHOTO_MAX_MB * Math.pow(1024, 2));
     if (bigPhoto) {
       console.log(`File ${bigPhoto.name} exceeds max size of ${PHOTO_MAX_MB}`);

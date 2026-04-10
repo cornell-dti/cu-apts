@@ -288,7 +288,7 @@ const ReviewModal = ({
       return;
     }
 
-    const newFiles = [...files].slice(0, availablePhotos);
+    const newFiles = Array.from(files).slice(0, availablePhotos);
     const bigPhoto = newFiles.find(
       (newFiles) => newFiles.size > REVIEW_PHOTO_MAX_MB * Math.pow(1024, 2)
     );

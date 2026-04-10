@@ -173,6 +173,10 @@ const AdminPage = (): ReactElement => {
   const [previewData, setPreviewData] = useState<any>(null);
   const [createError, setCreateError] = useState('');
 
+  const [scraperStatus, setScraperStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [scraperSummary, setScraperSummary] = useState<any>(null);
+  const [scraperError, setScraperError] = useState<string>('');
+
   // Debug apartments state changes
   useEffect(() => {
     console.log('Apartments loaded:', apartments.length);
@@ -426,6 +430,53 @@ const AdminPage = (): ReactElement => {
       setMigrationProgress(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setMigrationStatus('error');
     }
+  };
+
+  const handleRunScraper = async () => {
+    try {
+      setScraperStatus('running');
+      setScraperSummary(null);
+      setScraperError('');
+
+      const user = await getUser();
+      if (!user) {
+        alert('You must be logged in to run the scraper');
+        setScraperStatus('idle');
+        return;
+      }
+
+      const token = await user.getIdToken(true);
+      const response = await axios.post('/api/admin/run-scraper', {}, createAuthHeaders(token));
+
+      setScraperSummary(response.data);
+      setScraperStatus('done');
+    } catch (error: any) {
+      console.error('Scraper error:', error);
+      setScraperError(error.response?.data || error.message || 'Unknown error');
+      setScraperStatus('error');
+    }
+  };
+
+  const handleDownloadScraperCSV = async () => {
+    const user = await getUser();
+    if (!user) return;
+    const token = await user.getIdToken(true);
+
+    // Fetch with auth header and trigger browser download
+    const response = await fetch('/api/admin/scraper-results.csv', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      alert('No scraper results found. Run the scraper first.');
+      return;
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scraper_diff.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Room Types Edit Handlers
@@ -987,6 +1038,123 @@ const AdminPage = (): ReactElement => {
                     ))}
                   </Box>
                 )}
+              </Box>
+            )}
+          </Box>
+
+          <Box
+            style={{
+              marginBottom: '40px',
+              padding: '20px',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography variant="h5" style={{ marginBottom: '15px', fontWeight: 'bold' }}>
+              Web Scraper
+            </Typography>
+            <Typography variant="body1" style={{ marginBottom: '15px', color: '#666' }}>
+              Scrapes property data from registered agency websites (e.g. PJ Apartments) and
+              compares results against the current database. Downloads a CSV showing new listings
+              and changed fields (beds, baths, price) that you can review before applying updates.
+            </Typography>
+
+            <Box style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleRunScraper}
+                disabled={scraperStatus === 'running'}
+              >
+                {scraperStatus === 'running' ? 'Scraping...' : 'Run Scraper'}
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleDownloadScraperCSV}
+                disabled={scraperStatus === 'running' || scraperStatus === 'idle'}
+              >
+                Download Results CSV
+              </Button>
+            </Box>
+
+            {scraperStatus === 'running' && (
+              <Box
+                style={{
+                  padding: '10px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '4px',
+                }}
+              >
+                <Typography variant="body2" style={{ fontFamily: 'monospace' }}>
+                  Scraping in progress — this may take a minute...
+                </Typography>
+              </Box>
+            )}
+
+            {scraperStatus === 'error' && (
+              <Box
+                style={{
+                  padding: '10px',
+                  backgroundColor: '#fff3f3',
+                  borderRadius: '4px',
+                  border: '1px solid #ffcdd2',
+                }}
+              >
+                <Typography variant="body2" style={{ fontFamily: 'monospace', color: 'red' }}>
+                  Error: {scraperError}
+                </Typography>
+              </Box>
+            )}
+
+            {scraperStatus === 'done' && scraperSummary && (
+              <Box
+                style={{
+                  padding: '15px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '4px',
+                }}
+              >
+                <Typography variant="body2" style={{ marginBottom: '8px', fontWeight: 'bold' }}>
+                  Scrape Complete:
+                </Typography>
+                <Typography variant="body2" style={{ fontFamily: 'monospace' }}>
+                  Total scraped: {scraperSummary.total}
+                </Typography>
+                <Typography variant="body2" style={{ fontFamily: 'monospace', color: '#1565c0' }}>
+                  New (not in DB): {scraperSummary.newCount}
+                </Typography>
+                <Typography variant="body2" style={{ fontFamily: 'monospace', color: '#e65100' }}>
+                  Changed (beds/baths/price differ): {scraperSummary.changedCount}
+                </Typography>
+                <Typography variant="body2" style={{ fontFamily: 'monospace', color: 'green' }}>
+                  Unchanged: {scraperSummary.unchangedCount}
+                </Typography>
+                {scraperSummary.scraperErrors && scraperSummary.scraperErrors.length > 0 && (
+                  <Box style={{ marginTop: '10px' }}>
+                    <Typography variant="body2" style={{ fontWeight: 'bold', color: 'red' }}>
+                      Agency errors:
+                    </Typography>
+                    {scraperSummary.scraperErrors.map(
+                      (e: { agency: string; message: string }, idx: number) => (
+                        <Typography
+                          key={idx}
+                          variant="body2"
+                          style={{ fontFamily: 'monospace', fontSize: '11px' }}
+                        >
+                          {e.agency}: {e.message}
+                        </Typography>
+                      )
+                    )}
+                  </Box>
+                )}
+                <Typography
+                  variant="body2"
+                  style={{ marginTop: '10px', color: '#666', fontSize: '12px' }}
+                >
+                  Download the CSV, review/edit changes, then run{' '}
+                  <code>yarn update_apartments</code> to apply updates to the database.
+                </Typography>
               </Box>
             )}
           </Box>
