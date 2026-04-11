@@ -253,6 +253,14 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
             <Typography className={classes.emptyStateText}>
               Create your first folder to start organizing apartments
             </Typography>
+            <Button
+              variant="outlined"
+              color="primary"
+              style={{ marginTop: '1.5em' }}
+              onClick={() => setShowCreateDialog(true)}
+            >
+              Create Folder
+            </Button>
           </Box>
         ) : (
           <div className={classes.gridContainer}>

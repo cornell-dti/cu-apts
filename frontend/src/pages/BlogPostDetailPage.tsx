@@ -323,6 +323,10 @@ const BlogPostDetailPage = (): ReactElement => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [postId]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const fetchPost = async () => {
