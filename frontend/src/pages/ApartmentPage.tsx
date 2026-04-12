@@ -8,6 +8,7 @@ import {
   Typography,
   makeStyles,
   Box,
+  Chip,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
@@ -27,6 +28,7 @@ import {
   ApartmentWithId,
   DetailedRating,
   LocationTravelTimes,
+  TagWithId,
 } from '../../../common/types/db-types';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
@@ -181,6 +183,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     showToast(setShowLandlordEmailError);
   };
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [tags, setTags] = useState<TagWithId[]>([]);
 
   const handleLike = async (likedId: string, targetType: 'review' | 'blogPost') => {
     try {
@@ -231,6 +234,12 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
       callback: setAptData,
       errorHandler: handlePageNotFound,
+    });
+  }, [aptId]);
+
+  useEffect(() => {
+    get<TagWithId[]>(`/api/apts/${aptId}/tags`, {
+      callback: setTags,
     });
   }, [aptId]);
 
@@ -770,6 +779,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const InfoSection = landlordData && (
     <Grid item xs={12}>
+      <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
+        Tags
+      </Typography>
+      {tags.length === 0 ? (
+        <Typography style={{ marginBottom: '24px' }}>No tags yet.</Typography>
+      ) : (
+        <Box style={{ marginBottom: '24px' }}>
+          {tags.map((tag) => (
+            <Chip
+              key={tag.id}
+              label={tag.name}
+              style={{ marginRight: '8px', marginBottom: '8px' }}
+            />
+          ))}
+        </Box>
+      )}
       <Typography variant="h3" style={{ fontSize: '30px', fontWeight: 600, marginBottom: '14px' }}>
         Location
       </Typography>

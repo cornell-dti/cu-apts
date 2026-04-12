@@ -124,8 +124,8 @@ export type QuestionForm = {
 
 export type QuestionFormWithId = QuestionForm & Id;
 
-export type Folder = {
+export type Tag = {
   readonly name: string;
-  readonly userId: string;
-  readonly apartments: string[];
 };
+
+export type TagWithId = Tag & Id;
