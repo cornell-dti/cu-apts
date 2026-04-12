@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect, useRef } from 'react';
+import React, { ReactElement, useState, useEffect } from 'react';
 import {
   IconButton,
   Button,
@@ -46,7 +46,12 @@ import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
+import LandlordMessagingModal from '../components/Apartment/LandlordMessagingModal';
+import ConfirmLandlordMessagingModal from '../components/Apartment/ConfirmLandlordMessagingModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import AddToFolderPopover from '../components/Folder/AddToFolderPopover';
 
 type Props = {
   user: firebase.User | null;
@@ -131,6 +136,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [landlordMessagingOpen, setLandLordMessagingOpen] = useState(false);
+  const [showConfirmMessaging, setShowConfirmMessaging] = useState(false);
+  const [lastSubject, setLastSubject] = useState('');
+  const [lastBody, setLastBody] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -159,9 +168,33 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const saved = savedIcon;
   const unsaved = unsavedIcon;
   const [isSaved, setIsSaved] = useState(false);
+  const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
+  const [showAddToFolderSuccess, setShowAddToFolderSuccess] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
+  const [landlordMessagingToggle, setLandLordMessagingToggle] = useState(false);
+  const [showLandlordEmailSuccess, setShowLandlordEmailSuccess] = useState(false);
+  const [showLandlordEmailError, setShowLandlordEmailError] = useState(false);
+
+  const showLandlordEmailSuccessToast = () => {
+    showToast(setShowLandlordEmailSuccess);
+  };
+
+  const showLandlordEmailErrorToast = () => {
+    showToast(setShowLandlordEmailError);
+  };
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [tags, setTags] = useState<TagWithId[]>([]);
+
+  const handleLike = async (likedId: string, targetType: 'review' | 'blogPost') => {
+    try {
+      const user = await getUser(true); // Forces sign-in if not already
+      if (!user) throw new Error('User not signed in');
+      const token = await user.getIdToken(true);
+      const headers = createAuthHeaders(token);
+      const response = await axios.post(`/api/add-like/`, { likedId, targetType }, headers);
+      console.log('Email sent:', response.data);
+    } catch (error) {}
+  };
 
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
@@ -321,7 +354,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   useEffect(() => {
     const checkIfSaved = async () => {
       try {
-        if (user) {
+        if (user && aptId) {
           const token = await user.getIdToken(true);
           const response = await axios.post(
             '/api/check-saved-apartment',
@@ -333,11 +366,13 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
           setIsSaved(false);
         }
       } catch (err) {
-        throw new Error('Error with checking if apartment is saved');
+        console.error('Error checking if apartment is saved:', err);
+        setIsSaved(false);
       }
     };
+
     checkIfSaved();
-  }, [user, setUser, aptId]);
+  }, [user, aptId, showAddToFolderSuccess]);
 
   useEffect(() => {
     window.scrollTo({
@@ -392,6 +427,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }, toastTime);
   };
 
+  const showAddToFolderSuccessToast = () => {
+    showToast(setShowAddToFolderSuccess);
+  };
+
   const showConfirmationToast = () => {
     showToast(setShowConfirmation);
   };
@@ -410,10 +449,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const showReportSuccessConfirmationToast = () => {
     showToast(setShowReportSuccessConfirmation);
-  };
-
-  const showSaveSuccessToast = () => {
-    showToast(setShowSaveSuccess);
   };
 
   const likeHelper = (dislike = false) => {
@@ -452,28 +487,6 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const removeLike = likeHelper(true);
 
-  const handleSaveToggle = async () => {
-    const newIsSaved = !isSaved;
-    try {
-      if (!user) {
-        let user = await getUser(true);
-        setUser(user);
-      }
-      if (!user) {
-        throw new Error('Failed to login');
-      }
-      const token = await user.getIdToken(true);
-      const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
-      await axios.post(endpoint, { apartmentId: aptId }, createAuthHeaders(token));
-      setIsSaved((prevIsSaved) => !prevIsSaved);
-      if (newIsSaved) {
-        showSaveSuccessToast();
-      }
-    } catch (err) {
-      throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
-    }
-  };
-
   const openReviewModal = async () => {
     let user = await getUser(true);
     setUser(user);
@@ -489,8 +502,24 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setMapToggle((prev) => !prev);
   };
 
+  const handleLandLordMessagingModalClose = () => {
+    setLandLordMessagingOpen(false);
+    setLandLordMessagingToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
+      <AddToFolderPopover
+        anchorEl={folderAnchorEl}
+        onClose={() => setFolderAnchorEl(null)}
+        apartmentId={apt.id}
+        apartmentName={apt.name}
+        user={user}
+        setUser={setUser}
+        onSuccess={() => {
+          setIsSaved(true);
+        }}
+      />
       <MapModal
         aptName={apt!.name}
         open={mapOpen}
@@ -500,6 +529,32 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         latitude={apt!.latitude}
         travelTimes={travelTimes}
         isMobile={isMobile}
+      />
+      <LandlordMessagingModal
+        aptName={apt!.name}
+        open={landlordMessagingOpen}
+        landlord={landlordData.name}
+        email={landlordData.contact}
+        onClose={handleLandLordMessagingModalClose}
+        isMobile={isMobile}
+        onSubmit={(subject: string, body: string) => {
+          setLandLordMessagingOpen(false);
+          setLastSubject(subject);
+          setLastBody(body);
+          setShowConfirmMessaging(true);
+        }}
+        onEmailSuccess={showLandlordEmailSuccessToast}
+        onEmailFailure={showLandlordEmailErrorToast}
+      />
+      <ConfirmLandlordMessagingModal
+        open={showConfirmMessaging}
+        email={landlordData.contact}
+        subject={lastSubject}
+        body={lastBody}
+        isMobile={isMobile}
+        onClose={() => setShowConfirmMessaging(false)}
+        triggerToast={showLandlordEmailSuccessToast}
+        triggerErrorToast={showLandlordEmailErrorToast}
       />
       <ReviewModal
         open={reviewOpen}
@@ -564,15 +619,18 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 style={{ width: '107px', height: '43px' }}
               />
             </IconButton> */}
+
             <Button
               disableRipple
-              onClick={handleSaveToggle}
+              onMouseEnter={(e) => {
+                setFolderAnchorEl(e.currentTarget);
+              }}
               className={saveButton}
               color="primary"
               fullWidth
               disableElevation
             >
-              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} />
+              <img src={isSaved ? saved : unsaved} className={bookmarkRibbon} alt="" />
               {isSaved ? 'Saved' : 'Save'}
             </Button>
             <Button
@@ -755,7 +813,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       <AptInfo
         landlordId={apt!.landlordId}
         landlord={landlordData.name}
-        contact={landlordData.contact}
+        contact={() => setLandLordMessagingOpen(true)}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
         longitude={apt!.longitude}
@@ -794,6 +852,16 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
+            {showAddToFolderSuccess && (
+              <Toast
+                isOpen={showAddToFolderSuccess}
+                severity="success"
+                message={`You have saved ${apt?.name}. View your folders `}
+                time={toastTime}
+                linkMessage="here"
+                link="/bookmarks"
+              />
+            )}
             {showSignInError && (
               <Toast
                 isOpen={showSignInError}
@@ -823,6 +891,22 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 isOpen={showReportSuccessConfirmation}
                 severity="success"
                 message="Review successfully reported!"
+                time={toastTime}
+              />
+            )}
+            {showLandlordEmailError && (
+              <Toast
+                isOpen={showLandlordEmailError}
+                severity="error"
+                message="Error sending email. Please try again."
+                time={toastTime}
+              />
+            )}
+            {showLandlordEmailSuccess && (
+              <Toast
+                isOpen={showLandlordEmailSuccess}
+                severity="success"
+                message="Email successfully sent to the landlord!"
                 time={toastTime}
               />
             )}

@@ -7,13 +7,28 @@ import { CardData } from '../../App';
 type Props = {
   readonly landlordId: string | null;
   readonly landlord: string;
-  readonly contact: string | null;
+  readonly contact: () => void;
   readonly address: string | null;
   readonly buildings: CardData[];
   readonly latitude?: number;
   readonly longitude?: number;
 };
 
+/**
+ * AptInfo – Displays landlord information and other properties owned by the landlord.
+ *
+ * @remarks
+ * This component combines landlord contact information with a list of other properties
+ * they own. It is used on the apartment page to provide context about the landlord.
+ *
+ * @param {string | null} props.landlordId – The unique identifier for the landlord.
+ * @param {string} props.landlord – The name of the landlord or renting company.
+ * @param {string | null} props.contact – Contact URL for the landlord.
+ * @param {string | null} props.address – The address of the apartment.
+ * @param {CardData[]} props.buildings – List of other properties owned by the landlord.
+ *
+ * @return {ReactElement} – The rendered AptInfo component.
+ */
 export default function AptInfo({
   landlordId,
   landlord,

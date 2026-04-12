@@ -193,7 +193,21 @@ export default function FilterDropDown({ filters, onChange, label, isMobile, onA
     amenitiesRow,
   } = useStyles();
 
-  const color = open ? '#000' : '#898989';
+  // Check if this filter has active selections
+  const hasActiveFilters = () => {
+    switch (label) {
+      case 'Location':
+        return filters.locations.length > 0;
+      case 'Price':
+        return filters.minPrice !== '' || filters.maxPrice !== '';
+      case 'Beds & Baths':
+        return filters.bedrooms > 0 || filters.bathrooms > 0;
+      default:
+        return false;
+    }
+  };
+
+  const color = hasActiveFilters() ? '#B94630' : open ? '#000' : '#898989';
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setOpen(!open);
