@@ -100,3 +100,9 @@ export type QuestionForm = {
 };
 
 export type QuestionFormWithId = QuestionForm & Id;
+
+export type Tag = {
+  readonly name: string;
+};
+
+export type TagWithId = Tag & Id;
