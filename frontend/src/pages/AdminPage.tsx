@@ -164,6 +164,8 @@ const AdminPage = (): ReactElement => {
   >('idle');
   const [migrationSummary, setMigrationSummary] = useState<any>(null);
   const [migrationProgress, setMigrationProgress] = useState<string>('');
+  const [showMigrateConfirm, setShowMigrateConfirm] = useState(false);
+  const [migrateConfirmText, setMigrateConfirmText] = useState('');
 
   // Create new apartment state
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -530,15 +532,13 @@ const AdminPage = (): ReactElement => {
     }
   };
 
-  const handleMigrationRun = async () => {
-    if (
-      !window.confirm(
-        'Are you sure you want to run the migration? This will modify ALL apartment records in the database.'
-      )
-    ) {
-      return;
-    }
+  const handleMigrationRun = () => {
+    setMigrateConfirmText('');
+    setShowMigrateConfirm(true);
+  };
 
+  const handleMigrationRunConfirmed = async () => {
+    setShowMigrateConfirm(false);
     try {
       setMigrationStatus('running');
       setMigrationProgress('Migrating apartments...');
@@ -1718,6 +1718,41 @@ const AdminPage = (): ReactElement => {
               >
                 Run Migration
               </Button>
+
+              {/* Confirm migration dialog */}
+              <Dialog
+                open={showMigrateConfirm}
+                onClose={() => setShowMigrateConfirm(false)}
+                maxWidth="sm"
+                fullWidth
+              >
+                <DialogTitle>Confirm Schema Migration</DialogTitle>
+                <DialogContent>
+                  <Typography variant="body1" style={{ marginBottom: '16px' }}>
+                    This will batch-write to <strong>every apartment record</strong> in the
+                    database. This action cannot be undone. Type{' '}
+                    <strong style={{ fontFamily: 'monospace' }}>CONFIRM</strong> to proceed.
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Type CONFIRM"
+                    value={migrateConfirmText}
+                    onChange={(e) => setMigrateConfirmText(e.target.value)}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowMigrateConfirm(false)}>Cancel</Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={migrateConfirmText !== 'CONFIRM'}
+                    onClick={handleMigrationRunConfirmed}
+                  >
+                    Run Migration
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
 
             {/* Migration Progress */}
