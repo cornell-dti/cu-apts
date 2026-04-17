@@ -47,8 +47,6 @@ import MapModal from '../components/Apartment/MapModal';
 import LandlordMessagingModal from '../components/Apartment/LandlordMessagingModal';
 import ConfirmLandlordMessagingModal from '../components/Apartment/ConfirmLandlordMessagingModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 import AddToFolderPopover from '../components/Folder/AddToFolderPopover';
 
 type Props = {

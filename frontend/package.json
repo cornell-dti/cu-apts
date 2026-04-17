@@ -40,7 +40,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint . --ext .ts --ext .tsx",
     "lint:fix": "yarn lint --fix",
-    "tsc": "tsc -p tsconfig.json"
+    "tsc": "tsc -p tsconfig.json",
+    "postinstall": "patch-package"
   },
   "proxy": "http://localhost:8080",
   "browserslist": {
@@ -56,6 +57,7 @@
     ]
   },
   "devDependencies": {
-    "@types/google-map-react": "^2.1.10"
+    "@types/google-map-react": "^2.1.10",
+    "patch-package": "^8.0.1"
   }
 }
