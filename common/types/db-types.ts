@@ -33,9 +33,26 @@ export type Review = {
   readonly reports?: readonly ReportEntry[];
 };
 
+export type BlogPost = {
+  readonly content: string;
+  readonly blurb: string;
+  readonly date: Date;
+  readonly likes?: number;
+  readonly tags: string[];
+  readonly title: string;
+  readonly userId?: string | null;
+  readonly visibility: string;
+  readonly saves: number;
+  readonly coverImageUrl: string;
+};
+
 export type ReviewWithId = Review & Id;
 
+export type BlogPostWithId = BlogPost & Id;
+
 export type ReviewInternal = Review & {};
+
+export type BlogPostInternal = BlogPost & {};
 
 export type Landlord = {
   readonly name: string;
@@ -92,6 +109,7 @@ export type CantFindApartmentForm = {
   readonly address: string;
   readonly photos: readonly string[];
   readonly userId?: string | null;
+  readonly review: string;
 };
 
 export type CantFindApartmentFormWithId = CantFindApartmentForm & Id;
@@ -109,5 +127,5 @@ export type QuestionFormWithId = QuestionForm & Id;
 export type Folder = {
   readonly name: string;
   readonly userId: string;
-  readonly apartmentIds: string[];
+  readonly apartments: string[];
 };

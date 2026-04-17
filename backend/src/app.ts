@@ -20,6 +20,9 @@ import {
   QuestionForm,
   QuestionFormWithId,
   LocationTravelTimes,
+  BlogPost,
+  BlogPostInternal,
+  BlogPostWithId,
   Folder,
   RoomType,
 } from '@common/types/db-types';
@@ -32,6 +35,7 @@ import { runScrapers } from './scrapers';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
+import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
@@ -51,7 +55,9 @@ const likesCollection = db.collection('likes');
 const usersCollection = db.collection('users');
 const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
+const blogPostCollection = db.collection('blogposts');
 const folderCollection = db.collection('folders');
+const adminWhitelistCollection = db.collection('adminWhitelist');
 const travelTimesCollection = db.collection('travelTimes');
 
 // Middleware setup
@@ -75,6 +81,288 @@ app.get('/api/faqs', async (_, res) => {
   });
 
   res.status(200).send(JSON.stringify(faqs));
+});
+
+/**
+ * new-blog-post – Creates a new blog post.
+ *
+ * @remarks
+ * This endpoint creates and adds a new blog post into the products database. If necessary data are not given, the endpoint
+ * will result in an error. Certain fields are defaulted to constant values.
+ *
+ * @route POST /api/new-blog-post
+ *
+ * @status
+ * - 201: Successfully created new blog post.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.post('/api/new-blog-post', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const realUserId = req.user.uid;
+  try {
+    const doc = blogPostCollection.doc();
+    const blogPost = req.body as BlogPost;
+    if (
+      blogPost.content === '' ||
+      blogPost.blurb === '' ||
+      blogPost.title === '' ||
+      !blogPost.coverImageUrl ||
+      !blogPost.tags
+    ) {
+      res.status(401).send('Error: missing fields');
+    }
+    doc.set({
+      ...blogPost,
+      date: new Date(),
+      likes: 0,
+      saves: 0,
+      userId: realUserId,
+    });
+    return res.status(201).send(doc.id);
+  } catch (err) {
+    console.error(err);
+    return res.status(401).send('Error');
+  }
+});
+
+/**
+ * delete-blog-post/:blogPostId – Deletes a specified blog post.
+ *
+ * @remarks
+ * This endpoint deletes a specified blog post from its ID. The post is removed from the products database.
+ * If no blog post is found or the user is not authorized to delete the review, then an error is thrown.
+ *
+ * @route PUT /api/delete-blog-post/:blogPostId
+ *
+ * @status
+ * - 200: Successfully deleted the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.put('/api/delete-blog-post/:blogPostId', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+  const { blogPostId } = req.params; // Extract the blog post document ID from the request parameters
+  const { email } = req.user;
+  // Check if the user is an admin or the creator of the blog post
+  const blogPostDoc = blogPostCollection.doc(blogPostId);
+  const blogPostData = (await blogPostDoc.get()).data();
+  if (!blogPostData) {
+    res.status(404).send('Blog Post not found');
+    return;
+  }
+  if (!(email && admins.includes(email))) {
+    res.status(403).send('Unauthorized');
+    return;
+  }
+  try {
+    // Update the status of the blog post document to 'DELETED'
+    await blogPostCollection.doc(blogPostId).update({ visibility: 'ARCHIVED' });
+    // Send a success response
+    res.status(200).send('Success');
+  } catch (err) {
+    // Handle any errors that may occur during the deletion process
+    console.log(err);
+    res.status(401).send('Error');
+  }
+});
+
+/**
+ * edit-blog-post/:blogPostId – Edits a specified blog post.
+ *
+ * @remarks
+ * This endpoint edits a specified blog post from its ID. The post is edited from the products database.
+ * If no blog post is found or the user is not authorized to edit the review, then an error is thrown.
+ *
+ * @route POST /api/edit-blog-post/:blogPostId
+ *
+ * @status
+ * - 201: Successfully edited the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.post('/api/edit-blog-post/:blogPostId', authenticate, async (req, res) => {
+  // if (!req.user) {
+  //  throw new Error('not authenticated');
+  // }
+  const { blogPostId } = req.params;
+  // const { email } = req.user;
+  try {
+    const blogPostDoc = blogPostCollection.doc(blogPostId); // specific doc for the id
+    const blogPostData = (await blogPostDoc.get()).data();
+    if (!blogPostData) {
+      res.status(404).send('Blog Post not found');
+      return;
+    }
+    // if (!(email && admins.includes(email))) {
+    //  res.status(401).send('Error: user is not an admin. Not authorized');
+    //  return;
+    // }
+    const updatedBlogPost = req.body as BlogPost;
+    if (updatedBlogPost.content === '' || updatedBlogPost.title === '') {
+      res.status(401).send('Error: missing fields');
+    }
+    blogPostDoc
+      .update({
+        ...updatedBlogPost,
+        date: new Date(updatedBlogPost.date),
+      })
+      .then(() => {
+        res.status(201).send(blogPostId);
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(401).send('Error');
+  }
+});
+
+/**
+ * blog-post-by-id/:blogPostId – Gets a specified blog post.
+ *
+ * @remarks
+ * This endpoint gets a specified blog post from its ID. The post is grabbed from the products database.
+ * If no blog post is found, then an error is thrown.
+ *
+ * @route GET /api/blog-post-by-id/:blogPostId
+ *
+ * @status
+ * - 200: Successfully edited the specified blog post.
+ * - 404: Blog post could not be found from ID.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post-by-id/:blogPostId', async (req, res) => {
+  const { blogPostId } = req.params;
+
+  try {
+    const blogPostDoc = await blogPostCollection.doc(blogPostId).get();
+    if (!blogPostDoc.exists) {
+      res.status(404).send('Blog Post not found');
+      return;
+    }
+
+    const data = blogPostDoc.data();
+
+    let blogPost: BlogPostInternal;
+    if (data?.date && typeof (data.date as any).toDate === 'function') {
+      // Firestore Timestamp -> Date
+      blogPost = { ...data, date: data.date.toDate() } as BlogPostInternal;
+    } else {
+      // Already a Date or missing
+      blogPost = { ...data } as BlogPostInternal;
+    }
+
+    const blogPostWithId = { ...blogPost, id: blogPostDoc.id } as BlogPostWithId;
+    res.status(200).json(blogPostWithId);
+  } catch (err) {
+    console.error('Error retrieving Blog Post', err);
+    res.status(500).send('Error retrieving Blog Post');
+  }
+});
+
+/**
+ * blog-post/like/:userId – Fetches blog posts liked by a user.
+ *
+ * @remarks
+ * This endpoint retrieves blog posts that a user has liked.
+ *
+ * @route GET /api/blog-post/like/:userId
+ *
+ * @status
+ * - 200: Successfully retrieved the blog posts.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post/like/:userId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const realUserId = req.user.uid;
+  const { userId } = req.params;
+  if (userId !== realUserId) {
+    res.status(401).send("Error: user is not authorized to access another user's likes");
+    return;
+  }
+  const likesDoc = await likesCollection.doc(userId).get();
+
+  if (likesDoc.exists) {
+    const data = likesDoc.data();
+    if (data) {
+      const blogPostIds = data.blogPosts;
+      const matchingBlogPosts: BlogPostWithId[] = [];
+      if (blogPostIds.length > 0) {
+        const query = blogPostCollection.where(FieldPath.documentId(), 'in', blogPostIds);
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const blogPostData = { ...data, date: data.date.toDate() };
+          matchingBlogPosts.push({ ...blogPostData, id: doc.id } as BlogPostWithId);
+        });
+      }
+      res.status(200).send(JSON.stringify(matchingBlogPosts));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
+});
+
+/**
+ * blog-post/like/:userId – Fetches blog posts saved by a user.
+ *
+ * @remarks
+ * This endpoint retrieves blog posts that a user has saved.
+ *
+ * @route GET /api/blog-post/save/:userId
+ *
+ * @status
+ * - 200: Successfully retrieved the blog posts.
+ * - 401: Error due to unauthorized access or authentication issues.
+ */
+app.get('/api/blog-post/save/:userId', authenticate, async (req, res) => {
+  if (!req.user) {
+    throw new Error('not authenticated');
+  }
+  const realUserId = req.user.uid;
+  const { userId } = req.params;
+  if (userId !== realUserId) {
+    res.status(401).send("Error: user is not authorized to access another user's saves");
+    return;
+  }
+  const savesDoc = await likesCollection.doc(realUserId).get();
+
+  if (savesDoc.exists) {
+    const data = savesDoc.data();
+    if (data) {
+      const blogPostIds = Object.keys(data);
+      const matchingBlogPosts: BlogPostWithId[] = [];
+      if (blogPostIds.length > 0) {
+        const query = blogPostCollection.where(FieldPath.documentId(), 'in', blogPostIds);
+        const querySnapshot = await query.get();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const blogPostData = { ...data, date: data.date.toDate() };
+          matchingBlogPosts.push({ ...blogPostData, id: doc.id } as BlogPostWithId);
+        });
+      }
+      res.status(200).send(JSON.stringify(matchingBlogPosts));
+      return;
+    }
+  }
+
+  res.status(200).send(JSON.stringify([]));
+});
+
+/**
+ * blog-posts – Gets all visible blog posts for the Advice page.
+ *
+ * @route GET /api/blog-posts
+ */
+app.get('/api/blog-posts', async (req, res) => {
+  const blogPostDocs = (await blogPostCollection.where('visibility', '==', 'ACTIVATED').get()).docs;
+  const blogPosts: BlogPost[] = blogPostDocs.map((doc) => {
+    const data = doc.data();
+    const blogPost = { ...data } as BlogPostInternal;
+    return { ...blogPost, id: doc.id } as BlogPostWithId;
+  });
+  res.status(200).send(JSON.stringify(blogPosts));
 });
 
 // API endpoint to post a new review
@@ -863,10 +1151,10 @@ const likeHandler =
           t.update(reviewRef, { likes: FieldValue.increment(likeChange) });
         }
       });
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
@@ -905,6 +1193,10 @@ app.put('/api/delete-review/:reviewId', authenticate, async (req, res) => {
 /**
  * Handles saving or removing saved apartments for a user in the database.
  *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ * Use the new folder-based endpoints (`POST /api/folders/:folderId/apartments`
+ * and `DELETE /api/folders/:folderId/apartments/:apartmentId`) instead.
+ *
  * @param add - If true, the apartment is added to the user's saved list. If false, it is removed.
  */
 const saveApartmentHandler =
@@ -940,16 +1232,17 @@ const saveApartmentHandler =
         t.update(userRef, { apartments: userApartments });
       });
 
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
 /**
  * Handles saving or removing saved landlords for a user in the database.
  *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
  * @param add - If true, the landlord is added to the user's saved list. If false, it is removed.
  */
 const saveLandlordHandler =
@@ -985,14 +1278,18 @@ const saveLandlordHandler =
         t.update(userRef, { landlords: userLandlords });
       });
 
-      res.status(200).send(JSON.stringify({ result: 'Success' }));
+      return res.status(200).send(JSON.stringify({ result: 'Success' }));
     } catch (err) {
       console.error(err);
-      res.status(400).send('Error');
+      return res.status(400).send('Error');
     }
   };
 
-// Function to check if a user has an apartment saved or not
+/**
+ *  Function to check if a user has an apartment saved or not
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
+
 const checkSavedApartment = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1003,25 +1300,28 @@ const checkSavedApartment = (): RequestHandler => async (req, res) => {
     if (!userRef) {
       throw new Error('User data not found');
     }
-    await db.runTransaction(async (t) => {
+
+    const isSaved = await db.runTransaction(async (t) => {
       const userDoc = await t.get(userRef);
       if (!userDoc.exists) {
         t.set(userRef, { apartments: [] });
+        return false;
       }
       const userApartments = userDoc.data()?.apartments || [];
-      if (userApartments.includes(apartmentId)) {
-        res.status(200).send(JSON.stringify({ result: true }));
-      } else {
-        res.status(200).send(JSON.stringify({ result: false }));
-      }
+      return userApartments.includes(apartmentId);
     });
+
+    return res.status(200).send(JSON.stringify({ result: isSaved }));
   } catch (err) {
     console.error(err);
-    res.status(400).send('Error');
+    return res.status(400).send('Error');
   }
 };
 
-// Function to check if a user has an landlord saved or not
+/**
+ * Function to check if a user has an landlord saved or not
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 const checkSavedLandlord = (): RequestHandler => async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
@@ -1032,45 +1332,63 @@ const checkSavedLandlord = (): RequestHandler => async (req, res) => {
     if (!userRef) {
       throw new Error('User data not found');
     }
-    await db.runTransaction(async (t) => {
+
+    const isSaved = await db.runTransaction(async (t) => {
       const userDoc = await t.get(userRef);
       if (!userDoc.exists) {
         t.set(userRef, { landlords: [] });
+        return false;
       }
       const userLandlords = userDoc.data()?.landlords || [];
-      if (userLandlords.includes(landlordId)) {
-        res.status(200).send(JSON.stringify({ result: true }));
-      } else {
-        res.status(200).send(JSON.stringify({ result: false }));
-      }
+      return userLandlords.includes(landlordId);
     });
+
+    return res.status(200).send(JSON.stringify({ result: isSaved }));
   } catch (err) {
     console.error(err);
-    res.status(400).send('Error');
+    return res.status(400).send('Error');
   }
 };
 
-// Endpoint for checking if an apartment is saved by a user
+/**
+ *
+ * Endpoint for checking if an apartment is saved by a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/check-saved-apartment', authenticate, checkSavedApartment());
 // This endpoint uses authentication middleware to ensure that the user is logged in.
 // The checkSavedApartment() function is then called to check if a specific apartment is saved by the user.
 
-// Endpoint for checking if a landlord is saved by a user
+/**
+ *
+ * Endpoint for checking if an landlord is saved by a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/check-saved-landlord', authenticate, checkSavedLandlord());
 // Similar to the above endpoint, this one checks if a specific landlord is saved by the user.
 // It also uses authentication to ensure that the request is made by a logged-in user.
 
-// Endpoint for adding a saved apartment for a user
+/**
+ * Endpoint for adding a saved apartment for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/add-saved-apartment', authenticate, saveApartmentHandler(true));
 // This endpoint allows authenticated users to add an apartment to their list of saved apartments.
 // The saveApartmentHandler function is used with a parameter of 'true' to signify adding a save.
 
-// Endpoint for removing a saved apartment for a user
+/**
+ * Endpoint for removing a saved apartment for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/remove-saved-apartment', authenticate, saveApartmentHandler(false));
 // This endpoint allows authenticated users to remove an apartment from their list of saved apartments.
 // The saveApartmentHandler function is used with a parameter of 'false' to signify removing a save.
 
-// Endpoint to get a list of saved apartments for a user
+/**
+ *  Endpoint to get a list of saved apartments for a user
+ *
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.get('/api/saved-apartments', authenticate, async (req, res) => {
   if (!req.user) throw new Error('Not authenticated');
   const { uid } = req.user; // Extracting user ID from the request
@@ -1091,11 +1409,69 @@ app.get('/api/saved-apartments', authenticate, async (req, res) => {
   return res.status(200).send(data);
 });
 
-// Endpoints for adding and removing saved landlords for a user
+/**
+ * Endpoint for adding a saved landlord for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/add-saved-landlord', authenticate, saveLandlordHandler(true));
+
+/**
+ * Endpoint for removing a saved landlord for a user
+ * @deprecated This endpoint is deprecated and will be removed in future versions.
+ */
 app.post('/api/remove-saved-landlord', authenticate, saveLandlordHandler(false));
 // These endpoints allow for adding and removing landlords to/from a user's saved list.
 // Both endpoints use the saveLandlordHandler function with appropriate boolean parameters.
+
+app.post('/api/send-email-to-landlord', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const userId = req.user.uid;
+  const userRecord = await auth().getUser(userId);
+  const userEmail = userRecord?.email;
+  const { landlordEmail, message, subject } = req.body;
+
+  try {
+    if (!cuaptsEmail || !cuaptsEmailPassword) {
+      throw new Error('Host email or password not found');
+    }
+    if (!userEmail) {
+      throw new Error('User email not found');
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        type: 'login',
+        user: cuaptsEmail,
+        pass: cuaptsEmailPassword,
+      },
+    });
+
+    const mailOptions = {
+      from: { name: 'The CUApts Team', address: cuaptsEmail },
+      to: landlordEmail,
+      subject,
+      text: message,
+      replyTo: userEmail,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error sending email:', error);
+        return res.status(500).send('Error sending email');
+      }
+      console.log('Email sent:', info.response);
+      return res.status(200).send('Email sent successfully');
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error');
+  }
+});
 
 /**
  * update-review-status
@@ -1836,11 +2212,24 @@ app.post('/api/admin/migrate-all-apartments-schema', authenticate, async (req, r
           }
 
           // Create migrated apartment data
+          // If old schema fields exist, preserve them as a single RoomType entry
+          const legacyRoomType =
+            data.numBeds != null && data.numBaths != null && data.price != null
+              ? [
+                  {
+                    id: `${doc.id}_legacy`,
+                    beds: data.numBeds,
+                    baths: data.numBaths,
+                    price: data.price,
+                  },
+                ]
+              : [];
+
           const migratedData: Record<string, unknown> = {
             name: data.name,
             address: data.address,
             landlordId: data.landlordId || null,
-            roomTypes: [], // Initialize as empty array
+            roomTypes: legacyRoomType,
             photos: data.photos || [],
             area: data.area || 'OTHER',
             latitude: data.latitude || 0,
@@ -2879,6 +3268,162 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching apartments from folder');
+  }
+});
+
+/**
+ * Is Admin – Returns whether the authenticated user has admin privileges.
+ *
+ * @route GET /api/is-admin
+ *
+ * @status
+ * - 200: { isAdmin: boolean }
+ * - 401: Not authenticated
+ */
+app.get('/api/is-admin', authenticate, async (req, res) => {
+  try {
+    if (!req.user?.email) return res.status(200).json({ isAdmin: false });
+    const adminStatus = await isAdminEmail(req.user.email);
+    return res.status(200).json({ isAdmin: adminStatus });
+  } catch (err) {
+    console.error(err);
+    return res.status(200).json({ isAdmin: false });
+  }
+});
+
+/**
+ * Get Admin Whitelist – Returns all emails in the Firestore adminWhitelist plus hardcoded superadmins.
+ *
+ * @route GET /api/admin/whitelist
+ *
+ * @status
+ * - 200: { superadmins: string[], whitelist: { id: string, email: string }[] }
+ * - 403: Not an admin
+ */
+app.get('/api/admin/whitelist', authenticateAdmin, async (req, res) => {
+  try {
+    const snapshot = await adminWhitelistCollection.orderBy('addedAt', 'asc').get();
+    const whitelist = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json({ superadmins: admins, whitelist });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching admin whitelist');
+  }
+});
+
+/**
+ * Add Admin – Adds an email to the Firestore adminWhitelist.
+ *
+ * @route POST /api/admin/whitelist
+ *
+ * @input {string} req.body.email – The Cornell email to add.
+ *
+ * @status
+ * - 201: Admin added successfully
+ * - 400: Missing or invalid email
+ * - 409: Email already in whitelist or superadmin list
+ * - 403: Not an admin
+ */
+app.post('/api/admin/whitelist', authenticateAdmin, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string' || !email.endsWith('@cornell.edu')) {
+      return res.status(400).send('Valid Cornell email required');
+    }
+    if (admins.includes(email)) {
+      return res.status(409).send('Email is already a superadmin');
+    }
+    const existing = await adminWhitelistCollection.where('email', '==', email).limit(1).get();
+    if (!existing.empty) {
+      return res.status(409).send('Email is already in the whitelist');
+    }
+    const docRef = await adminWhitelistCollection.add({
+      email,
+      addedAt: new Date(),
+      addedBy: req.user!.email,
+    });
+    return res.status(201).json({ id: docRef.id, email });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error adding admin');
+  }
+});
+
+/**
+ * Remove Admin – Removes an email from the Firestore adminWhitelist.
+ *
+ * @route DELETE /api/admin/whitelist/:email
+ *
+ * @input {string} req.params.email – URL-encoded email to remove.
+ *
+ * @status
+ * - 200: Admin removed
+ * - 400: Email is a superadmin (cannot remove via UI)
+ * - 404: Email not found in whitelist
+ * - 403: Not an admin
+ */
+app.delete('/api/admin/whitelist/:email', authenticateAdmin, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    if (admins.includes(email)) {
+      return res.status(400).send('Cannot remove a superadmin via this endpoint');
+    }
+    const snapshot = await adminWhitelistCollection.where('email', '==', email).limit(1).get();
+    if (snapshot.empty) {
+      return res.status(404).send('Email not found in whitelist');
+    }
+    await snapshot.docs[0].ref.delete();
+    return res.status(200).send('Admin removed successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error removing admin');
+  }
+});
+
+/**
+ * Init Collections – Ensures required Firestore collections exist with correct schema.
+ * Idempotent: safe to run multiple times, never overwrites existing documents.
+ *
+ * @route POST /api/admin/init-collections
+ *
+ * @status
+ * - 200: Collections initialized (or already existed)
+ * - 500: Error during initialization
+ */
+app.post('/api/admin/init-collections', authenticate, async (req, res) => {
+  try {
+    const results: string[] = [];
+
+    // Initialize blogposts collection
+    const blogSnapshot = await blogPostCollection.limit(1).get();
+    if (blogSnapshot.empty) {
+      const sentinelRef = blogPostCollection.doc('_init');
+      const existing = await sentinelRef.get();
+      if (!existing.exists) {
+        await sentinelRef.set({
+          title: '[INIT] Collection initialized',
+          content: '',
+          blurb: '',
+          date: new Date(),
+          tags: [],
+          visibility: 'DELETED',
+          likes: 0,
+          saves: 0,
+          coverImageUrl: '',
+          userId: null,
+        });
+        results.push('blogposts: created sentinel document');
+      } else {
+        results.push('blogposts: sentinel already exists');
+      }
+    } else {
+      results.push('blogposts: collection already has documents');
+    }
+
+    return res.status(200).json({ message: 'Initialization complete', results });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error initializing collections');
   }
 });
 

@@ -1,5 +1,4 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-import firebase from 'firebase/app';
 import 'firebase/auth';
 import {
   IconButton,
@@ -46,7 +45,11 @@ import { sortReviews } from '../utils/sortReviews';
 import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 import MapModal from '../components/Apartment/MapModal';
+import LandlordMessagingModal from '../components/Apartment/LandlordMessagingModal';
+import ConfirmLandlordMessagingModal from '../components/Apartment/ConfirmLandlordMessagingModal';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import AddToFolderPopover from '../components/Folder/AddToFolderPopover';
 
 type Props = {
@@ -132,6 +135,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
   const [reviewOpen, setReviewOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [landlordMessagingOpen, setLandLordMessagingOpen] = useState(false);
+  const [showConfirmMessaging, setShowConfirmMessaging] = useState(false);
+  const [lastSubject, setLastSubject] = useState('');
+  const [lastBody, setLastBody] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showEditSuccessConfirmation, setShowEditSuccessConfirmation] = useState(false);
   const [showDeleteSuccessConfirmation, setShowDeleteSuccessConfirmation] = useState(false);
@@ -163,6 +170,29 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
   const [showAddToFolderSuccess, setShowAddToFolderSuccess] = useState(false);
   const [mapToggle, setMapToggle] = useState(false);
+  const [landlordMessagingToggle, setLandLordMessagingToggle] = useState(false);
+  const [showLandlordEmailSuccess, setShowLandlordEmailSuccess] = useState(false);
+  const [showLandlordEmailError, setShowLandlordEmailError] = useState(false);
+
+  const showLandlordEmailSuccessToast = () => {
+    showToast(setShowLandlordEmailSuccess);
+  };
+
+  const showLandlordEmailErrorToast = () => {
+    showToast(setShowLandlordEmailError);
+  };
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  const handleLike = async (likedId: string, targetType: 'review' | 'blogPost') => {
+    try {
+      const user = await getUser(true); // Forces sign-in if not already
+      if (!user) throw new Error('User not signed in');
+      const token = await user.getIdToken(true);
+      const headers = createAuthHeaders(token);
+      const response = await axios.post(`/api/add-like/`, { likedId, targetType }, headers);
+      console.log('Email sent:', response.data);
+    } catch (error) {}
+  };
 
   const dummyTravelTimes: LocationTravelTimes = {
     agQuadDriving: -1,
@@ -464,6 +494,11 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     setMapToggle((prev) => !prev);
   };
 
+  const handleLandLordMessagingModalClose = () => {
+    setLandLordMessagingOpen(false);
+    setLandLordMessagingToggle((prev) => !prev);
+  };
+
   const Modals = landlordData && apt && (
     <>
       <AddToFolderPopover
@@ -486,6 +521,32 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         latitude={apt!.latitude}
         travelTimes={travelTimes}
         isMobile={isMobile}
+      />
+      <LandlordMessagingModal
+        aptName={apt!.name}
+        open={landlordMessagingOpen}
+        landlord={landlordData.name}
+        email={landlordData.contact}
+        onClose={handleLandLordMessagingModalClose}
+        isMobile={isMobile}
+        onSubmit={(subject: string, body: string) => {
+          setLandLordMessagingOpen(false);
+          setLastSubject(subject);
+          setLastBody(body);
+          setShowConfirmMessaging(true);
+        }}
+        onEmailSuccess={showLandlordEmailSuccessToast}
+        onEmailFailure={showLandlordEmailErrorToast}
+      />
+      <ConfirmLandlordMessagingModal
+        open={showConfirmMessaging}
+        email={landlordData.contact}
+        subject={lastSubject}
+        body={lastBody}
+        isMobile={isMobile}
+        onClose={() => setShowConfirmMessaging(false)}
+        triggerToast={showLandlordEmailSuccessToast}
+        triggerErrorToast={showLandlordEmailErrorToast}
       />
       <ReviewModal
         open={reviewOpen}
@@ -728,7 +789,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
       <AptInfo
         landlordId={apt!.landlordId}
         landlord={landlordData.name}
-        contact={landlordData.contact}
+        contact={() => setLandLordMessagingOpen(true)}
         address={apt!.address}
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
         longitude={apt!.longitude}
@@ -809,7 +870,32 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 time={toastTime}
               />
             )}
-
+            {showLandlordEmailError && (
+              <Toast
+                isOpen={showLandlordEmailError}
+                severity="error"
+                message="Error sending email. Please try again."
+                time={toastTime}
+              />
+            )}
+            {showLandlordEmailSuccess && (
+              <Toast
+                isOpen={showLandlordEmailSuccess}
+                severity="success"
+                message="Email successfully sent to the landlord!"
+                time={toastTime}
+              />
+            )}
+            {showSaveSuccess && (
+              <Toast
+                isOpen={showSaveSuccess}
+                severity="success"
+                message={`You have bookmarked ${apt?.name}. View your bookmarks `}
+                time={toastTime}
+                linkMessage="here"
+                link="/bookmarks"
+              />
+            )}
             <Grid container alignItems="flex-start" justifyContent="center" spacing={3}>
               <Grid item xs={12} sm={8} justifyContent="flex-end">
                 <Grid

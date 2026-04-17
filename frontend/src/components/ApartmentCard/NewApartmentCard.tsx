@@ -355,13 +355,7 @@ const NewApartmentCard = ({
             <div className={apartmentStats}>
               <div className={apartmentStatsContainer}>
                 <img src={moneyIcon} alt="money" className={apartmentMoneyIcon} />
-                <Typography className={apartmentStatsText}>$2K - $3K</Typography>
-              </div>
-              <div className={apartmentStatsContainer}>
-                <img src={bedIcon} alt="bed" className={apartmentBedIcon} />
-                <Typography className={apartmentStatsText}>
-                  {numBeds ? `${numBeds - 1}-${numBeds + 1}` : '0'} bed
-                </Typography>
+                <Typography className={apartmentStatsText}>{priceDisplay}</Typography>
               </div>
             </div>
           </div>

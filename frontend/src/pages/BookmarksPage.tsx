@@ -173,7 +173,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
         const offsetLikes = dislike ? -1 : 1;
         const token = await user.getIdToken(true);
         const endpoint = dislike ? '/api/remove-like' : '/api/add-like';
-        await axios.post(endpoint, { reviewId }, createAuthHeaders(token));
+        await axios.post(endpoint, { reviewId, targetType: 'review' }, createAuthHeaders(token));
         if (dislike) {
           setHelpfulReviewsData((reviews) => reviews.filter((review) => review.id !== reviewId));
         } else {

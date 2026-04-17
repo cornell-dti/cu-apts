@@ -1,12 +1,10 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import {
   Typography,
   makeStyles,
   Grid,
   Container,
-  List,
-  ListItem,
-  ListItemText,
+  Box,
   AppBar,
   Toolbar,
   Tabs,
@@ -14,7 +12,8 @@ import {
   IconButton,
   Button,
   TextField,
-  Box,
+  MenuItem,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -25,17 +24,23 @@ import {
   TableHead,
   TableRow,
 } from '@material-ui/core';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import {
   CantFindApartmentFormWithId,
   QuestionFormWithId,
   ReviewWithId,
 } from '../../../common/types/db-types';
+import axios from 'axios';
+import { getUser, createAuthHeaders } from '../utils/firebase';
+import firebase from 'firebase/app';
+import 'firebase/storage';
 import { get } from '../utils/call';
 import AdminReviewComponent from '../components/Admin/AdminReview';
 import { useTitle } from '../utils';
 import { Chart } from 'react-google-charts';
 import { sortReviews } from '../utils/sortReviews';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Editor } from '@tinymce/tinymce-react';
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
 import SortIcon from '@material-ui/icons/Sort';
@@ -45,8 +50,6 @@ import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import AdminCantFindApt from '../components/Admin/AdminCantFindApt';
 import AdminContactQuestion from '../components/Admin/AdminContactQuestion';
-import axios from 'axios';
-import { createAuthHeaders, getUser } from '../utils/firebase';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -108,18 +111,21 @@ const AdminPage = (): ReactElement => {
   const [pendingData, setPendingData] = useState<ReviewWithId[]>([]);
   const [declinedData, setDeclinedData] = useState<ReviewWithId[]>([]);
   const [approvedData, setApprovedData] = useState<ReviewWithId[]>([]);
+  const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
 
   type ReviewCount = { count: number };
   const [ctownReviewCount, setCtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [westReviewCount, setWestReviewCount] = useState<ReviewCount>({ count: 0 });
   const [dtownReviewCount, setDtownReviewCount] = useState<ReviewCount>({ count: 0 });
   const [northReviewCount, setNorthReviewCount] = useState<ReviewCount>({ count: 0 });
+
   const [toggle, setToggle] = useState(false);
+
   const [pendingApartment, setPendingApartmentData] = useState<CantFindApartmentFormWithId[]>([]);
   const [pendingContactQuestions, setPendingContactQuestions] = useState<QuestionFormWithId[]>([]);
+
   const [pendingExpanded, setPendingExpanded] = useState(true);
   const [declinedExpanded, setDeclinedExpanded] = useState(true);
-  const [reportedData, setReportedData] = useState<ReviewWithId[]>([]);
   const [reportedExpanded, setReportedExpanded] = useState(true);
   const [apartments, setApartments] = useState<any[]>([]);
 
@@ -173,6 +179,27 @@ const AdminPage = (): ReactElement => {
   const [previewData, setPreviewData] = useState<any>(null);
   const [createError, setCreateError] = useState('');
 
+  // Init collections state
+  const [initStatus, setInitStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [initResults, setInitResults] = useState<string[]>([]);
+
+  // Admin whitelist state
+  type FirestoreTimestamp = { _seconds: number; _nanoseconds: number };
+  type WhitelistEntry = {
+    id: string;
+    email: string;
+    addedAt?: string | FirestoreTimestamp;
+    addedBy?: string;
+  };
+  const [superadmins, setSuperadmins] = useState<string[]>([]);
+  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
+  const [whitelistLoading, setWhitelistLoading] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [whitelistError, setWhitelistError] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmRemoveEmail, setConfirmRemoveEmail] = useState<string | null>(null);
+
   const [scraperStatus, setScraperStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [scraperSummary, setScraperSummary] = useState<any>(null);
   const [scraperError, setScraperError] = useState<string>('');
@@ -198,6 +225,123 @@ const AdminPage = (): ReactElement => {
     showPhotoCarousel,
     closePhotoCarousel,
   } = usePhotoCarousel([]);
+
+  // -----------------------------
+  // Blog post creation (improved)
+  // -----------------------------
+  const [blogTitle, setBlogTitle] = useState('');
+  const [blogBlurb, setBlogBlurb] = useState('');
+  const [blogVisibility, setBlogVisibility] = useState<'ACTIVATED' | 'ARCHIVED'>('ACTIVATED');
+  const [blogContent, setBlogContent] = useState<string>(''); // TinyMCE HTML
+  const [blogTags, setBlogTags] = useState<string[]>([]);
+
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [blogSaving, setBlogSaving] = useState(false);
+  const [blogError, setBlogError] = useState<string | null>(null);
+  const [blogSuccess, setBlogSuccess] = useState<string | null>(null);
+
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+
+  const pickCoverImage = () => coverInputRef.current?.click();
+
+  const onCoverFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // optional: local preview while uploading
+    setCoverPreviewUrl(URL.createObjectURL(file));
+
+    try {
+      setBlogError(null);
+      setCoverUploading(true);
+
+      const safeName = file.name.replace(/\s+/g, '_');
+      const path = `blog-covers/${Date.now()}-${safeName}`;
+
+      const storageRef = firebase.storage().ref().child(path);
+      await storageRef.put(file);
+      const url = await storageRef.getDownloadURL();
+
+      setCoverImageUrl(url);
+      setBlogSuccess('Cover image uploaded!');
+    } catch (err) {
+      console.error(err);
+      setBlogError('Failed to upload cover image.');
+    } finally {
+      setCoverUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const svgPlaceholder = (w: number, h: number, label: string) => {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+        <defs>
+          <pattern id="checker" width="32" height="32" patternUnits="userSpaceOnUse">
+            <rect width="32" height="32" fill="#f3f4f6"/>
+            <rect width="16" height="16" fill="#e5e7eb"/>
+            <rect x="16" y="16" width="16" height="16" fill="#e5e7eb"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#checker)"/>
+        <rect x="10" y="10" width="${Math.max(w - 20, 20)}" height="${Math.max(h - 20, 20)}"
+              rx="14" fill="none" stroke="#bdbdbd" stroke-width="3" stroke-dasharray="10 8"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+              font-family="Inter, Arial, sans-serif" font-size="18" fill="#6b7280">
+          ${label}
+        </text>
+      </svg>
+    `.trim();
+
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  };
+
+  const handleCreateBlogPost = async () => {
+    setBlogError(null);
+    setBlogSuccess(null);
+
+    if (!blogTitle.trim() || !blogBlurb.trim() || !blogContent.trim() || !coverImageUrl.trim()) {
+      setBlogError('Title, blurb, cover image, and content are required.');
+      return;
+    }
+
+    try {
+      setBlogSaving(true);
+      const user = await getUser(true);
+      if (!user) throw new Error('You must be logged in as an admin to create a blog post.');
+
+      const token = await user.getIdToken(true);
+
+      const payload = {
+        title: blogTitle.trim(),
+        blurb: blogBlurb.trim(),
+        content: blogContent,
+        tags: blogTags.map((t) => t.trim()).filter(Boolean),
+        coverImageUrl: coverImageUrl.trim(),
+        visibility: blogVisibility, // "ACTIVATED" | "ARCHIVED"
+        userId: user.uid,
+        likes: 0,
+        saves: 0,
+      };
+
+      await axios.post('/api/new-blog-post', payload, createAuthHeaders(token));
+
+      setBlogSuccess('Blog post created!');
+      setBlogTitle('');
+      setBlogBlurb('');
+      setBlogContent('');
+      setBlogVisibility('ACTIVATED');
+      setBlogTags([]);
+      setCoverImageUrl('');
+    } catch (err) {
+      console.error(err);
+      setBlogError('Failed to create blog post. Please try again.');
+    } finally {
+      setBlogSaving(false);
+    }
+  };
 
   useTitle('Admin');
 
@@ -432,6 +576,86 @@ const AdminPage = (): ReactElement => {
     }
   };
 
+  const fetchWhitelist = async () => {
+    setWhitelistLoading(true);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      const response = await axios.get('/api/admin/whitelist', createAuthHeaders(token));
+      setSuperadmins(response.data.superadmins ?? []);
+      setWhitelist(response.data.whitelist ?? []);
+    } catch (err) {
+      setWhitelistError('Failed to load whitelist.');
+    } finally {
+      setWhitelistLoading(false);
+    }
+  };
+
+  const handleAddAdmin = async () => {
+    if (!newAdminEmail.trim()) return;
+    setAddingAdmin(true);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      await axios.post(
+        '/api/admin/whitelist',
+        { email: newAdminEmail.trim().toLowerCase() },
+        createAuthHeaders(token)
+      );
+      setNewAdminEmail('');
+      await fetchWhitelist();
+    } catch (err: any) {
+      setWhitelistError(err?.response?.data || 'Failed to add admin.');
+    } finally {
+      setAddingAdmin(false);
+    }
+  };
+
+  const handleRemoveAdmin = async (email: string, id: string) => {
+    setRemovingId(id);
+    setWhitelistError(null);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      await axios.delete(
+        `/api/admin/whitelist/${encodeURIComponent(email)}`,
+        createAuthHeaders(token)
+      );
+      setConfirmRemoveEmail(null);
+      await fetchWhitelist();
+    } catch (err: any) {
+      setWhitelistError(err?.response?.data || 'Failed to remove admin.');
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  const handleInitCollections = async () => {
+    setInitStatus('running');
+    setInitResults([]);
+    try {
+      const user = await getUser(true);
+      if (!user) throw new Error('Not authenticated');
+      const token = await user.getIdToken(true);
+      const response = await axios.post(
+        '/api/admin/init-collections',
+        {},
+        createAuthHeaders(token)
+      );
+      setInitResults(response.data.results ?? []);
+      setInitStatus('done');
+    } catch (err) {
+      console.error('Init collections error:', err);
+      setInitResults([`Error: ${err instanceof Error ? err.message : 'Unknown error'}`]);
+      setInitStatus('error');
+    }
+  };
+
   const handleRunScraper = async () => {
     try {
       setScraperStatus('running');
@@ -658,13 +882,10 @@ const AdminPage = (): ReactElement => {
       ['APPROVED', setApprovedData],
     ]);
     reviewTypes.forEach((cllbck, reviewType) => {
-      get<ReviewWithId[]>(`/api/review/${reviewType}`, {
-        callback: cllbck,
-      });
+      get<ReviewWithId[]>(`/api/review/${reviewType}`, { callback: cllbck });
     });
   }, [toggle]);
 
-  // sets counts for each location
   useEffect(() => {
     const reviewCounts = new Map<string, React.Dispatch<React.SetStateAction<ReviewCount>>>([
       ['COLLEGETOWN', setCtownReviewCount],
@@ -673,9 +894,7 @@ const AdminPage = (): ReactElement => {
       ['NORTH', setNorthReviewCount],
     ]);
     reviewCounts.forEach((cllbck, location) => {
-      get<ReviewCount>(`/api/review/${location}/count`, {
-        callback: cllbck,
-      });
+      get<ReviewCount>(`/api/review/${location}/count`, { callback: cllbck });
     });
   }, [toggle]);
 
@@ -686,6 +905,8 @@ const AdminPage = (): ReactElement => {
     ['Downtown', dtownReviewCount.count],
     ['North', northReviewCount.count],
   ];
+
+  const TAG_OPTIONS = ['Tips & Tricks', 'Finances', 'Landlords', 'Op-Eds'];
 
   useEffect(() => {
     const apartmentTypes = new Map<
@@ -735,7 +956,6 @@ const AdminPage = (): ReactElement => {
     </>
   );
 
-  //  Reviews tab
   const reviews = (
     <Container className={container}>
       <Grid container spacing={5} justifyContent="center">
@@ -757,9 +977,7 @@ const AdminPage = (): ReactElement => {
             <Chart
               chartType="PieChart"
               data={pieChartData}
-              options={{
-                title: 'Reviews Breakdown',
-              }}
+              options={{ title: 'Reviews Breakdown' }}
               width={'100%'}
               height={'400px'}
             />
@@ -772,9 +990,7 @@ const AdminPage = (): ReactElement => {
               <strong>Reported Reviews ({reportedData.length})</strong>
             </Typography>
             <IconButton
-              className={clsx(expand, {
-                [expandOpen]: reportedExpanded,
-              })}
+              className={clsx(expand, { [expandOpen]: reportedExpanded })}
               onClick={() => setReportedExpanded(!reportedExpanded)}
               aria-expanded={reportedExpanded}
               aria-label="show reported reviews"
@@ -805,9 +1021,7 @@ const AdminPage = (): ReactElement => {
               <strong>Pending Reviews ({pendingData.length})</strong>
             </Typography>
             <IconButton
-              className={clsx(expand, {
-                [expandOpen]: pendingExpanded,
-              })}
+              className={clsx(expand, { [expandOpen]: pendingExpanded })}
               onClick={() => setPendingExpanded(!pendingExpanded)}
               aria-expanded={pendingExpanded}
               aria-label="show pending reviews"
@@ -838,9 +1052,7 @@ const AdminPage = (): ReactElement => {
               <strong>Declined Reviews ({declinedData.length})</strong>
             </Typography>
             <IconButton
-              className={clsx(expand, {
-                [expandOpen]: declinedExpanded,
-              })}
+              className={clsx(expand, { [expandOpen]: declinedExpanded })}
               onClick={() => setDeclinedExpanded(!declinedExpanded)}
               aria-expanded={declinedExpanded}
               aria-label="show declined reviews"
@@ -868,7 +1080,6 @@ const AdminPage = (): ReactElement => {
     </Container>
   );
 
-  //  Contact tab
   const contact = (
     <Container className={container}>
       <Grid container spacing={3}>
@@ -913,6 +1124,605 @@ const AdminPage = (): ReactElement => {
             ))}
         </Grid>
       </Grid>
+    </Container>
+  );
+
+  const blogPosts = (
+    <Container className={container}>
+      <Box mt={4} mb={4}>
+        <Typography variant="h3" style={{ marginBottom: '24px' }}>
+          <strong>Create Blog Post</strong>
+        </Typography>
+
+        <Box display="flex" flexDirection="column" gridGap={24}>
+          <TextField
+            label="Title"
+            variant="outlined"
+            fullWidth
+            helperText="Title of the Blog Post"
+            value={blogTitle}
+            onChange={(e) => setBlogTitle(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            label="Blurb"
+            variant="outlined"
+            fullWidth
+            multiline
+            minRows={3}
+            helperText="Short summary shown on the blog cards page"
+            value={blogBlurb}
+            onChange={(e) => setBlogBlurb(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            select
+            label="Visibility"
+            variant="outlined"
+            fullWidth
+            value={blogVisibility}
+            onChange={(e) => setBlogVisibility(e.target.value as 'ACTIVATED' | 'ARCHIVED')}
+            helperText="ACTIVATED = visible, ARCHIVED = hidden"
+            InputLabelProps={{ shrink: true }}
+          >
+            <MenuItem value="ACTIVATED">ACTIVATED</MenuItem>
+            <MenuItem value="ARCHIVED">ARCHIVED</MenuItem>
+          </TextField>
+
+          {/* Tags */}
+          <Box>
+            <Autocomplete
+              multiple
+              options={TAG_OPTIONS}
+              value={blogTags}
+              onChange={(_, newValue) => setBlogTags(newValue)}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip variant="default" label={option} {...getTagProps({ index })} />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Tags"
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                />
+              )}
+            />
+          </Box>
+
+          <Box width="100%">
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={onCoverFileSelected}
+            />
+
+            <TextField
+              label="Cover Image URL"
+              variant="outlined"
+              fullWidth
+              required
+              value={coverImageUrl}
+              onChange={(e) => setCoverImageUrl(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <Box mt={1} display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                onClick={pickCoverImage}
+                disabled={coverUploading}
+                style={{
+                  backgroundColor: colors.red1,
+                  color: 'white',
+                  height: 40,
+                  borderRadius: 8,
+                  padding: '0 18px',
+                }}
+              >
+                {coverUploading ? 'Uploading…' : 'Upload'}
+              </Button>
+            </Box>
+
+            {(coverPreviewUrl || coverImageUrl) && (
+              <Box mt={2}>
+                <img
+                  src={coverImageUrl || coverPreviewUrl || ''}
+                  alt="Cover preview"
+                  style={{
+                    maxWidth: 420,
+                    width: '100%',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+
+          {/* Content */}
+          <Box mt={2}>
+            <Typography variant="h6" style={{ marginBottom: '8px' }}>
+              Content
+            </Typography>
+
+            <Editor
+              apiKey="nlqgp4abfsx0n7eulsckg9qd2g31788bz0y3gxatyvj8m41p"
+              value={blogContent}
+              onEditorChange={(newContent: string) => setBlogContent(newContent)}
+              init={{
+                height: 600,
+                plugins: [
+                  'anchor',
+                  'autolink',
+                  'charmap',
+                  'codesample',
+                  'emoticons',
+                  'link',
+                  'lists',
+                  'searchreplace',
+                  'table',
+                  'visualblocks',
+                  'wordcount',
+                  'template',
+                ],
+                toolbar:
+                  'undo redo | blocks | bold italic underline | link table | ' +
+                  'align | bullist numlist | removeformat | template',
+                templates: [
+                  // ---------------------------
+                  // Template 1: Collage + text
+                  // ---------------------------
+                  {
+                    title: 'Template 1 — Collage + Article',
+                    description: 'Top collage (3-up + wide) then header + subheaders',
+                    content: `
+                      <div style="max-width: 920px; margin: 0 auto;">
+
+                        <!-- Collage: tall left + two stacked right -->
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1.4fr 1fr;
+                          gap: 20px;
+                          align-items: stretch;
+                          margin-bottom: 20px;
+                        ">
+                          <figure
+                            class="image-slot"
+                            data-image-slot="true"
+                            style="
+                              position: relative;
+                              height: 420px;
+                              border-radius: 18px;
+                              overflow: hidden;
+                              margin: 0;
+                            "
+                          >
+                            <img
+                              src="${svgPlaceholder(520, 420, 'Click to add image')}"
+                              alt="Placeholder"
+                              style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                            />
+                          </figure>
+
+                          <div style="display: grid; grid-template-rows: 1fr 1fr; gap: 20px;">
+                            <figure
+                              class="image-slot"
+                              data-image-slot="true"
+                              style="
+                                position: relative;
+                                height: 200px;
+                                border-radius: 18px;
+                                overflow: hidden;
+                                margin: 0;
+                              "
+                            >
+                              <img
+                                src="${svgPlaceholder(360, 200, 'Click to add image')}"
+                                alt="Placeholder"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                              />
+                            </figure>
+
+                            <figure
+                              class="image-slot"
+                              data-image-slot="true"
+                              style="
+                                position: relative;
+                                height: 200px;
+                                border-radius: 18px;
+                                overflow: hidden;
+                                margin: 0;
+                              "
+                            >
+                              <img
+                                src="${svgPlaceholder(360, 200, 'Click to add image')}"
+                                alt="Placeholder"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                              />
+                            </figure>
+                          </div>
+                        </div>
+
+                        <!-- Wide bottom image -->
+                        <figure
+                          class="image-slot"
+                          data-image-slot="true"
+                          style="
+                            position: relative;
+                            height: 200px;
+                            border-radius: 18px;
+                            overflow: hidden;
+                            margin: 0 0 32px 0;
+                          "
+                        >
+                          <img
+                            src="${svgPlaceholder(880, 200, 'Click to add image')}"
+                            alt="Placeholder"
+                            style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                          />
+                        </figure>
+
+                        <!-- Text block -->
+                        <div>
+                          <h2 style="margin: 0 0 10px;">Header</h2>
+                          <p style="margin: 0 0 22px; line-height: 1.6;">
+                            Write your intro paragraph here…
+                          </p>
+
+                          <h3 style="margin: 0 0 8px;">Subheader</h3>
+                          <p style="margin: 0 0 18px; line-height: 1.6;">
+                            Write supporting content here…
+                          </p>
+
+                          <h3 style="margin: 0 0 8px;">Subheader</h3>
+                          <p style="margin: 0; line-height: 1.6;">
+                            Write supporting content here…
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                  },
+
+                  // -------------------------------------
+                  // Template 2: Alternating image blocks
+                  // -------------------------------------
+                  {
+                    title: 'Template 2 — Alternating Image / Text',
+                    description: 'Zig-zag layout: text left, image right (alternating)',
+                    content: `
+                      <div style="max-width: 920px; margin: 0 auto;">
+
+                        <!-- Row 1: text left, image right -->
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1.3fr 1fr;
+                          gap: 24px;
+                          align-items: center;
+                          margin: 18px 0 34px;
+                        ">
+                          <div>
+                            <h3 style="margin: 0 0 10px;">Header</h3>
+                            <p style="margin: 0; line-height: 1.6;">
+                              Write your section text here…
+                            </p>
+                          </div>
+                          <figure
+                            class="image-slot"
+                            data-image-slot="true"
+                            style="
+                              position: relative;
+                              height: 260px;
+                              border-radius: 18px;
+                              overflow: hidden;
+                              margin: 0;
+                            "
+                          >
+                            <img
+                              src="${svgPlaceholder(380, 260, 'Click to add image')}"
+                              alt="Placeholder"
+                              style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                            />
+                          </figure>
+                        </div>
+
+                        <!-- Row 2: image left, text right -->
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1fr 1.3fr;
+                          gap: 24px;
+                          align-items: center;
+                          margin: 18px 0 34px;
+                        ">
+                          <figure
+                            class="image-slot"
+                            data-image-slot="true"
+                            style="
+                              position: relative;
+                              height: 260px;
+                              border-radius: 18px;
+                              overflow: hidden;
+                              margin: 0;
+                            "
+                          >
+                            <img
+                              src="${svgPlaceholder(380, 260, 'Click to add image')}"
+                              alt="Placeholder"
+                              style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                            />
+                          </figure>
+                          <div>
+                            <h3 style="margin: 0 0 10px;">Header</h3>
+                            <p style="margin: 0; line-height: 1.6;">
+                              Write your section text here…
+                            </p>
+                          </div>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1.3fr 1fr;
+                          gap: 24px;
+                          align-items: center;
+                          margin: 18px 0 34px;
+                        ">
+                          <div>
+                            <h3 style="margin: 0 0 10px;">Header</h3>
+                            <p style="margin: 0; line-height: 1.6;">
+                              Write your section text here…
+                            </p>
+                          </div>
+                          <figure
+                            class="image-slot"
+                            data-image-slot="true"
+                            style="
+                              position: relative;
+                              height: 260px;
+                              border-radius: 18px;
+                              overflow: hidden;
+                              margin: 0;
+                            "
+                          >
+                            <img
+                              src="${svgPlaceholder(380, 260, 'Click to add image')}"
+                              alt="Placeholder"
+                              style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                            />
+                          </figure>
+                        </div>
+
+                        <!-- Row 4 -->
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1fr 1.3fr;
+                          gap: 24px;
+                          align-items: center;
+                          margin: 18px 0 26px;
+                        ">
+                          <figure
+                            class="image-slot"
+                            data-image-slot="true"
+                            style="
+                              position: relative;
+                              height: 260px;
+                              border-radius: 18px;
+                              overflow: hidden;
+                              margin: 0;
+                            "
+                          >
+                            <img
+                              src="${svgPlaceholder(380, 260, 'Click to add image')}"
+                              alt="Placeholder"
+                              style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                            />
+                          </figure>
+                          <div>
+                            <h3 style="margin: 0 0 10px;">Header</h3>
+                            <p style="margin: 0; line-height: 1.6;">
+                              Write your section text here…
+                            </p>
+                          </div>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin-top: 8px;" />
+                      </div>
+                    `,
+                  },
+
+                  // -----------------------------------
+                  // Template 3: Left text / right stack
+                  // -----------------------------------
+                  {
+                    title: 'Template 3 — Left Text / Right Image Stack',
+                    description: 'Text sections stacked on left, images stacked on right',
+                    content: `
+                      <div style="max-width: 980px; margin: 0 auto;">
+                        <div style="
+                          display: grid;
+                          grid-template-columns: 1.25fr 1fr;
+                          gap: 28px;
+                          align-items: flex-start;
+                        ">
+
+                          <!-- Left text column -->
+                          <div>
+                            <div style="margin: 0 0 34px;">
+                              <h3 style="margin: 0 0 8px;">Header</h3>
+                              <p style="margin: 0; line-height: 1.6;">
+                                Write your section text here…
+                              </p>
+                            </div>
+
+                            <div style="margin: 0 0 34px;">
+                              <h3 style="margin: 0 0 8px;">Header</h3>
+                              <p style="margin: 0; line-height: 1.6;">
+                                Write your section text here…
+                              </p>
+                            </div>
+
+                            <div style="margin: 0 0 34px;">
+                              <h3 style="margin: 0 0 8px;">Header</h3>
+                              <p style="margin: 0; line-height: 1.6;">
+                                Write your section text here…
+                              </p>
+                            </div>
+
+                            <div style="margin: 0;">
+                              <h3 style="margin: 0 0 8px;">Header</h3>
+                              <p style="margin: 0; line-height: 1.6;">
+                                Write your section text here…
+                              </p>
+                            </div>
+                          </div>
+
+                          <!-- Right image stack -->
+                          <div style="display: flex; flex-direction: column; gap: 22px;">
+                            <figure
+                              class="image-slot"
+                              data-image-slot="true"
+                              style="
+                                position: relative;
+                                height: 260px;
+                                border-radius: 18px;
+                                overflow: hidden;
+                                margin: 0;
+                              "
+                            >
+                              <img
+                                src="${svgPlaceholder(420, 260, 'Click to add image')}"
+                                alt="Placeholder"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                              />
+                            </figure>
+
+                            <figure
+                              class="image-slot"
+                              data-image-slot="true"
+                              style="
+                                position: relative;
+                                height: 260px;
+                                border-radius: 18px;
+                                overflow: hidden;
+                                margin: 0;
+                              "
+                            >
+                              <img
+                                src="${svgPlaceholder(420, 260, 'Click to add image')}"
+                                alt="Placeholder"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                              />
+                            </figure>
+
+                            <figure
+                              class="image-slot"
+                              data-image-slot="true"
+                              style="
+                                position: relative;
+                                height: 260px;
+                                border-radius: 18px;
+                                overflow: hidden;
+                                margin: 0;
+                              "
+                            >
+                              <img
+                                src="${svgPlaceholder(420, 260, 'Click to add image')}"
+                                alt="Placeholder"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                              />
+                            </figure>
+                          </div>
+
+                        </div>
+                      </div>
+                    `,
+                  },
+
+                  // ---------------------------
+                  // Template 4: Text-only long
+                  // ---------------------------
+                  {
+                    title: 'Template 4 — Text-Only Article',
+                    description: 'Large header + paragraphs + subheaders + divider + repeat',
+                    content: `
+                      <div style="max-width: 920px; margin: 0 auto;">
+                        <h2 style="margin: 0 0 10px;">Header</h2>
+                        <p style="margin: 0 0 28px; line-height: 1.7;">
+                          Write your intro paragraph here…
+                        </p>
+
+                        <h3 style="margin: 0 0 8px;">Subheader</h3>
+                        <p style="margin: 0 0 22px; line-height: 1.7;">
+                          Write supporting content here…
+                        </p>
+
+                        <h3 style="margin: 0 0 8px;">Subheader</h3>
+                        <p style="margin: 0 0 28px; line-height: 1.7;">
+                          Write supporting content here…
+                        </p>
+
+                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+
+                        <h2 style="margin: 0 0 10px;">Header</h2>
+                        <p style="margin: 0 0 28px; line-height: 1.7;">
+                          Continue your article here…
+                        </p>
+
+                        <h3 style="margin: 0 0 8px;">Subheader</h3>
+                        <p style="margin: 0 0 22px; line-height: 1.7;">
+                          Add more details here…
+                        </p>
+
+                        <h3 style="margin: 0 0 8px;">Subheader</h3>
+                        <p style="margin: 0; line-height: 1.7;">
+                          Add more details here…
+                        </p>
+                      </div>
+                    `,
+                  },
+                ],
+              }}
+              initialValue=""
+            />
+          </Box>
+
+          {blogError && (
+            <Typography color="error" style={{ marginTop: '8px' }}>
+              {blogError}
+            </Typography>
+          )}
+          {blogSuccess && (
+            <Typography style={{ marginTop: '8px', color: 'green' }}>{blogSuccess}</Typography>
+          )}
+
+          <Box mt={2}>
+            <Button
+              variant="contained"
+              onClick={handleCreateBlogPost}
+              disabled={blogSaving}
+              style={{
+                backgroundColor: colors.red1,
+                color: 'white',
+                borderRadius: 8,
+                padding: '10px 24px',
+                alignSelf: 'flex-start',
+              }}
+            >
+              {blogSaving
+                ? 'Saving…'
+                : blogVisibility === 'ARCHIVED'
+                ? 'Save (Archived)'
+                : 'Publish Post'}
+            </Button>
+          </Box>
+        </Box>
+      </Box>
     </Container>
   );
 
@@ -1042,6 +1852,45 @@ const AdminPage = (): ReactElement => {
             )}
           </Box>
 
+          {/* Database / Maintenance Section */}
+          <Box
+            style={{
+              marginBottom: '40px',
+              padding: '20px',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography variant="h5" style={{ marginBottom: '15px', fontWeight: 'bold' }}>
+              Database Initialization
+            </Typography>
+            <Typography variant="body1" style={{ marginBottom: '15px', color: '#666' }}>
+              Initialize required Firestore collections in production. Safe to run multiple times —
+              never overwrites existing documents. Run this once after first deployment.
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleInitCollections}
+              disabled={initStatus === 'running'}
+            >
+              {initStatus === 'running' ? 'Running…' : 'Initialize Collections'}
+            </Button>
+            {initResults.length > 0 && (
+              <Box style={{ marginTop: '15px' }}>
+                {initResults.map((r, i) => (
+                  <Typography
+                    key={i}
+                    variant="body2"
+                    style={{ color: initStatus === 'error' ? 'red' : 'green' }}
+                  >
+                    {r}
+                  </Typography>
+                ))}
+              </Box>
+            )}
+          </Box>
+
           <Box
             style={{
               marginBottom: '40px',
@@ -1160,6 +2009,146 @@ const AdminPage = (): ReactElement => {
           </Box>
         </Grid>
       </Grid>
+    </Container>
+  );
+
+  // Admin Management tab
+  const adminManagement = (
+    <Container className={container}>
+      <Box mt={4} mb={4}>
+        <Typography variant="h3" style={{ marginBottom: '8px' }}>
+          <strong>Admin Management</strong>
+        </Typography>
+        <Typography variant="body2" style={{ color: '#666', marginBottom: '24px' }}>
+          Manage who can access the admin panel. Superadmins are hardcoded in the codebase and
+          cannot be removed here. Whitelist admins are stored in Firestore and can be added or
+          removed at any time.
+        </Typography>
+
+        {whitelistError && (
+          <Typography variant="body2" style={{ color: 'red', marginBottom: '16px' }}>
+            {whitelistError}
+          </Typography>
+        )}
+
+        {/* Add new admin */}
+        <Box
+          style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'flex-start',
+            marginBottom: '32px',
+          }}
+        >
+          <TextField
+            label="Cornell email"
+            variant="outlined"
+            size="small"
+            value={newAdminEmail}
+            onChange={(e) => setNewAdminEmail(e.target.value)}
+            placeholder="netid@cornell.edu"
+            style={{ width: '300px' }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddAdmin}
+            disabled={addingAdmin || !newAdminEmail.trim()}
+          >
+            {addingAdmin ? 'Adding…' : 'Add Admin'}
+          </Button>
+          <Button variant="outlined" onClick={fetchWhitelist} disabled={whitelistLoading}>
+            {whitelistLoading ? 'Loading…' : 'Refresh'}
+          </Button>
+        </Box>
+
+        {/* Superadmins (read-only) */}
+        <Typography variant="h5" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+          Superadmins (hardcoded)
+        </Typography>
+        <Table size="small" style={{ marginBottom: '32px' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Email</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {superadmins.map((email) => (
+              <TableRow key={email}>
+                <TableCell>{email}</TableCell>
+                <TableCell style={{ color: '#888' }}>
+                  Superadmin — edit HomeConsts.ts to remove
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {/* Firestore whitelist */}
+        <Typography variant="h5" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+          Whitelist Admins (Firestore)
+        </Typography>
+        {whitelist.length === 0 && !whitelistLoading ? (
+          <Typography variant="body2" style={{ color: '#888', marginBottom: '16px' }}>
+            No whitelist admins yet. Click "Refresh" to load or add one above.
+          </Typography>
+        ) : (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Email</TableCell>
+                <TableCell>Added By</TableCell>
+                <TableCell>Added At</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {whitelist.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{entry.email}</TableCell>
+                  <TableCell>{entry.addedBy ?? '—'}</TableCell>
+                  <TableCell>
+                    {entry.addedAt
+                      ? new Date(
+                          typeof entry.addedAt === 'object'
+                            ? entry.addedAt._seconds * 1000
+                            : entry.addedAt
+                        ).toLocaleDateString()
+                      : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {confirmRemoveEmail === entry.email ? (
+                      <Box style={{ display: 'flex', gap: '8px' }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="secondary"
+                          disabled={removingId === entry.id}
+                          onClick={() => handleRemoveAdmin(entry.email, entry.id)}
+                        >
+                          {removingId === entry.id ? 'Removing…' : 'Confirm Remove'}
+                        </Button>
+                        <Button size="small" onClick={() => setConfirmRemoveEmail(null)}>
+                          Cancel
+                        </Button>
+                      </Box>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setConfirmRemoveEmail(entry.email)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Box>
     </Container>
   );
 
@@ -1680,16 +2669,20 @@ const AdminPage = (): ReactElement => {
           >
             <Tab label="Reviews" value="Reviews" />
             <Tab label="Contact" value="Contact" />
+            <Tab label="Blog Posts" value="BlogPost" />
             <Tab label="Apartment Data" value="Data" />
             <Tab label="Dev Tools" value="DevTools" />
+            <Tab label="Admin Management" value="AdminManagement" />
           </Tabs>
         </Toolbar>
       </AppBar>
 
       {selectedTab === 'Reviews' && reviews}
       {selectedTab === 'Contact' && contact}
+      {selectedTab === 'BlogPost' && blogPosts}
       {selectedTab === 'Data' && data}
       {selectedTab === 'DevTools' && developerTools}
+      {selectedTab === 'AdminManagement' && adminManagement}
       {Modals}
       {roomTypesModal}
 

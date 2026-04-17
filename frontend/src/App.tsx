@@ -2,7 +2,8 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import './App.scss';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import FAQPage from './pages/FAQPage';
+import BlogPostPage from './pages/BlogPostPage';
+import BlogPostDetailPage from './pages/BlogPostDetailPage';
 import ReviewPage from './pages/ReviewPage';
 import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
@@ -76,9 +77,9 @@ const home: NavbarButton = {
   href: '/',
 };
 
-const faq: NavbarButton = {
-  label: 'FAQ',
-  href: '/faq',
+const blogs: NavbarButton = {
+  label: 'Advice',
+  href: '/blogs',
 };
 
 export type CardData = {
@@ -94,19 +95,41 @@ export type LocationCardData = {
   location: string;
 };
 
-const headersData = [home, faq];
+const headersData = [home, blogs];
 
 hotjar.initialize(HJID, HJSV);
 
 const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const { pathname } = useLocation();
+
   useEffect(() => {
     const setData = async () => {
       await axios.post('/api/set-data');
     };
     setData();
   }, []);
+
+  // Check admin status whenever user changes — checks both hardcoded list and Firestore whitelist
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdminUser(false);
+        return;
+      }
+      try {
+        const token = await user.getIdToken();
+        const response = await axios.get('/api/is-admin', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIsAdminUser(response.data.isAdmin === true);
+      } catch {
+        setIsAdminUser(false);
+      }
+    };
+    checkAdmin();
+  }, [user]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -116,7 +139,10 @@ const App = (): ReactElement => {
           <Switch>
             <Route exact path="/" component={() => <HomePage user={user} setUser={setUser} />} />
 
-            <Route exact path="/faq" component={FAQPage} />
+            <Route exact path="/blogs" component={BlogPostPage} />
+            <Route path="/apt-advice/:postId">
+              <BlogPostDetailPage />
+            </Route>
             <Route
               exact
               path="/reviews"
@@ -153,10 +179,9 @@ const App = (): ReactElement => {
               path="/search"
               component={() => <SearchResultsPage user={user} setUser={setUser} />}
             />
-            {isAdmin(user) && <Route exact path="/admin" component={AdminPage} />}
+            {(isAdmin(user) || isAdminUser) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
-        {pathname !== '/faq' && <Footer />}
         <ContactModal user={user} />
       </ModalProvider>
     </ThemeProvider>

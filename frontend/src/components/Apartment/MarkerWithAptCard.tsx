@@ -6,6 +6,8 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 
 import NewApartmentCard from '../ApartmentCard/NewApartmentCard';
+import { Link as RouterLink } from 'react-router-dom';
+import { Link } from '@material-ui/core';
 
 type markerWithCardProp = {
   readonly lat: number;
@@ -63,41 +65,49 @@ export const MapMarkerWithCard = ({
         }, 100)
       }
     >
-      <img
-        src={hoveredIdx === idx ? aptIcon : mapPinIcon}
-        alt={apt.buildingData.name}
-        style={{
-          height: `${markerSize}px`,
-          width: `${markerSize * 0.75}px`,
-          transform: `translate(-50%, -50%) scale(${hoveredIdx === idx ? 1.6 : 1})`,
-          transition: 'transform 0.3s',
-          cursor: 'pointer',
+      <Link
+        {...{
+          to: `/apartment/${apt.buildingData.id}`,
+          style: { textDecoration: 'none' },
+          component: RouterLink,
         }}
-      />
-      {hoveredIdx === idx && (
-        <div
+      >
+        <img
+          src={hoveredIdx === idx ? aptIcon : mapPinIcon}
+          alt={apt.buildingData.name}
           style={{
-            position: 'absolute',
-            left: 10,
-            top: 10,
-            zIndex: 2000,
+            height: `${markerSize}px`,
+            width: `${markerSize * 0.75}px`,
+            transform: `translate(-50%, -50%) scale(${hoveredIdx === idx ? 1.6 : 1})`,
+            transition: 'transform 0.3s',
+            cursor: 'pointer',
           }}
-          onMouseEnter={() => setCardHovered(true)}
-          onMouseLeave={() => {
-            setCardHovered(false);
-            setHoveredIdx(null);
-          }}
-        >
-          <NewApartmentCard
-            buildingData={apt.buildingData}
-            numReviews={apt.numReviews}
-            avgRating={apt.avgRating || 0}
-            company={apt.company}
-            user={user}
-            setUser={setUser}
-          />
-        </div>
-      )}
+        />
+        {hoveredIdx === idx && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              zIndex: 2000,
+            }}
+            onMouseEnter={() => setCardHovered(true)}
+            onMouseLeave={() => {
+              setCardHovered(false);
+              setHoveredIdx(null);
+            }}
+          >
+            <NewApartmentCard
+              buildingData={apt.buildingData}
+              numReviews={apt.numReviews}
+              avgRating={apt.avgRating || 0}
+              company={apt.company}
+              user={user}
+              setUser={setUser}
+            />
+          </div>
+        )}
+      </Link>
     </div>
   );
 };
