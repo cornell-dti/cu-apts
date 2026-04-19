@@ -2,6 +2,9 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { Button, Grid, makeStyles, Typography, Box } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+
 import { get } from '../utils/call';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';

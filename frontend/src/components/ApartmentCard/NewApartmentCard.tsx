@@ -19,6 +19,8 @@ import AddToFolderPopover from '../Folder/AddToFolderPopover';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
 import { formatPriceRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -203,6 +205,7 @@ const NewApartmentCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
   const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
+  const [numBeds, setNumBeds] = useState<number | null>(null);
 
   // Get price range from room types
   const roomTypeRange = getRoomTypeRange(roomTypes);

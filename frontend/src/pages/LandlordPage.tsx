@@ -20,6 +20,8 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import { Landlord } from '../../../common/types/db-types';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';

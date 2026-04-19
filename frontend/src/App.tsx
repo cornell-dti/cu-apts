@@ -27,6 +27,8 @@ import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
 import { isAdmin } from './utils/adminTool';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const theme = createTheme({
   palette: {

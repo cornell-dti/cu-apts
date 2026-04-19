@@ -1,4 +1,5 @@
 import React, { ReactElement, useState, useEffect } from 'react';
+import 'firebase/auth';
 import {
   IconButton,
   Button,

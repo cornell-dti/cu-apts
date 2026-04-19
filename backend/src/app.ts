@@ -3,6 +3,8 @@ import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   Review,
   Landlord,
@@ -21,14 +23,15 @@ import {
   BlogPost,
   BlogPostInternal,
   BlogPostWithId,
-  RoomType,
   Folder,
+  RoomType,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
 import { Timestamp } from '@firebase/firestore-types';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
+import { runScrapers } from './scrapers';
 import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
@@ -2275,6 +2278,250 @@ app.post('/api/admin/migrate-all-apartments-schema', authenticate, async (req, r
       .status(500)
       .send(`Error during migration: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
+});
+
+// Web scraper and diffing endpoints
+/**
+ * Normalizes an address string for fuzzy matching:
+ * lowercase, strip punctuation, remove "ithaca", zip codes, extra spaces.
+ */
+function normalizeAddress(addr: string): string {
+  return addr
+    .toLowerCase()
+    .replace(/[,.]/g, ' ')
+    .replace(/\bithaca\b/g, '')
+    .replace(/\bny\b/g, '')
+    .replace(/\b\d{5}\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function escapeCSVField(value: unknown): string {
+  const str = value === null || value === undefined ? '' : String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+/**
+ * Run Web Scraper + Diff - Triggers all registered agency scrapers, compares
+ * the results against the current Firestore buildings, and writes a diff CSV.
+ *
+ * @route POST /api/admin/run-scraper
+ *
+ * @input {string[]} [req.body.agencies] - Optional list of agency keys to run.
+ *   Omit or pass "all" to run all registered scrapers.
+ *
+ * @status
+ * - 200: Scrape + diff complete; returns summary and marks csvReady: true
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error during scraping or diffing
+ */
+app.post('/api/admin/run-scraper', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  if (!email || !admins.includes(email)) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  try {
+    const agencies = req.body.agencies ?? 'all';
+
+    console.log('[run-scraper] Starting scrapers...');
+    const { results: scraped, errors: scraperErrors } = await runScrapers({ agencies });
+    console.log(`[run-scraper] Scraped ${scraped.length} properties.`);
+
+    // Fetch current buildings from db
+    const snapshot = await buildingsCollection.get();
+    const dbBuildings = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Array<{
+      id: string;
+      name?: string;
+      address?: string;
+      numBeds?: number;
+      numBaths?: number;
+      price?: number;
+    }>;
+
+    const dbIndex = dbBuildings.map((b) => ({
+      ...b,
+      normalized: normalizeAddress(b.address ?? ''),
+    }));
+
+    type DiffRow = {
+      status: 'NEW' | 'CHANGED' | 'UNCHANGED';
+      firestoreId: string;
+      dbName: string;
+      scrapedAddress: string;
+      numBedsScraped: string;
+      numBedsDb: string;
+      numBathsScraped: string;
+      numBathsDb: string;
+      priceScraped: string;
+      priceDb: string;
+      sourceUrl: string;
+      agency: string;
+    };
+
+    const diffRows: DiffRow[] = [];
+    let newCount = 0;
+    let changedCount = 0;
+    let unchangedCount = 0;
+
+    scraped.forEach((prop) => {
+      const normScraped = normalizeAddress(prop.address);
+
+      const match = dbIndex.find(
+        (b) => b.normalized.includes(normScraped) || normScraped.includes(b.normalized)
+      );
+
+      const numBedsScraped = prop.numBeds !== null ? String(prop.numBeds) : '';
+      const numBathsScraped = prop.numBaths !== null ? String(prop.numBaths) : '';
+      const priceScraped = prop.price !== null ? String(prop.price) : '';
+
+      if (!match) {
+        newCount += 1;
+        diffRows.push({
+          status: 'NEW',
+          firestoreId: '',
+          dbName: '',
+          scrapedAddress: prop.address,
+          numBedsScraped,
+          numBedsDb: '',
+          numBathsScraped,
+          numBathsDb: '',
+          priceScraped,
+          priceDb: '',
+          sourceUrl: prop.sourceUrl,
+          agency: prop.agency,
+        });
+      } else {
+        const numBedsDb = match.numBeds !== undefined ? String(match.numBeds) : '';
+        const numBathsDb = match.numBaths !== undefined ? String(match.numBaths) : '';
+        const priceDb = match.price !== undefined ? String(match.price) : '';
+
+        const changed =
+          (numBedsScraped !== '' && numBedsScraped !== numBedsDb) ||
+          (numBathsScraped !== '' && numBathsScraped !== numBathsDb) ||
+          (priceScraped !== '' && priceScraped !== priceDb);
+
+        if (changed) {
+          changedCount += 1;
+        } else {
+          unchangedCount += 1;
+        }
+
+        diffRows.push({
+          status: changed ? 'CHANGED' : 'UNCHANGED',
+          firestoreId: match.id,
+          dbName: match.name ?? '',
+          scrapedAddress: prop.address,
+          numBedsScraped,
+          numBedsDb,
+          numBathsScraped,
+          numBathsDb,
+          priceScraped,
+          priceDb,
+          sourceUrl: prop.sourceUrl,
+          agency: prop.agency,
+        });
+      }
+    });
+
+    // Write diff CSV
+    const CSV_HEADERS = [
+      'status',
+      'firestoreId',
+      'dbName',
+      'scrapedAddress',
+      'numBedsScraped',
+      'numBedsDb',
+      'numBathsScraped',
+      'numBathsDb',
+      'priceScraped',
+      'priceDb',
+      'sourceUrl',
+      'agency',
+    ];
+
+    const csvLines = [
+      CSV_HEADERS.join(','),
+      ...diffRows.map((row) =>
+        [
+          row.status,
+          row.firestoreId,
+          row.dbName,
+          row.scrapedAddress,
+          row.numBedsScraped,
+          row.numBedsDb,
+          row.numBathsScraped,
+          row.numBathsDb,
+          row.priceScraped,
+          row.priceDb,
+          row.sourceUrl,
+          row.agency,
+        ]
+          .map(escapeCSVField)
+          .join(',')
+      ),
+    ];
+
+    const csvPath = path.join(__dirname, '../scripts/scraper_diff.csv');
+    fs.writeFileSync(csvPath, csvLines.join('\n'), 'utf8');
+    console.log(`[run-scraper] Diff CSV written to ${csvPath}`);
+
+    res.status(200).json({
+      total: scraped.length,
+      newCount,
+      changedCount,
+      unchangedCount,
+      scraperErrors,
+      csvReady: true,
+    });
+  } catch (err) {
+    console.error('[run-scraper] Error:', err);
+    res.status(500).send(`Scraper error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+  }
+});
+
+/**
+ * Download Scraper Diff CSV - Returns the last scraper_diff.csv written by
+ * POST /api/admin/run-scraper.
+ *
+ * @route GET /api/admin/scraper-results.csv
+ *
+ * @status
+ * - 200: CSV file download
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 404: No scraper results found — run the scraper first
+ * - 500: Server error
+ */
+app.get('/api/admin/scraper-results.csv', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  if (!email || !admins.includes(email)) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  const csvPath = path.join(__dirname, '../scripts/scraper_diff.csv');
+
+  if (!fs.existsSync(csvPath)) {
+    res.status(404).send('No scraper results found. Run POST /api/admin/run-scraper first.');
+    return;
+  }
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="scraper_diff.csv"');
+  fs.createReadStream(csvPath).pipe(res);
 });
 
 /**

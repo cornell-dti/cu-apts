@@ -17,6 +17,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { FolderRounded } from '@material-ui/icons';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const useStyles = makeStyles({
   popoverPaper: {
