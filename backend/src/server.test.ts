@@ -125,6 +125,16 @@ describe('Tags', () => {
     expect(JSON.parse(d2.text)).toEqual([]);
   });
 
+  it('GET /api/tags lists all tags', async () => {
+    await request(app).post('/api/tags').send({ name: 'Alpha' });
+    await request(app).post('/api/tags').send({ name: 'Beta' });
+    const resp = await request(app).get('/api/tags');
+    expect(resp.status).toEqual(200);
+    const tags = JSON.parse(resp.text) as { id: string; name: string }[];
+    expect(tags.length).toEqual(2);
+    expect(tags.map((t) => t.name).sort()).toEqual(['Alpha', 'Beta']);
+  });
+
   it('GET /api/apts/:id/tags returns correct tag names', async () => {
     const t1Resp = await request(app).post('/api/tags').send({ name: 'Pet Friendly' });
     const t2Resp = await request(app).post('/api/tags').send({ name: 'Laundry In-Unit' });

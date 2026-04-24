@@ -11,7 +11,7 @@ import { ThemeProvider } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import NavBar, { NavbarButton } from './components/utils/NavBar/index';
 import NotFoundPage from './pages/NotFoundPage';
-import { ApartmentWithId } from '../../common/types/db-types';
+import { ApartmentWithId, TagWithId } from '../../common/types/db-types';
 import Footer from './components/utils/Footer';
 import ContactModal from './components/utils/Footer/ContactModal';
 import { ModalProvider } from './components/utils/Footer/ContactModalContext';
@@ -84,6 +84,8 @@ export type CardData = {
   company?: string;
   avgRating?: number;
   avgPrice?: number;
+  /** Display tags resolved from the tag collection; used on listing cards */
+  apartmentTags?: readonly TagWithId[];
 };
 
 export type LocationCardData = {

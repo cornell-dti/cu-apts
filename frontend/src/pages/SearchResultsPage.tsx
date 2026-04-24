@@ -7,7 +7,7 @@ import { CardData } from '../App';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useTitle } from '../utils';
 import { useSaveScrollPosition } from '../utils/saveScrollPosition';
-import { defaultFilters } from '../components/Search/FilterSection';
+import { defaultFilters, FilterState } from '../components/Search/FilterSection';
 import Autocomplete from '../components/Search/Autocomplete';
 import SearchResultsPageApartmentCards from '../components/ApartmentCard/SearchResultsPageApartmentCards';
 import SearchResultsMap from '../components/Search/SearchResultsMap';
@@ -16,6 +16,8 @@ import { ApartmentWithId } from '../../../common/types/db-types';
 
 const useStyles = makeStyles({
   header: {
+    position: 'relative',
+    zIndex: 20,
     marginLeft: '0.5vw',
     marginRight: '0.5vw',
     display: 'flex',
@@ -25,6 +27,8 @@ const useStyles = makeStyles({
     marginBottom: '24px',
   },
   mainContent: {
+    position: 'relative',
+    zIndex: 0,
     display: 'flex',
     flexDirection: 'row',
     gap: '12px',
@@ -85,11 +89,18 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const { query, filters } = useMemo(() => {
     window.scrollTo(0, 0);
     const params = new URLSearchParams(path.search);
+    const raw = params.get('filters');
+    let parsed: Partial<FilterState> = {};
+    if (raw) {
+      try {
+        parsed = JSON.parse(decodeURIComponent(raw));
+      } catch {
+        parsed = {};
+      }
+    }
     return {
       query: params.get('q') || '',
-      filters: params.get('filters')
-        ? JSON.parse(decodeURIComponent(params.get('filters') || '{}'))
-        : defaultFilters,
+      filters: { ...defaultFilters, ...parsed },
     };
   }, [path.search]);
 
@@ -125,6 +136,10 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
 
     if (filters.bathrooms > 0) {
       params.append('bathrooms', filters.bathrooms.toString());
+    }
+
+    if (filters.tagIds && filters.tagIds.length > 0) {
+      params.append('tagIds', filters.tagIds.join(','));
     }
 
     // Add sortBy parameter if it's not 'originalOrder'

@@ -16,7 +16,13 @@ import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
 import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
-import { ApartmentWithId, DetailedRating, ReviewWithId } from '../../../../common/types/db-types';
+import {
+  ApartmentWithId,
+  DetailedRating,
+  ReviewWithId,
+  TagWithId,
+} from '../../../../common/types/db-types';
+import ApartmentImageTagBadges from './ApartmentImageTagBadges';
 import { colors } from '../../colors';
 import HeartRating from '../utils/HeartRating';
 import ReviewHeader from '../Review/ReviewHeader';
@@ -29,6 +35,7 @@ type Props = {
   company?: string;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  apartmentTags?: readonly TagWithId[];
 };
 
 const useStyles = makeStyles({
@@ -199,13 +206,14 @@ const useStyles = makeStyles({
  * @param {React.Dispatch<React.SetStateAction<firebase.User | null>>} props.setUser - Function to update the user state.
  * @returns {ReactElement} NewApartmentCard component.
  */
-const NewApartmentCard = ({
+const LargeApartmentCard = ({
   buildingData,
   numReviews,
   avgRating,
   company,
   user,
   setUser,
+  apartmentTags,
 }: Props): ReactElement => {
   const { id, name, photos, address, area } = buildingData;
   const saved = savedIcon;
@@ -314,6 +322,7 @@ const NewApartmentCard = ({
     >
       <div className={cardContainer}>
         <CardMedia className={apartmentImageContainer}>
+          <ApartmentImageTagBadges tags={apartmentTags} />
           <img src={img} alt="apartment" className={apartmentImage} />
         </CardMedia>
         <div className={apartmentInfo}>
@@ -355,4 +364,4 @@ const NewApartmentCard = ({
   );
 };
 
-export default NewApartmentCard;
+export default LargeApartmentCard;

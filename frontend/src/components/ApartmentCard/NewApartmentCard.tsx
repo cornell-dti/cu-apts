@@ -15,7 +15,8 @@ import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
 import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
-import { ApartmentWithId } from '../../../../common/types/db-types';
+import { ApartmentWithId, TagWithId } from '../../../../common/types/db-types';
+import ApartmentImageTagBadges from './ApartmentImageTagBadges';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { colors } from '../../colors';
 
@@ -26,6 +27,7 @@ type Props = {
   company?: string;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  apartmentTags?: readonly TagWithId[];
 };
 
 const useStyles = makeStyles({
@@ -72,6 +74,7 @@ const useStyles = makeStyles({
     position: 'absolute',
     top: '12px',
     right: '12px',
+    zIndex: 2,
     objectPosition: 'center',
     objectFit: 'cover',
     transition: 'scale 0.2s',
@@ -192,6 +195,7 @@ const NewApartmentCard = ({
   company,
   user,
   setUser,
+  apartmentTags,
 }: Props): ReactElement => {
   const { id, name, photos, address, numBeds = 0, distanceToCampus = 0 } = buildingData;
   const saved = savedIcon;
@@ -276,6 +280,7 @@ const NewApartmentCard = ({
     >
       <div className={cardContainer}>
         <CardMedia className={apartmentImageContainer}>
+          <ApartmentImageTagBadges tags={apartmentTags} />
           <IconButton
             disableRipple
             onClick={handleSaveToggle}

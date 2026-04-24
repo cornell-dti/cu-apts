@@ -32,9 +32,9 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "env-cmd -f ../.env.dev react-scripts start",
-    "start-prod": "env-cmd -f ../.env.prod react-scripts start",
-    "build": "react-scripts build",
+    "start": "env NODE_OPTIONS=--openssl-legacy-provider env-cmd -f ../.env.dev react-scripts start",
+    "start-prod": "env NODE_OPTIONS=--openssl-legacy-provider env-cmd -f ../.env.prod react-scripts start",
+    "build": "env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint . --ext .ts --ext .tsx",

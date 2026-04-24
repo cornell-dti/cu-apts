@@ -98,6 +98,21 @@ app.post('/api/tags', async (req, res) => {
   }
 });
 
+// API endpoint to list all tags (for search and filters)
+app.get('/api/tags', async (_req, res) => {
+  try {
+    const snap = await tagsCollection.get();
+    const tags: TagWithId[] = snap.docs
+      .map((d) => ({ id: d.id, name: d.data()?.name } as TagWithId))
+      .filter((t) => typeof t.name === 'string');
+    tags.sort((a, b) => a.name.localeCompare(b.name));
+    res.status(200).send(JSON.stringify(tags));
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error');
+  }
+});
+
 // API endpoint to post a new review
 app.post('/api/new-review', authenticate, async (req, res) => {
   try {
@@ -449,12 +464,33 @@ const pageData = async (buildings: ApartmentWithId[]) =>
       const avgPrice =
         reviewsWithPrice.reduce((acc, curr) => acc + curr.data().price, 0) /
         Math.max(reviewsWithPrice.length, 1);
+
+      const tagIds = buildingData.tags;
+      let apartmentTags: TagWithId[] = [];
+      if (tagIds && tagIds.length > 0) {
+        const tagDocs = await Promise.all(tagIds.map((tid) => tagsCollection.doc(tid).get()));
+        apartmentTags = tagIds
+          .map((tid, i) => {
+            const d = tagDocs[i];
+            if (!d.exists) {
+              return null;
+            }
+            const tagName = d.data()?.name;
+            if (typeof tagName !== 'string') {
+              return null;
+            }
+            return { id: tid, name: tagName } as TagWithId;
+          })
+          .filter((t): t is TagWithId => t != null);
+      }
+
       return {
         buildingData,
         numReviews,
         company,
         avgRating,
         avgPrice,
+        apartmentTags,
       };
     })
   );
@@ -485,6 +521,39 @@ app.post('/api/new-landlord', async (req, res) => {
 
 // Utility function to check if an object is a Landlord
 const isLandlord = (obj: LandlordWithId | ApartmentWithId): boolean => 'contact' in obj;
+
+const loadAllAptsFromFirestore = async (): Promise<ApartmentWithId[]> => {
+  const aptDocs = (await buildingsCollection.get()).docs;
+  return aptDocs.map((apt) => ({ id: apt.id, ...apt.data() } as ApartmentWithId));
+};
+
+const loadAllLandlordsFromFirestore = async (): Promise<LandlordWithId[]> => {
+  const landlordDocs = (await landlordCollection.get()).docs;
+  return landlordDocs.map((l) => ({ id: l.id, ...l.data() } as LandlordWithId));
+};
+
+const parseTagIdsQuery = (tagIds: unknown): string[] => {
+  if (typeof tagIds !== 'string' || tagIds.trim() === '') {
+    return [];
+  }
+  return tagIds
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const filterAptsByTagIds = (apts: ApartmentWithId[], required: string[]): ApartmentWithId[] => {
+  if (required.length === 0) {
+    return apts;
+  }
+  return apts.filter((apt) => {
+    const t = apt.tags;
+    if (!t || t.length === 0) {
+      return false;
+    }
+    return required.every((id) => t.includes(id));
+  });
+};
 
 // API endpoint to set application data (landlords and apartments)
 app.post('/api/set-data', async (req, res) => {
@@ -527,8 +596,10 @@ app.post('/api/set-data', async (req, res) => {
 app.get('/api/search', async (req, res) => {
   try {
     const query = req.query.q as string;
-    const landlords = req.app.get('landlords');
-    const apts = req.app.get('apts');
+    const [landlords, apts] = await Promise.all([
+      loadAllLandlordsFromFirestore(),
+      loadAllAptsFromFirestore(),
+    ]);
     const aptsLandlords: (LandlordWithId | ApartmentWithId)[] = [...landlords, ...apts];
 
     const options = {
@@ -568,8 +639,7 @@ app.get('/api/search', async (req, res) => {
 app.get('/api/search-results', async (req, res) => {
   try {
     const query = req.query.q as string;
-    const apts = req.app.get('apts');
-    const aptsWithType: ApartmentWithId[] = apts;
+    const aptsWithType = await loadAllAptsFromFirestore();
 
     const options = {
       keys: ['name', 'address'],
@@ -614,16 +684,10 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     // Extract all query parameters
     const query = req.query.q as string;
     const locations = req.query.locations as string;
-    const minPrice = req.query.minPrice ? parseInt(req.query.minPrice as string, 10) : null;
-    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : null;
-    const bedrooms = req.query.bedrooms ? parseInt(req.query.bedrooms as string, 10) : null;
-    const bathrooms = req.query.bathrooms ? parseInt(req.query.bathrooms as string, 10) : null;
     const size = req.query.size ? parseInt(req.query.size as string, 10) : null;
     const sortBy = req.query.sortBy || 'numReviews';
 
-    // Get all apartments from the application state
-    const apts = req.app.get('apts');
-    const aptsWithType: ApartmentWithId[] = apts;
+    const aptsWithType = await loadAllAptsFromFirestore();
 
     // Start with text search if query is provided
     let filteredResults: ApartmentWithId[] = [];
@@ -637,6 +701,11 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
     } else {
       // If no query, start with all apartments
       filteredResults = aptsWithType;
+    }
+
+    const requiredTagIds = parseTagIdsQuery(req.query.tagIds);
+    if (requiredTagIds.length > 0) {
+      filteredResults = filterAptsByTagIds(filteredResults, requiredTagIds);
     }
 
     // Apply location filter if provided
@@ -720,19 +789,28 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
  */
 app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
   const { page, size, sortBy = 'numReviews' } = req.params;
+  const requiredTagIds = parseTagIdsQuery(req.query.tagIds);
   let buildingDocs;
   let buildingData;
 
   if (page !== 'home') {
     // we only limit on size off the bat if we are not the homepage
-    buildingDocs = (await buildingsCollection.limit(Number(size)).get()).docs;
+    if (requiredTagIds.length > 0) {
+      buildingDocs = (await buildingsCollection.get()).docs;
+    } else {
+      buildingDocs = (await buildingsCollection.limit(Number(size)).get()).docs;
+    }
   } else {
     buildingDocs = (await buildingsCollection.get()).docs;
   }
 
-  const buildings: ApartmentWithId[] = buildingDocs.map(
+  let buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
+
+  if (requiredTagIds.length > 0) {
+    buildings = filterAptsByTagIds(buildings, requiredTagIds);
+  }
 
   if (page === 'home') {
     // Get enriched data first
@@ -756,7 +834,11 @@ app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
     // Take only the requested size
     buildingData = enrichedData.slice(0, Number(size));
   } else {
-    buildingData = await pageData(buildings);
+    let paged = buildings;
+    if (requiredTagIds.length > 0 && paged.length > Number(size)) {
+      paged = paged.slice(0, Number(size));
+    }
+    buildingData = await pageData(paged);
   }
 
   const returnData = JSON.stringify({
@@ -783,11 +865,16 @@ app.get('/api/page-data/:page/:size/:sortBy?', async (req, res) => {
  */
 app.get('/api/location/:loc', async (req, res) => {
   const { loc } = req.params;
+  const requiredTagIds = parseTagIdsQuery(req.query.tagIds);
   const buildingDocs = (await buildingsCollection.where(`area`, '==', loc.toUpperCase()).get())
     .docs;
-  const buildings: ApartmentWithId[] = buildingDocs.map(
+  let buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
+
+  if (requiredTagIds.length > 0) {
+    buildings = filterAptsByTagIds(buildings, requiredTagIds);
+  }
 
   const data = JSON.stringify(await pageData(buildings));
   return res.status(200).send(data);
@@ -829,9 +916,14 @@ app.get('/api/locations', async (req, res) => {
   }
 
   const buildingDocs = (await query.get()).docs;
-  const buildings: ApartmentWithId[] = buildingDocs.map(
+  let buildings: ApartmentWithId[] = buildingDocs.map(
     (doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId)
   );
+
+  const requiredTagIds = parseTagIdsQuery(req.query.tagIds);
+  if (requiredTagIds.length > 0) {
+    buildings = filterAptsByTagIds(buildings, requiredTagIds);
+  }
 
   const data = JSON.stringify(await pageData(buildings));
   return res.status(200).send(data);

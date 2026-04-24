@@ -92,6 +92,7 @@ export const MapMarkerWithCard = ({
             company={apt.company}
             user={user}
             setUser={setUser}
+            apartmentTags={apt.apartmentTags}
           />
         </div>
       )}
