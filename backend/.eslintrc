@@ -18,6 +18,7 @@
     "tsconfigRootDir": "./"
   },
   "env": { "node": true },
+  "ignorePatterns": ["**/*.test.ts", "**/*.spec.ts"],
   "rules": {
     "import/extensions": "off",
     "import/no-extraneous-dependencies": "off",

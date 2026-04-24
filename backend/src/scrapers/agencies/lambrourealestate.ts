@@ -270,7 +270,6 @@ async function scrapeLambrouRealEstate(): Promise<ScrapedProperty[]> {
       sleep(REQUEST_DELAY_MS * i).then(() =>
         scrapeHouseDetail(url)
           .then((prop) => {
-            console.log(`[lambrourealestate] Scraped: ${prop.address}`);
             results.push(prop);
           })
           .catch((err) => {

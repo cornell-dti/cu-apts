@@ -202,9 +202,34 @@ const AdminPage = (): ReactElement => {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveEmail, setConfirmRemoveEmail] = useState<string | null>(null);
 
+  type ScraperDiffRow = {
+    status: 'NEW' | 'CHANGED' | 'UNCHANGED';
+    firestoreId: string;
+    dbName: string;
+    scrapedAddress: string;
+    numBedsScraped: string;
+    numBedsDb: string;
+    numBathsScraped: string;
+    numBathsDb: string;
+    priceScraped: string;
+    priceDb: string;
+    sourceUrl: string;
+    agency: string;
+  };
+
   const [scraperStatus, setScraperStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [scraperSummary, setScraperSummary] = useState<any>(null);
   const [scraperError, setScraperError] = useState<string>('');
+  const [scraperRows, setScraperRows] = useState<ScraperDiffRow[]>([]);
+  // Per-row edited values: keyed by firestoreId
+  const [editedValues, setEditedValues] = useState<
+    Record<string, { numBeds: string; numBaths: string; price: string }>
+  >({});
+  // Which CHANGED rows are checked for apply
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
+  const [showUnchanged, setShowUnchanged] = useState(false);
+  const [applyStatus, setApplyStatus] = useState<'idle' | 'applying' | 'done' | 'error'>('idle');
+  const [applyResult, setApplyResult] = useState<any>(null);
 
   // Debug apartments state changes
   useEffect(() => {
@@ -661,6 +686,10 @@ const AdminPage = (): ReactElement => {
       setScraperStatus('running');
       setScraperSummary(null);
       setScraperError('');
+      setScraperRows([]);
+      setEditedValues({});
+      setSelectedRowIds(new Set());
+      setApplyResult(null);
 
       const user = await getUser();
       if (!user) {
@@ -672,7 +701,25 @@ const AdminPage = (): ReactElement => {
       const token = await user.getIdToken(true);
       const response = await axios.post('/api/admin/run-scraper', {}, createAuthHeaders(token));
 
+      const rows: ScraperDiffRow[] = response.data.rows ?? [];
       setScraperSummary(response.data);
+      setScraperRows(rows);
+
+      // Pre-select all CHANGED rows and seed their editable values with scraped data
+      const initEdited: Record<string, { numBeds: string; numBaths: string; price: string }> = {};
+      const initSelected = new Set<string>();
+      rows.forEach((row) => {
+        if (row.status === 'CHANGED' && row.firestoreId) {
+          initEdited[row.firestoreId] = {
+            numBeds: row.numBedsScraped,
+            numBaths: row.numBathsScraped,
+            price: row.priceScraped,
+          };
+          initSelected.add(row.firestoreId);
+        }
+      });
+      setEditedValues(initEdited);
+      setSelectedRowIds(initSelected);
       setScraperStatus('done');
     } catch (error: any) {
       console.error('Scraper error:', error);
@@ -685,8 +732,6 @@ const AdminPage = (): ReactElement => {
     const user = await getUser();
     if (!user) return;
     const token = await user.getIdToken(true);
-
-    // Fetch with auth header and trigger browser download
     const response = await fetch('/api/admin/scraper-results.csv', {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -701,6 +746,46 @@ const AdminPage = (): ReactElement => {
     a.download = 'scraper_diff.csv';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleApplyScraperChanges = async () => {
+    if (selectedRowIds.size === 0) {
+      alert('No rows selected to apply.');
+      return;
+    }
+    try {
+      setApplyStatus('applying');
+      setApplyResult(null);
+
+      const changes = Array.from(selectedRowIds).map((id) => {
+        const vals = editedValues[id] ?? {};
+        return {
+          firestoreId: id,
+          numBeds: vals.numBeds !== '' ? Number(vals.numBeds) : null,
+          numBaths: vals.numBaths !== '' ? Number(vals.numBaths) : null,
+          price: vals.price !== '' ? Number(vals.price) : null,
+        };
+      });
+
+      const user = await getUser();
+      if (!user) {
+        alert('You must be logged in');
+        setApplyStatus('idle');
+        return;
+      }
+      const token = await user.getIdToken(true);
+      const response = await axios.post(
+        '/api/admin/apply-scraper-changes',
+        { changes },
+        createAuthHeaders(token)
+      );
+      setApplyResult(response.data);
+      setApplyStatus('done');
+    } catch (error: any) {
+      console.error('Apply error:', error);
+      setApplyResult({ error: error.response?.data || error.message });
+      setApplyStatus('error');
+    }
   };
 
   // Room Types Edit Handlers
@@ -1938,12 +2023,21 @@ const AdminPage = (): ReactElement => {
               Web Scraper
             </Typography>
             <Typography variant="body1" style={{ marginBottom: '15px', color: '#666' }}>
-              Scrapes property data from registered agency websites (e.g. PJ Apartments) and
-              compares results against the current database. Downloads a CSV showing new listings
-              and changed fields (beds, baths, price) that you can review before applying updates.
+              Scrapes registered agency sites (e.g. PJ Apartments), diffs results against the
+              database, and shows changes inline. Review and edit the values below, then click
+              &ldquo;Apply Selected to Database&rdquo; to save.
             </Typography>
 
-            <Box style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            {/* Action buttons */}
+            <Box
+              style={{
+                display: 'flex',
+                gap: '12px',
+                marginBottom: '20px',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+              }}
+            >
               <Button
                 variant="contained"
                 color="primary"
@@ -1954,20 +2048,33 @@ const AdminPage = (): ReactElement => {
               </Button>
               <Button
                 variant="outlined"
-                color="primary"
                 onClick={handleDownloadScraperCSV}
                 disabled={scraperStatus === 'running' || scraperStatus === 'idle'}
               >
-                Download Results CSV
+                Download CSV
               </Button>
+              {scraperStatus === 'done' && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  disabled={selectedRowIds.size === 0 || applyStatus === 'applying'}
+                  onClick={handleApplyScraperChanges}
+                >
+                  {applyStatus === 'applying'
+                    ? 'Applying...'
+                    : `Apply Selected to Database (${selectedRowIds.size})`}
+                </Button>
+              )}
             </Box>
 
+            {/* Running indicator */}
             {scraperStatus === 'running' && (
               <Box
                 style={{
                   padding: '10px',
                   backgroundColor: '#f5f5f5',
                   borderRadius: '4px',
+                  marginBottom: '12px',
                 }}
               >
                 <Typography variant="body2" style={{ fontFamily: 'monospace' }}>
@@ -1976,6 +2083,7 @@ const AdminPage = (): ReactElement => {
               </Box>
             )}
 
+            {/* Error */}
             {scraperStatus === 'error' && (
               <Box
                 style={{
@@ -1983,6 +2091,7 @@ const AdminPage = (): ReactElement => {
                   backgroundColor: '#fff3f3',
                   borderRadius: '4px',
                   border: '1px solid #ffcdd2',
+                  marginBottom: '12px',
                 }}
               >
                 <Typography variant="body2" style={{ fontFamily: 'monospace', color: 'red' }}>
@@ -1991,55 +2100,286 @@ const AdminPage = (): ReactElement => {
               </Box>
             )}
 
-            {scraperStatus === 'done' && scraperSummary && (
+            {/* Apply result banner */}
+            {applyResult && (
               <Box
                 style={{
-                  padding: '15px',
-                  backgroundColor: '#f5f5f5',
+                  padding: '10px',
+                  marginBottom: '12px',
                   borderRadius: '4px',
+                  backgroundColor: applyStatus === 'done' ? '#f0fff4' : '#fff3f3',
+                  border: `1px solid ${applyStatus === 'done' ? '#c6f6d5' : '#ffcdd2'}`,
                 }}
               >
-                <Typography variant="body2" style={{ marginBottom: '8px', fontWeight: 'bold' }}>
-                  Scrape Complete:
-                </Typography>
+                {applyResult.error ? (
+                  <Typography variant="body2" style={{ color: 'red' }}>
+                    Apply failed: {applyResult.error}
+                  </Typography>
+                ) : (
+                  <Typography variant="body2">
+                    <strong>Done:</strong> {applyResult.updated} updated, {applyResult.failed}{' '}
+                    failed.
+                    {applyResult.errors?.length > 0 && (
+                      <span style={{ color: 'red' }}> Errors: {applyResult.errors.join('; ')}</span>
+                    )}
+                  </Typography>
+                )}
+              </Box>
+            )}
+
+            {/* Summary chips */}
+            {scraperStatus === 'done' && scraperSummary && (
+              <Box style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <Typography variant="body2" style={{ fontFamily: 'monospace' }}>
-                  Total scraped: {scraperSummary.total}
+                  Total: <strong>{scraperSummary.total}</strong>
                 </Typography>
                 <Typography variant="body2" style={{ fontFamily: 'monospace', color: '#1565c0' }}>
-                  New (not in DB): {scraperSummary.newCount}
+                  New: <strong>{scraperSummary.newCount}</strong>
                 </Typography>
                 <Typography variant="body2" style={{ fontFamily: 'monospace', color: '#e65100' }}>
-                  Changed (beds/baths/price differ): {scraperSummary.changedCount}
+                  Changed: <strong>{scraperSummary.changedCount}</strong>
                 </Typography>
                 <Typography variant="body2" style={{ fontFamily: 'monospace', color: 'green' }}>
-                  Unchanged: {scraperSummary.unchangedCount}
+                  Unchanged: <strong>{scraperSummary.unchangedCount}</strong>
                 </Typography>
-                {scraperSummary.scraperErrors && scraperSummary.scraperErrors.length > 0 && (
-                  <Box style={{ marginTop: '10px' }}>
-                    <Typography variant="body2" style={{ fontWeight: 'bold', color: 'red' }}>
-                      Agency errors:
-                    </Typography>
-                    {scraperSummary.scraperErrors.map(
-                      (e: { agency: string; message: string }, idx: number) => (
-                        <Typography
-                          key={idx}
-                          variant="body2"
-                          style={{ fontFamily: 'monospace', fontSize: '11px' }}
-                        >
-                          {e.agency}: {e.message}
-                        </Typography>
-                      )
-                    )}
-                  </Box>
-                )}
-                <Typography
-                  variant="body2"
-                  style={{ marginTop: '10px', color: '#666', fontSize: '12px' }}
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setShowUnchanged((v) => !v)}
+                  style={{ padding: '0 8px', fontSize: '12px' }}
                 >
-                  Download the CSV, review/edit changes, then run{' '}
-                  <code>yarn update_apartments</code> to apply updates to the database.
-                </Typography>
+                  {showUnchanged ? 'Hide Unchanged' : 'Show Unchanged'}
+                </Button>
               </Box>
+            )}
+
+            {/* Diff table */}
+            {scraperStatus === 'done' && scraperRows.length > 0 && (
+              <Box style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: '6px' }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow style={{ backgroundColor: '#f5f5f5' }}>
+                      <TableCell padding="checkbox" />
+                      <TableCell>
+                        <strong>Status</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Scraped Address</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>DB Match</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Beds (scraped → db)</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Baths (scraped → db)</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Price (scraped → db)</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Source</strong>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {scraperRows
+                      .filter((row) => showUnchanged || row.status !== 'UNCHANGED')
+                      .map((row, idx) => {
+                        const isChanged = row.status === 'CHANGED';
+                        const isNew = row.status === 'NEW';
+                        const isChecked = selectedRowIds.has(row.firestoreId);
+                        const vals = editedValues[row.firestoreId] ?? {
+                          numBeds: row.numBedsScraped,
+                          numBaths: row.numBathsScraped,
+                          price: row.priceScraped,
+                        };
+
+                        const rowBg = isNew ? '#e3f2fd' : isChanged ? '#fff8e1' : 'transparent';
+
+                        const statusColor = isNew ? '#1565c0' : isChanged ? '#e65100' : '#388e3c';
+
+                        return (
+                          <TableRow key={idx} style={{ backgroundColor: rowBg }}>
+                            {/* Checkbox — only for CHANGED rows that have a DB record */}
+                            <TableCell padding="checkbox">
+                              {isChanged && (
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    setSelectedRowIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (e.target.checked) {
+                                        next.add(row.firestoreId);
+                                      } else {
+                                        next.delete(row.firestoreId);
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                />
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              <Typography
+                                variant="body2"
+                                style={{
+                                  fontWeight: 'bold',
+                                  color: statusColor,
+                                  fontSize: '11px',
+                                  fontFamily: 'monospace',
+                                }}
+                              >
+                                {row.status}
+                              </Typography>
+                            </TableCell>
+
+                            <TableCell>
+                              <Typography variant="body2" style={{ fontSize: '12px' }}>
+                                {row.scrapedAddress}
+                              </Typography>
+                            </TableCell>
+
+                            <TableCell>
+                              <Typography
+                                variant="body2"
+                                style={{ fontSize: '12px', color: '#555' }}
+                              >
+                                {row.dbName || <em style={{ color: '#aaa' }}>—</em>}
+                              </Typography>
+                            </TableCell>
+
+                            {/* Beds */}
+                            <TableCell>
+                              {isChanged ? (
+                                <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <TextField
+                                    size="small"
+                                    value={vals.numBeds}
+                                    onChange={(e) =>
+                                      setEditedValues((prev) => ({
+                                        ...prev,
+                                        [row.firestoreId]: { ...vals, numBeds: e.target.value },
+                                      }))
+                                    }
+                                    inputProps={{
+                                      style: {
+                                        width: '48px',
+                                        padding: '4px 6px',
+                                        fontSize: '12px',
+                                      },
+                                    }}
+                                    variant="outlined"
+                                  />
+                                  <Typography variant="caption" style={{ color: '#888' }}>
+                                    → {row.numBedsDb || '—'}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" style={{ fontSize: '12px' }}>
+                                  {row.numBedsScraped || '—'}
+                                </Typography>
+                              )}
+                            </TableCell>
+
+                            {/* Baths */}
+                            <TableCell>
+                              {isChanged ? (
+                                <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <TextField
+                                    size="small"
+                                    value={vals.numBaths}
+                                    onChange={(e) =>
+                                      setEditedValues((prev) => ({
+                                        ...prev,
+                                        [row.firestoreId]: { ...vals, numBaths: e.target.value },
+                                      }))
+                                    }
+                                    inputProps={{
+                                      style: {
+                                        width: '48px',
+                                        padding: '4px 6px',
+                                        fontSize: '12px',
+                                      },
+                                    }}
+                                    variant="outlined"
+                                  />
+                                  <Typography variant="caption" style={{ color: '#888' }}>
+                                    → {row.numBathsDb || '—'}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" style={{ fontSize: '12px' }}>
+                                  {row.numBathsScraped || '—'}
+                                </Typography>
+                              )}
+                            </TableCell>
+
+                            {/* Price */}
+                            <TableCell>
+                              {isChanged ? (
+                                <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <TextField
+                                    size="small"
+                                    value={vals.price}
+                                    onChange={(e) =>
+                                      setEditedValues((prev) => ({
+                                        ...prev,
+                                        [row.firestoreId]: { ...vals, price: e.target.value },
+                                      }))
+                                    }
+                                    inputProps={{
+                                      style: {
+                                        width: '72px',
+                                        padding: '4px 6px',
+                                        fontSize: '12px',
+                                      },
+                                    }}
+                                    variant="outlined"
+                                  />
+                                  <Typography variant="caption" style={{ color: '#888' }}>
+                                    → {row.priceDb || '—'}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" style={{ fontSize: '12px' }}>
+                                  {row.priceScraped ? `$${row.priceScraped}` : '—'}
+                                </Typography>
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              {row.sourceUrl && (
+                                <a
+                                  href={row.sourceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ fontSize: '11px' }}
+                                >
+                                  view
+                                </a>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+
+            {/* NEW rows note */}
+            {scraperStatus === 'done' && scraperSummary?.newCount > 0 && (
+              <Typography
+                variant="body2"
+                style={{ marginTop: '10px', color: '#666', fontSize: '12px' }}
+              >
+                <strong>Blue (NEW)</strong> rows were not matched to any DB record. Create them
+                manually via the <strong>Apartment Data</strong> tab.
+              </Typography>
             )}
           </Box>
         </Grid>

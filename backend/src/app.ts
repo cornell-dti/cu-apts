@@ -2483,6 +2483,7 @@ app.post('/api/admin/run-scraper', authenticate, async (req, res) => {
       unchangedCount,
       scraperErrors,
       csvReady: true,
+      rows: diffRows,
     });
   } catch (err) {
     console.error('[run-scraper] Error:', err);
@@ -2522,6 +2523,88 @@ app.get('/api/admin/scraper-results.csv', authenticate, async (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="scraper_diff.csv"');
   fs.createReadStream(csvPath).pipe(res);
+});
+
+/**
+ * Apply Scraper Changes - Takes an array of reviewed/edited diff rows and writes
+ * the approved values to the corresponding Firestore building documents.
+ *
+ * Only CHANGED rows (those with a firestoreId) can be applied. NEW rows must be
+ * created separately via POST /api/admin/add-apartment.
+ *
+ * @route POST /api/admin/apply-scraper-changes
+ *
+ * @input {Array} req.body.changes - Array of { firestoreId, numBeds?, numBaths?, price? }
+ *
+ * @status
+ * - 200: Returns { updated, failed, errors }
+ * - 400: No changes provided
+ * - 401: Authentication failed
+ * - 403: Unauthorized - Admin access required
+ * - 500: Server error
+ */
+app.post('/api/admin/apply-scraper-changes', authenticate, async (req, res) => {
+  if (!req.user) throw new Error('Not authenticated');
+
+  const { email } = req.user;
+  if (!email || !admins.includes(email)) {
+    res.status(403).send('Unauthorized: Admin access required');
+    return;
+  }
+
+  const { changes } = req.body as {
+    changes: Array<{
+      firestoreId: string;
+      numBeds?: number | null;
+      numBaths?: number | null;
+      price?: number | null;
+    }>;
+  };
+
+  if (!changes || changes.length === 0) {
+    res.status(400).send('No changes provided.');
+    return;
+  }
+
+  let updated = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  await Promise.all(
+    changes.map(async ({ firestoreId, numBeds, numBaths, price }) => {
+      if (!firestoreId) {
+        errors.push('Skipped row with empty firestoreId');
+        failed += 1;
+        return;
+      }
+
+      const updatePayload: Record<string, number> = {};
+      if (numBeds != null) updatePayload.numBeds = numBeds;
+      if (numBaths != null) updatePayload.numBaths = numBaths;
+      if (price != null) updatePayload.price = price;
+
+      if (Object.keys(updatePayload).length === 0) {
+        return; // nothing to write
+      }
+
+      try {
+        const docRef = buildingsCollection.doc(firestoreId);
+        const snap = await docRef.get();
+        if (!snap.exists) {
+          errors.push(`Document ${firestoreId} not found`);
+          failed += 1;
+          return;
+        }
+        await docRef.update(updatePayload);
+        updated += 1;
+      } catch (err) {
+        errors.push(`${firestoreId}: ${err instanceof Error ? err.message : 'unknown error'}`);
+        failed += 1;
+      }
+    })
+  );
+
+  res.status(200).json({ updated, failed, errors });
 });
 
 /**
