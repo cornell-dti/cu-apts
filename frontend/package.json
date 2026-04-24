@@ -36,12 +36,13 @@
   "scripts": {
     "start": "NODE_OPTIONS=--openssl-legacy-provider env-cmd -f ../.env.dev react-scripts start",
     "start-prod": "env-cmd -f ../.env.prod react-scripts start",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint . --ext .ts --ext .tsx",
     "lint:fix": "yarn lint --fix",
-    "tsc": "tsc -p tsconfig.json"
+    "tsc": "tsc -p tsconfig.json",
+    "postinstall": "patch-package"
   },
   "proxy": "http://localhost:8080",
   "browserslist": {
@@ -57,6 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@types/google-map-react": "^2.1.10"
+    "@types/google-map-react": "^2.1.10",
+    "patch-package": "^8.0.1"
   }
 }
