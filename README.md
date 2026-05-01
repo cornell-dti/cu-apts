@@ -17,10 +17,10 @@ Helping the Cornell community at-large find reviews and information about housin
 
 You will need Node.js and Yarn installed on your development machine.
 
-To setup your environment, go into the root folder and run `yarn install`. This installs the necessary
-dependencies in each required Yarn workspace. Then, run `yarn start` to start a development server
-for frontend and backend in parallel. If you specifically want to run either the frontend or backend
-on its own, run `yarn frontend-dev` or `yarn backend-dev`.
+To setup your environment, go into the root folder and run `yarn install`. This installs the
+necessary dependencies in each required Yarn workspace. Then, run `yarn start` to start a
+development server for frontend and backend in parallel. If you specifically want to run either the
+frontend or backend on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 
 ## Contributors
 

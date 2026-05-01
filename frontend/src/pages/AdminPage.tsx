@@ -728,26 +728,6 @@ const AdminPage = (): ReactElement => {
     }
   };
 
-  const handleDownloadScraperCSV = async () => {
-    const user = await getUser();
-    if (!user) return;
-    const token = await user.getIdToken(true);
-    const response = await fetch('/api/admin/scraper-results.csv', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok) {
-      alert('No scraper results found. Run the scraper first.');
-      return;
-    }
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'scraper_diff.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleApplyScraperChanges = async () => {
     if (selectedRowIds.size === 0) {
       alert('No rows selected to apply.');
@@ -2046,13 +2026,7 @@ const AdminPage = (): ReactElement => {
               >
                 {scraperStatus === 'running' ? 'Scraping...' : 'Run Scraper'}
               </Button>
-              <Button
-                variant="outlined"
-                onClick={handleDownloadScraperCSV}
-                disabled={scraperStatus === 'running' || scraperStatus === 'idle'}
-              >
-                Download CSV
-              </Button>
+
               {scraperStatus === 'done' && (
                 <Button
                   variant="contained"

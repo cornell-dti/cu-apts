@@ -19,7 +19,7 @@
     "outDir": "dist",
     "rootDir": "..",
     "rootDirs": ["./src", "../common"],
-    "baseUrl": "./",
+    "baseUrl": "./"
   },
   "exclude": ["**/*.test.ts", "**/*.spec.ts"],
   "ts-node": {

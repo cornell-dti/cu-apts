@@ -2472,10 +2472,6 @@ app.post('/api/admin/run-scraper', authenticate, async (req, res) => {
       ),
     ];
 
-    const csvPath = path.join(__dirname, '../scripts/scraper_diff.csv');
-    fs.writeFileSync(csvPath, csvLines.join('\n'), 'utf8');
-    console.log(`[run-scraper] Diff CSV written to ${csvPath}`);
-
     res.status(200).json({
       total: scraped.length,
       newCount,
@@ -2489,40 +2485,6 @@ app.post('/api/admin/run-scraper', authenticate, async (req, res) => {
     console.error('[run-scraper] Error:', err);
     res.status(500).send(`Scraper error: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
-});
-
-/**
- * Download Scraper Diff CSV - Returns the last scraper_diff.csv written by
- * POST /api/admin/run-scraper.
- *
- * @route GET /api/admin/scraper-results.csv
- *
- * @status
- * - 200: CSV file download
- * - 401: Authentication failed
- * - 403: Unauthorized - Admin access required
- * - 404: No scraper results found — run the scraper first
- * - 500: Server error
- */
-app.get('/api/admin/scraper-results.csv', authenticate, async (req, res) => {
-  if (!req.user) throw new Error('Not authenticated');
-
-  const { email } = req.user;
-  if (!email || !admins.includes(email)) {
-    res.status(403).send('Unauthorized: Admin access required');
-    return;
-  }
-
-  const csvPath = path.join(__dirname, '../scripts/scraper_diff.csv');
-
-  if (!fs.existsSync(csvPath)) {
-    res.status(404).send('No scraper results found. Run POST /api/admin/run-scraper first.');
-    return;
-  }
-
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', 'attachment; filename="scraper_diff.csv"');
-  fs.createReadStream(csvPath).pipe(res);
 });
 
 /**
