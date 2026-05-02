@@ -2,6 +2,9 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import { Button, Grid, makeStyles, Typography, Box } from '@material-ui/core';
 import { colors } from '../colors';
 import { useTitle } from '../utils';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+
 import { get } from '../utils/call';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
@@ -128,7 +131,7 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
   }, [user, toggle, savedAPI]);
 
   // Define the type of the properties used for sorting reviews
-  type Fields = keyof typeof helpfulReviewsData[0];
+  type Fields = keyof (typeof helpfulReviewsData)[0];
 
   // Function to handle "Show More" button click
   const handleShowMoreLess = () => {

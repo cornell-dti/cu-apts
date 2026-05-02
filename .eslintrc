@@ -1,24 +1,12 @@
 {
   "extends": [],
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "plugins": ["@typescript-eslint"],
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [
-          ".mjs",
-          ".js",
-          ".json",
-          ".ts",
-          ".tsx"
-        ],
-        "paths": [
-          "common",
-          "frontend/src",
-          "backend/src"
-        ]
+        "extensions": [".mjs", ".js", ".json", ".ts", ".tsx"],
+        "paths": ["common", "frontend/src", "backend/src"]
       }
     }
   }

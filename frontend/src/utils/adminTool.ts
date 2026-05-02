@@ -1,4 +1,6 @@
 import { admins } from '../constants/HomeConsts';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 /**
  * isAdmin – Checks whether a given user is an admin.

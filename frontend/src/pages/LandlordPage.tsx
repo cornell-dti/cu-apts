@@ -20,6 +20,8 @@ import { useTitle } from '../utils';
 import LandlordHeader from '../components/Landlord/Header';
 import { get } from '../utils/call';
 import { Landlord } from '../../../common/types/db-types';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import Toast from '../components/utils/Toast';
 import LinearProgress from '../components/utils/LinearProgress';
 import { Likes, ReviewWithId } from '../../../common/types/db-types';
@@ -244,7 +246,7 @@ const LandlordPage = ({ user, setUser }: Props): ReactElement => {
   }, [user, setUser, landlordId]);
 
   // Define the type of the properties used for sorting reviews
-  type Fields = keyof typeof reviewData[0];
+  type Fields = keyof (typeof reviewData)[0];
 
   // Function to display a toast message and hide it after a certain time
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {

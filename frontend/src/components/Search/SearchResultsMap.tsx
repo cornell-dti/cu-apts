@@ -1,5 +1,7 @@
 import React, { ReactElement, useRef, useEffect, useState } from 'react';
 import { Box, Grid, IconButton, Typography, makeStyles } from '@material-ui/core';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import GoogleMapReact from 'google-map-react';
 import aptIcon from '../../assets/location-pin.svg';
 import mapPinIcon from '../../assets/map-pin.svg';

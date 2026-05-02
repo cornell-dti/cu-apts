@@ -22,6 +22,8 @@ import { QuestionForm } from '../../../../../common/types/db-types';
 import { createAuthHeaders, uploadFile } from '../../../utils/firebase';
 import { includesProfanity } from '../../../utils/profanity';
 import { ReactComponent as XIcon } from '../../../assets/xIcon.svg';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const PHOTOS_LIMIT = 3;
 const PHOTO_MAX_MB = 10;
@@ -299,7 +301,7 @@ const ContactModal = ({ user }: Props) => {
       return;
     }
 
-    const newFiles = [...files].slice(0, availablePhotos);
+    const newFiles = Array.from(files).slice(0, availablePhotos);
     const bigPhoto = newFiles.find((newFiles) => newFiles.size > PHOTO_MAX_MB * Math.pow(1024, 2));
     if (bigPhoto) {
       console.log(`File ${bigPhoto.name} exceeds max size of ${PHOTO_MAX_MB}`);

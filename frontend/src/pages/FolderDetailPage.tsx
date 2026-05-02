@@ -1,4 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { useParams, useHistory, Link } from 'react-router-dom';
 import {
   Button,

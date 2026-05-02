@@ -23,6 +23,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { colors } from '../../colors';
 import getPriceRange from '../../utils/priceRange';
 import UploadPhotos from '../utils/UploadPhotos';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
@@ -286,7 +288,7 @@ const ReviewModal = ({
       return;
     }
 
-    const newFiles = [...files].slice(0, availablePhotos);
+    const newFiles = Array.from(files).slice(0, availablePhotos);
     const bigPhoto = newFiles.find(
       (newFiles) => newFiles.size > REVIEW_PHOTO_MAX_MB * Math.pow(1024, 2)
     );

@@ -2,6 +2,8 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import ApartmentCard from './ApartmentCard';
 import { Grid, Link, makeStyles, Button } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { CardData } from '../../App';
 import { loadingLength } from '../../constants/HomeConsts';
 import { ApartmentWithId } from '../../../../common/types/db-types';

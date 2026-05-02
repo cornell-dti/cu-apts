@@ -1,6 +1,8 @@
 import React, { ReactElement, useEffect } from 'react';
 import NewApartmentCard from './NewApartmentCard';
 import { Link, makeStyles } from '@material-ui/core';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import { Link as RouterLink } from 'react-router-dom';
 import { CardData } from '../../App';
 import { loadingLength } from '../../constants/HomeConsts';

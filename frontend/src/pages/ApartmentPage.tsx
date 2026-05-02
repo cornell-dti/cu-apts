@@ -1,4 +1,6 @@
 import React, { ReactElement, useState, useEffect } from 'react';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import {
   IconButton,
   Button,
@@ -407,7 +409,7 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
     });
   };
 
-  type Fields = keyof typeof reviewData[0];
+  type Fields = keyof (typeof reviewData)[0];
 
   const showToast = (setState: (value: React.SetStateAction<boolean>) => void) => {
     setState(true);

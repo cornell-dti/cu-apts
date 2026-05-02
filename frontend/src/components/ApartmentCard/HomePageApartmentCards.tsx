@@ -1,5 +1,7 @@
 import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import ApartmentCard from './ApartmentCard';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 import NewApartmentCard from './NewApartmentCard';
 import { Grid, Link, makeStyles, Button, Box, Typography, IconButton } from '@material-ui/core';
 import { Link as RouterLink, useHistory } from 'react-router-dom';

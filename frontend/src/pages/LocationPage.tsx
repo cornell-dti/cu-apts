@@ -10,6 +10,8 @@ import { CardData } from '../App';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useSaveScrollPosition } from '../utils/saveScrollPosition';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 interface Images {
   [location: string]: string;
