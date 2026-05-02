@@ -2,6 +2,9 @@ import { ScrapedProperty } from './types';
 import scrapePJApts from './agencies/pjapts';
 import scrapeLambrouRealEstate from './agencies/lambrourealestate';
 import scrapeEliteCollegeRentals from './agencies/elitecollegerentals';
+import scrapeTravisHyde from './agencies/travishyde';
+import scrapeIthacarenting from './agencies/ithacarenting';
+import scrapeUrbanIthaca from './agencies/urbanithaca';
 
 /**
  * Registry of all supported agencies.
@@ -11,7 +14,9 @@ const AGENCY_SCRAPERS: Record<string, () => Promise<ScrapedProperty[]>> = {
   pjapts: scrapePJApts,
   lambrourealestate: scrapeLambrouRealEstate,
   elitecollegerentals: scrapeEliteCollegeRentals,
-  // travishyde: scrapeTravisHyde,
+  travishyde: scrapeTravisHyde,
+  ithacarenting: scrapeIthacarenting,
+  urbanithaca: scrapeUrbanIthaca,
 };
 
 export const SUPPORTED_AGENCIES = Object.keys(AGENCY_SCRAPERS);
