@@ -23,6 +23,7 @@ import { createAuthHeaders, getUser, subscribeLikes } from '../utils/firebase';
 import { Likes } from '../../../common/types/db-types';
 import { sortReviews } from '../utils/sortReviews';
 import { RatingInfo } from './ApartmentPage';
+import NotFoundPage from './NotFoundPage';
 
 import ReviewComponent from '../components/Review/Review';
 import ReviewModal from '../components/LeaveReview/ReviewModal';
@@ -308,7 +309,9 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   /* ── State ── */
   const [apt, setApt] = useState<ApartmentWithId | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
+  const [reviewsFailed, setReviewsFailed] = useState(false);
   const [landlordData, setLandlordData] = useState<Landlord | null>(null);
   const [otherProperties, setOtherProperties] = useState<CardData[]>([]);
   const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
@@ -339,32 +342,96 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
   } = usePhotoCarousel(apt?.photos ?? []);
 
   /* ── Data fetching ── */
+  // Every fetch below is guarded by a `stale` flag so a slow response for a
+  // previously viewed apartment cannot overwrite the current one. Navigating
+  // between apartments reuses this component instance (only `aptId` changes),
+  // so state must also be cleared up front rather than left showing the
+  // previous apartment while the new one loads.
   useEffect(() => {
+    let stale = false;
+
+    setApt(null);
+    setNotFound(false);
+    setTravelTimes(undefined);
+    setLandlordData(null);
+    setOtherProperties([]);
+    setReviewData([]);
+    setResultsToShow(5);
+
     get<ApartmentWithId[]>(`/api/apts/${aptId}`, {
-      callback: (data) => setApt(data[0] ?? null),
+      callback: (data) => {
+        if (stale) return;
+        const found = data[0];
+        if (found) {
+          setApt(found);
+        } else {
+          setNotFound(true);
+        }
+      },
+      errorHandler: () => {
+        if (!stale) setNotFound(true);
+      },
     });
     get<LocationTravelTimes>(`/api/travel-times-by-id/${aptId}`, {
-      callback: setTravelTimes,
+      callback: (data) => {
+        if (!stale) setTravelTimes(data);
+      },
+      // Travel times are supplementary; a failure here leaves the map section
+      // empty rather than failing the whole page.
+      errorHandler: () => undefined,
     });
+
+    return () => {
+      stale = true;
+    };
   }, [aptId]);
 
   useEffect(() => {
+    let stale = false;
     const fetchReviews = async () => {
-      const [approved, reported] = await Promise.all([
-        axios.get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`),
-        axios.get<ReviewWithId[]>(`/api/review/aptId/${aptId}/REPORTED`),
-      ]);
-      setReviewData([...approved.data, ...reported.data]);
+      try {
+        const [approved, reported] = await Promise.all([
+          axios.get<ReviewWithId[]>(`/api/review/aptId/${aptId}/APPROVED`),
+          axios.get<ReviewWithId[]>(`/api/review/aptId/${aptId}/REPORTED`),
+        ]);
+        if (!stale) {
+          setReviewData([...approved.data, ...reported.data]);
+          setReviewsFailed(false);
+        }
+      } catch (err) {
+        // Distinguish "this apartment has no reviews" from "we could not load
+        // them", so the empty state does not misreport a server error.
+        console.error(err);
+        if (!stale) {
+          setReviewData([]);
+          setReviewsFailed(true);
+        }
+      }
     };
     fetchReviews();
+    return () => {
+      stale = true;
+    };
   }, [aptId, toggle]);
 
   useEffect(() => {
-    if (!apt?.landlordId) return;
-    get<Landlord>(`/api/landlord/${apt.landlordId}`, { callback: setLandlordData });
-    get<CardData[]>(`/api/buildings/all/${apt.landlordId}`, {
-      callback: (data) => setOtherProperties(data.filter((p) => p.buildingData.id !== apt.id)),
+    if (!apt?.landlordId) return undefined;
+    let stale = false;
+    get<Landlord>(`/api/landlord/${apt.landlordId}`, {
+      callback: (data) => {
+        if (!stale) setLandlordData(data);
+      },
+      errorHandler: () => undefined,
     });
+    get<CardData[]>(`/api/buildings/all/${apt.landlordId}`, {
+      callback: (data) => {
+        if (!stale) setOtherProperties(data.filter((p) => p.buildingData.id !== apt.id));
+      },
+      errorHandler: () => undefined,
+    });
+    return () => {
+      stale = true;
+    };
   }, [apt]);
 
   useEffect(() => {
@@ -422,13 +489,12 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const aveRatingInfo: RatingInfo[] = useMemo(() => {
     if (!reviewData.length) return [];
-    return ['location', 'safety', 'maintenance', 'conditions'].map((feature) => ({
+    // detailedRatings is optional-chained because a malformed review missing
+    // the field would otherwise make the whole page throw, not just this panel.
+    return (['location', 'safety', 'maintenance', 'conditions'] as const).map((feature) => ({
       feature,
       rating:
-        reviewData.reduce(
-          (s, r) => s + r.detailedRatings[feature as keyof typeof r.detailedRatings],
-          0
-        ) / reviewData.length,
+        reviewData.reduce((s, r) => s + (r.detailedRatings?.[feature] ?? 0), 0) / reviewData.length,
     }));
   }, [reviewData]);
 
@@ -513,6 +579,10 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
     }
     setReviewOpen(true);
   };
+
+  if (notFound) {
+    return <NotFoundPage />;
+  }
 
   if (!apt) {
     return (
@@ -642,7 +712,9 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
               </div>
 
               {reviewData.length === 0 ? (
-                <Typography className={classes.emptyText}>No reviews yet</Typography>
+                <Typography className={classes.emptyText}>
+                  {reviewsFailed ? 'Could not load reviews. Please try again.' : 'No reviews yet'}
+                </Typography>
               ) : (
                 <>
                   {sortReviews([...reviewData], sortBy)
@@ -821,44 +893,59 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
       />
 
       {/* ─────────── Toasts ─────────── */}
-      <Toast
-        isOpen={showConfirmation}
-        severity="success"
-        message="Review submitted! Awaiting admin approval."
-        time={toastTime}
-      />
-      <Toast
-        isOpen={showSignInError}
-        severity="error"
-        message="Please sign in with a Cornell email."
-        time={toastTime}
-      />
-      <Toast
-        isOpen={showEditSuccess}
-        severity="success"
-        message="Review edited successfully."
-        time={toastTime}
-      />
-      <Toast
-        isOpen={showDeleteSuccess}
-        severity="success"
-        message="Review deleted successfully."
-        time={toastTime}
-      />
-      <Toast
-        isOpen={showReportSuccess}
-        severity="success"
-        message="Review reported."
-        time={toastTime}
-      />
-      <Toast
-        isOpen={showSaveSuccess}
-        severity="success"
-        message={`You have bookmarked ${apt.name}. View your bookmarks `}
-        time={toastTime}
-        linkMessage="here"
-        link="/bookmarks"
-      />
+      {/* Toast latches its `isOpen` prop into state on mount and never syncs
+          it again, so each toast must be mounted only while its flag is set.
+          Rendering them unconditionally makes them permanently invisible. */}
+      {showConfirmation && (
+        <Toast
+          isOpen={showConfirmation}
+          severity="success"
+          message="Review submitted! Awaiting admin approval."
+          time={toastTime}
+        />
+      )}
+      {showSignInError && (
+        <Toast
+          isOpen={showSignInError}
+          severity="error"
+          message="Please sign in with a Cornell email."
+          time={toastTime}
+        />
+      )}
+      {showEditSuccess && (
+        <Toast
+          isOpen={showEditSuccess}
+          severity="success"
+          message="Review edited successfully."
+          time={toastTime}
+        />
+      )}
+      {showDeleteSuccess && (
+        <Toast
+          isOpen={showDeleteSuccess}
+          severity="success"
+          message="Review deleted successfully."
+          time={toastTime}
+        />
+      )}
+      {showReportSuccess && (
+        <Toast
+          isOpen={showReportSuccess}
+          severity="success"
+          message="Review reported."
+          time={toastTime}
+        />
+      )}
+      {showSaveSuccess && (
+        <Toast
+          isOpen={showSaveSuccess}
+          severity="success"
+          message={`You have bookmarked ${apt.name}. View your bookmarks `}
+          time={toastTime}
+          linkMessage="here"
+          link="/bookmarks"
+        />
+      )}
     </div>
   );
 };
