@@ -34,6 +34,7 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
+import { BUS_STOPS, getTravelTimes, findClosestStop } from './travel-times-utils';
 
 // Imports for email sending
 
@@ -450,6 +451,82 @@ app.get('/api/review/:idType/:id/:status', async (req, res) => {
   res.status(200).send(JSON.stringify(reviews));
 });
 
+/**
+ * apartment-rating-summary – Aggregates approved review ratings for an apartment.
+ *
+ * @remarks
+ * Averages the overall rating and each detailed category across every approved
+ * review for the apartment. An apartment with no approved reviews returns a
+ * summary of all zeroes with a `reviewCount` of 0, which callers use to render
+ * an "N/A" state. Averages are clamped to the valid 0–5 range so malformed
+ * stored ratings cannot produce an out-of-range score.
+ *
+ * @route GET /api/apartment-rating-summary/:aptId
+ *
+ * @input {string} req.params.aptId – The ID of the apartment to summarize.
+ *
+ * @status
+ * - 200: Successfully computed the rating summary.
+ * - 500: Error retrieving or aggregating reviews.
+ */
+app.get('/api/apartment-rating-summary/:aptId', async (req, res) => {
+  const { aptId } = req.params;
+
+  try {
+    const reviewDocs = (
+      await reviewCollection.where('aptId', '==', aptId).where('status', '==', 'APPROVED').get()
+    ).docs;
+
+    if (reviewDocs.length === 0) {
+      res.status(200).send(
+        JSON.stringify({
+          aptId,
+          reviewCount: 0,
+          overall: 0,
+          location: 0,
+          maintenance: 0,
+          safety: 0,
+          conditions: 0,
+        })
+      );
+      return;
+    }
+
+    const totals = reviewDocs.reduce(
+      (acc, doc) => {
+        const data = doc.data() as Review;
+        const detailed = data.detailedRatings;
+        return {
+          overall: acc.overall + (data.overallRating || 0),
+          location: acc.location + (detailed?.location || 0),
+          maintenance: acc.maintenance + (detailed?.maintenance || 0),
+          safety: acc.safety + (detailed?.safety || 0),
+          conditions: acc.conditions + (detailed?.conditions || 0),
+        };
+      },
+      { overall: 0, location: 0, maintenance: 0, safety: 0, conditions: 0 }
+    );
+
+    const reviewCount = reviewDocs.length;
+    const average = (sum: number) => Math.min(5, Math.max(0, sum / reviewCount));
+
+    res.status(200).send(
+      JSON.stringify({
+        aptId,
+        reviewCount,
+        overall: average(totals.overall),
+        location: average(totals.location),
+        maintenance: average(totals.maintenance),
+        safety: average(totals.safety),
+        conditions: average(totals.conditions),
+      })
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving apartment rating summary');
+  }
+});
+
 app.get('/api/review/:status', async (req, res) => {
   const { status } = req.params;
   const reviewDocs = (await reviewCollection.where('status', '==', status).get()).docs;
@@ -565,6 +642,157 @@ app.get('/api/apts/:ids', async (req, res) => {
     res.status(200).send(JSON.stringify(aptsArr));
   } catch (err) {
     res.status(400).send(err);
+  }
+});
+
+/**
+ * apartment-amenities – Retrieves the amenities list for a single apartment.
+ *
+ * @remarks
+ * Amenities are an optional field on the apartment document, so an apartment
+ * with no amenities recorded returns an empty list rather than an error. The
+ * apartment name is included so callers can render a heading without a
+ * second request.
+ *
+ * @route GET /api/apartment-amenities/:aptId
+ *
+ * @input {string} req.params.aptId – The ID of the apartment to read.
+ *
+ * @status
+ * - 200: Successfully retrieved amenities (empty list if none are set).
+ * - 404: No apartment exists with the given ID.
+ * - 500: Error retrieving amenities.
+ */
+app.get('/api/apartment-amenities/:aptId', async (req, res) => {
+  const { aptId } = req.params;
+
+  try {
+    const snapshot = await buildingsCollection.doc(aptId).get();
+
+    if (!snapshot.exists) {
+      res.status(404).send(JSON.stringify({ error: 'Apartment not found' }));
+      return;
+    }
+
+    const data = snapshot.data() as Partial<Apartment> | undefined;
+
+    res.status(200).send(
+      JSON.stringify({
+        aptId,
+        name: data?.name ?? null,
+        amenities: data?.amenities ?? [],
+      })
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving apartment amenities');
+  }
+});
+
+/**
+ * apartment-floorplans – Retrieves the floor plans for a single apartment.
+ *
+ * @remarks
+ * Floor plans are an optional field on the apartment document. An apartment
+ * with none recorded returns an empty array so the frontend can render its
+ * "no floor plans" state without special-casing a missing field.
+ *
+ * @route GET /api/apartment-floorplans/:aptId
+ *
+ * @input {string} req.params.aptId – The ID of the apartment to read.
+ *
+ * @status
+ * - 200: Successfully retrieved floor plans (empty list if none are set).
+ * - 404: No apartment exists with the given ID.
+ * - 500: Error retrieving floor plans.
+ */
+app.get('/api/apartment-floorplans/:aptId', async (req, res) => {
+  const { aptId } = req.params;
+
+  try {
+    const snapshot = await buildingsCollection.doc(aptId).get();
+
+    if (!snapshot.exists) {
+      res.status(404).send(JSON.stringify({ error: 'Apartment not found' }));
+      return;
+    }
+
+    const data = snapshot.data() as Partial<Apartment> | undefined;
+    const floorplans = Array.isArray(data?.floorplans) ? data?.floorplans : [];
+
+    res.status(200).send(JSON.stringify({ aptId, floorplans }));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving apartment floorplans');
+  }
+});
+
+/**
+ * bus-stop-travel-times – Calculates walking times from a building to nearby bus stops.
+ *
+ * @remarks
+ * Uses the Google Distance Matrix API to compute walking times from the
+ * building's address to each Collegetown bus stop, and identifies the closest
+ * one. Unlike the stored `busStopWalking` field this is computed live, so it
+ * reflects current routing rather than the value cached at ingestion time.
+ *
+ * @route GET /api/bus-stop-travel-times/:buildingId
+ *
+ * @input {string} req.params.buildingId – The ID of the building to measure from.
+ *
+ * @status
+ * - 200: Successfully retrieved travel times.
+ * - 400: The building has no address recorded.
+ * - 404: No building exists with the given ID.
+ * - 500: Error calling Google Maps or processing the results.
+ */
+app.get('/api/bus-stop-travel-times/:buildingId', async (req, res) => {
+  const { buildingId } = req.params;
+
+  try {
+    const buildingDoc = await buildingsCollection.doc(buildingId).get();
+
+    if (!buildingDoc.exists) {
+      res.status(404).json({ error: 'Building not found' });
+      return;
+    }
+
+    const buildingData = buildingDoc.data() as Partial<Apartment> | undefined;
+    const origin = buildingData?.address;
+
+    if (!origin) {
+      res.status(400).json({ error: 'Building address is missing' });
+      return;
+    }
+
+    const stopNames = Object.keys(BUS_STOPS);
+    const destinations = Object.values(BUS_STOPS);
+
+    const walkingTimes = await getTravelTimes(origin, destinations, 'walking');
+
+    if (!Array.isArray(walkingTimes) || walkingTimes.length !== destinations.length) {
+      console.error('Unexpected walkingTimes length for bus stops', {
+        walkingTimesLength: walkingTimes.length,
+        destinationsLength: destinations.length,
+      });
+      res.status(500).json({ error: 'Error retrieving bus stop travel times' });
+      return;
+    }
+
+    const busStops: Record<string, number> = {};
+    stopNames.forEach((name, index) => {
+      busStops[name] = walkingTimes[index];
+    });
+
+    res.status(200).json({
+      buildingId,
+      origin,
+      busStops,
+      closestStop: findClosestStop(busStops),
+    });
+  } catch (err) {
+    console.error('Error retrieving bus stop travel times:', err);
+    res.status(500).json({ error: 'Error retrieving bus stop travel times' });
   }
 });
 
@@ -2413,41 +2641,12 @@ interface TravelTimeInput {
 }
 
 /**
- * getTravelTimes – Calculates travel times between an origin and multiple destinations using Google Distance Matrix API.
- *
- * @remarks
- * Makes an HTTP request to the Google Distance Matrix API and processes the response to extract duration values.
- * Times are converted from seconds to minutes before being returned.
- *
- * @param {string} origin - Starting location as either an address or coordinates in "lat,lng" format
- * @param {string[]} destinations - Array of destination addresses to calculate times to
- * @param {'walking' | 'driving'} mode - Mode of transportation to use for calculations
- * @return {Promise<number[]>} - Array of travel times in minutes to each destination
- */
-async function getTravelTimes(
-  origin: string,
-  destinations: string[],
-  mode: 'walking' | 'driving'
-): Promise<number[]> {
-  const response = await axios.get(
-    `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-      origin
-    )}&destinations=${destinations
-      .map((dest) => encodeURIComponent(dest))
-      .join('|')}&mode=${mode}&key=${REACT_APP_MAPS_API_KEY}`
-  );
-
-  return response.data.rows[0].elements.map(
-    (element: { duration: { value: number } }) => element.duration.value / 60
-  );
-}
-
-/**
  * Travel Times Calculator - Calculates walking and driving times from a given origin to Cornell landmarks.
  *
  * @remarks
  * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Engineering Quad,
- * Agriculture Quad, and Ho Plaza. Returns both walking and driving durations in minutes.
+ * Agriculture Quad, and Ho Plaza, plus the walking time to the nearest Collegetown bus stop.
+ * Returns both walking and driving durations in minutes.
  * Origin can be either an address or coordinates in "latitude,longitude" format.
  *
  * @route POST /api/travel-times
@@ -2471,14 +2670,27 @@ app.post('/api/calculate-travel-times', async (req, res) => {
     const destinations = Object.values(LANDMARKS);
     console.log('Destinations array:', destinations);
 
+    const busStopNames = Object.keys(BUS_STOPS);
+    const busStopAddresses = Object.values(BUS_STOPS);
+
     // Get walking and driving times using the helper function
-    const [walkingTimes, drivingTimes] = await Promise.all([
+    const [walkingTimes, drivingTimes, busStopWalkingTimes] = await Promise.all([
       getTravelTimes(origin, destinations, 'walking'),
       getTravelTimes(origin, destinations, 'driving'),
+      getTravelTimes(origin, busStopAddresses, 'walking'),
     ]);
 
     console.log('Raw walking times:', walkingTimes);
     console.log('Raw driving times:', drivingTimes);
+
+    // Reduce the per-stop walking times to the single closest stop. Falls back
+    // to -1 when the API returns an unexpected number of results, matching the
+    // sentinel used elsewhere for "not yet calculated".
+    const busStopTimes: Record<string, number> = {};
+    busStopNames.forEach((name, index) => {
+      busStopTimes[name] = busStopWalkingTimes[index];
+    });
+    const closestBusStop = findClosestStop(busStopTimes);
 
     const travelTimes: LocationTravelTimes = {
       engQuadWalking: walkingTimes[0],
@@ -2487,6 +2699,7 @@ app.post('/api/calculate-travel-times', async (req, res) => {
       agQuadDriving: drivingTimes[1],
       hoPlazaWalking: walkingTimes[2],
       hoPlazaDriving: drivingTimes[2],
+      busStopWalking: closestBusStop ? closestBusStop.timeMinutes : -1,
     };
 
     console.log('Final travel times:', travelTimes);
