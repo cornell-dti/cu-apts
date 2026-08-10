@@ -1,10 +1,10 @@
 import React, { ReactElement } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import { apartmentFloorPlan } from '../../../../common/types/db-types';
+import { ApartmentFloorPlan } from '../../../../common/types/db-types';
 import { colors } from '../../colors';
 
 type Props = {
-  readonly plan: apartmentFloorPlan;
+  readonly plan: ApartmentFloorPlan;
 };
 
 const useStyles = makeStyles({
@@ -62,14 +62,32 @@ const useStyles = makeStyles({
 });
 
 /**
- * FloorPlanCard renders a single floor plan row showing:
- * - Optional floor plan thumbnail image
- * - Bed/bath count, sqft, units available
- * - Price per person (or N/A when costPerPerson is 0)
+ * pluralize – Formats a count with its unit label, adding "s" when the count is not 1.
+ *
+ * @param {number} count – The quantity to describe.
+ * @param {string} unit – The singular form of the unit.
+ *
+ * @return {string} – The count and correctly pluralized unit, e.g. "1 bed" or "2 beds".
+ */
+const pluralize = (count: number, unit: string): string =>
+  `${count} ${unit}${count === 1 ? '' : 's'}`;
+
+/**
+ * FloorPlanCard Component – Displays a single floor plan offered by an apartment.
+ *
+ * @remarks
+ * Shows an optional thumbnail, the bed/bath configuration, square footage and
+ * unit availability, and the per-person price. Square footage and availability
+ * are omitted entirely when absent rather than rendering "undefined", and the
+ * price falls back to an N/A state when no pricing data exists.
+ *
+ * @param {ApartmentFloorPlan} props.plan – The floor plan to render.
+ *
+ * @return {ReactElement} – The rendered FloorPlanCard component.
  */
 const FloorPlanCard = ({ plan }: Props): ReactElement => {
   const { card, image, info, title, meta, priceBlock, priceValue, priceNA, priceSub } = useStyles();
-  const { photo, bedrooms, bathrooms, costPerPerson, unitsAvaliable, sqft } = plan;
+  const { photo, bedrooms, bathrooms, costPerPerson, unitsAvailable, sqft } = plan;
   const hasPrice = costPerPerson > 0;
 
   return (
@@ -78,10 +96,12 @@ const FloorPlanCard = ({ plan }: Props): ReactElement => {
 
       <div className={info}>
         <Typography className={title}>
-          {bedrooms} Beds {bathrooms} bath
+          {pluralize(bedrooms, 'Bed')} {pluralize(bathrooms, 'bath')}
         </Typography>
-        <Typography className={meta}>{sqft} sqft</Typography>
-        <Typography className={meta}>{unitsAvaliable} units available</Typography>
+        {Number.isFinite(sqft) && <Typography className={meta}>{sqft} sqft</Typography>}
+        {Number.isFinite(unitsAvailable) && (
+          <Typography className={meta}>{pluralize(unitsAvailable, 'unit')} available</Typography>
+        )}
       </div>
 
       <div className={priceBlock}>
