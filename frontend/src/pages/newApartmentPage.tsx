@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useMemo, useState } from 'react';
-import { Button, Container, Grid, Typography, makeStyles } from '@material-ui/core';
+import { Button, Container, Grid, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
 import DirectionsCarIcon from '@material-ui/icons/DirectionsCar';
 import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
 import KitchenIcon from '@material-ui/icons/Kitchen';
@@ -35,6 +35,7 @@ import NewApartmentCard from '../components/ApartmentCard/NewApartmentCard';
 import RatingSummary from '../components/Apartment/RatingSummary';
 import FloorPlanCard from '../components/Apartment/FloorPlanCard';
 import Toast from '../components/utils/Toast';
+import DropDownWithLabel from '../components/utils/DropDownWithLabel';
 import savedIcon from '../assets/saved-icon-filled.svg';
 import unsavedIcon from '../assets/saved-icon-unfilled.svg';
 
@@ -306,6 +307,7 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const classes = useStyles();
   const { aptId } = useParams<Record<string, string>>();
   const history = useHistory();
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   /* ── State ── */
   const [apt, setApt] = useState<ApartmentWithId | null>(null);
@@ -316,7 +318,7 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const [otherProperties, setOtherProperties] = useState<CardData[]>([]);
   const [travelTimes, setTravelTimes] = useState<LocationTravelTimes | undefined>(undefined);
   const [isSaved, setIsSaved] = useState(false);
-  const sortBy: Fields = 'date';
+  const [sortBy, setSortBy] = useState<Fields>('date');
   const [resultsToShow, setResultsToShow] = useState(5);
   const [likedReviews, setLikedReviews] = useState<Likes>({});
   const [likeStatuses, setLikeStatuses] = useState<Likes>({});
@@ -500,6 +502,11 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const heroPhotos = useMemo(() => apt?.photos ?? [], [apt]);
 
+  const landlordContactUrl = useMemo(() => {
+    const contact = landlordData?.contact;
+    return contact && /^https?:\/\//i.test(contact) ? contact : null;
+  }, [landlordData]);
+
   const heroGridStyle = (count: number): React.CSSProperties => ({
     display: 'grid',
     gridTemplateColumns: count >= 3 ? '5fr 3fr' : count === 2 ? '1fr 1fr' : '1fr',
@@ -640,14 +647,17 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
             </div>
           )}
 
-          <button
-            type="button"
-            className={classes.galleryBtn}
-            data-testid="gallery-button"
-            onClick={() => showPhotoCarousel()}
-          >
-            Gallery
-          </button>
+          {/* Hidden with no photos: the carousel would open on an empty list. */}
+          {heroPhotos.length > 0 && (
+            <button
+              type="button"
+              className={classes.galleryBtn}
+              data-testid="gallery-button"
+              onClick={() => showPhotoCarousel()}
+            >
+              Gallery
+            </button>
+          )}
         </div>
 
         {/* ─────────── Two-column body ─────────── */}
@@ -701,14 +711,27 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
             <div style={{ marginBottom: 24 }}>
               <div className={classes.reviewsHeader}>
                 <Typography className={classes.sectionHeading}>Reviews</Typography>
-                <Button
-                  className={classes.outlineBtnRed}
-                  onClick={openReviewModal}
-                  disableElevation
-                  disableRipple
-                >
-                  Leave a review
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <DropDownWithLabel
+                    label="Sort by"
+                    menuItems={[
+                      { item: 'Recent', callback: () => setSortBy('date') },
+                      { item: 'Helpful', callback: () => setSortBy('likes') },
+                    ]}
+                    isMobile={isMobile}
+                  />
+                  {/* A review is filed against a landlord, so an apartment with
+                      no landlord on record cannot accept one. */}
+                  <Button
+                    className={classes.outlineBtnRed}
+                    onClick={openReviewModal}
+                    disabled={!apt.landlordId}
+                    disableElevation
+                    disableRipple
+                  >
+                    Leave a review
+                  </Button>
+                </div>
               </div>
 
               {reviewData.length === 0 ? (
@@ -791,7 +814,7 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
                 travelTimes={travelTimes}
                 handleClick={() => setMapOpen(true)}
                 mapToggle={mapToggle}
-                isMobile={false}
+                isMobile={isMobile}
               />
             </div>
 
@@ -817,11 +840,15 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
                   >
                     Message Landlord
                   </Button>
-                  {landlordData.contact && (
+                  {/* `contact` holds an email address for some landlords and a
+                      website for others. Only link it when it is an absolute
+                      URL; an email address here would resolve as a relative
+                      path and navigate within the app. */}
+                  {landlordContactUrl && (
                     <Button
                       variant="outlined"
                       className={classes.visitBtn}
-                      href={landlordData.contact}
+                      href={landlordContactUrl}
                       target="_blank"
                       rel="noreferrer"
                       disableElevation
@@ -868,7 +895,7 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
         longitude={apt.longitude}
         latitude={apt.latitude}
         travelTimes={travelTimes}
-        isMobile={false}
+        isMobile={isMobile}
       />
 
       {apt.landlordId && (
