@@ -24,6 +24,20 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 
 ## Contributors
 
+### 2025-2026
+
+- **Ella Krechmer** - Product Manager Advisor
+- **Jaeyoung Lee** - Product Manager
+- **Celline Lee** -  Product Manager
+- **Helen Song** - Product Marketing Manager
+- **Casper Liao** - Technical Product Manager
+- **Xintog Lee**- Designer
+- **Erica Lee** - Designer
+- **May Wu** - Designer
+- **Parsa Tehranipoor** - Developer
+- **Lauren Pothuru** - Developer
+- **Natan Kramskiy** - Developer
+
 ### 2024-2025
 
 - **Ella Krechmer** - Product Manager
