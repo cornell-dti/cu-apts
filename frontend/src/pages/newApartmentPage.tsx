@@ -56,11 +56,14 @@ const AMENITY_ICONS: Record<string, ReactElement> = {
   'no pets': <PetsIcon fontSize="small" />,
 };
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   page: {
     backgroundColor: colors.gray3,
     minHeight: '100vh',
     paddingBottom: 48,
+    [theme.breakpoints.down('xs')]: {
+      paddingBottom: 32,
+    },
   },
   innerPage: {
     maxWidth: 1200,
@@ -117,6 +120,12 @@ const useStyles = makeStyles({
     alignItems: 'flex-start',
     gap: 16,
     marginBottom: 12,
+    // Below sm the title and the three action buttons cannot share a row
+    // without the buttons collapsing to unreadable widths.
+    [theme.breakpoints.down('xs')]: {
+      flexDirection: 'column',
+      gap: 12,
+    },
   },
   aptTitle: {
     fontWeight: 700,
@@ -125,6 +134,10 @@ const useStyles = makeStyles({
     margin: 0,
     marginBottom: 8,
     color: colors.black,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 24,
+      marginBottom: 6,
+    },
   },
   aptDescription: {
     fontSize: 15,
@@ -132,6 +145,9 @@ const useStyles = makeStyles({
     marginBottom: 0,
     maxWidth: 680,
     lineHeight: 1.55,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 14,
+    },
   },
   actionBtns: {
     display: 'flex',
@@ -139,6 +155,12 @@ const useStyles = makeStyles({
     flexShrink: 0,
     alignItems: 'flex-start',
     paddingTop: 4,
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      paddingTop: 0,
+      flexWrap: 'wrap',
+      '& > *': { flex: '1 1 auto' },
+    },
   },
   saveBtn: {
     background: colors.red1,
@@ -188,6 +210,10 @@ const useStyles = makeStyles({
     marginBottom: 12,
     marginTop: 4,
     color: colors.black,
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 19,
+      marginBottom: 10,
+    },
   },
 
   /* ── Reviews ── */
@@ -196,6 +222,12 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    // The sort dropdown and "Leave a review" button wrap under the heading
+    // rather than squeezing onto one line.
+    [theme.breakpoints.down('xs')]: {
+      flexWrap: 'wrap',
+      gap: 8,
+    },
   },
   emptyText: {
     color: colors.gray1,
@@ -239,6 +271,9 @@ const useStyles = makeStyles({
     borderRadius: 12,
     padding: '16px 20px',
     marginBottom: 8,
+    [theme.breakpoints.down('xs')]: {
+      padding: '14px 16px',
+    },
   },
   landlordInfoLabel: {
     fontWeight: 500,
@@ -294,7 +329,7 @@ const useStyles = makeStyles({
     textAlign: 'center',
     color: colors.gray1,
   },
-});
+}));
 
 /**
  * NewApartmentPage is the fully-redesigned apartment detail page.
@@ -507,11 +542,23 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
     return contact && /^https?:\/\//i.test(contact) ? contact : null;
   }, [landlordData]);
 
+  /**
+   * heroGridStyle – Builds the hero photo grid layout for a given photo count.
+   *
+   * @remarks
+   * On narrow screens the secondary column is dropped entirely: at phone width
+   * the 3fr column renders thumbnails too small to be useful, and the full
+   * 420px height consumes most of the viewport before any content is visible.
+   *
+   * @param {number} count – Number of photos available for the apartment.
+   *
+   * @return {React.CSSProperties} – Inline grid styles for the hero container.
+   */
   const heroGridStyle = (count: number): React.CSSProperties => ({
     display: 'grid',
-    gridTemplateColumns: count >= 3 ? '5fr 3fr' : count === 2 ? '1fr 1fr' : '1fr',
+    gridTemplateColumns: isMobile || count < 2 ? '1fr' : count >= 3 ? '5fr 3fr' : '1fr 1fr',
     gap: 6,
-    height: 420,
+    height: isMobile ? 240 : 420,
     position: 'relative',
     marginBottom: 20,
   });
@@ -619,8 +666,10 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
             />
           )}
 
-          {/* 2 photos: second image fills right column equally */}
-          {heroPhotos.length === 2 && (
+          {/* 2 photos: second image fills right column equally.
+              Suppressed on mobile, where the grid collapses to one column and
+              the extra images are reachable through the gallery instead. */}
+          {!isMobile && heroPhotos.length === 2 && (
             <img
               src={heroPhotos[1]}
               alt="Apartment secondary"
@@ -630,7 +679,7 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
           )}
 
           {/* 3+ photos: two smaller images stacked in right column */}
-          {heroPhotos.length >= 3 && (
+          {!isMobile && heroPhotos.length >= 3 && (
             <div className={classes.heroSecondaryCol}>
               <img
                 src={heroPhotos[1]}
