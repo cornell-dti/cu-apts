@@ -99,12 +99,15 @@ export type ApartmentTotalRating = {
  * filtering and price sorting; floor plans are supplementary detail-page data.
  */
 export type ApartmentFloorPlan = {
-  readonly photo: string;
   readonly bedrooms: number;
   readonly bathrooms: number;
   readonly costPerPerson: number;
-  readonly unitsAvailable: number;
-  readonly sqft: number;
+  // Optional: no current data source supplies these. Floor plans derived from
+  // roomTypes carry bed/bath/price only, and the agency scrapers publish
+  // neither square footage nor floor plan imagery.
+  readonly photo?: string;
+  readonly unitsAvailable?: number;
+  readonly sqft?: number;
 };
 
 export type Apartment = {

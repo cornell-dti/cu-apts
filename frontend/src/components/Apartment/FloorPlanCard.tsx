@@ -25,6 +25,23 @@ const useStyles = makeStyles({
     flexShrink: 0,
     background: colors.gray5,
   },
+  imagePlaceholder: {
+    width: 88,
+    height: 88,
+    borderRadius: 8,
+    flexShrink: 0,
+    background: colors.gray5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    padding: 6,
+  },
+  imagePlaceholderText: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    color: colors.gray2,
+  },
   info: {
     flex: 1,
   },
@@ -73,6 +90,21 @@ const pluralize = (count: number, unit: string): string =>
   `${count} ${unit}${count === 1 ? '' : 's'}`;
 
 /**
+ * isMeasured – Narrows an optional numeric floor plan field to a usable number.
+ *
+ * @remarks
+ * Floor plans derived from room types carry no square footage or unit count,
+ * and stored plans may hold a non-numeric value. Both cases must be omitted
+ * from the rendered card rather than displayed as "undefined" or "NaN".
+ *
+ * @param {number | undefined} value – The field to test.
+ *
+ * @return {boolean} – True when the value is a finite number.
+ */
+const isMeasured = (value: number | undefined): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+/**
  * FloorPlanCard Component – Displays a single floor plan offered by an apartment.
  *
  * @remarks
@@ -86,20 +118,38 @@ const pluralize = (count: number, unit: string): string =>
  * @return {ReactElement} – The rendered FloorPlanCard component.
  */
 const FloorPlanCard = ({ plan }: Props): ReactElement => {
-  const { card, image, info, title, meta, priceBlock, priceValue, priceNA, priceSub } = useStyles();
+  const {
+    card,
+    image,
+    imagePlaceholder,
+    imagePlaceholderText,
+    info,
+    title,
+    meta,
+    priceBlock,
+    priceValue,
+    priceNA,
+    priceSub,
+  } = useStyles();
   const { photo, bedrooms, bathrooms, costPerPerson, unitsAvailable, sqft } = plan;
   const hasPrice = costPerPerson > 0;
 
   return (
     <div className={card}>
-      {photo && <img src={photo} alt="floor plan" className={image} />}
+      {photo ? (
+        <img src={photo} alt="floor plan" className={image} />
+      ) : (
+        <div className={imagePlaceholder} data-testid="floorplan-image-placeholder">
+          <Typography className={imagePlaceholderText}>No image available</Typography>
+        </div>
+      )}
 
       <div className={info}>
         <Typography className={title}>
           {pluralize(bedrooms, 'Bed')} {pluralize(bathrooms, 'bath')}
         </Typography>
-        {Number.isFinite(sqft) && <Typography className={meta}>{sqft} sqft</Typography>}
-        {Number.isFinite(unitsAvailable) && (
+        {isMeasured(sqft) && <Typography className={meta}>{sqft} sqft</Typography>}
+        {isMeasured(unitsAvailable) && (
           <Typography className={meta}>{pluralize(unitsAvailable, 'unit')} available</Typography>
         )}
       </div>

@@ -10,6 +10,7 @@ import WeekendIcon from '@material-ui/icons/Weekend';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import {
+  ApartmentFloorPlan,
   ApartmentWithId,
   Landlord,
   LocationTravelTimes,
@@ -537,6 +538,27 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
 
   const heroPhotos = useMemo(() => apt?.photos ?? [], [apt]);
 
+  /**
+   * Floor plans to display, falling back to the apartment's room types.
+   *
+   * @remarks
+   * No current data source populates `floorplans`: the room data collected by
+   * the PM team and the agency scrapers both supply bed/bath/price only. Rather
+   * than show an empty section, derive rows from `roomTypes` when no true floor
+   * plans exist. Square footage, unit counts, and imagery are simply absent from
+   * derived rows, and FloorPlanCard omits those lines. Real floor plans always
+   * take precedence once they exist.
+   */
+  const floorPlans: ApartmentFloorPlan[] = useMemo(() => {
+    const existing = apt?.floorplans ?? [];
+    if (existing.length > 0) return [...existing];
+    return (apt?.roomTypes ?? []).map((roomType) => ({
+      bedrooms: roomType.beds,
+      bathrooms: roomType.baths,
+      costPerPerson: roomType.price,
+    }));
+  }, [apt]);
+
   const landlordContactUrl = useMemo(() => {
     const contact = landlordData?.contact;
     return contact && /^https?:\/\//i.test(contact) ? contact : null;
@@ -826,10 +848,10 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
             {/* Floor Plan */}
             <div style={{ marginBottom: 24 }} data-testid="floor-plan-section">
               <Typography className={classes.sectionHeading}>Floor Plan</Typography>
-              {(apt.floorplans ?? []).length === 0 ? (
+              {floorPlans.length === 0 ? (
                 <Typography className={classes.emptyText}>No floor plan data available</Typography>
               ) : (
-                (apt.floorplans ?? []).map((plan, i) => <FloorPlanCard key={i} plan={plan} />)
+                floorPlans.map((plan, i) => <FloorPlanCard key={i} plan={plan} />)
               )}
             </div>
 
