@@ -680,12 +680,15 @@ app.get('/api/apartment-amenities/:aptId', async (req, res) => {
     }
 
     const data = snapshot.data() as Partial<Apartment> | undefined;
+    // Guarded the same way as floor plans below. A document holding a non-array
+    // value would otherwise reach the client as something it cannot map over.
+    const amenities = Array.isArray(data?.amenities) ? data?.amenities : [];
 
     res.status(200).send(
       JSON.stringify({
         aptId,
         name: data?.name ?? null,
-        amenities: data?.amenities ?? [],
+        amenities,
       })
     );
   } catch (err) {
