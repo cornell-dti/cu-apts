@@ -8,6 +8,35 @@ export const BUS_STOPS: Record<string, string> = {
   'College @ Mitchell': 'College Ave & Mitchell St, Ithaca, NY 14850',
 };
 
+const ITHACA_QUALIFIER = 'Ithaca, NY 14850';
+
+/** Matches an origin already expressed as "latitude,longitude" rather than an address. */
+const COORDINATE_PATTERN = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
+
+/**
+ * withIthacaContext – Qualifies a bare street address with its city, state, and ZIP.
+ *
+ * @remarks
+ * Apartment addresses are stored without a city (e.g. "408 College Ave"), which the
+ * Google Maps APIs resolve against the whole country — "408 College Ave" geocodes to
+ * Texas, yielding walking times measured in days. Appending the city disambiguates it.
+ *
+ * Origins already given as "latitude,longitude", and addresses that already name
+ * Ithaca, are returned untouched so this is safe to apply to any origin.
+ *
+ * @param location - An address, or coordinates in "latitude,longitude" format
+ * @returns The location qualified with Ithaca, NY, or unchanged if not applicable
+ */
+export function withIthacaContext(location: string): string {
+  const trimmed = location.trim().replace(/,+$/, '').trim();
+
+  if (!trimmed) return location;
+  if (COORDINATE_PATTERN.test(trimmed)) return trimmed;
+  if (/\bithaca\b/i.test(trimmed)) return trimmed;
+
+  return `${trimmed}, ${ITHACA_QUALIFIER}`;
+}
+
 /**
  * getTravelTimes – Calculates travel times between an origin and multiple destinations
  * using the Google Distance Matrix API.

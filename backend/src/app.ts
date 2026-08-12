@@ -34,7 +34,12 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
-import { BUS_STOPS, getTravelTimes, findClosestStop } from './travel-times-utils';
+import {
+  BUS_STOPS,
+  getTravelTimes,
+  findClosestStop,
+  withIthacaContext,
+} from './travel-times-utils';
 
 // Imports for email sending
 
@@ -736,6 +741,9 @@ app.get('/api/apartment-floorplans/:aptId', async (req, res) => {
  * one. Unlike the stored `busStopWalking` field this is computed live, so it
  * reflects current routing rather than the value cached at ingestion time.
  *
+ * Stored addresses carry no city, so the address is qualified with Ithaca, NY
+ * before it reaches Google. The `origin` in the response is that qualified form.
+ *
  * @route GET /api/bus-stop-travel-times/:buildingId
  *
  * @input {string} req.params.buildingId – The ID of the building to measure from.
@@ -758,12 +766,17 @@ app.get('/api/bus-stop-travel-times/:buildingId', async (req, res) => {
     }
 
     const buildingData = buildingDoc.data() as Partial<Apartment> | undefined;
-    const origin = buildingData?.address;
+    const address = buildingData?.address;
 
-    if (!origin) {
+    if (!address) {
       res.status(400).json({ error: 'Building address is missing' });
       return;
     }
+
+    // Stored addresses omit the city, which Google resolves against the whole
+    // country. The qualified form is reported back so callers can see exactly
+    // what was measured from.
+    const origin = withIthacaContext(address);
 
     const stopNames = Object.keys(BUS_STOPS);
     const destinations = Object.values(BUS_STOPS);
@@ -2660,12 +2673,16 @@ interface TravelTimeInput {
  */
 app.post('/api/calculate-travel-times', async (req, res) => {
   try {
-    const { origin } = req.body as TravelTimeInput;
-    console.log('Origin:', origin);
+    const { origin: rawOrigin } = req.body as TravelTimeInput;
+    console.log('Origin:', rawOrigin);
 
-    if (!origin) {
+    if (!rawOrigin) {
       return res.status(400).json({ error: 'Origin is required' });
     }
+
+    // Coordinate origins pass through untouched; a bare address gets its city
+    // appended so Google does not resolve it against the whole country.
+    const origin = withIthacaContext(rawOrigin);
 
     const destinations = Object.values(LANDMARKS);
     console.log('Destinations array:', destinations);
