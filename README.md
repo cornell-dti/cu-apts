@@ -28,10 +28,10 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 
 - **Ella Krechmer** - Product Manager Advisor
 - **Jaeyoung Lee** - Product Manager
-- **Celline Lee** -  Product Manager
+- **Celline Lee** - Product Manager
 - **Helen Song** - Product Marketing Manager
 - **Casper Liao** - Technical Product Manager
-- **Xintog Lee**- Designer
+- **Xintog Lee** - Designer
 - **Erica Lee** - Designer
 - **May Wu** - Designer
 - **Parsa Tehranipoor** - Developer
