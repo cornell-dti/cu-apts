@@ -761,7 +761,9 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
                   className={classes.outlineBtn}
                   disableElevation
                   disableRipple
-                  onClick={() => history.push(`/compare?aptIds=${aptId}`)}
+                  // The comparison page reads its apartments from an `ids`
+                  // query parameter; the name must match or it loads empty.
+                  onClick={() => history.push(`/compare?ids=${aptId}`)}
                 >
                   Compare
                 </Button>
