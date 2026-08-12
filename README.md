@@ -31,7 +31,7 @@ on its own, run `yarn frontend-dev` or `yarn backend-dev`.
 - **Celline Lee** - Product Manager
 - **Helen Song** - Product Marketing Manager
 - **Casper Liao** - Technical Product Manager
-- **Xintog Lee** - Designer
+- **Xintong Lin** - Designer
 - **Erica Lee** - Designer
 - **May Wu** - Designer
 - **Parsa Tehranipoor** - Developer
