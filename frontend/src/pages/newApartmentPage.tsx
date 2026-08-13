@@ -76,18 +76,26 @@ const useStyles = makeStyles((theme) => ({
   heroPrimary: {
     width: '100%',
     height: '100%',
+    // Without this a grid item refuses to shrink below its content size, which
+    // for an <img> is the photo's natural height.
+    minHeight: 0,
     objectFit: 'cover',
     borderRadius: 12,
     display: 'block',
   },
   heroSecondaryCol: {
     display: 'grid',
-    gridTemplateRows: '1fr 1fr',
+    // `1fr` is shorthand for `minmax(auto, 1fr)`, and that `auto` floor is the
+    // image's natural height. Spelling out a zero floor lets the two stacked
+    // photos split the column evenly instead of overflowing it.
+    gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)',
     gap: 6,
+    minHeight: 0,
   },
   heroSecondary: {
     width: '100%',
     height: '100%',
+    minHeight: 0,
     objectFit: 'cover',
     borderRadius: 12,
     display: 'block',
@@ -579,8 +587,14 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
   const heroGridStyle = (count: number): React.CSSProperties => ({
     display: 'grid',
     gridTemplateColumns: isMobile || count < 2 ? '1fr' : count >= 3 ? '5fr 3fr' : '1fr 1fr',
+    // The row has to be pinned to the container height. Left implicit it sizes
+    // to `auto`, which for a grid row means "at least as tall as the content",
+    // so a photo taller than the container grows the row instead of being
+    // cropped and the hero paints over the section below it.
+    gridTemplateRows: '100%',
     gap: 6,
     height: isMobile ? 240 : 420,
+    overflow: 'hidden',
     position: 'relative',
     marginBottom: 20,
   });
