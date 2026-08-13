@@ -1,5 +1,13 @@
 import React, { ReactElement, useEffect, useMemo, useState } from 'react';
-import { Button, Container, Grid, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
+import {
+  Button,
+  Container,
+  Grid,
+  Link,
+  Typography,
+  makeStyles,
+  useMediaQuery,
+} from '@material-ui/core';
 import DirectionsCarIcon from '@material-ui/icons/DirectionsCar';
 import LocalLaundryServiceIcon from '@material-ui/icons/LocalLaundryService';
 import KitchenIcon from '@material-ui/icons/Kitchen';
@@ -7,7 +15,7 @@ import WifiIcon from '@material-ui/icons/Wifi';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import PetsIcon from '@material-ui/icons/Pets';
 import WeekendIcon from '@material-ui/icons/Weekend';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useHistory, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 import {
   ApartmentFloorPlan,
@@ -956,13 +964,22 @@ const NewApartmentPage = ({ user, setUser }: Props): ReactElement => {
             <div className={classes.similarRow}>
               {otherProperties.map(({ buildingData, numReviews, avgRating }) => (
                 <div key={buildingData.id} className={classes.similarCardWrapper}>
-                  <NewApartmentCard
-                    buildingData={buildingData}
-                    numReviews={numReviews}
-                    avgRating={avgRating ?? 0}
-                    user={user}
-                    setUser={setUser}
-                  />
+                  {/* NewApartmentCard carries no link of its own, so every
+                      caller has to supply one. Without this the cards render
+                      but clicking them does nothing. */}
+                  <Link
+                    component={RouterLink}
+                    to={`/apartment/${buildingData.id}`}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <NewApartmentCard
+                      buildingData={buildingData}
+                      numReviews={numReviews}
+                      avgRating={avgRating ?? 0}
+                      user={user}
+                      setUser={setUser}
+                    />
+                  </Link>
                 </div>
               ))}
             </div>
