@@ -15,7 +15,7 @@ Helping the Cornell community at-large find reviews and information about housin
 
 ## Getting Started
 
-You will need Node.js and Yarn installed on your development machine.
+You will need Node.js and Yarn installed on your development machine. This project requires `node 18` to run locally. 
 
 To setup your environment, go into the root folder and run `yarn install`. This installs the necessary
 dependencies in each required Yarn workspace. Then, run `yarn start` to start a development server
