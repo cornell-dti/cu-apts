@@ -8,11 +8,17 @@ import { z } from 'zod';
  * filters using the Gemini 3.5 Flash-Lite model.
  *
  * @remarks
- * The user's query is untrusted input. It is never concatenated into the instruction text;
- * it is passed as a separate, clearly delimited block so that text resembling instructions
- * ("ignore previous instructions and ...") is treated as search text rather than as a command.
- * The model's response is then re-validated against {@link FilterSchema}, because "the model
- * was told to" is not a guarantee.
+ * The user's query is untrusted input. It is never concatenated into the instruction text; it
+ * is passed as a separate part wrapped in `<user_query>` tags, and the instructions tell the
+ * model to treat that block as data. This reduces injection risk but does not eliminate it: the
+ * query is interpolated into the tags unescaped, so one containing a literal `</user_query>`
+ * can close the block early, and whatever follows reaches the model looking like instructions.
+ *
+ * The real backstop is that the model's response is re-validated against {@link FilterSchema}.
+ * That bounds what a steered model can return to the fields, types and ranges we allow
+ * (`intent` stays free text, but is sanitized and length-capped).
+ *
+ * Requires the `GEMINI_API_KEY` environment variable; requests fail with a 500 if it is unset.
  */
 
 const AREA_VALUES = ['COLLEGETOWN', 'NORTH', 'WEST', 'DOWNTOWN'] as const;
@@ -149,8 +155,14 @@ Rules:
  * @returns the model's response parsed as JSON, still unvalidated
  */
 const callGemini = async (query: string): Promise<string> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    // Fail before any network I/O rather than send a request that can only be rejected.
+    throw new Error('GEMINI_API_KEY is not set; cannot call Gemini');
+  }
+
   const response = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent',
     {
       contents: [
         {
@@ -163,7 +175,9 @@ const callGemini = async (query: string): Promise<string> => {
         temperature: 0,
       },
     },
-    { timeout: 8000 }
+    // In a header rather than a `?key=` query parameter, which would end up in logs and in the
+    // URL that axios error messages report.
+    { timeout: 8000, headers: { 'x-goog-api-key': apiKey } }
   );
 
   const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -171,6 +185,21 @@ const callGemini = async (query: string): Promise<string> => {
     throw new Error('Empty response from Gemini');
   }
   return text;
+};
+
+/**
+ * Whether a failure calling Gemini is transient, so that retrying the same request may succeed.
+ *
+ * That covers a throttle (429), a Gemini-side fault (5xx), and any failure with no response at
+ * all - a timeout, DNS failure, or dropped connection. Any other status means Gemini rejected
+ * the request itself (a bad request, an invalid API key), which retrying will not fix.
+ */
+const isTransientUpstreamError = (err: unknown): boolean => {
+  if (!axios.isAxiosError(err)) {
+    return false;
+  }
+  const status = err.response?.status;
+  return status === undefined || status === 429 || status >= 500;
 };
 
 /**
@@ -230,8 +259,13 @@ const globalLimiter = rateLimit({
   },
 });
 
-/** Limiters for POST /api/llm-search, applied in order. */
-export const llmSearchLimiters: RequestHandler[] = [globalLimiter, perIpLimiter];
+/**
+ * Limiters for POST /api/llm-search, applied in order.
+ *
+ * The per-IP limiter must come first. A request it rejects never reaches the global limiter, so
+ * one abusive IP cannot use up the shared daily budget with requests that never reached Gemini.
+ */
+export const llmSearchLimiters: RequestHandler[] = [perIpLimiter, globalLimiter];
 
 /**
  * Express handler for POST /api/llm-search.
@@ -255,8 +289,10 @@ export const llmSearchLimiters: RequestHandler[] = [globalLimiter, perIpLimiter]
  *   should degrade to an unfiltered search rather than show an error.
  * - 400: Missing, non-string, or overlong query
  * - 429: Rate limited by this server
- * - 500: Error calling Gemini or parsing its response
- * - 503: Gemini throttled us or is unavailable - transient, safe to retry
+ * - 500: Gemini rejected the request (bad request, invalid API key), returned no usable content
+ *   (including a safety block), or GEMINI_API_KEY is not set - retrying will not help
+ * - 503: Gemini throttled us, is down, or could not be reached (timeout, network failure) -
+ *   transient, safe to retry
  */
 export const llmSearchHandler = async (req: Request, res: Response): Promise<void> => {
   const { query } = req.body ?? {};
@@ -275,12 +311,11 @@ export const llmSearchHandler = async (req: Request, res: Response): Promise<voi
   try {
     text = await callGemini(query);
   } catch (err) {
-    // Transport-level failure: timeout, network error, bad API key, Gemini outage.
+    // Timeout, network error, Gemini rejecting the request or being down, or a missing API key.
     console.error('LLM search error:', err instanceof Error ? err.message : err);
-    const upstream = axios.isAxiosError(err) ? err.response?.status : undefined;
-    if (upstream === 429 || (upstream !== undefined && upstream >= 500)) {
-      // Gemini throttled us or is down. This is transient and retryable, so say so rather
-      // than reporting it as a fault in the request.
+    if (isTransientUpstreamError(err)) {
+      // Gemini throttled us, is down, or could not be reached. This is transient and
+      // retryable, so say so rather than reporting it as a fault in the request.
       res.status(503).json({ error: 'Search is temporarily unavailable. Please try again.' });
       return;
     }
