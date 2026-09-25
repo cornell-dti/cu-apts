@@ -34,6 +34,7 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
+import { llmSearchHandler, llmSearchLimiters } from './llmSearch';
 
 // Imports for email sending
 
@@ -63,6 +64,9 @@ const app: Express = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use(morgan('combined'));
+// Heroku terminates TLS at its router, so req.ip is the proxy unless we trust one hop.
+// Required for per-IP rate limiting to key on the real client.
+app.set('trust proxy', 1);
 
 // API endpoint to get FAQs
 app.get('/api/faqs', async (_, res) => {
@@ -3179,5 +3183,13 @@ app.post('/api/admin/init-collections', authenticate, async (req, res) => {
     return res.status(500).send('Error initializing collections');
   }
 });
+
+/**
+ * LLM Natural Language Search - Converts a natural language query into structured
+ * apartment filters. Implementation lives in ./llmSearch.
+ *
+ * @route POST /api/llm-search
+ */
+app.post('/api/llm-search', ...llmSearchLimiters, llmSearchHandler);
 
 export default app;
