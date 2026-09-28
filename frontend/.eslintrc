@@ -1,7 +1,14 @@
 {
   "extends": [
-    "../.eslintrc",
     "react-app",
     "react-app/jest"
-  ]
+  ],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".mjs", ".js", ".json", ".ts", ".tsx"],
+        "paths": ["common", "frontend/src", "backend/src"]
+      }
+    }
+  }
 }

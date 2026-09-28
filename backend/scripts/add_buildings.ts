@@ -43,13 +43,11 @@ const formatBuilding = ({
   name,
   address,
   landlordId: landlordId.toString(),
-  numBaths: 0,
-  numBeds: 0,
+  roomTypes: [], // Initialize with empty room types
   photos: [],
   area: getAreaType(area),
   latitude,
   longitude,
-  price: 0,
   distanceToCampus: 0,
 });
 

@@ -260,6 +260,7 @@ export type FilterSectionProps = {
   open: boolean;
   handleSearch: () => void;
   isMobile: boolean | undefined;
+  isSearchResultsPage?: boolean;
 };
 
 const LOCATIONS: LocationType[] = ['Collegetown', 'North', 'West', 'Downtown'];
@@ -319,6 +320,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   open,
   handleSearch,
   isMobile,
+  isSearchResultsPage = false,
 }) => {
   const {
     filterContainer,
@@ -339,6 +341,13 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     searchResultText,
     searchButton,
   } = useStyles();
+
+  // Check if each section has selections (only for search results page)
+  const hasLocationSelection = isSearchResultsPage && filters.locations.length > 0;
+  const hasPriceSelection =
+    isSearchResultsPage && (filters.minPrice !== '' || filters.maxPrice !== '');
+  const hasBedBathSelection =
+    isSearchResultsPage && (filters.bedrooms > 0 || filters.bathrooms > 0);
 
   const handleLocationChange = (location: LocationType) => {
     const newLocations = filters.locations.includes(location)
@@ -367,6 +376,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 className={sectionTitle}
                 style={{
                   marginLeft: '10px',
+                  color: hasLocationSelection ? '#B94630' : 'rgba(0, 0, 0, 0.50)',
                 }}
               >
                 Location
@@ -393,7 +403,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             <span className={divisionLine} />
 
             <div className={priceSection} style={{ width: '25%' }}>
-              <Typography className={sectionTitle}>Price</Typography>
+              <Typography
+                className={sectionTitle}
+                style={{
+                  color: hasPriceSelection ? '#B94630' : 'rgba(0, 0, 0, 0.50)',
+                }}
+              >
+                Price
+              </Typography>
               <div className={priceInputsContainerRow}>
                 <PriceInputBox
                   label="Min Price"
@@ -416,7 +433,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             <span className={divisionLine} />
 
             <div className={bedsbathsSection} style={{ width: '25%' }}>
-              <Typography className={sectionTitle}>Beds & Baths</Typography>
+              <Typography
+                className={sectionTitle}
+                style={{
+                  color: hasBedBathSelection ? '#B94630' : 'rgba(0, 0, 0, 0.50)',
+                }}
+              >
+                Beds & Baths
+              </Typography>
               <div className={amenitiesRow}>
                 <Typography className={filterText}>Bedrooms</Typography>
                 <div className={numberControlContainer}>

@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useState, useRef } from 'react';
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   CircularProgress,
@@ -21,12 +21,23 @@ import { Link as RouterLink } from 'react-router-dom';
 import searchPropertyIcon from '../../assets/search-property.svg';
 import searchLandlordIcon from '../../assets/search-landlord.svg';
 import filterIcon from '../../assets/filter.svg';
-import FilterSection, { defaultFilters, FilterState } from './FilterSection';
+import FilterSection, { FilterState } from './FilterSection';
 import FilterDropDown from './FilterDropDown';
 import TagSearchSection from './TagSearchSection';
 
 type Props = {
   drawerOpen: boolean;
+};
+
+const defaultFilters: FilterState = {
+  locations: [],
+  minPrice: '',
+  maxPrice: '',
+  bedrooms: 0,
+  bathrooms: 0,
+  tagIds: [],
+  initialSortBy: 'avgRating',
+  initialSortLowToHigh: false,
 };
 
 /**
@@ -46,30 +57,38 @@ type Props = {
 
 const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [openFilter, setOpenFilter] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isSearchResults = location.pathname.startsWith('/search');
-  const isLocationPage = location.pathname.startsWith('/location/');
+
+  // Initialize filters and query from URL if on search results page
+  const getInitialState = () => {
+    if (isSearchResults) {
+      const params = new URLSearchParams(location.search);
+      const query = params.get('q') || '';
+      const filtersParam = params.get('filters');
+      const filters = filtersParam ? JSON.parse(decodeURIComponent(filtersParam)) : defaultFilters;
+      return { query, filters };
+    }
+    return { query: '', filters: defaultFilters };
+  };
+
+  const initialState = getInitialState();
+  const [filters, setFilters] = useState<FilterState>(initialState.filters);
+  const [initialQuery] = useState(initialState.query);
+  const [openFilter, setOpenFilter] = useState(false);
 
   const useStyles = makeStyles((theme) => ({
     menuList: {
       position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      zIndex: 1300,
-      width: '100%',
       backgroundColor: colors.white,
-      maxHeight: 420,
+      maxHeight: 200,
       overflow: 'auto',
       boxShadow: '0px 4px 8px -1px rgba(0, 0, 0, 0.25)',
       borderRadius: '8px',
       padding: 0,
       boxSizing: 'border-box',
       border: '2px solid white',
-      marginTop: 4,
     },
     menuItem: {
       borderBottom: '1px solid #E5E5E5',
@@ -179,15 +198,44 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   } = useStyles();
   const inputRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const [focus, setFocus] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const [allTags, setAllTags] = useState<TagWithId[]>([]);
   const [tagsLoading, setTagsLoading] = useState(true);
   const history = useHistory();
+
+  // Update query and filters when URL changes (for search results page)
+  useEffect(() => {
+    if (isSearchResults) {
+      const params = new URLSearchParams(location.search);
+      const urlQuery = params.get('q') || '';
+      const filtersParam = params.get('filters');
+      const urlFilters = filtersParam
+        ? JSON.parse(decodeURIComponent(filtersParam))
+        : defaultFilters;
+
+      // Mark that this update is from URL, not user typing
+      setIsUserTyping(false);
+      setQuery(urlQuery);
+      setFilters({ ...defaultFilters, ...urlFilters });
+      setOpenMenu(false);
+
+      // Blur the input to ensure dropdown doesn't show
+      setTimeout(() => {
+        if (inputRef.current) {
+          const textField = inputRef.current.querySelector('input');
+          if (textField) {
+            textField.blur();
+          }
+        }
+      }, 0);
+    }
+  }, [location.search, isSearchResults]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -217,13 +265,13 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     if (event.key === 'ArrowDown') {
       setFocus(true);
     } else if (event.key === 'Enter' && checkIfSearchable()) {
-      setFocus(true);
+      setFocus(false);
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
-      history.push(`/search?q=${query}&filters=${filterParams}`);
-      setQuery('');
+      setIsUserTyping(false);
       setOpenMenu(false);
+      history.push(`/search?q=${query}&filters=${filterParams}`);
     }
   }
 
@@ -232,8 +280,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
+      setIsUserTyping(false);
+      setOpenMenu(false);
       history.push(`/search?q=${query}&filters=${filterParams}`);
-      setQuery('');
     }
   };
 
@@ -251,6 +300,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     setQuery(query);
     setSelected(null);
     setOpenFilter(false);
+    setIsUserTyping(true); // Mark that user is actively typing
     if (query !== '') {
       setLoading(true);
     } else {
@@ -258,32 +308,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   };
 
-  const handleFilterChange = useCallback(
-    (newFilters: FilterState) => {
-      setFilters(newFilters);
-      if (!isHome && !isLocationPage && !isSearchResults) {
-        return;
-      }
-      const qParam = isSearchResults
-        ? (query.trim() || new URLSearchParams(location.search).get('q') || '').trim()
-        : query.trim();
-      const q = qParam ? `q=${encodeURIComponent(qParam)}` : '';
-      const f =
-        JSON.stringify(newFilters) !== JSON.stringify(defaultFilters)
-          ? `filters=${encodeURIComponent(JSON.stringify(newFilters))}`
-          : '';
-      const parts = [q, f].filter(Boolean);
-      const pathname = isSearchResults ? '/search' : isHome ? '/' : location.pathname;
-      history.replace({
-        pathname,
-        search: parts.length > 0 ? `?${parts.join('&')}` : '',
-      });
-    },
-    [history, isHome, isLocationPage, isSearchResults, location.pathname, location.search, query]
-  );
-
-  const handleSearchFocus = () => {
-    setOpenMenu(true);
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
   };
 
   /**
@@ -297,72 +323,90 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
    * @returns {ReactElement} A dropdown menu component containing search results
    */
   const Menu = () => {
-    if (!openMenu) {
-      return null;
-    }
     return (
-      <MenuList className={menuList} autoFocusItem={focus} onKeyDown={handleListKeyDown}>
-        <TagSearchSection
-          allTags={allTags}
-          tagsLoading={tagsLoading}
-          filters={filters}
-          onChange={handleFilterChange}
-        />
-        {query.trim() !== '' &&
-          (options.length === 0 ? (
-            <MenuItem disabled>No search results.</MenuItem>
-          ) : (
-            options.map(({ id, name, address, label }, index) => {
-              return (
-                <Link
-                  key={index}
-                  {...{
-                    to: `/${label.toLowerCase()}/${id}`,
-                    style: { textDecoration: 'none' },
-                    component: RouterLink,
-                  }}
-                >
-                  <MenuItem
-                    button={true}
-                    key={index}
-                    onClick={() => setOpenMenu(false)}
-                    className={menuItem}
-                    style={index === options.length - 1 ? { borderBottom: 'none' } : {}}
-                  >
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item className={searchMenuLabelIcon}>
-                        <img
-                          src={label === 'LANDLORD' ? searchLandlordIcon : searchPropertyIcon}
-                          alt="search icon"
-                        />
-                      </Grid>
-                      <Grid item xs style={{ minWidth: 0 }}>
-                        <Typography className={buildingText}>{name}</Typography>
-                        <Typography className={subText}>{address !== name && address}</Typography>
-                        <Typography className={subText}>
-                          {label === 'LANDLORD' && 'Landlord'}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </MenuItem>
-                </Link>
-              );
-            })
-          ))}
-      </MenuList>
+      <div>
+        <ClickAwayListener
+          onClickAway={() => {
+            setOpenMenu(false);
+          }}
+        >
+          <div>
+            {openMenu ? (
+              <MenuList
+                style={{ width: `${inputRef.current?.offsetWidth}px`, zIndex: 1 }}
+                className={menuList}
+                autoFocusItem={focus}
+                onKeyDown={handleListKeyDown}
+              >
+                <TagSearchSection
+                  allTags={allTags}
+                  tagsLoading={tagsLoading}
+                  filters={filters}
+                  onChange={handleFilterChange}
+                />
+                {options.length === 0 && query.trim().length > 0 ? (
+                  <MenuItem disabled>No search results.</MenuItem>
+                ) : options.length === 0 ? null : (
+                  options.map(({ id, name, address, label }, index) => {
+                    return (
+                      <Link
+                        key={index}
+                        {...{
+                          to: `/${label.toLowerCase()}/${id}`,
+                          style: { textDecoration: 'none' },
+                          component: RouterLink,
+                        }}
+                      >
+                        <MenuItem
+                          button={true}
+                          key={index}
+                          onClick={() => setOpenMenu(false)}
+                          className={menuItem}
+                          style={index === options.length - 1 ? { borderBottom: 'none' } : {}}
+                        >
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item className={searchMenuLabelIcon}>
+                              <img
+                                src={label === 'LANDLORD' ? searchLandlordIcon : searchPropertyIcon}
+                                alt="search icon"
+                              />
+                            </Grid>
+                            <Grid item xs style={{ minWidth: 0 }}>
+                              <Typography className={buildingText}>{name}</Typography>
+                              <Typography className={subText}>
+                                {address !== name && address}
+                              </Typography>
+                              <Typography className={subText}>
+                                {label === 'LANDLORD' && 'Landlord'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </MenuItem>
+                      </Link>
+                    );
+                  })
+                )}
+              </MenuList>
+            ) : null}
+          </div>
+        </ClickAwayListener>
+      </div>
     );
   };
   useEffect(() => {
-    if (selected !== null) {
+    if (query === '') {
       setOpenMenu(false);
-    } else if (query !== '') {
+    } else if (selected === null && isUserTyping) {
+      // Only open menu if user is actively typing, not from URL
       setOpenMenu(true);
+    } else {
+      setOpenMenu(false);
     }
-  }, [query, selected]);
+  }, [query, selected, isUserTyping]);
 
   useEffect(() => {
     setTagsLoading(true);
-    get<TagWithId[]>(`/api/tags`, {
+    get<TagWithId[]>('/api/tags', {
       callback: (data) => {
         setAllTags(data);
         setTagsLoading(false);
@@ -373,18 +417,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       },
     });
   }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const raw = params.get('filters');
-    if (raw) {
-      try {
-        setFilters({ ...defaultFilters, ...JSON.parse(decodeURIComponent(raw)) });
-      } catch {
-        // ignore bad filter blobs in URL
-      }
-    }
-  }, [location.search]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -492,8 +524,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         width: '100%',
       }}
     >
-      {/* Row 1: Search bar + tag / address menu */}
-      <div style={{ position: 'relative', width: '100%' }}>
+      {/* Row 1: Search bar */}
+      <div style={{ width: '100%' }}>
         <TextField
           fullWidth
           ref={inputRef}
@@ -505,7 +537,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
             borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
             width: '100%',
           }}
-          onFocus={handleSearchFocus}
           onKeyDown={textFieldHandleListKeyDown}
           onChange={(event) => {
             const value = event.target.value;
@@ -515,7 +546,6 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
           }}
           InputProps={getInputProps()}
         />
-        <Menu />
       </div>
       {/* Row 2: Three dropdowns */}
       <div
@@ -565,35 +595,26 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                 width: !isSearchResults && isMobile ? '130%' : '100%',
               }}
             >
-              <div
+              <TextField
+                fullWidth
+                ref={inputRef}
+                value={query}
+                placeholder={placeholderText}
+                className={text}
+                variant="outlined"
                 style={{
-                  position: 'relative',
+                  borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
                   width: isSearchResults ? '58%' : '100%',
                 }}
-              >
-                <TextField
-                  fullWidth
-                  ref={inputRef}
-                  value={query}
-                  placeholder={placeholderText}
-                  className={text}
-                  variant="outlined"
-                  style={{
-                    borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-                    width: '100%',
-                  }}
-                  onFocus={handleSearchFocus}
-                  onKeyDown={textFieldHandleListKeyDown}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    if (value !== '' || value !== null) {
-                      handleOnChange(value);
-                    }
-                  }}
-                  InputProps={getInputProps()}
-                />
-                <Menu />
-              </div>
+                onKeyDown={textFieldHandleListKeyDown}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value !== '' || value !== null) {
+                    handleOnChange(value);
+                  }
+                }}
+                InputProps={getInputProps()}
+              />
               {isSearchResults && (
                 <div className={filterRow}>
                   <FilterDropDown
@@ -621,12 +642,14 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
               )}
             </div>
           )}
+          <Menu />
           <FilterSection
             filters={filters}
             onChange={handleFilterChange}
             open={openFilter}
             handleSearch={handleSearchIconClick}
             isMobile={isMobile}
+            isSearchResultsPage={isSearchResults}
           />
         </div>
       </ClickAwayListener>

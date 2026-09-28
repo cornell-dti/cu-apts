@@ -81,6 +81,25 @@ describe('Tags', () => {
     expect(body.name).toEqual('Pet Friendly');
   });
 
+  it('POST /api/tags accepts a tag name at the 50-character limit', async () => {
+    const name = 'a'.repeat(50);
+    const response = await request(app)
+      .post('/api/tags')
+      .send({ name: `  ${name}  ` });
+
+    expect(response.status).toEqual(200);
+    expect(JSON.parse(response.text).name).toEqual(name);
+  });
+
+  it('POST /api/tags rejects a tag name over the 50-character limit', async () => {
+    const response = await request(app)
+      .post('/api/tags')
+      .send({ name: 'a'.repeat(51) });
+
+    expect(response.status).toEqual(400);
+    expect(response.text).toEqual('Error: invalid tag name');
+  });
+
   it('POST /api/tags with same name returns existing tag id (no duplicates)', async () => {
     const r1 = await request(app).post('/api/tags').send({ name: 'Pet Friendly' });
     const t1 = JSON.parse(r1.text);

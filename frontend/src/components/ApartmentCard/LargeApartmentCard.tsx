@@ -12,8 +12,6 @@ import {
 } from '@material-ui/core';
 import savedIcon from '../../assets/apartment-card-saved-icon-filled.svg';
 import unsavedIcon from '../../assets/apartment-card-saved-icon-unfilled.svg';
-import bedIcon from '../../assets/apartment-card-bedroom-icon.svg';
-import moneyIcon from '../../assets/apartment-card-money-icon.svg';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import {
@@ -27,6 +25,7 @@ import { colors } from '../../colors';
 import HeartRating from '../utils/HeartRating';
 import ReviewHeader from '../Review/ReviewHeader';
 import { RatingInfo } from '../../pages/ApartmentPage';
+import AddToFolderPopover from '../Folder/AddToFolderPopover';
 
 type Props = {
   buildingData: ApartmentWithId;
@@ -226,6 +225,7 @@ const LargeApartmentCard = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [savedIsHovered, setSavedIsHovered] = useState(false);
+  const [folderAnchorEl, setFolderAnchorEl] = useState<HTMLElement | null>(null);
 
   const {
     root,
@@ -248,26 +248,26 @@ const LargeApartmentCard = ({
     sampleReviewText,
   } = useStyles();
 
-  useEffect(() => {
-    const checkIfSaved = async () => {
-      try {
-        if (user) {
-          const token = await user.getIdToken(true);
-          const response = await axios.post(
-            '/api/check-saved-apartment',
-            { apartmentId: id },
-            createAuthHeaders(token)
-          );
-          setIsSaved(response.data.result);
-        } else {
-          setIsSaved(false);
-        }
-      } catch (err) {
-        throw new Error('Error with checking if apartment is saved');
-      }
-    };
-    checkIfSaved();
-  }, [user, setUser, id]);
+  // useEffect(() => {
+  //   const checkIfSaved = async () => {
+  //     try {
+  //       if (user) {
+  //         const token = await user.getIdToken(false);
+  //         const response = await axios.post(
+  //           '/api/check-saved-apartment',
+  //           { apartmentId: id },
+  //           createAuthHeaders(token)
+  //         );
+  //         setIsSaved(response.data.result);
+  //       } else {
+  //         setIsSaved(false);
+  //       }
+  //     } catch (err) {
+  //       throw new Error('Error with checking if apartment is saved');
+  //     }
+  //   };
+  //   checkIfSaved();
+  // }, [user, setUser, id]);
 
   const handleSaveToggle = async (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -275,13 +275,13 @@ const LargeApartmentCard = ({
     const newIsSaved = !isSaved;
     try {
       if (!user) {
-        let user = await getUser(true);
+        let user = await getUser(false);
         setUser(user);
       }
       if (!user) {
         throw new Error('Failed to login');
       }
-      const token = await user.getIdToken(true);
+      const token = await user.getIdToken(false);
       const endpoint = newIsSaved ? '/api/add-saved-apartment' : '/api/remove-saved-apartment';
       await axios.post(endpoint, { apartmentId: id }, createAuthHeaders(token));
       setIsSaved((prevIsSaved) => !prevIsSaved);
@@ -289,6 +289,25 @@ const LargeApartmentCard = ({
       throw new Error(newIsSaved ? 'Error with saving apartment' : 'Error with unsaving apartment');
     }
   };
+  function handleFolderSuccess(): void {
+    // Refresh the saved state after folder operations
+    const checkIfSaved = async () => {
+      try {
+        if (user) {
+          const token = await user.getIdToken(false);
+          const response = await axios.post(
+            '/api/check-saved-apartment',
+            { apartmentId: id },
+            createAuthHeaders(token)
+          );
+          setIsSaved(response.data.result);
+        }
+      } catch (err) {
+        console.error('Error checking if apartment is saved');
+      }
+    };
+    checkIfSaved();
+  }
 
   useEffect(() => {
     // Fetches approved reviews for the current apartment.
@@ -331,9 +350,20 @@ const LargeApartmentCard = ({
               <Typography className={apartmentName}>{name}</Typography>
               <IconButton
                 disableRipple
-                onClick={handleSaveToggle}
-                onMouseEnter={() => setSavedIsHovered(true)}
-                onMouseLeave={() => setSavedIsHovered(false)}
+                onClick={(e) => {
+                  handleSaveToggle(e);
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  setSavedIsHovered(true);
+                  setFolderAnchorEl(e.currentTarget);
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  setSavedIsHovered(false);
+                }}
                 className={saveRibbonIcon}
               >
                 <img
@@ -341,6 +371,18 @@ const LargeApartmentCard = ({
                   alt={isSaved ? 'Saved' : 'Unsaved'}
                 />
               </IconButton>
+              <AddToFolderPopover
+                anchorEl={folderAnchorEl}
+                onClose={() => {
+                  setFolderAnchorEl(null);
+                  setSavedIsHovered(false);
+                }}
+                apartmentId={buildingData.id}
+                apartmentName={buildingData.name}
+                user={user}
+                setUser={setUser}
+                onSuccess={handleFolderSuccess}
+              />
             </div>
             <Typography className={apartmentAddress}>{address}</Typography>
             <div className={apartmentLocationTag}>

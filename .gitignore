@@ -57,6 +57,11 @@ yarn-error.log*
 *.code-workspace
 **/.idea
 
+# Local reference files (not for repo)
+TODO.md
+DOCS_GUIDE.md
+BLOG_TODO.md
+
 # Misc
 .DS_Store
 .env

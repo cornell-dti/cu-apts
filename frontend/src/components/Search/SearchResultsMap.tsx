@@ -3,14 +3,11 @@ import { Box, Grid, IconButton, Typography, makeStyles } from '@material-ui/core
 import GoogleMapReact from 'google-map-react';
 import aptIcon from '../../assets/location-pin.svg';
 import mapPinIcon from '../../assets/map-pin.svg';
-import { config } from 'dotenv';
 import { Marker } from '../Apartment/Marker';
 import { LocationTravelTimes } from '../../../../common/types/db-types';
 import { CardData } from '../../App';
 import NewApartmentCard from '../ApartmentCard/NewApartmentCard';
 import { MapMarkerWithCard } from '../Apartment/MarkerWithAptCard';
-
-config();
 
 export type BaseProps = {
   readonly address: string | null;
