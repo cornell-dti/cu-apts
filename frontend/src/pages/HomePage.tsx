@@ -13,8 +13,6 @@ import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 import { useLocation } from 'react-router-dom';
 import HomePageApartmentCards from '../components/ApartmentCard/HomePageApartmentCards';
 import logo from '../assets/3d-logo.svg';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 type returnData = {
   buildingData: CardData[];

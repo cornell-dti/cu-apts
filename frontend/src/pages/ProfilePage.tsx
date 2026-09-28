@@ -1,8 +1,4 @@
 import React, { ReactElement, useState, useEffect } from 'react';
-
-import firebase from 'firebase/app';
-import 'firebase/auth';
-
 import {
   Grid,
   Card,

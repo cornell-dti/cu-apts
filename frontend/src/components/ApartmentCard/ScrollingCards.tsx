@@ -4,8 +4,6 @@ import { loadingLength } from '../../constants/HomeConsts';
 import { CardData } from '../../App';
 import { get } from '../../utils/call';
 import { makeStyles, Typography } from '@material-ui/core';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 const useStyles = makeStyles({
   loadingMsg: {

@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-scripts/scripts/utils/verifyTypeScriptSetup.js b/node_modules/react-scripts/scripts/utils/verifyTypeScriptSetup.js
+index 00139ee..564d70a 100644
+--- a/node_modules/react-scripts/scripts/utils/verifyTypeScriptSetup.js
++++ b/node_modules/react-scripts/scripts/utils/verifyTypeScriptSetup.js
+@@ -179,7 +179,7 @@ function verifyTypeScriptSetup() {
+       throw new Error(ts.formatDiagnostic(error, formatDiagnosticHost));
+     }
+ 
+-    appTsConfig = readTsConfig;
++    appTsConfig = JSON.parse(JSON.stringify(readTsConfig));
+ 
+     // Get TS to parse and resolve any "extends"
+     // Calling this function also mutates the tsconfig above,

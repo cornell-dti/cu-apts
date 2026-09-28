@@ -1,7 +1,5 @@
 import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { getUser, signOut } from '../../../utils/firebase';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 import {
   AppBar,

@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { getUser } from '../../../utils/firebase';
 import Toast from '../Toast';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 interface ModalContextType {
   modalOpen: boolean;

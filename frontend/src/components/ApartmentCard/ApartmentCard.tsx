@@ -22,8 +22,6 @@ import { getAverageRating } from '../../utils/average';
 import { colors } from '../../colors';
 import { Link as RouterLink } from 'react-router-dom';
 import { formatPriceRange, formatBedsRange, getRoomTypeRange } from '../../utils/roomTypeUtils';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 
 type Props = {
   buildingData: ApartmentWithId;

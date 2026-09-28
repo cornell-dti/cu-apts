@@ -3,8 +3,6 @@ import cors from 'cors';
 import Fuse from 'fuse.js';
 import morgan from 'morgan';
 import { randomUUID } from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
 import {
   Review,
   Landlord,
@@ -23,8 +21,8 @@ import {
   BlogPost,
   BlogPostInternal,
   BlogPostWithId,
-  Folder,
   RoomType,
+  Folder,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -2296,17 +2294,9 @@ function normalizeAddress(addr: string): string {
     .trim();
 }
 
-function escapeCSVField(value: unknown): string {
-  const str = value === null || value === undefined ? '' : String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
 /**
  * Run Web Scraper + Diff - Triggers all registered agency scrapers, compares
- * the results against the current Firestore buildings, and writes a diff CSV.
+ * the results against the current Firestore buildings, and returns the diff rows.
  *
  * @route POST /api/admin/run-scraper
  *
@@ -2314,7 +2304,7 @@ function escapeCSVField(value: unknown): string {
  *   Omit or pass "all" to run all registered scrapers.
  *
  * @status
- * - 200: Scrape + diff complete; returns summary and marks csvReady: true
+ * - 200: Scrape + diff complete; returns summary counts and diff rows
  * - 401: Authentication failed
  * - 403: Unauthorized - Admin access required
  * - 500: Server error during scraping or diffing
@@ -2434,51 +2424,12 @@ app.post('/api/admin/run-scraper', authenticate, async (req, res) => {
       }
     });
 
-    // Write diff CSV
-    const CSV_HEADERS = [
-      'status',
-      'firestoreId',
-      'dbName',
-      'scrapedAddress',
-      'numBedsScraped',
-      'numBedsDb',
-      'numBathsScraped',
-      'numBathsDb',
-      'priceScraped',
-      'priceDb',
-      'sourceUrl',
-      'agency',
-    ];
-
-    const csvLines = [
-      CSV_HEADERS.join(','),
-      ...diffRows.map((row) =>
-        [
-          row.status,
-          row.firestoreId,
-          row.dbName,
-          row.scrapedAddress,
-          row.numBedsScraped,
-          row.numBedsDb,
-          row.numBathsScraped,
-          row.numBathsDb,
-          row.priceScraped,
-          row.priceDb,
-          row.sourceUrl,
-          row.agency,
-        ]
-          .map(escapeCSVField)
-          .join(',')
-      ),
-    ];
-
     res.status(200).json({
       total: scraped.length,
       newCount,
       changedCount,
       unchangedCount,
       scraperErrors,
-      csvReady: true,
       rows: diffRows,
     });
   } catch (err) {

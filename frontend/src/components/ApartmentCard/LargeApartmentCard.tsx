@@ -2,8 +2,6 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import { get } from '../../utils/call';
 import ApartmentImg from '../../assets/apartment-placeholder.svg';
 import verticalLine from '../../assets/vertical-line.svg';
-import firebase from 'firebase/app';
-import 'firebase/auth';
 import {
   Card,
   CardMedia,
