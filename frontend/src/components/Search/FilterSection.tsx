@@ -17,7 +17,7 @@ import { CardData } from '../../App';
 const useStyles = makeStyles({
   filterContainer: {
     position: 'absolute',
-    zIndex: 1,
+    zIndex: 10,
     minWidth: '100%',
     backgroundColor: 'white',
     borderRadius: '0px 0px 10px 10px',
@@ -238,6 +238,7 @@ export type FilterState = {
   maxPrice: string;
   bedrooms: number;
   bathrooms: number;
+  tagIds: string[];
   initialSortBy: keyof CardData | keyof ApartmentWithId | 'originalOrder';
   initialSortLowToHigh: boolean;
 };
@@ -248,6 +249,7 @@ export const defaultFilters: FilterState = {
   maxPrice: '',
   bedrooms: 0,
   bathrooms: 0,
+  tagIds: [],
   initialSortBy: 'avgRating',
   initialSortLowToHigh: false,
 };

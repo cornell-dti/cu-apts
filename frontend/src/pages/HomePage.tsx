@@ -13,6 +13,7 @@ import { useSaveScrollPosition } from '../utils/saveScrollPosition';
 import { useLocation } from 'react-router-dom';
 import HomePageApartmentCards from '../components/ApartmentCard/HomePageApartmentCards';
 import logo from '../assets/3d-logo.svg';
+import { tagIdsSearchSuffix } from '../utils/tagQueryFromUrl';
 
 type returnData = {
   buildingData: CardData[];
@@ -65,16 +66,17 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
   useTitle('Home');
 
   useEffect(() => {
-    get<returnData>(`/api/page-data/home/${loadingLength}/distanceToCampus`, {
+    const t = tagIdsSearchSuffix(path.search);
+    get<returnData>(`/api/page-data/home/${loadingLength}/distanceToCampus${t}`, {
       callback: setCloseToCampusData,
     });
-    get<returnData>(`/api/page-data/home/${loadingLength}/numReviews`, {
+    get<returnData>(`/api/page-data/home/${loadingLength}/numReviews${t}`, {
       callback: setMostReviewedData,
     });
-    get<returnData>(`/api/page-data/home/${loadingLength}/avgRating`, {
+    get<returnData>(`/api/page-data/home/${loadingLength}/avgRating${t}`, {
       callback: setMostLovedData,
     });
-  }, []);
+  }, [path.search]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 600);
@@ -93,6 +95,11 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
       marginTop: '93px',
       marginBottom: '100px',
       position: 'relative',
+      zIndex: 20,
+    },
+    listingsBelowSearch: {
+      position: 'relative',
+      zIndex: 0,
     },
     jumboText: {
       fontSize: isMobile ? '26px' : '48px',
@@ -122,7 +129,8 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
     },
   });
 
-  const { header, jumboText, jumboSub, logoContainer, logoImage } = useStyles();
+  const { header, jumboText, jumboSub, logoContainer, logoImage, listingsBelowSearch } =
+    useStyles();
 
   return (
     <Container maxWidth="xl">
@@ -141,7 +149,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
         </Box>
       </Box>
 
-      <Box style={{ marginLeft: '4.5vw', marginRight: '4.5vw' }}>
+      <Box className={listingsBelowSearch} style={{ marginLeft: '4.5vw', marginRight: '4.5vw' }}>
         <>
           <Box mb={8}>
             <HomePageApartmentCards
