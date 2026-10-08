@@ -29,4 +29,12 @@ export const admins: string[] = [
   'jr2293@cornell.edu', // Jasmine
   'zw757@cornell.edu', // May
   'csl238@cornell.edu', // Celline
+  'cy562@cornell.edu', // Colleen
+  'nt387@cornell.edu', // Nigel
+  'bs887@cornell.edu', // Brian
+  'its9@cornell.edu', // Isabella
+  'ik365@cornell.edu', // Ishika
+  'kh862@cornell.edu', // Kai
+  'km2253@cornell.edu', // Karan
+  'mk2699@cornell.edu', // Martha
 ];
