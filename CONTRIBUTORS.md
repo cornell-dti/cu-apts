@@ -11,7 +11,6 @@ Updated 09/25/2026
 - **Nigel Tatem** - Developer
 - **Karan Singh Madia** - Developer
 
-- 
 
 ### 2025-2026
 - **Celline Lee** - Product Manager
