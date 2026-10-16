@@ -2,10 +2,16 @@ Updated 09/25/2026
 
 ### 2026-2027
 - **Colleen Yu** -  Product Manager
+- **Martha Khusid** - Assistant Product Manager
 - **Lauren Pothuru** - Technical Product Manager
+- **Isabella Shi** - Product Marketing Manager
 - **Kai Harashima** - Designer
+- **Ishika Korla** - Designer
 - **Bryan Shao** - Developer
 - **Nigel Tatem** - Developer
+- **Karan Singh Madia** - Developer
+
+- 
 
 ### 2025-2026
 - **Celline Lee** - Product Manager
