@@ -2,7 +2,13 @@ import { Server } from 'http';
 import express, { Express } from 'express';
 import request from 'supertest';
 import axios from 'axios';
-import { llmSearchHandler, llmSearchLimiters, EMPTY_FILTERS, MAX_QUERY_LENGTH } from './llmSearch';
+import {
+  llmSearchHandler,
+  llmSearchMiddleware,
+  validateLlmSearchBody,
+  EMPTY_FILTERS,
+  MAX_QUERY_LENGTH,
+} from './llmSearch';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -68,13 +74,13 @@ const GOOD_RESPONSE = {
 };
 
 /**
- * The handler alone, with no limiters. Rate limiters hold module-level state that would
+ * Validation and the handler, with no limiters. Rate limiters hold module-level state that would
  * otherwise leak between unrelated cases, and these tests are about parsing, not throttling.
  */
 const buildHandlerApp = (): Express => {
   const app = express();
   app.use(express.json());
-  app.post('/api/llm-search', llmSearchHandler);
+  app.post('/api/llm-search', validateLlmSearchBody, llmSearchHandler);
   return app;
 };
 
@@ -438,7 +444,7 @@ describe('POST /api/llm-search - rate limiting', () => {
     const app = express();
     app.use(express.json());
     app.set('trust proxy', 1);
-    app.post('/api/llm-search', ...llmSearchLimiters, llmSearchHandler);
+    app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
 
     const statuses: number[] = [];
     // The limit is 10/min; the 11th from the same IP should be refused.
@@ -465,7 +471,7 @@ describe('POST /api/llm-search - rate limiting', () => {
     const app = express();
     app.use(express.json());
     app.set('trust proxy', 1);
-    app.post('/api/llm-search', ...llmSearchLimiters, llmSearchHandler);
+    app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
 
     // One server on the loopback address for every request. `request(app)` starts and stops a
     // server on a fresh ephemeral port per request, bound to `::` but reached via 127.0.0.1. Over
@@ -500,4 +506,97 @@ describe('POST /api/llm-search - rate limiting', () => {
       await new Promise((resolve) => server.close(resolve));
     }
   }, 60000);
+});
+
+describe('POST /api/llm-search - rate limiting vs. request validation', () => {
+  it('counts only valid requests against the global daily budget', async () => {
+    // Regression: the global limiter used to run before body validation, so malformed requests
+    // from many IPs (each under the per-IP limit) could exhaust the daily budget without ever
+    // calling Gemini. Fresh module instances give this case its own, untouched global counter.
+    const GLOBAL_DAILY_LIMIT = 1000; // mirrors globalLimiter in llmSearch.ts
+    let freshMiddleware: typeof llmSearchMiddleware = [];
+    let freshHandler: typeof llmSearchHandler = llmSearchHandler;
+    let freshAxios: jest.Mocked<typeof axios> = mockedAxios;
+    jest.resetModules();
+    jest.isolateModules(() => {
+      /* eslint-disable global-require */
+      freshAxios = require('axios');
+      ({
+        llmSearchMiddleware: freshMiddleware,
+        llmSearchHandler: freshHandler,
+      } = require('./llmSearch'));
+      /* eslint-enable global-require */
+    });
+    jest.resetAllMocks(); // earlier cases leave recorded calls on the shared axios mock
+    freshAxios.post.mockResolvedValue(geminiReplyWithJson(GOOD_RESPONSE));
+
+    const app = express();
+    app.use(express.json());
+    app.set('trust proxy', 1);
+    app.post('/api/llm-search', ...freshMiddleware, freshHandler);
+
+    // See the per-IP regression test above for why this uses one loopback server.
+    const server = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
+    });
+    // A distinct client per request, so the per-IP limiter never interferes.
+    let clientCount = 0;
+    const send = (body: unknown) => {
+      clientCount += 1;
+      return request(server)
+        .post('/api/llm-search')
+        .set('X-Forwarded-For', `198.51.${Math.floor(clientCount / 250)}.${clientCount % 250}`)
+        .send(body as Record<string, unknown>);
+    };
+
+    try {
+      // Invalid requests get 400 and leave the global budget untouched.
+      const invalidStatuses = new Set<number>();
+      for (let i = 0; i < GLOBAL_DAILY_LIMIT; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        invalidStatuses.add((await send(i % 2 ? {} : { query: 42 })).status);
+      }
+      expect(invalidStatuses).toEqual(new Set([400]));
+      expect(freshAxios.post).not.toHaveBeenCalled();
+
+      // The full budget is still available to valid requests...
+      const validStatuses = new Set<number>();
+      for (let i = 0; i < GLOBAL_DAILY_LIMIT; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        validStatuses.add((await send({ query: 'cheap 2br' })).status);
+      }
+      expect(validStatuses).toEqual(new Set([200]));
+      expect(freshAxios.post).toHaveBeenCalledTimes(GLOBAL_DAILY_LIMIT);
+
+      // ...and valid requests do spend it.
+      const overBudget = await send({ query: 'cheap 2br' });
+      expect(overBudget.status).toEqual(429);
+      expect(overBudget.body.error).toMatch(/temporarily unavailable/);
+      expect(freshAxios.post).toHaveBeenCalledTimes(GLOBAL_DAILY_LIMIT);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  }, 120000);
+
+  it('still applies the per-IP limit to invalid requests', async () => {
+    jest.resetAllMocks();
+    const app = express();
+    app.use(express.json());
+    app.set('trust proxy', 1);
+    app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
+
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await request(app)
+        .post('/api/llm-search')
+        .set('X-Forwarded-For', '192.0.2.50')
+        .send({});
+      statuses.push(res.status);
+    }
+
+    expect(statuses.slice(0, 10)).toEqual(Array(10).fill(400));
+    expect(statuses[10]).toEqual(429);
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
 });

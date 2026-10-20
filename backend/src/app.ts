@@ -34,7 +34,7 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
-import { llmSearchHandler, llmSearchLimiters } from './llmSearch';
+import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
 
 // Imports for email sending
 
@@ -3190,6 +3190,6 @@ app.post('/api/admin/init-collections', authenticate, async (req, res) => {
  *
  * @route POST /api/llm-search
  */
-app.post('/api/llm-search', ...llmSearchLimiters, llmSearchHandler);
+app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
 
 export default app;

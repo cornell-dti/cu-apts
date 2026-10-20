@@ -260,12 +260,41 @@ const globalLimiter = rateLimit({
 });
 
 /**
- * Limiters for POST /api/llm-search, applied in order.
+ * Rejects a malformed request body with a 400 before it can reach Gemini.
  *
- * The per-IP limiter must come first. A request it rejects never reaches the global limiter, so
- * one abusive IP cannot use up the shared daily budget with requests that never reached Gemini.
+ * @status
+ * - 400: Missing, non-string, or overlong query
  */
-export const llmSearchLimiters: RequestHandler[] = [perIpLimiter, globalLimiter];
+export const validateLlmSearchBody: RequestHandler = (req, res, next) => {
+  const { query } = req.body ?? {};
+
+  if (!query || typeof query !== 'string') {
+    res.status(400).json({ error: 'Missing required field: query' });
+    return;
+  }
+
+  if (query.length > MAX_QUERY_LENGTH) {
+    res.status(400).json({ error: `Query too long (max ${MAX_QUERY_LENGTH} characters)` });
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Middleware for POST /api/llm-search, applied in order. The order matters:
+ *
+ * 1. Per-IP limiter first, so a single client cannot spam requests (malformed or not).
+ * 2. Body validation next. A request it rejects never reaches the global limiter, so malformed
+ *    requests - including distributed ones that slip under the per-IP limit - cannot use up
+ *    the shared daily budget without ever calling Gemini.
+ * 3. Global limiter last, so it counts only requests that will actually reach Gemini.
+ */
+export const llmSearchMiddleware: RequestHandler[] = [
+  perIpLimiter,
+  validateLlmSearchBody,
+  globalLimiter,
+];
 
 /**
  * Express handler for POST /api/llm-search.
@@ -283,6 +312,8 @@ export const llmSearchLimiters: RequestHandler[] = [perIpLimiter, globalLimiter]
  *   - sortLowToHigh: boolean | null - sort direction
  *   - intent: string - one sentence summary of what the user is looking for
  *
+ * Expects `validateLlmSearchBody` to have run first (see {@link llmSearchMiddleware}).
+ *
  * @status
  * - 200: Query parsed, returns filter object. Also returned when the model's output could not
  *   be validated, in which case every filter is empty and `intent` explains that - a search bar
@@ -295,17 +326,8 @@ export const llmSearchLimiters: RequestHandler[] = [perIpLimiter, globalLimiter]
  *   transient, safe to retry
  */
 export const llmSearchHandler = async (req: Request, res: Response): Promise<void> => {
-  const { query } = req.body ?? {};
-
-  if (!query || typeof query !== 'string') {
-    res.status(400).json({ error: 'Missing required field: query' });
-    return;
-  }
-
-  if (query.length > MAX_QUERY_LENGTH) {
-    res.status(400).json({ error: `Query too long (max ${MAX_QUERY_LENGTH} characters)` });
-    return;
-  }
+  // Already checked by validateLlmSearchBody, which must run before this handler.
+  const query = req.body.query as string;
 
   let text: string;
   try {
