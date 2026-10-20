@@ -23,9 +23,13 @@ import searchLandlordIcon from '../../assets/search-landlord.svg';
 import filterIcon from '../../assets/filter.svg';
 import FilterSection, { FilterState } from './FilterSection';
 import FilterDropDown from './FilterDropDown';
+import SquareButton from '../utils/SquareButton';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 type Props = {
   drawerOpen: boolean;
+  aiMode?: boolean;
+  onToggleAiMode?: () => void;
 };
 
 const defaultFilters: FilterState = {
@@ -49,11 +53,14 @@ const defaultFilters: FilterState = {
  *
  * @param {Props} props - Component properties
  * @param {boolean} props.drawerOpen - Controls whether the navigation drawer is open
+ * @param {boolean} [props.aiMode] - Whether the home page search bar is in AI mode
+ * @param {() => void} [props.onToggleAiMode] - Toggles AI mode; when provided on the home page,
+ * the search bar shows the "Search with AI" / "Back to Manual Search" button
  *
  * @returns {ReactElement} A search bar component with autocomplete and filtering capabilities
  */
 
-const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
+const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -75,6 +82,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [filters, setFilters] = useState<FilterState>(initialState.filters);
   const [initialQuery] = useState(initialState.query);
   const [openFilter, setOpenFilter] = useState(false);
+
+  const aiGlow = `0 0 20px 0 ${colors.red4}`;
 
   const useStyles = makeStyles((theme) => ({
     menuList: {
@@ -107,6 +116,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       fontWeight: 400,
       lineHeight: '28px',
       boxShadow: isHome ? '0px 0px 4px 2px rgba(0, 0, 0, 0.05)' : 'none',
+      ...(aiMode && { '&:hover': { boxShadow: aiGlow } }),
       '& .MuiOutlinedInput-root': {
         '& fieldset': {
           borderColor: isHome ? '#F9F9F9' : '#E8E8E8',
@@ -120,6 +130,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
           borderWidth: '1px',
         },
       },
+    },
+    aiGlow: {
+      boxShadow: aiGlow,
     },
     subText: {
       color: colors.gray2,
@@ -171,7 +184,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     },
     field: {
       borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-      height: isMobile ? '35px' : isHome ? '68px' : '44px',
+      height: aiMode && !isMobile ? '68px' : isMobile ? '35px' : isHome ? '68px' : '44px',
       padding: isHome ? '24px' : '8px 24px',
     },
     filterRow: {
@@ -185,6 +198,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     searchBarRow,
     iconBackground,
     text,
+    aiGlow: aiGlowClass,
     iconContainer,
     searchMenuLabelIcon,
     field,
@@ -199,6 +213,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [query, setQuery] = useState(initialQuery);
   const [width, setWidth] = useState(inputRef.current?.offsetWidth);
   const [focus, setFocus] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
@@ -260,6 +275,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   function textFieldHandleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'ArrowDown') {
       setFocus(true);
+    } else if (event.key === 'Enter' && aiMode) {
+      submitAiSearch();
     } else if (event.key === 'Enter' && checkIfSearchable()) {
       setFocus(false);
       console.log('Current filter state:', filters);
@@ -271,8 +288,31 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   }
 
+  const submitAiSearch = () => {
+    const trimmed = query.trim();
+    if (trimmed === '') {
+      return;
+    }
+    setIsUserTyping(false);
+    setOpenMenu(false);
+    history.push(`/ai-search?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  const handleToggleAiMode = () => {
+    setQuery('');
+    setSelected(null);
+    setLoading(false);
+    setIsUserTyping(false);
+    setOpenMenu(false);
+    setOpenFilter(false);
+    setInputFocused(false);
+    onToggleAiMode?.();
+  };
+
   const handleSearchIconClick = () => {
-    if (checkIfSearchable()) {
+    if (aiMode) {
+      submitAiSearch();
+    } else if (checkIfSearchable()) {
       console.log('Current filter state:', filters);
       const filterParams = encodeURIComponent(JSON.stringify(filters));
       console.log('Encoded filter params:', filterParams);
@@ -297,6 +337,9 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     setSelected(null);
     setOpenFilter(false);
     setIsUserTyping(true); // Mark that user is actively typing
+    if (aiMode) {
+      return; // AI queries don't use the address/landlord autocomplete
+    }
     if (query !== '') {
       setLoading(true);
     } else {
@@ -386,13 +429,13 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   useEffect(() => {
     if (query === '') {
       setOpenMenu(false);
-    } else if (selected === null && isUserTyping) {
+    } else if (selected === null && isUserTyping && !aiMode) {
       // Only open menu if user is actively typing, not from URL
       setOpenMenu(true);
     } else {
       setOpenMenu(false);
     }
-  }, [query, selected, isUserTyping]);
+  }, [query, selected, isUserTyping, aiMode]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -420,7 +463,11 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
     }
   }, [loading, query]);
 
-  let placeholderText = !isMobile ? 'Search by address or with filters' : 'Start your search';
+  let placeholderText = aiMode
+    ? 'Small studio apartment under $3000...'
+    : !isMobile
+    ? 'Search by address or with filters'
+    : 'Start your search';
 
   /**
    * @returns The the InputProps for the search bar depending on user's location.
@@ -433,7 +480,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
         style: { fontSize: isMobile ? 16 : 20 },
         endAdornment: (
           <div className={iconContainer}>
-            {!isMobile && (
+            {!isMobile && !aiMode && (
               <IconButton
                 onClick={(e) => {
                   e.stopPropagation();
@@ -463,7 +510,17 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                 style={{ width: isMobile ? '24px' : '34px', height: isMobile ? '24px' : '34px' }}
               />
             </IconButton>
-            {/* {loading ? <CircularProgress color="inherit" size={20} /> : null} */}
+            {onToggleAiMode && (
+              <SquareButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleAiMode();
+                }}
+                startIcon={aiMode ? <ArrowBackIcon style={{ fontSize: 'inherit' }} /> : undefined}
+              >
+                {aiMode ? 'Back to Manual Search' : 'Search with AI'}
+              </SquareButton>
+            )}
           </div>
         ),
         startAdornment: <></>,
@@ -576,12 +633,16 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                 ref={inputRef}
                 value={query}
                 placeholder={placeholderText}
-                className={text}
+                className={
+                  aiMode && (inputFocused || query.trim() !== '') ? `${text} ${aiGlowClass}` : text
+                }
                 variant="outlined"
                 style={{
                   borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
                   width: isSearchResults ? '58%' : '100%',
                 }}
+                onFocus={(e) => setInputFocused(e.target instanceof HTMLInputElement)}
+                onBlur={() => setInputFocused(false)}
                 onKeyDown={textFieldHandleListKeyDown}
                 onChange={(event) => {
                   const value = event.target.value;
