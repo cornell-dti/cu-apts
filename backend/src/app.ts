@@ -33,6 +33,7 @@ import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
+import { buildFolderCSV } from './folderExport';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
@@ -3021,6 +3022,65 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching apartments from folder');
+  }
+});
+
+/**
+ * Export Folder – Downloads the apartments in a folder as a CSV file.
+ *
+ * @remarks
+ * Only the owner of the folder can export it. Apartments that no longer exist in the database
+ * are skipped, and an empty folder returns a file with only the column names.
+ *
+ * @route GET /api/folders/:folderId/export
+ *
+ * @input {string} req.params.folderId - The ID of the folder to export
+ *
+ * @status
+ * - 200: Successfully exported folder (returns the CSV file)
+ * - 401: Not signed in
+ * - 403: Unauthorized to export this folder (not the owner)
+ * - 404: Folder not found
+ * - 500: Error exporting folder
+ */
+app.get('/api/folders/:folderId/export', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderDoc = await folderCollection.doc(folderId).get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (folderDoc.data()?.userId !== uid) {
+      return res.status(403).send('Unauthorized to export this folder');
+    }
+
+    const apartmentIds: string[] = folderDoc.data()?.apartments || [];
+    const apartments = await Promise.all(
+      apartmentIds.map(async (id) => {
+        const snapshot = await buildingsCollection.doc(id).get();
+        if (!snapshot.exists) {
+          console.warn(`Apartment ${id} not found`);
+          return null;
+        }
+        return { id, ...snapshot.data() } as ApartmentWithId;
+      })
+    );
+
+    // Skip any apartments that were deleted from the database
+    const validApartments = apartments.filter((apt): apt is ApartmentWithId => apt !== null);
+    const csv = buildFolderCSV(validApartments);
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="folder-export.csv"');
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error exporting folder');
   }
 });
 
