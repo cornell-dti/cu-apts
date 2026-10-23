@@ -35,7 +35,12 @@ import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
-import { isLeaseDateAbsent, resolveLeaseDate, validateLeaseDates } from './leaseDates';
+import {
+  computeLeaseSignedStats,
+  isLeaseDateAbsent,
+  resolveLeaseDate,
+  validateLeaseDates,
+} from './leaseDates';
 
 // Imports for email sending
 
@@ -667,12 +672,15 @@ const pageData = async (buildings: ApartmentWithId[]) =>
       const avgPrice =
         reviewsWithPrice.reduce((acc, curr) => acc + curr.data().price, 0) /
         Math.max(reviewsWithPrice.length, 1);
+      // average months between lease signing and start; null avg means "not enough data"
+      const leaseSignedStats = computeLeaseSignedStats(reviewList.docs.map((doc) => doc.data()));
       return {
         buildingData,
         numReviews,
         company,
         avgRating,
         avgPrice,
+        leaseSignedStats,
       };
     })
   );
