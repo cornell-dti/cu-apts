@@ -34,6 +34,7 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
+import { isLeaseDateAbsent, resolveLeaseDate, validateLeaseDates } from './leaseDates';
 
 // Imports for email sending
 
@@ -371,8 +372,17 @@ app.post('/api/new-review', authenticate, async (req, res) => {
       res.status(401).send('Error: missing fields');
       return;
     }
+    const leaseError = validateLeaseDates(review);
+    if (leaseError) {
+      res.status(400).send(`Error: ${leaseError}`);
+      return;
+    }
+    // Lease dates are optional: store them only when provided, never as null/"".
+    const { leaseSigned, leaseStart, ...reviewRest } = review;
     await doc.set({
-      ...review,
+      ...reviewRest,
+      ...(isLeaseDateAbsent(leaseSigned) ? {} : { leaseSigned }),
+      ...(isLeaseDateAbsent(leaseStart) ? {} : { leaseStart }),
       date: new Date(review.date),
       likes: 0,
       status: 'PENDING',
@@ -385,7 +395,14 @@ app.post('/api/new-review', authenticate, async (req, res) => {
   }
 });
 
-// API endpoint to edit review by id
+/**
+ * API endpoint to edit review by id.
+ *
+ * Lease date contract (leaseSigned / leaseStart, "YYYY-MM"): the frontend always sends both keys,
+ * with null when empty. null or "" deletes the stored field (FieldValue.delete()). If a key is
+ * omitted entirely, the stored value is left alone. Validation runs on the resulting
+ * (stored + incoming) values, so an omitted key is still checked against the one being sent.
+ */
 app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
   if (!req.user) {
     throw new Error('not authenticated');
@@ -408,9 +425,24 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       res.status(401).send('Error: missing fields');
       return;
     }
+    const leaseError = validateLeaseDates({
+      leaseSigned: resolveLeaseDate(updatedReview.leaseSigned, reviewData.leaseSigned),
+      leaseStart: resolveLeaseDate(updatedReview.leaseStart, reviewData.leaseStart),
+    });
+    if (leaseError) {
+      res.status(400).send(`Error: ${leaseError}`);
+      return;
+    }
+    const leaseUpdates: Record<string, unknown> = {};
+    (['leaseSigned', 'leaseStart'] as const).forEach((key) => {
+      const value = updatedReview[key];
+      if (value === undefined) return; // omitted: leave the stored value alone
+      leaseUpdates[key] = isLeaseDateAbsent(value) ? FieldValue.delete() : value;
+    });
     reviewDoc
       .update({
         ...updatedReview,
+        ...leaseUpdates,
         date: new Date(updatedReview.date),
         status: 'PENDING',
         reports: reviewData.reports || [],

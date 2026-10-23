@@ -95,3 +95,10 @@ export const computeLeaseSignedStats = (reviews: readonly LeaseDateInput[]): Lea
   const total = gaps.reduce((acc, gap) => acc + gap, 0);
   return { avgMonthsBeforeStart: Math.round(total / sampleSize), sampleSize };
 };
+
+/**
+ * Resolves the lease date value a review would have after an edit.
+ * undefined (key omitted from the request) keeps the stored value; null or "" clears it.
+ */
+export const resolveLeaseDate = (incoming: unknown, stored: unknown): unknown =>
+  incoming === undefined ? stored : incoming;
