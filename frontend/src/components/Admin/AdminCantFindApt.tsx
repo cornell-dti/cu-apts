@@ -71,6 +71,9 @@ type Props = {
 
   /** Function to toggle the display. */
   readonly setToggle: React.Dispatch<React.SetStateAction<boolean>>;
+
+  /** Optional review text associated with the apartment report. */
+  readonly review?: string;
 };
 
 /**
@@ -86,6 +89,8 @@ type Props = {
  * @param {string} props.apartmentAddress - The street address of the reported apartment
  * @param {readonly string[]} props.photos - Optional array of photo URLs submitted with the report
  * @param {Function} props.triggerPhotoCarousel - Callback function to open the photo carousel viewer
+ * @param {Function} props.setToggle - Callback function to trigger a re-render of the parent component
+ * @param {string} props.review - Optional review text associated with the apartment report
  *
  * @returns {ReactElement} A Material-UI Card component displaying the apartment submission details
  */
@@ -97,6 +102,7 @@ const AdminCantFindApt = ({
   photos = [],
   triggerPhotoCarousel,
   setToggle,
+  review,
 }: Props): ReactElement => {
   const { root, image, photoStyle, photoRowStyle } = useStyles();
   const formattedDate = new Date(date).toLocaleString('en-US', {
@@ -149,6 +155,11 @@ const AdminCantFindApt = ({
                 })}
               </Grid>
             </Grid>
+          )}
+          {review && (
+            <Typography variant="body1" style={{ marginTop: '1em' }}>
+              Review: {review}
+            </Typography>
           )}
         </CardContent>
       </Box>
