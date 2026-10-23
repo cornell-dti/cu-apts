@@ -2,7 +2,9 @@ import {
   LEASE_DATE_REGEX,
   LEASE_DATE_MIN_YEAR,
   LEASE_DATE_MAX_YEAR,
+  MIN_LEASE_REVIEWS_FOR_AVERAGE,
 } from '../../common/constants/lease';
+import type { LeaseSignedStats } from '../../common/types/db-types';
 
 export type YearMonth = { readonly year: number; readonly month: number };
 
@@ -68,4 +70,28 @@ export const validateLeaseDates = (
   }
 
   return null;
+};
+
+/**
+ * Average months between signing and lease start across reviews that have both dates.
+ * Reviews with a missing, malformed or reversed date (including all pre-feature reviews)
+ * are skipped. Below MIN_LEASE_REVIEWS_FOR_AVERAGE qualifying reviews the average is null
+ * (empty state). The average is rounded once, to the nearest month (halves round up).
+ */
+export const computeLeaseSignedStats = (reviews: readonly LeaseDateInput[]): LeaseSignedStats => {
+  const gaps: number[] = [];
+  reviews.forEach((review) => {
+    const signed = parseYearMonth(review.leaseSigned);
+    const start = parseYearMonth(review.leaseStart);
+    if (!signed || !start) return;
+    const gap = monthsBetween(signed, start);
+    if (gap >= 0) gaps.push(gap);
+  });
+
+  const sampleSize = gaps.length;
+  if (sampleSize < MIN_LEASE_REVIEWS_FOR_AVERAGE) {
+    return { avgMonthsBeforeStart: null, sampleSize };
+  }
+  const total = gaps.reduce((acc, gap) => acc + gap, 0);
+  return { avgMonthsBeforeStart: Math.round(total / sampleSize), sampleSize };
 };

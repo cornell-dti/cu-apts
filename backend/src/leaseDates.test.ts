@@ -1,4 +1,10 @@
-import { monthsBetween, parseYearMonth, validateLeaseDates } from './leaseDates';
+import { MIN_LEASE_REVIEWS_FOR_AVERAGE } from '../../common/constants/lease';
+import {
+  computeLeaseSignedStats,
+  monthsBetween,
+  parseYearMonth,
+  validateLeaseDates,
+} from './leaseDates';
 
 const NOW = new Date(Date.UTC(2026, 9, 15)); // October 2026
 
@@ -96,5 +102,89 @@ describe('validateLeaseDates', () => {
     expect(validateLeaseDates({ leaseSigned: '2027-01', leaseStart: '2027-08' }, NOW)).toMatch(
       /current month/
     );
+  });
+});
+
+describe('computeLeaseSignedStats', () => {
+  // 9-month gap (Sept 2025 -> June 2026)
+  const nine = { leaseSigned: '2025-09', leaseStart: '2026-06' };
+  const withGap = (gap: number) => ({
+    leaseSigned: '2025-01',
+    leaseStart: `${2025 + Math.floor(gap / 12)}-${String((gap % 12) + 1).padStart(2, '0')}`,
+  });
+
+  it('returns the empty state for no reviews', () => {
+    expect(computeLeaseSignedStats([])).toEqual({ avgMonthsBeforeStart: null, sampleSize: 0 });
+  });
+
+  it('returns the empty state below the minimum, reporting the sample size', () => {
+    const reviews = Array(MIN_LEASE_REVIEWS_FOR_AVERAGE - 1).fill(nine);
+    expect(computeLeaseSignedStats(reviews)).toEqual({
+      avgMonthsBeforeStart: null,
+      sampleSize: MIN_LEASE_REVIEWS_FOR_AVERAGE - 1,
+    });
+  });
+
+  it('returns the average at exactly the minimum', () => {
+    const reviews = Array(MIN_LEASE_REVIEWS_FOR_AVERAGE).fill(nine);
+    expect(computeLeaseSignedStats(reviews)).toEqual({
+      avgMonthsBeforeStart: 9,
+      sampleSize: MIN_LEASE_REVIEWS_FOR_AVERAGE,
+    });
+  });
+
+  it('includes same-month (0 month) reviews in the average', () => {
+    const zero = { leaseSigned: '2026-01', leaseStart: '2026-01' };
+    const stats = computeLeaseSignedStats([zero, zero, withGap(3)]);
+    expect(stats).toEqual({ avgMonthsBeforeStart: 1, sampleSize: 3 });
+  });
+
+  it('rounds to the nearest whole month', () => {
+    // gaps 8, 8, 9 -> 8.33 -> 8
+    expect(computeLeaseSignedStats([withGap(8), withGap(8), withGap(9)]).avgMonthsBeforeStart).toBe(
+      8
+    );
+    // gaps 8, 9, 9 -> 8.67 -> 9
+    expect(computeLeaseSignedStats([withGap(8), withGap(9), withGap(9)]).avgMonthsBeforeStart).toBe(
+      9
+    );
+    // gaps 8, 9, 8, 9 -> 8.5 -> 9 (halves round up)
+    const four = [withGap(8), withGap(9), withGap(8), withGap(9)];
+    expect(computeLeaseSignedStats(four).avgMonthsBeforeStart).toBe(9);
+  });
+
+  it('skips reviews with only one date and does not count them', () => {
+    const reviews = [
+      nine,
+      nine,
+      nine,
+      { leaseSigned: '2025-01' },
+      { leaseStart: '2026-01' },
+      { leaseSigned: '2025-01', leaseStart: null },
+    ];
+    expect(computeLeaseSignedStats(reviews)).toEqual({ avgMonthsBeforeStart: 9, sampleSize: 3 });
+  });
+
+  it('skips old reviews with no date fields without crashing', () => {
+    const reviews = [nine, nine, nine, {}, {}, { leaseSigned: undefined }];
+    expect(computeLeaseSignedStats(reviews)).toEqual({ avgMonthsBeforeStart: 9, sampleSize: 3 });
+  });
+
+  it('returns the empty state when no review has dates', () => {
+    expect(computeLeaseSignedStats([{}, {}, {}, {}])).toEqual({
+      avgMonthsBeforeStart: null,
+      sampleSize: 0,
+    });
+  });
+
+  it('skips malformed and reversed dates rather than throwing', () => {
+    const reviews = [
+      nine,
+      nine,
+      nine,
+      { leaseSigned: 'garbage', leaseStart: '2026-06' },
+      { leaseSigned: '2026-06', leaseStart: '2025-09' },
+    ];
+    expect(computeLeaseSignedStats(reviews)).toEqual({ avgMonthsBeforeStart: 9, sampleSize: 3 });
   });
 });
