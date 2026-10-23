@@ -137,6 +137,7 @@ const AdminCantFindApt = ({
           <Typography variant="h6">Apartment Name: {apartmentName}</Typography>
           <Typography variant="body1">Address: {apartmentAddress}</Typography>
           <Typography variant="body1">Filed Date: {formattedDate}</Typography>
+          {review && <Typography variant="body1">Review: {review}</Typography>}
           {photos.length > 0 && (
             <Grid container>
               <Grid item className={photoRowStyle}>
@@ -155,11 +156,6 @@ const AdminCantFindApt = ({
                 })}
               </Grid>
             </Grid>
-          )}
-          {review && (
-            <Typography variant="body1" style={{ marginTop: '1em' }}>
-              Review: {review}
-            </Typography>
           )}
         </CardContent>
       </Box>
