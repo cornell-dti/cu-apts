@@ -3,6 +3,7 @@ import {
   computeLeaseSignedStats,
   monthsBetween,
   parseYearMonth,
+  resolveLeaseDate,
   validateLeaseDates,
 } from './leaseDates';
 
@@ -186,5 +187,20 @@ describe('computeLeaseSignedStats', () => {
       { leaseSigned: '2026-06', leaseStart: '2025-09' },
     ];
     expect(computeLeaseSignedStats(reviews)).toEqual({ avgMonthsBeforeStart: 9, sampleSize: 3 });
+  });
+});
+
+describe('resolveLeaseDate', () => {
+  it('keeps the stored value when the key is omitted', () => {
+    expect(resolveLeaseDate(undefined, '2025-09')).toBe('2025-09');
+  });
+
+  it('uses the incoming value when provided', () => {
+    expect(resolveLeaseDate('2026-01', '2025-09')).toBe('2026-01');
+  });
+
+  it('treats null and "" as clearing the stored value', () => {
+    expect(resolveLeaseDate(null, '2025-09')).toBeNull();
+    expect(resolveLeaseDate('', '2025-09')).toBe('');
   });
 });
