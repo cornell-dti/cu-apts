@@ -194,8 +194,14 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
    * handleExport – Downloads the apartments in this folder as a CSV file.
    *
    * @remarks
-   * Calls the export endpoint, then saves the returned file to the user's computer using the
-   * folder's name as the file name. Shows a success or error message when finished.
+   * Calls GET /api/folders/:folderId/export with the user's auth token, then saves the returned
+   * file through a temporary download link. The file is named after the folder, with anything
+   * other than letters, numbers, spaces, underscores and dashes removed ("folder.csv" if nothing
+   * is left). While it runs, `exporting` is true, which disables the Export button and shows
+   * "Exporting...". The button is also disabled when the folder has no apartments.
+   *
+   * @returns {Promise<void>} Resolves once the download starts. Never throws: any error (not
+   * signed in, network or server error) is logged and shown as an error toast.
    */
   const handleExport = async () => {
     if (!folder) return;

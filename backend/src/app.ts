@@ -3026,22 +3026,28 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
 });
 
 /**
- * Export Folder – Downloads the apartments in a folder as a CSV file.
+ * Export Folder – Downloads the apartments in a saved folder as a CSV file.
  *
  * @remarks
- * Only the owner of the folder can export it. Apartments that no longer exist in the database
- * are skipped, and an empty folder returns a file with only the column names.
+ * Used by the Export button on the folder page (FolderDetailPage.tsx). Only the owner of the
+ * folder can export it. The CSV text and its columns come from buildFolderCSV in folderExport.ts.
+ * Apartment IDs in the folder that no longer exist in the buildings collection are skipped, and
+ * an empty folder returns a file with only the header row.
  *
  * @route GET /api/folders/:folderId/export
  *
  * @input {string} req.params.folderId - The ID of the folder to export
+ * @input {string} req.headers.authorization - "Bearer <Firebase ID token>" of the signed-in user
+ *
+ * @returns The CSV text, sent with Content-Type "text/csv" and Content-Disposition "attachment"
+ * so the browser downloads it as a file.
  *
  * @status
  * - 200: Successfully exported folder (returns the CSV file)
- * - 401: Not signed in
+ * - 401: Not signed in, or not a Cornell email (from the authenticate middleware)
  * - 403: Unauthorized to export this folder (not the owner)
  * - 404: Folder not found
- * - 500: Error exporting folder
+ * - 500: Error exporting folder (for example, a database read failed)
  */
 app.get('/api/folders/:folderId/export', authenticate, async (req, res) => {
   try {
