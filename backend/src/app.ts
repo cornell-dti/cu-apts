@@ -33,6 +33,7 @@ import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
+import { canAccessFolder, isFolderOwner } from './folderAccess';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 
 // Imports for email sending
@@ -2733,6 +2734,7 @@ app.post('/api/folders', authenticate, async (req, res) => {
     await newFolderRef.set({
       name: folderName,
       userId: uid,
+      members: [],
       createdAt: new Date(),
     });
 
@@ -2744,7 +2746,11 @@ app.post('/api/folders', authenticate, async (req, res) => {
 });
 
 /**
- * Get Folders - Fetches all folders assigned to a specific user.
+ * Get Folders - Fetches all folders the user owns or has been added to as a member.
+ *
+ * @remarks
+ * Folders the user owns come first, then folders shared with them. Each folder includes its
+ * `userId` (the owner), so the frontend can tell which folders are shared.
  *
  * @route GET /api/folders
  *
@@ -2756,10 +2762,15 @@ app.get('/api/folders', authenticate, async (req, res) => {
   try {
     if (!req.user) throw new Error('Not authenticated');
     const { uid } = req.user;
-    // Fetch all folders for this user
-    const folderSnapshot = await folderCollection.where('userId', '==', uid).get();
+    // Folders the user owns, plus folders that have been shared with them
+    const [ownedSnapshot, sharedSnapshot] = await Promise.all([
+      folderCollection.where('userId', '==', uid).get(),
+      folderCollection.where('members', 'array-contains', uid).get(),
+    ]);
+    // Skip shared results the user also owns, so no folder shows up twice
+    const sharedDocs = sharedSnapshot.docs.filter((doc) => doc.data().userId !== uid);
 
-    const folders = folderSnapshot.docs.map((doc) => ({
+    const folders = [...ownedSnapshot.docs, ...sharedDocs].map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
@@ -2779,7 +2790,7 @@ app.get('/api/folders', authenticate, async (req, res) => {
  *
  * @status
  * - 200: Successfully retrieved folder
- * - 403: Unauthorized to access this folder (not the owner)
+ * - 403: Unauthorized to access this folder (not the owner or a member)
  * - 404: Folder not found
  * - 500: Error fetching folder
  */
@@ -2796,7 +2807,7 @@ app.get('/api/folders/:folderId', authenticate, async (req, res) => {
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!canAccessFolder(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to access this folder');
     }
 
@@ -2808,7 +2819,7 @@ app.get('/api/folders/:folderId', authenticate, async (req, res) => {
 });
 
 /**
- * Delete Folder - Deletes a folder by ID.
+ * Delete Folder - Deletes a folder by ID. Only the owner can delete a folder.
  *
  * @route DELETE /api/folders/:folderId
  *
@@ -2833,7 +2844,7 @@ app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!isFolderOwner(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to delete this folder');
     }
 
@@ -2846,7 +2857,7 @@ app.delete('/api/folders/:folderId', authenticate, async (req, res) => {
 });
 
 /**
- * Rename Folder - Renames a folder by ID.
+ * Rename Folder - Renames a folder by ID. Only the owner can rename a folder.
  *
  * @route PUT /api/folders/:folderId
  *
@@ -2872,7 +2883,7 @@ app.put('/api/folders/:folderId', authenticate, async (req, res) => {
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!isFolderOwner(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to rename this folder');
     }
 
@@ -2885,7 +2896,7 @@ app.put('/api/folders/:folderId', authenticate, async (req, res) => {
 });
 
 /**
- * Add Apartment - Adds an apartment to a folder.
+ * Add Apartment - Adds an apartment to a folder. The owner and members can add apartments.
  *
  * @route POST /api/folders/:folderId/apartments
  *
@@ -2894,7 +2905,7 @@ app.put('/api/folders/:folderId', authenticate, async (req, res) => {
  *
  * @status
  * - 200: Successfully added apartment to folder
- * - 403: Unauthorized to modify this folder (not the owner)
+ * - 403: Unauthorized to modify this folder (not the owner or a member)
  * - 404: Folder not found
  * - 400: Apartment already in folder
  * - 500: Error adding apartment to folder
@@ -2913,7 +2924,7 @@ app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => 
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!canAccessFolder(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to modify this folder');
     }
 
@@ -2922,8 +2933,9 @@ app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => 
       return res.status(400).send('Apartment already in folder');
     }
 
-    apartments.push(aptId);
-    await folderRef.update({ apartments });
+    // arrayUnion adds the ID in one step, so two members adding apartments at the same time
+    // don't overwrite each other's changes
+    await folderRef.update({ apartments: FieldValue.arrayUnion(aptId) });
     return res.status(200).send('Apartment added to folder successfully');
   } catch (err) {
     console.error(err);
@@ -2932,7 +2944,8 @@ app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => 
 });
 
 /**
- * Remove Apartment - Removes an apartment from a folder.
+ * Remove Apartment - Removes an apartment from a folder. The owner and members can remove
+ * apartments.
  *
  * @route DELETE /api/folders/:folderId/apartments/:apartmentId
  *
@@ -2941,7 +2954,7 @@ app.post('/api/folders/:folderId/apartments', authenticate, async (req, res) => 
  *
  * @status
  * - 200: Successfully removed apartment from folder
- * - 403: Unauthorized to modify this folder (not the owner)
+ * - 403: Unauthorized to modify this folder (not the owner or a member)
  * - 404: Folder not found
  * - 500: Error removing apartment from folder
  */
@@ -2958,13 +2971,12 @@ app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!canAccessFolder(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to modify this folder');
     }
 
-    let apartments = folderDoc.data()?.apartments || [];
-    apartments = apartments.filter((id: string) => id !== apartmentId);
-    await folderRef.update({ apartments });
+    // arrayRemove removes the ID in one step, so it can't undo another member's change
+    await folderRef.update({ apartments: FieldValue.arrayRemove(apartmentId) });
     return res.status(200).send('Apartment removed from folder successfully');
   } catch (err) {
     console.error(err);
@@ -2981,7 +2993,7 @@ app.delete('/api/folders/:folderId/apartments/:apartmentId', authenticate, async
  *
  * @status
  * - 200: Successfully retrieved apartments from folder
- * - 403: Unauthorized to access this folder (not the owner)
+ * - 403: Unauthorized to access this folder (not the owner or a member)
  * - 404: Folder not found
  * - 500: Error fetching apartments from folder
  */
@@ -2998,7 +3010,7 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
       return res.status(404).send('Folder not found');
     }
 
-    if (folderDoc.data()?.userId !== uid) {
+    if (!canAccessFolder(folderDoc.data() as Folder, uid)) {
       return res.status(403).send('Unauthorized to access this folder');
     }
 
@@ -3021,6 +3033,54 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching apartments from folder');
+  }
+});
+
+/**
+ * Remove Folder Member – Removes a user from a shared folder.
+ *
+ * @remarks
+ * Only the owner of the folder can remove members. A removed member loses access right away: the
+ * folder no longer shows up on their Bookmarks page, and the folder endpoints return 403 for them.
+ *
+ * @route DELETE /api/folders/:folderId/members/:memberId
+ *
+ * @input {string} req.params.folderId - The ID of the folder
+ * @input {string} req.params.memberId - The user ID of the member to remove
+ *
+ * @status
+ * - 200: Successfully removed member
+ * - 403: Unauthorized to remove members from this folder (not the owner)
+ * - 404: Folder not found, or the user is not a member of this folder
+ * - 500: Error removing member from folder
+ */
+app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId, memberId } = req.params;
+
+    const folderRef = folderCollection.doc(folderId);
+    const folderDoc = await folderRef.get();
+
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    const folder = folderDoc.data() as Folder;
+    if (!isFolderOwner(folder, uid)) {
+      return res.status(403).send('Unauthorized to remove members from this folder');
+    }
+
+    if (!(folder.members ?? []).includes(memberId)) {
+      return res.status(404).send('User is not a member of this folder');
+    }
+
+    await folderRef.update({ members: FieldValue.arrayRemove(memberId) });
+    return res.status(200).send('Member removed successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error removing member from folder');
   }
 });
 
