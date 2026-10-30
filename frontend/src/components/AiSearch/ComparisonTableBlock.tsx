@@ -1,10 +1,14 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Block, ListingSummary } from '../../../../common/types/ai-search-types';
 import { colors } from '../../colors';
 import { selectListings } from '../../utils/listingFormat';
 import ComparisonRow from './ComparisonRow';
 import SectionHeader from './SectionHeader';
+
+// Hover intent: a row opens after the mouse rests on it, and closes shortly after it leaves.
+const HOVER_OPEN_DELAY_MS = 150;
+const HOVER_CLOSE_DELAY_MS = 200;
 
 const useStyles = makeStyles({
   table: {
@@ -50,6 +54,33 @@ const ComparisonTableBlock = ({ block, listings }: Props): ReactElement => {
   const { table, headerRow, propertyHeader, priceHeader, featuresHeader, chevronSpacer } =
     useStyles();
   const [openId, setOpenId] = useState<string | null>(null);
+  const openTimer = useRef<number>();
+  const closeTimer = useRef<number>();
+
+  const clearTimers = useCallback(() => {
+    window.clearTimeout(openTimer.current);
+    window.clearTimeout(closeTimer.current);
+  }, []);
+
+  useEffect(() => clearTimers, [clearTimers]);
+
+  // Entering a row cancels a pending close and (re)starts its open timer; leaving cancels the open
+  // timer and starts the close timer. Moving from one row to another therefore swaps the open row
+  // once the new one has been rested on, and quickly passing over rows opens nothing.
+  const handleHoverStart = (id: string) => {
+    clearTimers();
+    openTimer.current = window.setTimeout(() => setOpenId(id), HOVER_OPEN_DELAY_MS);
+  };
+
+  const handleHoverEnd = () => {
+    clearTimers();
+    closeTimer.current = window.setTimeout(() => setOpenId(null), HOVER_CLOSE_DELAY_MS);
+  };
+
+  const handleToggle = (id: string) => {
+    clearTimers();
+    setOpenId((current) => (current === id ? null : id));
+  };
 
   // A duplicate listing id keeps the first row's key feature.
   const keyFeatures = new Map<string, string>();
@@ -79,7 +110,9 @@ const ComparisonTableBlock = ({ block, listings }: Props): ReactElement => {
             listing={listing}
             keyFeature={keyFeatures.get(listing.id) ?? ''}
             open={openId === listing.id}
-            onToggle={() => setOpenId(openId === listing.id ? null : listing.id)}
+            onToggle={() => handleToggle(listing.id)}
+            onHoverStart={() => handleHoverStart(listing.id)}
+            onHoverEnd={handleHoverEnd}
           />
         ))}
       </div>

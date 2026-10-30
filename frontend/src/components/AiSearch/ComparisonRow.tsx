@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Typography, makeStyles } from '@material-ui/core';
+import { Collapse, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { ListingSummary } from '../../../../common/types/ai-search-types';
 import ApartmentImg from '../../assets/apartment-placeholder.svg';
@@ -7,6 +7,8 @@ import chevronIcon from '../../assets/ai-search-chevron-down.svg';
 import { colors } from '../../colors';
 import { formatEstimatedPrice, formatReviewCount } from '../../utils/listingFormat';
 import HeartRating from '../utils/HeartRating';
+
+const PANEL_ANIMATION_MS = 200;
 
 const useStyles = makeStyles((theme) => ({
   row: {
@@ -80,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
     width: '16px',
     height: '8px',
     pointerEvents: 'none',
-    transition: 'transform 0.2s',
+    transition: theme.transitions.create('transform', { duration: PANEL_ANIMATION_MS }),
     '& img': {
       position: 'absolute',
       top: '-0.7px',
@@ -90,6 +92,9 @@ const useStyles = makeStyles((theme) => ({
   },
   chevronOpen: {
     transform: 'rotate(180deg)',
+  },
+  reducedMotion: {
+    transition: 'none',
   },
   panelWrapper: {
     padding: '0 30px 10px',
@@ -162,19 +167,36 @@ type Props = {
   readonly keyFeature: string;
   readonly open: boolean;
   readonly onToggle: () => void;
+  // Hover intent is timed by the table so only one row is open at a time.
+  readonly onHoverStart: () => void;
+  readonly onHoverEnd: () => void;
 };
 
 /**
- * ComparisonRow – one collapsible row of the comparison table. The row toggles on click, Enter or
- * Space; when open, the property name links to the apartment and a detail panel shows below.
+ * ComparisonRow – one collapsible row of the comparison table. The row toggles on click, tap,
+ * Enter or Space, and reports mouse hover to the table; when open, the property name links to the
+ * apartment and a detail panel animates in below.
  */
-const ComparisonRow = ({ listing, keyFeature, open, onToggle }: Props): ReactElement => {
+const ComparisonRow = ({
+  listing,
+  keyFeature,
+  open,
+  onToggle,
+  onHoverStart,
+  onHoverEnd,
+}: Props): ReactElement => {
   const classes = useStyles();
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)', { noSsr: true });
   const panelId = `ai-comparison-panel-${listing.id}`;
   const estimatedPrice = formatEstimatedPrice(listing.minPrice);
 
   return (
-    <div className={classes.row}>
+    <div
+      className={classes.row}
+      // Touch also fires emulated mouse events; only real pointer hover counts as hover intent.
+      onPointerEnter={(e) => e.pointerType !== 'touch' && onHoverStart()}
+      onPointerLeave={(e) => e.pointerType !== 'touch' && onHoverEnd()}
+    >
       <div className={classes.header}>
         <button
           type="button"
@@ -202,11 +224,16 @@ const ComparisonRow = ({ listing, keyFeature, open, onToggle }: Props): ReactEle
         <div className={`${classes.cell} ${classes.keyFeature}`} aria-hidden="true">
           {keyFeature}
         </div>
-        <div className={`${classes.chevron} ${open ? classes.chevronOpen : ''}`} aria-hidden="true">
+        <div
+          className={`${classes.chevron} ${open ? classes.chevronOpen : ''} ${
+            reducedMotion ? classes.reducedMotion : ''
+          }`}
+          aria-hidden="true"
+        >
           <img src={chevronIcon} alt="" />
         </div>
       </div>
-      {open && (
+      <Collapse in={open} timeout={reducedMotion ? 0 : PANEL_ANIMATION_MS} unmountOnExit>
         <div className={classes.panelWrapper} id={panelId}>
           <div className={classes.panel}>
             <img
@@ -240,7 +267,7 @@ const ComparisonRow = ({ listing, keyFeature, open, onToggle }: Props): ReactEle
             </div>
           </div>
         </div>
-      )}
+      </Collapse>
     </div>
   );
 };
