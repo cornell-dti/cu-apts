@@ -837,6 +837,46 @@ describe('generateBlocks', () => {
     expect(sentParts()[2]).toContain('"filtersMatched":false');
   });
 
+  describe('price coverage', () => {
+    const contextFor = async (list: ListingSummary[]) => {
+      mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
+      await generateBlocks('q', apts, list, true);
+      return JSON.parse(sentParts()[2].replace(/^<search_context>\n|\n<\/search_context>$/g, ''));
+    };
+    const unpriced = { minPrice: null, maxPrice: null };
+
+    it('reports every candidate as priced when all have room type prices', async () => {
+      const context = await contextFor(listings);
+      expect(context.priceCoverage).toEqual({ candidates: 2, withPrice: 2, mostLackPrice: false });
+    });
+
+    it('reports most candidates as lacking price when none have data', async () => {
+      const context = await contextFor([summary('a', unpriced), summary('b', unpriced)]);
+      expect(context.priceCoverage).toEqual({ candidates: 2, withPrice: 0, mostLackPrice: true });
+    });
+
+    it('treats exactly half priced as not most lacking', async () => {
+      const context = await contextFor([summary('a'), summary('b', unpriced)]);
+      expect(context.priceCoverage).toEqual({ candidates: 2, withPrice: 1, mostLackPrice: false });
+    });
+
+    it('only counts the displayed price range, not review-derived prices', async () => {
+      // A listing with no roomTypes price has null minPrice even if an ordering price exists.
+      const context = await contextFor([summary('a', unpriced), summary('b', unpriced)]);
+      expect(context.candidates[0].monthlyPrice).toEqual([null, null]);
+      expect(context.priceCoverage.withPrice).toEqual(0);
+    });
+
+    it('instructs the model what to say and never to claim cheapest', async () => {
+      await contextFor(listings);
+      const instructions = sentParts()[0];
+      expect(instructions).toMatch(/price information isn't available for most listings yet/);
+      expect(instructions).toMatch(/do not recommend or rank listings by price/);
+      expect(instructions).toMatch(/never say the results are the cheapest/);
+      expect(instructions).toMatch(/every candidate has price data/);
+    });
+  });
+
   it('uses a shorter timeout than the filter call', async () => {
     mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
     await generateBlocks('q', apts, listings, true);

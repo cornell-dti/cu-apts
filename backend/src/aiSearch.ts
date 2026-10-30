@@ -516,6 +516,8 @@ Rules:
 - Reference listings ONLY by an "id" from <search_context> candidates. Never invent an id.
 - Never write a price, bedroom count, rating, review count, address or distance anywhere. The page shows those from our data. Describe listings qualitatively ("a budget pick", "close to campus") and let the cards carry the numbers.
 - If filtersMatched is false, nothing matched the user's exact request and these candidates are the closest alternatives; say so plainly in a text block and do not claim they match.
+- <search_context> includes priceCoverage: how many candidates have price data (a non-null monthlyPrice), and mostLackPrice, which is true when fewer than half do. If the user asks about price, cost, budget or affordability and mostLackPrice is true, say plainly in a text block that price information isn't available for most listings yet, and do not recommend or rank listings by price.
+- Only call a listing cheaper, cheapest, lowest-priced, affordable or best value when every candidate has price data (withPrice equals candidates), and then only by comparing monthlyPrice. Otherwise never make that claim, and never say the results are the cheapest.
 - Use at most ${MAX_NON_TEXT_BLOCKS} blocks other than text, and at most ${MAX_TEXT_BLOCKS} text blocks. Fewer is fine.
 - Never include markdown, commentary, or any field not described above.`;
 
@@ -551,6 +553,8 @@ const compactCandidates = (apts: readonly ApartmentWithId[], listings: readonly 
  * @param apts - the candidates, parallel to `listings`
  * @param listings - the hydrated candidates, in the same order as `apts`
  * @param filtersMatched - whether the candidates satisfy the user's filters or are a fallback
+ * @remarks The prompt also reports how many candidates have price data, so the model can say so
+ * instead of implying a price ranking it cannot back up. That is a prompt rule, not a guarantee.
  */
 export const generateBlocks = async (
   query: string,
@@ -558,7 +562,16 @@ export const generateBlocks = async (
   listings: readonly ListingSummary[],
   filtersMatched: boolean
 ): Promise<Block[]> => {
-  const context = { filtersMatched, candidates: compactCandidates(apts, listings) };
+  const withPrice = listings.filter((listing) => listing.minPrice !== null).length;
+  const context = {
+    filtersMatched,
+    priceCoverage: {
+      candidates: listings.length,
+      withPrice,
+      mostLackPrice: withPrice * 2 < listings.length,
+    },
+    candidates: compactCandidates(apts, listings),
+  };
   const text = await callGeminiJson(
     [
       { text: buildBlocksPrompt() },
