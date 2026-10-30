@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: '1em',
+    flexWrap: 'wrap',
   },
   backButton: {
     color: colors.red1,
@@ -134,6 +135,8 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [apartmentIdsToRemove, setApartmentIdsToRemove] = useState<string[]>([]);
   const [showRemoveApartmentModal, setShowRemoveApartmentModal] = useState<boolean>(false);
+  const [exporting, setExporting] = useState<boolean>(false);
+  const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
   // handle toggle
   const handleViewAll = () => {
     setAptsToShow(aptsToShow + (apartments.length - defaultShow));
@@ -184,6 +187,51 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
       showError('Failed to load folder details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * handleExport – Downloads the apartments in this folder as a CSV file.
+   *
+   * @remarks
+   * Calls GET /api/folders/:folderId/export with the user's auth token, then saves the returned
+   * file through a temporary download link. The file is named after the folder, with anything
+   * other than letters, numbers, spaces, underscores and dashes removed ("folder.csv" if nothing
+   * is left). While it runs, `exporting` is true, which disables the Export button and shows
+   * "Exporting...". The button is also disabled when the folder has no apartments.
+   *
+   * @returns {Promise<void>} Resolves once the download starts. Never throws: any error (not
+   * signed in, network or server error) is logged and shown as an error toast.
+   */
+  const handleExport = async () => {
+    if (!folder) return;
+    try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      setExporting(true);
+      const token = await user.getIdToken(false);
+      const res = await axios.get(`/api/folders/${folder.id}/export`, {
+        ...createAuthHeaders(token),
+        responseType: 'blob',
+      });
+
+      // Save the file by creating a temporary download link and clicking it
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${folder.name.replace(/[^a-z0-9 _-]/gi, '').trim() || 'folder'}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast(setShowSuccessToast);
+    } catch (error) {
+      console.error('Error exporting folder:', error);
+      showError('Failed to export folder');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -344,6 +392,13 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
           <Button onClick={() => setShowRemoveApartmentModal(true)} className={classes.editButton}>
             Edit
           </Button>
+          <Button
+            onClick={handleExport}
+            className={classes.editButton}
+            disabled={exporting || apartments.length === 0}
+          >
+            {exporting ? 'Exporting...' : 'Export'}
+          </Button>
         </Box>
 
         {apartments.length > 0 ? (
@@ -389,6 +444,14 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
 
         {showErrorToast && (
           <Toast isOpen={showErrorToast} severity="error" message={errorMessage} time={toastTime} />
+        )}
+        {showSuccessToast && (
+          <Toast
+            isOpen={showSuccessToast}
+            severity="success"
+            message="Folder exported"
+            time={toastTime}
+          />
         )}
       </Box>
     </div>
