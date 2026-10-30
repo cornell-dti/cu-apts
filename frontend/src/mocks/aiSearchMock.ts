@@ -16,7 +16,8 @@ export const MOCK_AI_SEARCH_RESPONSE: AiSearchResponse = {
       type: 'property_cards',
       heading: 'Best for walkability',
       intro: 'These are all within a short walk of campus.',
-      listingIds: ['237', '238', '94'],
+      // '999' is not in `listings` and '237' is repeated, to exercise the skip paths.
+      listingIds: ['237', '238', '94', '999', '237', '96', '245'],
     },
     {
       type: 'comparison_table',
@@ -98,6 +99,22 @@ export const MOCK_AI_SEARCH_RESPONSE: AiSearchResponse = {
       longitude: -76.4846,
       featuredReview:
         'Maintenance is really fast and the staff are really nice. The only problem is the price of rent.',
+    },
+    // Studio with a single price: exercises "Studio" and the min-equals-max price format.
+    '245': {
+      id: '245',
+      name: 'Collegetown Studios',
+      address: '120 Dryden Rd',
+      photoUrl: null,
+      minBeds: 0,
+      maxBeds: 0,
+      minPrice: 1250,
+      maxPrice: 1250,
+      avgRating: 4.6,
+      numReviews: 5,
+      latitude: 42.4423,
+      longitude: -76.4862,
+      featuredReview: null,
     },
     // No approved reviews yet: no rating and no featured review.
     '96': {

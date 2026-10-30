@@ -1,7 +1,8 @@
 import React, { ReactElement } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import { Block } from '../../../../common/types/ai-search-types';
+import { Block, ListingSummary } from '../../../../common/types/ai-search-types';
 import { colors } from '../../colors';
+import PropertyCardsBlock from './PropertyCardsBlock';
 
 const useStyles = makeStyles({
   text: {
@@ -51,19 +52,15 @@ const BlockPlaceholder = ({
   );
 };
 
-const renderBlock = (block: Block): ReactElement | null => {
+const renderBlock = (
+  block: Block,
+  listings: Readonly<Record<string, ListingSummary>>
+): ReactElement | null => {
   switch (block.type) {
     case 'text':
       return <TextBlock block={block} />;
     case 'property_cards':
-      return (
-        <BlockPlaceholder
-          type={block.type}
-          heading={block.heading}
-          count={block.listingIds.length}
-          unit="listings"
-        />
-      );
+      return <PropertyCardsBlock block={block} listings={listings} />;
     case 'comparison_table':
       return (
         <BlockPlaceholder
@@ -97,12 +94,14 @@ const renderBlock = (block: Block): ReactElement | null => {
 
 type Props = {
   readonly block: Block;
+  readonly listings: Readonly<Record<string, ListingSummary>>;
 };
 
 /**
  * BlockRenderer – renders one AI search response block by mapping its `type` to a component.
  * Unknown types render nothing and log a warning.
  */
-const BlockRenderer = ({ block }: Props): ReactElement | null => renderBlock(block);
+const BlockRenderer = ({ block, listings }: Props): ReactElement | null =>
+  renderBlock(block, listings);
 
 export default BlockRenderer;

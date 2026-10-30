@@ -93,7 +93,7 @@ const AiSearchPage = (): ReactElement => {
     return (
       <>
         {data.blocks.map((block, index) => (
-          <BlockRenderer key={index} block={block} />
+          <BlockRenderer key={index} block={block} listings={data.listings} />
         ))}
       </>
     );
