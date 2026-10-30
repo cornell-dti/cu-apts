@@ -150,13 +150,21 @@ Rules:
 - Never include any field not listed above
 - Never include markdown, commentary, or text outside the JSON object`;
 
+const GEMINI_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+
 /**
- * Sends the query to Gemini and returns the parsed JSON body of its response.
+ * POSTs a structured-output request to Gemini and returns the text of its first reply.
  *
- * @param query - the raw user query, passed as data inside a delimited block
- * @returns the model's response parsed as JSON, still unvalidated
+ * @param parts - prompt parts; callers keep instructions and untrusted data in separate parts
+ * @param responseSchema - Gemini structured-output schema constraining the reply
+ * @returns the model's reply text, still unparsed and unvalidated
  */
-const callGemini = async (query: string): Promise<string> => {
+export const callGeminiJson = async (
+  parts: readonly { readonly text: string }[],
+  responseSchema: Record<string, unknown>,
+  options: { readonly temperature: number; readonly timeoutMs: number }
+): Promise<string> => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     // Fail before any network I/O rather than send a request that can only be rejected.
@@ -164,22 +172,18 @@ const callGemini = async (query: string): Promise<string> => {
   }
 
   const response = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent',
+    GEMINI_URL,
     {
-      contents: [
-        {
-          parts: [{ text: buildSystemPrompt() }, { text: `<user_query>\n${query}\n</user_query>` }],
-        },
-      ],
+      contents: [{ parts }],
       generationConfig: {
         responseMimeType: 'application/json',
-        responseSchema: GEMINI_RESPONSE_SCHEMA,
-        temperature: 0,
+        responseSchema,
+        temperature: options.temperature,
       },
     },
     // In a header rather than a `?key=` query parameter, which would end up in logs and in the
     // URL that axios error messages report.
-    { timeout: 8000, headers: { 'x-goog-api-key': apiKey } }
+    { timeout: options.timeoutMs, headers: { 'x-goog-api-key': apiKey } }
   );
 
   const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -188,6 +192,18 @@ const callGemini = async (query: string): Promise<string> => {
   }
   return text;
 };
+
+/**
+ * Sends the query to Gemini and returns the text of its response.
+ *
+ * @param query - the raw user query, passed as data inside a delimited block
+ */
+const callGemini = (query: string): Promise<string> =>
+  callGeminiJson(
+    [{ text: buildSystemPrompt() }, { text: `<user_query>\n${query}\n</user_query>` }],
+    GEMINI_RESPONSE_SCHEMA,
+    { temperature: 0, timeoutMs: 8000 }
+  );
 
 /**
  * Whether a failure calling Gemini is transient, so that retrying the same request may succeed.
