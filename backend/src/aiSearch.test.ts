@@ -1235,6 +1235,33 @@ describe('generateBlocks', () => {
       expect(context.priceCoverage.withPrice).toEqual(0);
     });
 
+    it('states that missing prices are mentioned only for price or budget queries', async () => {
+      await contextFor(listings);
+      const instructions = sentParts()[0];
+      expect(instructions).toMatch(
+        /Mention missing price data ONLY when the user's query is itself about price or budget/
+      );
+      ['"cheap"', '"cheapest"', '"affordable"', '"budget"', '"rent"', '"under $1500"'].forEach(
+        (term) => expect(instructions).toContain(term)
+      );
+      expect(instructions).toMatch(/This is background for price questions only/);
+    });
+
+    it('forbids any mention of price coverage on other queries, even when most lack prices', async () => {
+      await contextFor(listings);
+      const instructions = sentParts()[0];
+      expect(instructions).toMatch(
+        /For every other query \(ratings, reviews, location[^)]*\), never mention price, price data or price coverage anywhere, in any block, even when mostLackPrice is true/
+      );
+    });
+
+    it('restricts the text-block exception for missing prices to price queries', async () => {
+      await contextFor(listings);
+      expect(sentParts()[0]).toMatch(
+        /the query is about price or budget and price information is missing/
+      );
+    });
+
     it('instructs the model what to say and never to claim cheapest', async () => {
       await contextFor(listings);
       const instructions = sentParts()[0];
