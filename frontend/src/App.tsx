@@ -26,6 +26,7 @@ import LocationPage from './pages/LocationPage';
 import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
+import AiSearchPage from './pages/AiSearchPage';
 import { isAdmin } from './utils/adminTool';
 
 const theme = createTheme({
@@ -176,6 +177,11 @@ const App = (): ReactElement => {
             <Route
               path="/search"
               component={() => <SearchResultsPage user={user} setUser={setUser} />}
+            />
+            <Route
+              exact
+              path="/ai-search"
+              render={() => <AiSearchPage user={user} setUser={setUser} />}
             />
             {(isAdmin(user) || isAdminUser) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
