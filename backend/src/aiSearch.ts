@@ -1,9 +1,22 @@
-import { Application } from 'express';
+import { Application, Request, RequestHandler, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { ApartmentWithId } from '@common/types/db-types';
 import { z } from 'zod';
-import { Block, ListingSummary, NeighborhoodId } from '@common/types/ai-search-types';
+import {
+  AiSearchResponse,
+  Block,
+  ListingSummary,
+  NeighborhoodId,
+} from '@common/types/ai-search-types';
 import { db } from './firebase-config';
-import { callGeminiJson, ParsedFilters, sanitizeText } from './llmSearch';
+import {
+  callGeminiJson,
+  extractFilters,
+  isTransientUpstreamError,
+  ParsedFilters,
+  sanitizeText,
+  validateLlmSearchBody,
+} from './llmSearch';
 
 /** Longest featured review we return on a listing card. */
 export const MAX_FEATURED_REVIEW_LENGTH = 300;
@@ -529,4 +542,135 @@ export const generateBlocks = async (
     return [];
   }
   return validateBlocks(raw, Object.fromEntries(listings.map((listing) => [listing.id, listing])));
+};
+
+/** Per-IP limiter. Tighter than llm-search's, since each search makes two Gemini calls. */
+const perIpLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) => {
+    res.status(429).json({ error: 'Too many searches. Please wait a minute and try again.' });
+  },
+});
+
+/**
+ * Process-wide daily ceiling on Gemini spend. Separate from llm-search's, so heavy use of one
+ * endpoint cannot exhaust the other's budget.
+ */
+const globalLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: 500,
+  keyGenerator: () => 'global',
+  standardHeaders: false,
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) => {
+    res.status(429).json({ error: 'Search is temporarily unavailable. Please try again later.' });
+  },
+});
+
+/**
+ * Middleware for POST /api/ai-search, in the same order and for the same reasons as
+ * `llmSearchMiddleware`: per-IP first, then body validation, then the global budget, so that
+ * only requests that will reach Gemini spend it.
+ */
+export const aiSearchMiddleware: RequestHandler[] = [
+  perIpLimiter,
+  validateLlmSearchBody,
+  globalLimiter,
+];
+
+const fallbackText = (filtersMatched: boolean): Block => ({
+  type: 'text',
+  content: filtersMatched
+    ? 'Here are apartments that match your search.'
+    : "We couldn't find an exact match for your search, so here are some close alternatives.",
+});
+
+/**
+ * Express handler for POST /api/ai-search.
+ *
+ * @input {object} req.body - Request body containing:
+ *   - query: string (required) - the natural language search query from the user
+ *
+ * @output {AiSearchResponse} - See common/types/ai-search-types.ts:
+ *   - query: string - the query, echoed
+ *   - blocks: Block[] - AI-arranged blocks that reference `listings` by ID
+ *   - listings: Record<string, ListingSummary> - up to 20 hydrated apartments
+ *
+ * Expects `validateLlmSearchBody` to have run first (see {@link aiSearchMiddleware}).
+ *
+ * @remarks
+ * Gemini only arranges results; every listing fact comes from our data. If the second Gemini
+ * call fails or yields no usable blocks, the listings are returned with a single text block
+ * rather than an error.
+ *
+ * @status
+ * - 200: Search ran. Also returned when the block step failed (fallback text block), when the
+ *   filters could not be parsed (broad set), and when there are no apartments (empty listings)
+ * - 400: Missing, non-string, or overlong query
+ * - 429: Rate limited by this server
+ * - 500: Gemini rejected the filter request or GEMINI_API_KEY is unset (retrying will not
+ *   help), or loading apartments or reviews failed
+ * - 503: Gemini throttled us, is down, or could not be reached for the filter step - transient
+ */
+export const aiSearchHandler = async (req: Request, res: Response): Promise<void> => {
+  // Already checked by validateLlmSearchBody, which must run before this handler.
+  const query = req.body.query as string;
+
+  let filters: ParsedFilters;
+  try {
+    filters = await extractFilters(query);
+  } catch (err) {
+    console.error('AI search filter error:', err instanceof Error ? err.message : err);
+    if (isTransientUpstreamError(err)) {
+      res.status(503).json({ error: 'Search is temporarily unavailable. Please try again.' });
+      return;
+    }
+    res.status(500).json({ error: 'Error running search' });
+    return;
+  }
+
+  let aptsInOrder: ApartmentWithId[];
+  let listingList: ListingSummary[];
+  let filtersMatched: boolean;
+  try {
+    const selection = selectCandidates(await loadApartments(req.app), filters);
+    filtersMatched = selection.filtersMatched;
+    listingList = await hydrateListings(selection.candidates);
+    if (selection.reviewSort) {
+      listingList = sortByReviewField(listingList, selection.reviewSort);
+    }
+    const aptById = new Map(selection.candidates.map((apt) => [apt.id, apt]));
+    aptsInOrder = listingList.flatMap((listing) => aptById.get(listing.id) ?? []);
+  } catch (err) {
+    console.error('AI search data error:', err instanceof Error ? err.message : err);
+    res.status(500).json({ error: 'Error running search' });
+    return;
+  }
+
+  let blocks: Block[] = [];
+  if (listingList.length > 0) {
+    try {
+      blocks = await generateBlocks(query, aptsInOrder, listingList, filtersMatched);
+    } catch (err) {
+      // Throttle, outage, timeout: the listings are still worth showing.
+      console.error('AI search blocks error:', err instanceof Error ? err.message : err);
+    }
+  }
+  if (blocks.length === 0) {
+    blocks = [
+      listingList.length > 0
+        ? fallbackText(filtersMatched)
+        : { type: 'text', content: 'No apartments are available right now.' },
+    ];
+  }
+
+  const response: AiSearchResponse = {
+    query,
+    blocks,
+    listings: Object.fromEntries(listingList.map((listing) => [listing.id, listing])),
+  };
+  res.status(200).json(response);
 };

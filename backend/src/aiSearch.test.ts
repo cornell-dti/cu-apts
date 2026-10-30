@@ -1,10 +1,13 @@
 import axios from 'axios';
+import request from 'supertest';
 import express from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
-import { ListingSummary } from '@common/types/ai-search-types';
+import { Block, ListingSummary } from '@common/types/ai-search-types';
 import { db } from './firebase-config';
-import { EMPTY_FILTERS, ParsedFilters } from './llmSearch';
+import { EMPTY_FILTERS, ParsedFilters, validateLlmSearchBody } from './llmSearch';
 import {
+  aiSearchHandler,
+  aiSearchMiddleware,
   generateBlocks,
   PROMPT_REVIEW_SNIPPET_LENGTH,
   validateBlocks,
@@ -769,5 +772,373 @@ describe('generateBlocks', () => {
   it('rejects when Gemini cannot be reached, leaving the fallback to the caller', async () => {
     mockedAxios.post.mockRejectedValueOnce(new Error('timeout'));
     await expect(generateBlocks('q', apts, listings, true)).rejects.toThrow('timeout');
+  });
+});
+
+describe('POST /api/ai-search', () => {
+  const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+  const geminiReply = (body: unknown) => ({
+    data: { candidates: [{ content: { parts: [{ text: JSON.stringify(body) }] } }] },
+  });
+  const filterReply = (overrides: Record<string, unknown> = {}) =>
+    geminiReply({ ...EMPTY_FILTERS, ...overrides });
+
+  const apts = [
+    apt('a', { distanceToCampus: 5 }),
+    apt('b', { distanceToCampus: 10, area: 'NORTH' }),
+    apt('c', { distanceToCampus: 15, area: 'WEST' }),
+  ];
+
+  /** Validation and handler only; the limiters hold module-level state. */
+  const buildApp = (cached: ApartmentWithId[] = apts) => {
+    const app = express();
+    app.use(express.json());
+    app.set('apts', cached);
+    app.post('/api/ai-search', validateLlmSearchBody, aiSearchHandler);
+    return app;
+  };
+  const search = (app: express.Express, query = 'cheap 2br near campus') =>
+    request(app).post('/api/ai-search').send({ query });
+
+  /** The `search_context` JSON sent in the nth Gemini call (the second call is index 1). */
+  const sentContext = (call: number) => {
+    const body = mockedAxios.post.mock.calls[call][1] as {
+      contents: { parts: { text: string }[] }[];
+    };
+    const { text } = body.contents[0].parts[2];
+    return JSON.parse(text.replace(/^<search_context>\n|\n<\/search_context>$/g, ''));
+  };
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    process.env.GEMINI_API_KEY = 'test-gemini-key';
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    stubReviews([review('a', { likes: 4, reviewText: 'Loved it' }), review('b')]);
+  });
+
+  describe('response', () => {
+    it('returns the query, validated blocks, and hydrated listings keyed by ID', async () => {
+      mockedAxios.post.mockResolvedValueOnce(filterReply()).mockResolvedValueOnce(
+        geminiReply({
+          blocks: [
+            { type: 'text', content: 'Three options.' },
+            { type: 'property_cards', heading: 'Closest', listingIds: ['a'] },
+          ],
+        })
+      );
+
+      const res = await search(buildApp(), 'near campus');
+
+      expect(res.status).toEqual(200);
+      expect(res.body.query).toEqual('near campus');
+      expect(res.body.blocks).toEqual([
+        { type: 'text', content: 'Three options.' },
+        { type: 'property_cards', heading: 'Closest', listingIds: ['a'] },
+      ]);
+      expect(Object.keys(res.body.listings).sort()).toEqual(['a', 'b', 'c']);
+      expect(res.body.listings.a).toMatchObject({
+        id: 'a',
+        minBeds: 2,
+        maxPrice: 1500,
+        numReviews: 1,
+        avgRating: 4,
+        featuredReview: 'Loved it',
+      });
+      expect(mockedAxios.post).toHaveBeenCalledTimes(2);
+    });
+
+    it('limits listings to the filtered set', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply({ area: ['NORTH'] }))
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+      const res = await search(buildApp());
+      expect(Object.keys(res.body.listings)).toEqual(['b']);
+      expect(sentContext(1).filtersMatched).toBe(true);
+    });
+
+    it('returns at most 20 listings', async () => {
+      const many = Array.from({ length: 45 }, (_, i) => apt(`m${i}`, { distanceToCampus: i }));
+      stubReviews([]);
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply())
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+      const res = await search(buildApp(many));
+      expect(Object.keys(res.body.listings)).toHaveLength(MAX_CANDIDATES);
+    });
+  });
+
+  describe('block validation (step 6)', () => {
+    const run = async (blocks: unknown[]) => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply())
+        .mockResolvedValueOnce(geminiReply({ blocks }));
+      return search(buildApp());
+    };
+
+    it('drops unknown and duplicate IDs', async () => {
+      const res = await run([
+        { type: 'property_cards', heading: 'Picks', listingIds: ['a', 'ghost', 'a', 'b'] },
+      ]);
+      expect(res.body.blocks).toEqual([
+        { type: 'property_cards', heading: 'Picks', listingIds: ['a', 'b'] },
+      ]);
+    });
+
+    it('caps property_cards at 3 and comparison_table at 8', async () => {
+      const many = Array.from({ length: 12 }, (_, i) => apt(`m${i}`, { distanceToCampus: i }));
+      stubReviews([]);
+      mockedAxios.post.mockResolvedValueOnce(filterReply()).mockResolvedValueOnce(
+        geminiReply({
+          blocks: [
+            {
+              type: 'property_cards',
+              heading: 'Cards',
+              listingIds: many.map((a) => a.id),
+            },
+            {
+              type: 'comparison_table',
+              heading: 'Table',
+              rows: many.map((a) => ({ listingId: a.id, keyFeature: 'Nice' })),
+            },
+          ],
+        })
+      );
+      const res = await search(buildApp(many));
+      expect(res.body.blocks[0].listingIds).toHaveLength(3);
+      expect(res.body.blocks[1].rows).toHaveLength(8);
+    });
+
+    it('allows at most 3 blocks besides text', async () => {
+      const card = (heading: string) => ({ type: 'property_cards', heading, listingIds: ['a'] });
+      const res = await run([
+        { type: 'text', content: 'Intro' },
+        card('1'),
+        card('2'),
+        card('3'),
+        card('4'),
+      ]);
+      expect(res.body.blocks.filter((b: Block) => b.type !== 'text')).toHaveLength(3);
+      expect(res.body.blocks[0].type).toEqual('text');
+    });
+
+    it('drops invalid blocks rather than failing the request', async () => {
+      const res = await run([
+        { type: 'nonsense' },
+        { type: 'property_cards', listingIds: ['a'] },
+        { type: 'text', content: 'Still here' },
+      ]);
+      expect(res.status).toEqual(200);
+      expect(res.body.blocks).toEqual([{ type: 'text', content: 'Still here' }]);
+    });
+
+    it('never passes model-written listing facts through', async () => {
+      const res = await run([
+        {
+          type: 'property_cards',
+          heading: 'Picks',
+          listingIds: ['a'],
+          price: 1,
+          address: 'Fake',
+          listings: { a: { name: 'Hacked' } },
+        },
+      ]);
+      expect(Object.keys(res.body.blocks[0]).sort()).toEqual(['heading', 'listingIds', 'type']);
+      expect(res.body.listings.a.name).toEqual('Apt a');
+    });
+  });
+
+  describe('fallback (step 7)', () => {
+    const FALLBACK = [{ type: 'text', content: 'Here are apartments that match your search.' }];
+
+    it('returns the listings with one text block when the second call fails', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply())
+        .mockRejectedValueOnce(Object.assign(new Error('429'), { response: { status: 429 } }));
+      const res = await search(buildApp());
+      expect(res.status).toEqual(200);
+      expect(res.body.blocks).toEqual(FALLBACK);
+      expect(Object.keys(res.body.listings)).toHaveLength(3);
+    });
+
+    it('falls back when the second call returns prose instead of JSON', async () => {
+      mockedAxios.post.mockResolvedValueOnce(filterReply()).mockResolvedValueOnce({
+        data: { candidates: [{ content: { parts: [{ text: 'Here you go!' }] } }] },
+      });
+      const res = await search(buildApp());
+      expect(res.status).toEqual(200);
+      expect(res.body.blocks).toEqual(FALLBACK);
+    });
+
+    it('falls back when every block fails validation', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply())
+        .mockResolvedValueOnce(
+          geminiReply({ blocks: [{ type: 'property_cards', listingIds: [] }] })
+        );
+      const res = await search(buildApp());
+      expect(res.body.blocks).toEqual(FALLBACK);
+    });
+
+    it('does not claim a match in the fallback text when the filters matched nothing', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply({ area: ['DOWNTOWN'] }))
+        .mockRejectedValueOnce(new Error('down'));
+      const res = await search(buildApp());
+      expect(res.body.blocks).toHaveLength(1);
+      expect(res.body.blocks[0].content).toMatch(/couldn't find an exact match/);
+    });
+  });
+
+  describe('candidate selection', () => {
+    it('falls back to a broader set and tells the model nothing matched', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply({ area: ['DOWNTOWN'] }))
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+      const res = await search(buildApp());
+      expect(Object.keys(res.body.listings)).toHaveLength(3);
+      expect(sentContext(1).filtersMatched).toBe(false);
+    });
+
+    it('uses a broad set when the filter step could not parse the query', async () => {
+      mockedAxios.post
+        .mockResolvedValueOnce({
+          data: { candidates: [{ content: { parts: [{ text: 'not json' }] } }] },
+        })
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+      const res = await search(buildApp());
+      expect(res.status).toEqual(200);
+      expect(Object.keys(res.body.listings)).toHaveLength(3);
+    });
+
+    it('sorts by rating over the 30 nearest matches and keeps 20', async () => {
+      const many = Array.from({ length: 40 }, (_, i) => apt(`m${i}`, { distanceToCampus: i }));
+      // Apartments m25-m29 are the best rated; m30+ are outside the pool of 30 nearest.
+      stubReviews(
+        many.map((a, i) =>
+          review(a.id, { overallRating: i >= 25 && i < 30 ? 5 : 3, reviewText: undefined })
+        )
+      );
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply({ sortBy: 'avgRating', sortLowToHigh: false }))
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+
+      const res = await search(buildApp(many));
+
+      const ids = Object.keys(res.body.listings);
+      expect(ids).toHaveLength(MAX_CANDIDATES);
+      expect(ids.slice(0, 5).sort()).toEqual(['m25', 'm26', 'm27', 'm28', 'm29']);
+      expect(ids.every((id) => Number(id.slice(1)) < REVIEW_SORT_POOL)).toBe(true);
+    });
+
+    it('loads buildings into the cache when it is empty', async () => {
+      const get = jest.fn().mockResolvedValue({
+        docs: apts.map(({ id, ...data }) => ({ id, data: () => data })),
+      });
+      const where = jest.fn();
+      const chain = { where, get };
+      where.mockReturnValue(chain);
+      mockedCollection.mockImplementation((name: string) =>
+        name === 'buildings' ? { get } : chain
+      );
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply())
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+
+      const app = buildApp([]);
+      const res = await search(app);
+
+      expect(Object.keys(res.body.listings)).toHaveLength(3);
+      expect(app.get('apts')).toHaveLength(3);
+    });
+
+    it('skips the second Gemini call when there are no apartments at all', async () => {
+      stubReviews([]);
+      mockedAxios.post.mockResolvedValueOnce(filterReply());
+      mockedCollection.mockReturnValue({
+        get: jest.fn().mockResolvedValue({ docs: [] }),
+        where: jest.fn(),
+      });
+      const res = await search(buildApp([]));
+      expect(res.status).toEqual(200);
+      expect(res.body.listings).toEqual({});
+      expect(res.body.blocks).toHaveLength(1);
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('errors', () => {
+    it('rejects a missing or overlong query without calling Gemini', async () => {
+      const app = buildApp();
+      expect((await request(app).post('/api/ai-search').send({})).status).toEqual(400);
+      expect((await search(app, 'x'.repeat(301))).status).toEqual(400);
+      expect(mockedAxios.post).not.toHaveBeenCalled();
+    });
+
+    it.each([429, 503])(
+      'reports a Gemini %i on the filter step as retryable (503)',
+      async (status) => {
+        mockedAxios.post.mockRejectedValueOnce(
+          Object.assign(new Error(`status ${status}`), { isAxiosError: true, response: { status } })
+        );
+        mockedAxios.isAxiosError.mockReturnValue(true);
+        const res = await search(buildApp());
+        expect(res.status).toEqual(503);
+        expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+      }
+    );
+
+    it('reports a rejected filter request as 500 without leaking detail', async () => {
+      mockedAxios.post.mockRejectedValueOnce(
+        Object.assign(new Error('bad key SECRET123'), {
+          isAxiosError: true,
+          response: { status: 401 },
+        })
+      );
+      mockedAxios.isAxiosError.mockReturnValue(true);
+      const res = await search(buildApp());
+      expect(res.status).toEqual(500);
+      expect(JSON.stringify(res.body)).not.toContain('SECRET123');
+    });
+
+    it('returns 500 and skips the second call when Firestore fails', async () => {
+      mockedCollection.mockImplementation(() => {
+        throw new Error('firestore unavailable');
+      });
+      mockedAxios.post.mockResolvedValueOnce(filterReply());
+      const res = await search(buildApp());
+      expect(res.status).toEqual(500);
+      expect(res.body).toEqual({ error: 'Error running search' });
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('rate limiting', () => {
+    it('allows 5 searches a minute per IP, then returns 429', async () => {
+      mockedAxios.post.mockImplementation(async (_url, body) => {
+        const { text } = (body as { contents: { parts: { text: string }[] }[] }).contents[0]
+          .parts[0];
+        return text.includes('filter parser') ? filterReply() : geminiReply({ blocks: [] });
+      });
+      const app = express();
+      app.use(express.json());
+      app.set('trust proxy', 1);
+      app.set('apts', apts);
+      app.post('/api/ai-search', ...aiSearchMiddleware, aiSearchHandler);
+
+      const statuses: number[] = [];
+      for (let i = 0; i < 6; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await request(app)
+          .post('/api/ai-search')
+          .set('X-Forwarded-For', '192.0.2.77')
+          .send({ query: 'cheap 2br' });
+        statuses.push(res.status);
+      }
+
+      expect(statuses).toEqual([200, 200, 200, 200, 200, 429]);
+      // Two Gemini calls per accepted search, none for the refused one.
+      expect(mockedAxios.post).toHaveBeenCalledTimes(10);
+    });
   });
 });
