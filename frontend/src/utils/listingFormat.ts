@@ -1,16 +1,23 @@
 import { ListingSummary } from '../../../common/types/ai-search-types';
 
-/** Formats a dollar amount compactly: 1300 → "$1.3K", 950 → "$950", 2000 → "$2K". */
-export const formatPriceCompact = (price: number): string => {
+type Rounding = 'nearest' | 'down' | 'up';
+
+/**
+ * Formats a dollar amount compactly, rounded to 0.1K: 1300 → "$1.3K", 2000 → "$2K". Amounts under
+ * $1,000 are shown exactly.
+ */
+export const formatPriceCompact = (price: number, rounding: Rounding = 'nearest'): string => {
   if (price < 1000) {
     return `$${price}`;
   }
-  return `$${parseFloat((price / 1000).toFixed(1))}K`;
+  const round = { nearest: Math.round, down: Math.floor, up: Math.ceil }[rounding];
+  return `$${round(price / 100) / 10}K`;
 };
 
 /**
  * Formats a price range for AI search listings: "$1.3K-$1.5K", or a single value when min equals
- * max. Returns "Price unavailable" when either bound is null.
+ * max. The min rounds down and the max rounds up so the range always contains the real prices
+ * ($1,250-$1,480 → "$1.2K-$1.5K"); a single price rounds to nearest. Returns "Price unavailable" when either bound is null.
  */
 export const formatListingPrice = (minPrice: number | null, maxPrice: number | null): string => {
   if (minPrice === null || maxPrice === null) {
@@ -19,7 +26,7 @@ export const formatListingPrice = (minPrice: number | null, maxPrice: number | n
   if (minPrice === maxPrice) {
     return formatPriceCompact(minPrice);
   }
-  return `${formatPriceCompact(minPrice)}-${formatPriceCompact(maxPrice)}`;
+  return `${formatPriceCompact(minPrice, 'down')}-${formatPriceCompact(maxPrice, 'up')}`;
 };
 
 const formatBedCount = (beds: number): string => (beds === 0 ? 'Studio' : `${beds} BR`);
