@@ -1048,6 +1048,7 @@ const AdminPage = (): ReactElement => {
                   photos={apartment.photos}
                   triggerPhotoCarousel={showPhotoCarousel}
                   setToggle={setToggle}
+                  review={apartment.review}
                 />
               </Grid>
             ))}
