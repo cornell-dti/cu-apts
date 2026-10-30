@@ -309,6 +309,23 @@ const MAX_TEXT_LENGTH = 1000;
 const MAX_HEADING_LENGTH = 80;
 const MAX_INTRO_LENGTH = 300;
 const MAX_KEY_FEATURE_LENGTH = 120;
+/** Most words in a comparison row's keyFeature. */
+export const MAX_KEY_FEATURE_WORDS = 12;
+
+/**
+ * Keeps the first `maxWords` words, cutting at a word boundary, and never more than `maxChars`
+ * characters. Trailing punctuation left dangling by the cut is removed.
+ */
+const trimToWords = (text: string, maxWords: number, maxChars: number): string => {
+  const words = text.split(' ').slice(0, maxWords);
+  while (words.length > 1 && words.join(' ').length > maxChars) {
+    words.pop();
+  }
+  return words
+    .join(' ')
+    .slice(0, maxChars)
+    .replace(/[\s,;:-]+$/, '');
+};
 
 /** A required string, sanitized and capped; fails if nothing is left. */
 const requiredText = (max: number) =>
@@ -334,7 +351,10 @@ const PropertyCardsSchema = z.object({ ...SectionSchema, listingIds: z.array(z.u
 const ComparisonTableSchema = z.object({ ...SectionSchema, rows: z.array(z.unknown()) });
 const ComparisonRowSchema = z.object({
   listingId: z.string(),
-  keyFeature: requiredText(MAX_KEY_FEATURE_LENGTH),
+  // Sanitize with room to spare, then trim by words so the cut never lands mid-word.
+  keyFeature: requiredText(MAX_TEXT_LENGTH)
+    .transform((value) => trimToWords(value, MAX_KEY_FEATURE_WORDS, MAX_KEY_FEATURE_LENGTH))
+    .refine((value) => value.length > 0),
 });
 const NeighborhoodsSchema = z.object({
   heading: requiredText(MAX_HEADING_LENGTH),
@@ -373,7 +393,6 @@ const validateBlock = (raw: unknown, known: ReadonlySet<string>): Block | null =
     parsed.data.rows.forEach((candidate) => {
       const row = ComparisonRowSchema.safeParse(candidate);
       if (!row.success || !known.has(row.data.listingId) || seen.has(row.data.listingId)) return;
-      if (rows.length >= MAX_COMPARISON_ROWS) return;
       seen.add(row.data.listingId);
       rows.push(row.data);
     });
@@ -400,6 +419,55 @@ const validateBlock = (raw: unknown, known: ReadonlySet<string>): Block | null =
   return null;
 };
 
+type ComparisonTable = Extract<Block, { type: 'comparison_table' }>;
+
+/** Applies the per-type block caps; the first blocks in the model's order win. */
+const capBlocks = (blocks: readonly Block[]): Block[] => {
+  let textCount = 0;
+  let nonTextCount = 0;
+  return blocks.filter((block) => {
+    if (block.type === 'text') {
+      textCount += 1;
+      return textCount <= MAX_TEXT_BLOCKS;
+    }
+    nonTextCount += 1;
+    return nonTextCount <= MAX_NON_TEXT_BLOCKS;
+  });
+};
+
+/**
+ * Keeps a listing from being shown twice in the cards and tables. A comparison row is dropped if
+ * its listing is in any property_cards block, or already has a row in an earlier table. Tables
+ * are capped at {@link MAX_COMPARISON_ROWS} after that, and one left with fewer than two rows is
+ * dropped and reported in `dropped`.
+ */
+const dedupeListings = (blocks: readonly Block[]) => {
+  const shown = new Set<string>(
+    blocks.flatMap((block) => (block.type === 'property_cards' ? block.listingIds : []))
+  );
+  const dropped: Block[] = [];
+  const kept: Block[] = [];
+
+  blocks.forEach((block) => {
+    if (block.type !== 'comparison_table') {
+      kept.push(block);
+      return;
+    }
+    const rows = block.rows
+      .filter((row) => !shown.has(row.listingId))
+      .slice(0, MAX_COMPARISON_ROWS);
+    if (rows.length < 2) {
+      dropped.push(block);
+      return;
+    }
+    rows.forEach((row) => shown.add(row.listingId));
+    const table: ComparisonTable = { ...block, rows };
+    kept.push(table);
+  });
+
+  return { kept, dropped };
+};
+
 /**
  * Validates the blocks the model returned, never failing the whole response over a bad one.
  *
@@ -408,6 +476,12 @@ const validateBlock = (raw: unknown, known: ReadonlySet<string>): Block | null =
  * too. Prices, beds, ratings and addresses are not accepted from the model at all: blocks carry
  * IDs, and the client looks the facts up in `listings`. Counts are capped; the first blocks in
  * the model's order win.
+ *
+ * A listing shown in property_cards loses its row in any comparison_table, and a listing
+ * repeated across tables keeps only its first row. A table left with fewer than two rows is
+ * dropped, which frees its place for a later block, so selection repeats until nothing more is
+ * dropped. Only blocks that are actually kept count when deduping. A `keyFeature` is trimmed to
+ * {@link MAX_KEY_FEATURE_WORDS} words.
  *
  * @param raw - the parsed model output: `{ blocks: [...] }`, or the bare array
  * @param listings - the hydrated candidates; only these IDs are valid
@@ -422,24 +496,16 @@ export const validateBlocks = (
   }
 
   const known = new Set(Object.keys(listings));
-  const blocks: Block[] = [];
-  let textCount = 0;
-  let nonTextCount = 0;
+  let pool = candidates.flatMap((candidate) => validateBlock(candidate, known) ?? []);
 
-  candidates.forEach((candidate) => {
-    const block = validateBlock(candidate, known);
-    if (!block) return;
-    if (block.type === 'text') {
-      if (textCount >= MAX_TEXT_BLOCKS) return;
-      textCount += 1;
-    } else {
-      if (nonTextCount >= MAX_NON_TEXT_BLOCKS) return;
-      nonTextCount += 1;
+  // Each pass can only drop more tables, so this ends after at most one pass per table.
+  for (;;) {
+    const { kept, dropped } = dedupeListings(capBlocks(pool));
+    if (dropped.length === 0) {
+      return kept;
     }
-    blocks.push(block);
-  });
-
-  return blocks;
+    pool = pool.filter((block) => !dropped.includes(block));
+  }
 };
 
 /** Longest review snippet shown to the model; shorter than what we show on a card. */
@@ -804,7 +870,7 @@ Headings and intros:
 Choosing blocks:
 - Use comparison_table when the user is weighing options or cost (for example "2 bedroom under $1500" or "compare"). Use property_cards for the best fits, and neighborhoods when the question is about where to live rather than a specific listing.
 - A listing may appear in only one block: never put the same listing in both property_cards and comparison_table, or twice across blocks.
-- keyFeature is at most 12 words and uses only the candidate's own data: area, bed range (described in words, never numbers) and what its review snippet says. No vague praise such as "great value", "nice place" or "good location". If the data offers nothing distinctive, say what is missing, such as "no review comments yet".
+- keyFeature is at most ${MAX_KEY_FEATURE_WORDS} words and uses only the candidate's own data: area, bed range (described in words, never numbers) and what its review snippet says. No vague praise such as "great value", "nice place" or "good location". If the data offers nothing distinctive, say what is missing, such as "no review comments yet".
 - If the query is off-topic or nonsense, output one short text block saying this searches Cornell-area apartments, plus at most one other block.
 - Use at most ${MAX_NON_TEXT_BLOCKS} blocks other than text, and at most ${MAX_TEXT_BLOCKS} text blocks. Fewer is fine.
 - Never include markdown, commentary, or any field not described above.

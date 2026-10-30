@@ -7,6 +7,7 @@ import { db } from './firebase-config';
 import { EMPTY_FILTERS, ParsedFilters, validateLlmSearchBody } from './llmSearch';
 import {
   BLOCK_PROMPT_EXAMPLES,
+  MAX_KEY_FEATURE_WORDS,
   aiSearchHandler,
   aiSearchMiddleware,
   generateBlocks,
@@ -551,7 +552,7 @@ describe('validateBlocks', () => {
     const blocks = [
       { type: 'text', content: 'Here are some options.' },
       { type: 'property_cards', heading: 'Best picks', intro: 'Top two', listingIds: ['a', 'b'] },
-      { type: 'comparison_table', heading: 'Compare', rows: [row('a'), row('b', 'Cheapest')] },
+      { type: 'comparison_table', heading: 'Compare', rows: [row('c'), row('d', 'Cheapest')] },
       { type: 'neighborhoods', heading: 'Areas', neighborhoods: ['COLLEGETOWN', 'NORTH'] },
     ];
     expect(validateBlocks({ blocks }, listings)).toEqual(blocks);
@@ -585,11 +586,6 @@ describe('validateBlocks', () => {
   it('ignores non-string IDs', () => {
     const [block] = validateBlocks([cards(['a', 7, null, { id: 'b' }])], listings);
     expect(block).toMatchObject({ listingIds: ['a'] });
-  });
-
-  it('allows the same listing in different blocks', () => {
-    const blocks = validateBlocks([cards(['a']), table([row('a'), row('b')])], listings);
-    expect(blocks).toHaveLength(2);
   });
 
   it(`caps property_cards at ${MAX_PROPERTY_CARDS} listings`, () => {
@@ -652,6 +648,181 @@ describe('validateBlocks', () => {
     );
     expect(blocks.filter((b) => b.type === 'text')).toHaveLength(MAX_TEXT_BLOCKS);
     expect(blocks.filter((b) => b.type !== 'text')).toHaveLength(3);
+  });
+
+  describe('listing dedupe across blocks', () => {
+    const idsOf = (block: Block | undefined) =>
+      block?.type === 'comparison_table' ? block.rows.map((r) => r.listingId) : [];
+
+    it('drops a comparison row whose listing is in property_cards', () => {
+      const blocks = validateBlocks(
+        [cards(['a', 'b']), table([row('a'), row('c'), row('b'), row('d')])],
+        listings
+      );
+      expect(idsOf(blocks[1])).toEqual(['c', 'd']);
+      expect(blocks[0]).toMatchObject({ listingIds: ['a', 'b'] });
+    });
+
+    it('applies whichever block comes first, so a table before the cards loses rows too', () => {
+      const blocks = validateBlocks(
+        [table([row('a'), row('c'), row('d')]), cards(['a'])],
+        listings
+      );
+      expect(blocks.map((b) => b.type)).toEqual(['comparison_table', 'property_cards']);
+      expect(idsOf(blocks[0])).toEqual(['c', 'd']);
+    });
+
+    it('drops the table when fewer than two rows are left', () => {
+      const blocks = validateBlocks(
+        [cards(['a', 'b']), table([row('a'), row('b'), row('c')])],
+        listings
+      );
+      expect(blocks.map((b) => b.type)).toEqual(['property_cards']);
+    });
+
+    it('keeps only the first appearance of a listing repeated in two tables', () => {
+      const blocks = validateBlocks(
+        [
+          table([row('a'), row('b'), row('c')], { heading: 'First' }),
+          table([row('c'), row('d'), row('e')], { heading: 'Second' }),
+        ],
+        listings
+      );
+      expect(idsOf(blocks[0])).toEqual(['a', 'b', 'c']);
+      expect(idsOf(blocks[1])).toEqual(['d', 'e']);
+    });
+
+    it('drops a later table left with fewer than two rows', () => {
+      const blocks = validateBlocks(
+        [table([row('a'), row('b')], { heading: 'First' }), table([row('a'), row('b'), row('c')])],
+        listings
+      );
+      expect(blocks).toHaveLength(1);
+      expect(blocks[0]).toMatchObject({ heading: 'First' });
+    });
+
+    it('lets a later table reuse listings from a table that was itself dropped', () => {
+      const blocks = validateBlocks(
+        [
+          cards(['a']),
+          table([row('a'), row('b')], { heading: 'Dropped' }),
+          table([row('b'), row('c')], { heading: 'Kept' }),
+        ],
+        listings
+      );
+      expect(blocks.map((b) => (b.type === 'text' ? '' : b.heading))).toEqual([
+        'Best picks',
+        'Kept',
+      ]);
+      expect(idsOf(blocks[1])).toEqual(['b', 'c']);
+    });
+
+    it(`applies the ${MAX_COMPARISON_ROWS}-row cap after removing duplicates`, () => {
+      const all = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+      const blocks = validateBlocks([cards(['a', 'b']), table(all.map((id) => row(id)))], listings);
+      expect(idsOf(blocks[1])).toEqual(['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
+    });
+
+    it('ignores a property_cards block that the block cap removed', () => {
+      const blocks = validateBlocks(
+        [
+          table([row('d'), row('e'), row('f')]),
+          cards(['a'], { heading: 'two' }),
+          cards(['b'], { heading: 'three' }),
+          cards(['d'], { heading: 'over the cap' }),
+        ],
+        listings
+      );
+      expect(blocks).toHaveLength(MAX_NON_TEXT_BLOCKS);
+      expect(idsOf(blocks[0])).toEqual(['d', 'e', 'f']);
+    });
+
+    it('lets a later block take the place of a table that was dropped', () => {
+      const blocks = validateBlocks(
+        [
+          cards(['a', 'b'], { heading: 'one' }),
+          table([row('a'), row('b')], { heading: 'dropped' }),
+          cards(['c'], { heading: 'two' }),
+          cards(['d'], { heading: 'three' }),
+        ],
+        listings
+      );
+      expect(blocks.map((b) => (b.type === 'text' ? '' : b.heading))).toEqual([
+        'one',
+        'two',
+        'three',
+      ]);
+    });
+
+    it('leaves listings repeated across property_cards blocks alone', () => {
+      const blocks = validateBlocks(
+        [cards(['a', 'b'], { heading: 'one' }), cards(['a'], { heading: 'two' })],
+        listings
+      );
+      expect(blocks).toHaveLength(2);
+    });
+
+    it('never leaves the same listing in both the cards and the table', () => {
+      const blocks = validateBlocks(
+        [cards(['a', 'b', 'c']), table([row('a'), row('b'), row('c'), row('d'), row('e')])],
+        listings
+      );
+      const shown = blocks.flatMap((b) => {
+        if (b.type === 'property_cards') return [...b.listingIds];
+        return idsOf(b);
+      });
+      expect(new Set(shown).size).toEqual(shown.length);
+    });
+  });
+
+  describe('keyFeature length', () => {
+    const featureOf = (keyFeature: string) => {
+      const [block] = validateBlocks([table([row('a', keyFeature), row('b')])], listings);
+      return block.type === 'comparison_table' ? block.rows[0].keyFeature : undefined;
+    };
+    const words = (n: number) => Array.from({ length: n }, (_, i) => `w${i + 1}`).join(' ');
+
+    it(`trims to ${MAX_KEY_FEATURE_WORDS} words`, () => {
+      expect(featureOf(words(15))).toEqual(words(12));
+    });
+
+    it('leaves exactly 12 words, and shorter text, unchanged', () => {
+      expect(featureOf(words(12))).toEqual(words(12));
+      expect(featureOf('Collegetown, no review comments yet')).toEqual(
+        'Collegetown, no review comments yet'
+      );
+    });
+
+    it('cuts at a word boundary and drops punctuation left dangling by the cut', () => {
+      const text =
+        'one two three four five six seven eight nine ten eleven twelve, thirteen fourteen';
+      expect(featureOf(text)).toEqual(
+        'one two three four five six seven eight nine ten eleven twelve'
+      );
+    });
+
+    it('counts words after collapsing extra whitespace and control characters', () => {
+      expect(featureOf(`  ${words(11)} \n\t  w12\u200B  w13  w14 `)).toEqual(words(12));
+    });
+
+    it('still keeps a very long run of words within the character cap, whole words only', () => {
+      const long = Array.from({ length: 12 }, () => 'x'.repeat(30)).join(' ');
+      const result = featureOf(long) as string;
+      expect(result.length).toBeLessThanOrEqual(120);
+      expect(result.split(' ').every((word) => word === 'x'.repeat(30))).toBe(true);
+    });
+
+    it('hard-cuts a single word longer than the character cap', () => {
+      expect((featureOf('y'.repeat(300)) as string).length).toEqual(120);
+    });
+
+    it('still drops a row whose keyFeature is empty', () => {
+      const [block] = validateBlocks([table([row('a', '   '), row('b'), row('c')])], listings);
+      expect(block.type === 'comparison_table' && block.rows.map((r) => r.listingId)).toEqual([
+        'b',
+        'c',
+      ]);
+    });
   });
 
   it('drops invalid blocks rather than failing the rest', () => {
