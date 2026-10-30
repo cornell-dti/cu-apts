@@ -1,12 +1,17 @@
 import React, { ReactElement } from 'react';
 import { Container, Typography, makeStyles } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
+import { ListingSummary } from '../../../common/types/ai-search-types';
 import { useTitle } from '../utils';
 import { colors } from '../colors';
 import { useAiSearch } from '../hooks/useAiSearch';
 import Autocomplete from '../components/Search/Autocomplete';
+import AiSearchMap from '../components/AiSearch/AiSearchMap';
 import BlockRenderer from '../components/AiSearch/BlockRenderer';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
+
+// Stable identity so the map doesn't refit on every render while there is no response.
+const NO_LISTINGS: Readonly<Record<string, ListingSummary>> = {};
 
 const useStyles = makeStyles((theme) => ({
   // Figma: the search bar sits directly under the nav at x=38; the right edge is left open so the
@@ -47,17 +52,23 @@ const useStyles = makeStyles((theme) => ({
       marginLeft: 0,
     },
   },
-  // Placeholder for the map, which is built in a later step.
+  // Figma map: 458x601 with a 10px radius. Stays in view beside the scrolling blocks on desktop.
   map: {
-    flex: '1 1 519px',
-    maxWidth: '519px',
+    flex: '1 1 458px',
+    maxWidth: '458px',
     minWidth: 0,
-    height: '682px',
+    height: '601px',
     borderRadius: '10px',
+    overflow: 'hidden',
     backgroundColor: colors.gray5,
+    position: 'sticky',
+    top: '16px',
     [theme.breakpoints.down('sm')]: {
       flex: 'none',
+      position: 'static',
       width: '100%',
+      maxWidth: 'none',
+      height: '320px',
     },
   },
   message: {
@@ -106,7 +117,9 @@ const AiSearchPage = (): ReactElement => {
       </div>
       <div className={content}>
         <div className={blocks}>{renderBlocks()}</div>
-        <div className={map} />
+        <div className={map}>
+          <AiSearchMap listings={data?.listings ?? NO_LISTINGS} />
+        </div>
       </div>
     </Container>
   );
