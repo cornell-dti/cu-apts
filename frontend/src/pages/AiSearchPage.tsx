@@ -31,10 +31,13 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: '16px',
+    // Figma: the column ends at x=859 and the map image starts at x=930 (71px apart).
+    gap: '71px',
     [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
       alignItems: 'stretch',
+      // Stacked, the gap is the space between the blocks and the map.
+      gap: '16px',
     },
   },
   blocks: {
