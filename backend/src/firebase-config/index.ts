@@ -10,10 +10,14 @@ const hydrateServiceAccount = (): admin.ServiceAccount => {
   return { projectId, clientEmail, privateKey };
 };
 
-admin.initializeApp({
-  credential: admin.credential.cert(hydrateServiceAccount()),
-  databaseURL: process.env.REACT_APP_DATABASE_URL,
-});
+if (process.env.NODE_ENV === 'test' || process.env.FIRESTORE_EMULATOR_HOST) {
+  admin.initializeApp({ projectId: 'cuapts-68201' });
+} else {
+  admin.initializeApp({
+    credential: admin.credential.cert(hydrateServiceAccount()),
+    databaseURL: process.env.REACT_APP_DATABASE_URL,
+  });
+}
 
 const db = admin.firestore();
 const auth = admin.auth();

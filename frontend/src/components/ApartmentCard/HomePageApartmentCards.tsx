@@ -243,7 +243,7 @@ const ApartmentCards = ({
       <div className={classes.cardsContainer} ref={containerRef}>
         {data &&
           sortApartments(data, sortMethod, orderLowToHigh).map(
-            ({ buildingData, numReviews, company, avgRating }, index) => {
+            ({ buildingData, numReviews, company, avgRating, apartmentTags }, index) => {
               const { id } = buildingData;
               return (
                 <div key={id}>
@@ -263,6 +263,7 @@ const ApartmentCards = ({
                         company={company}
                         user={user}
                         setUser={setUser}
+                        apartmentTags={apartmentTags}
                       />
                     ) : (
                       <LargeApartmentCard
@@ -273,6 +274,7 @@ const ApartmentCards = ({
                         company={company}
                         user={user}
                         setUser={setUser}
+                        apartmentTags={apartmentTags}
                       />
                     )}
                   </Link>

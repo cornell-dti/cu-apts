@@ -12,7 +12,7 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { get } from '../../utils/call';
-import { LandlordOrApartmentWithLabel } from '../../../../common/types/db-types';
+import { LandlordOrApartmentWithLabel, TagWithId } from '../../../../common/types/db-types';
 import SearchIcon from '../../assets/search-icon.svg';
 import { makeStyles } from '@material-ui/core/styles';
 import { colors } from '../../colors';
@@ -23,6 +23,7 @@ import searchLandlordIcon from '../../assets/search-landlord.svg';
 import filterIcon from '../../assets/filter.svg';
 import FilterSection, { FilterState } from './FilterSection';
 import FilterDropDown from './FilterDropDown';
+import TagSearchSection from './TagSearchSection';
 
 type Props = {
   drawerOpen: boolean;
@@ -34,6 +35,7 @@ const defaultFilters: FilterState = {
   maxPrice: '',
   bedrooms: 0,
   bathrooms: 0,
+  tagIds: [],
   initialSortBy: 'avgRating',
   initialSortLowToHigh: false,
 };
@@ -203,6 +205,8 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [isUserTyping, setIsUserTyping] = useState(false);
+  const [allTags, setAllTags] = useState<TagWithId[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(true);
   const history = useHistory();
 
   // Update query and filters when URL changes (for search results page)
@@ -218,7 +222,7 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       // Mark that this update is from URL, not user typing
       setIsUserTyping(false);
       setQuery(urlQuery);
-      setFilters(urlFilters);
+      setFilters({ ...defaultFilters, ...urlFilters });
       setOpenMenu(false);
 
       // Blur the input to ensure dropdown doesn't show
@@ -334,6 +338,12 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
                 autoFocusItem={focus}
                 onKeyDown={handleListKeyDown}
               >
+                <TagSearchSection
+                  allTags={allTags}
+                  tagsLoading={tagsLoading}
+                  filters={filters}
+                  onChange={handleFilterChange}
+                />
                 {options.length === 0 && query.trim().length > 0 ? (
                   <MenuItem disabled>No search results.</MenuItem>
                 ) : options.length === 0 ? null : (
@@ -393,6 +403,20 @@ const Autocomplete = ({ drawerOpen }: Props): ReactElement => {
       setOpenMenu(false);
     }
   }, [query, selected, isUserTyping]);
+
+  useEffect(() => {
+    setTagsLoading(true);
+    get<TagWithId[]>('/api/tags', {
+      callback: (data) => {
+        setAllTags(data);
+        setTagsLoading(false);
+      },
+      errorHandler: () => {
+        setAllTags([]);
+        setTagsLoading(false);
+      },
+    });
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {

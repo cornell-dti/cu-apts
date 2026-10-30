@@ -1,1 +1,1 @@
-NODE_ENV=test jest --detectOpenHandles --forceExit
+NODE_ENV=test ./node_modules/.bin/jest --detectOpenHandles --forceExit

@@ -10,6 +10,7 @@ import { CardData } from '../App';
 import { get } from '../utils/call';
 import ApartmentCards from '../components/ApartmentCard/ApartmentCards';
 import { useSaveScrollPosition } from '../utils/saveScrollPosition';
+import { tagIdsSearchSuffix } from '../utils/tagQueryFromUrl';
 
 interface Images {
   [location: string]: string;
@@ -65,7 +66,11 @@ const LocationPage = ({ user, setUser }: Props): ReactElement => {
   const path = useLocation();
   const [pathName] = useState(path.pathname);
   const location = path.pathname.substring(path.pathname.lastIndexOf('/') + 1);
-  const locAPI = `/api/location/${location}/`;
+  const locTagSuffix = tagIdsSearchSuffix(path.search);
+  const locAPI =
+    locTagSuffix.length > 0
+      ? `/api/location/${location}/` + locTagSuffix
+      : `/api/location/${location}/`;
   const locToImg: Images = {
     Collegetown: CollegetownImg,
     West: WestImg,
