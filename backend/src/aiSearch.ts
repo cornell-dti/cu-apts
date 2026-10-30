@@ -36,8 +36,8 @@ export const MAX_CANDIDATES = 20;
  */
 export const REVIEW_SORT_POOL = 30;
 
-/** Sort fields that can only be evaluated after reviews are fetched. */
-export type ReviewSortField = 'avgRating' | 'numReviews';
+/** Sort fields that can only be evaluated after reviews are fetched (price falls back to them). */
+export type ReviewSortField = 'avgRating' | 'numReviews' | 'price';
 
 export type CandidateSelection = {
   /** Ordered candidates. At most {@link MAX_CANDIDATES}, or {@link REVIEW_SORT_POOL} when `reviewSort` is set. */
@@ -77,23 +77,6 @@ const matchesFilters = (apt: ApartmentWithId, filters: MatchFilters): boolean =>
 const byDistance = (a: ApartmentWithId, b: ApartmentWithId): number =>
   a.distanceToCampus - b.distanceToCampus;
 
-/** The lowest room type price, or null if the apartment has none. */
-const minPriceOf = (apt: ApartmentWithId): number | null => {
-  const prices = (apt.roomTypes ?? []).map((room) => room.price).filter(Number.isFinite);
-  return prices.length > 0 ? Math.min(...prices) : null;
-};
-
-/** Cheapest first by minimum room type price, unpriced last, ties nearest first. */
-const byPrice = (a: ApartmentWithId, b: ApartmentWithId): number => {
-  const priceA = minPriceOf(a);
-  const priceB = minPriceOf(b);
-  if (priceA === null || priceB === null) {
-    if (priceA === priceB) return byDistance(a, b);
-    return priceA === null ? 1 : -1;
-  }
-  return priceA - priceB || byDistance(a, b);
-};
-
 /**
  * Picks the apartments to show for a set of filters.
  *
@@ -101,8 +84,8 @@ const byPrice = (a: ApartmentWithId, b: ApartmentWithId): number => {
  * something does, ending with every apartment. `filtersMatched` reports whether the original
  * filters were satisfied, so the prompt can avoid claiming a match that did not happen.
  *
- * Ordering follows `sortBy`: distance (the default), price (cheapest first by minimum room type
- * price, unpriced last) and original order need no review data and are applied here; `avgRating` and `numReviews` return the {@link REVIEW_SORT_POOL} nearest
+ * Ordering follows `sortBy`: distance (the default) and original order need no review data and
+ * are applied here; `avgRating`, `numReviews` and `price` return the {@link REVIEW_SORT_POOL} nearest
  * matches along with `reviewSort`, for the caller to finish once reviews are loaded.
  */
 export const selectCandidates = (
@@ -122,21 +105,13 @@ export const selectCandidates = (
   const filtersMatched = firstHit === 0;
 
   const { sortBy, sortLowToHigh } = filters;
-  if (sortBy === 'avgRating' || sortBy === 'numReviews') {
+  if (sortBy === 'avgRating' || sortBy === 'numReviews' || sortBy === 'price') {
     return {
       candidates: [...matched].sort(byDistance).slice(0, REVIEW_SORT_POOL),
       filtersMatched,
-      // Higher is better for both fields unless the user asked for the reverse.
-      reviewSort: { field: sortBy, ascending: sortLowToHigh === true },
-    };
-  }
-
-  if (sortBy === 'price') {
-    // Ascending only: the filter step only produces "cheapest first", so sortLowToHigh is moot.
-    return {
-      candidates: [...matched].sort(byPrice).slice(0, MAX_CANDIDATES),
-      filtersMatched,
-      reviewSort: null,
+      // Higher is better for ratings and review counts unless the user asked for the reverse.
+      // Price is always cheapest first: the filter step only produces that direction.
+      reviewSort: { field: sortBy, ascending: sortBy === 'price' || sortLowToHigh === true },
     };
   }
 
@@ -184,6 +159,7 @@ export const truncateAtWord = (text: string, max: number): string => {
 
 type ReviewFields = {
   readonly overallRating?: number;
+  readonly price?: number;
   readonly likes?: number;
   readonly reviewText?: string;
 };
@@ -224,16 +200,39 @@ const buildListing = (apt: ApartmentWithId, reviews: readonly ReviewFields[]): L
   };
 };
 
+/** A hydrated listing plus the price used to order it; the price is never sent to clients. */
+export type HydratedCandidate = {
+  readonly listing: ListingSummary;
+  /**
+   * Cheapest room type price, else the average price reported in approved reviews (as
+   * `avgPrice` in the apartment page data), else null. For ordering only: unlike the
+   * listing's own price range, it may come from review data.
+   */
+  readonly sortPrice: number | null;
+};
+
+const sortPriceOf = (apt: ApartmentWithId, reviews: readonly ReviewFields[]): number | null => {
+  const roomPrices = (apt.roomTypes ?? []).map((room) => room.price).filter(Number.isFinite);
+  if (roomPrices.length > 0) {
+    return Math.min(...roomPrices);
+  }
+  // Reviews with no price recorded (0) are excluded, as in the page data's avgPrice.
+  const reviewPrices = reviews.map((review) => review.price ?? 0).filter((price) => price > 0);
+  return reviewPrices.length > 0
+    ? reviewPrices.reduce((sum, price) => sum + price, 0) / reviewPrices.length
+    : null;
+};
+
 /**
- * Builds a {@link ListingSummary} for each apartment, in the same order.
+ * Hydrates each apartment, in the same order, with its listing and its ordering price.
  *
- * Ratings and the featured review come from APPROVED reviews only. All reviews are fetched in
- * one `aptId in [...]` query (Firestore allows 30 values), so the cost is one read per approved
- * review of these apartments.
+ * Ratings, the featured review and the fallback price come from APPROVED reviews only. All
+ * reviews are fetched in one `aptId in [...]` query (Firestore allows 30 values), so the cost is
+ * one read per approved review of these apartments.
  */
-export const hydrateListings = async (
+export const hydrateCandidates = async (
   apts: readonly ApartmentWithId[]
-): Promise<ListingSummary[]> => {
+): Promise<HydratedCandidate[]> => {
   if (apts.length === 0) {
     return [];
   }
@@ -256,21 +255,31 @@ export const hydrateListings = async (
     reviewsByApt.set(data.aptId, list);
   });
 
-  return apts.map((apt) => buildListing(apt, reviewsByApt.get(apt.id) ?? []));
+  return apts.map((apt) => {
+    const reviews = reviewsByApt.get(apt.id) ?? [];
+    return { listing: buildListing(apt, reviews), sortPrice: sortPriceOf(apt, reviews) };
+  });
 };
 
+/** Builds a {@link ListingSummary} for each apartment, in the same order. */
+export const hydrateListings = async (
+  apts: readonly ApartmentWithId[]
+): Promise<ListingSummary[]> => (await hydrateCandidates(apts)).map(({ listing }) => listing);
+
 /**
- * Finishes a rating or review-count sort once listings are hydrated, keeping the top
- * {@link MAX_CANDIDATES}. Unrated listings sort last in either direction, and ties keep the
- * incoming (nearest-first) order.
+ * Finishes a rating, review-count or price sort once candidates are hydrated, keeping the top
+ * {@link MAX_CANDIDATES}. Candidates without a value (unrated, unpriced) sort last in either
+ * direction, and ties keep the incoming (nearest-first) order.
  */
-export const sortByReviewField = (
-  listings: readonly ListingSummary[],
+export const sortHydratedCandidates = (
+  candidates: readonly HydratedCandidate[],
   sort: { readonly field: ReviewSortField; readonly ascending: boolean }
-): ListingSummary[] => {
+): HydratedCandidate[] => {
   const direction = sort.ascending ? 1 : -1;
-  return listings
-    .map((listing, index) => ({ listing, index, value: listing[sort.field] }))
+  const valueOf = ({ listing, sortPrice }: HydratedCandidate): number | null =>
+    sort.field === 'price' ? sortPrice : listing[sort.field];
+  return candidates
+    .map((candidate, index) => ({ candidate, index, value: valueOf(candidate) }))
     .sort((a, b) => {
       if (a.value === null || b.value === null) {
         if (a.value === b.value) return a.index - b.index;
@@ -279,7 +288,7 @@ export const sortByReviewField = (
       return direction * (a.value - b.value) || a.index - b.index;
     })
     .slice(0, MAX_CANDIDATES)
-    .map(({ listing }) => listing);
+    .map(({ candidate }) => candidate);
 };
 
 /** Neighborhoods the model may pick from; mirrors {@link NeighborhoodId}. */
@@ -664,10 +673,11 @@ export const aiSearchHandler = async (req: Request, res: Response): Promise<void
   try {
     const selection = selectCandidates(await loadApartments(req.app), filters);
     filtersMatched = selection.filtersMatched;
-    listingList = await hydrateListings(selection.candidates);
+    let hydrated = await hydrateCandidates(selection.candidates);
     if (selection.reviewSort) {
-      listingList = sortByReviewField(listingList, selection.reviewSort);
+      hydrated = sortHydratedCandidates(hydrated, selection.reviewSort);
     }
+    listingList = hydrated.map(({ listing }) => listing);
     const aptById = new Map(selection.candidates.map((apt) => [apt.id, apt]));
     aptsInOrder = listingList.flatMap((listing) => aptById.get(listing.id) ?? []);
   } catch (err) {

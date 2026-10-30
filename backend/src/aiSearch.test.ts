@@ -15,10 +15,11 @@ import {
   MAX_NON_TEXT_BLOCKS,
   MAX_PROPERTY_CARDS,
   MAX_TEXT_BLOCKS,
+  hydrateCandidates,
   hydrateListings,
   loadApartments,
   selectCandidates,
-  sortByReviewField,
+  sortHydratedCandidates,
   truncateAtWord,
   MAX_CANDIDATES,
   MAX_FEATURED_REVIEW_LENGTH,
@@ -217,42 +218,16 @@ describe('selectCandidates - ordering', () => {
     expect(result.reviewSort).toEqual({ field: 'avgRating', ascending: true });
   });
 
-  describe('price sort', () => {
-    const priced = (id: string, prices: number[], distanceToCampus = 10) =>
-      apt(id, {
-        distanceToCampus,
-        roomTypes: prices.map((price, i) => ({ id: `${id}${i}`, beds: 1 + i, baths: 1, price })),
-      });
-    const pool = [
-      priced('mid', [1800, 2600]),
-      priced('none', []),
-      priced('cheap-far', [900, 3000], 30),
-      priced('cheap-near', [900], 2),
-      priced('high', [2400]),
-    ];
+  it('takes the nearest pool for the caller to hydrate and sort when sorting by price', () => {
+    const result = selectCandidates(many, filters({ sortBy: 'price' }));
+    expect(result.candidates).toHaveLength(REVIEW_SORT_POOL);
+    expect(ids(result)[0]).toEqual('a39');
+    expect(result.reviewSort).toEqual({ field: 'price', ascending: true });
+  });
 
-    it('orders by minimum room type price, cheapest first', () => {
-      const result = selectCandidates(pool, filters({ sortBy: 'price' }));
-      expect(ids(result)).toEqual(['cheap-near', 'cheap-far', 'mid', 'high', 'none']);
-      expect(result.reviewSort).toBeNull();
-    });
-
-    it('breaks price ties by distance', () => {
-      const result = selectCandidates(pool, filters({ sortBy: 'price' }));
-      expect(ids(result).slice(0, 2)).toEqual(['cheap-near', 'cheap-far']);
-    });
-
-    it('stays ascending whatever sortLowToHigh says', () => {
-      const result = selectCandidates(pool, filters({ sortBy: 'price', sortLowToHigh: false }));
-      expect(ids(result)[0]).toEqual('cheap-near');
-    });
-
-    it('sorts within the filtered set and caps at 20', () => {
-      const many = Array.from({ length: 30 }, (_, i) => priced(`p${i}`, [3000 - i * 10]));
-      const result = selectCandidates(many, filters({ sortBy: 'price' }));
-      expect(result.candidates).toHaveLength(MAX_CANDIDATES);
-      expect(ids(result)[0]).toEqual('p29');
-    });
+  it('keeps the price sort ascending whatever sortLowToHigh says', () => {
+    const result = selectCandidates(many, filters({ sortBy: 'price', sortLowToHigh: false }));
+    expect(result.reviewSort).toEqual({ field: 'price', ascending: true });
   });
 
   it('does not mutate the input array', () => {
@@ -451,37 +426,89 @@ describe('truncateAtWord', () => {
   });
 });
 
-describe('sortByReviewField', () => {
-  const listing = (id: string, avgRating: number | null, numReviews: number) =>
-    ({ id, avgRating, numReviews } as never);
+describe('sortHydratedCandidates', () => {
+  const candidate = (
+    id: string,
+    avgRating: number | null,
+    numReviews: number,
+    sortPrice: number | null = null
+  ) => ({ listing: { id, avgRating, numReviews } as never, sortPrice });
   const input = [
-    listing('unrated', null, 0),
-    listing('low', 2, 40),
-    listing('high', 5, 3),
-    listing('mid', 3.5, 10),
+    candidate('unrated', null, 0),
+    candidate('low', 2, 40),
+    candidate('high', 5, 3),
+    candidate('mid', 3.5, 10),
   ];
-  const order = (result: { id: string }[]) => result.map((l) => l.id);
+  const order = (result: { listing: { id: string } }[]) => result.map((c) => c.listing.id);
 
   it('sorts best rating first, unrated last', () => {
-    const result = sortByReviewField(input, { field: 'avgRating', ascending: false });
+    const result = sortHydratedCandidates(input, { field: 'avgRating', ascending: false });
     expect(order(result)).toEqual(['high', 'mid', 'low', 'unrated']);
   });
 
   it('sorts lowest rating first, still with unrated last', () => {
-    const result = sortByReviewField(input, { field: 'avgRating', ascending: true });
+    const result = sortHydratedCandidates(input, { field: 'avgRating', ascending: true });
     expect(order(result)).toEqual(['low', 'mid', 'high', 'unrated']);
   });
 
   it('sorts by review count', () => {
-    const result = sortByReviewField(input, { field: 'numReviews', ascending: false });
+    const result = sortHydratedCandidates(input, { field: 'numReviews', ascending: false });
     expect(order(result)).toEqual(['low', 'mid', 'high', 'unrated']);
   });
 
+  it('sorts by price, cheapest first, unpriced last', () => {
+    const priced = [
+      candidate('none', null, 0, null),
+      candidate('high', null, 0, 2400),
+      candidate('cheap', null, 0, 900),
+      candidate('mid', null, 0, 1800),
+    ];
+    const result = sortHydratedCandidates(priced, { field: 'price', ascending: true });
+    expect(order(result)).toEqual(['cheap', 'mid', 'high', 'none']);
+  });
+
   it('keeps incoming order on ties and keeps only the top 20', () => {
-    const tied = Array.from({ length: 30 }, (_, i) => listing(`t${i}`, 4, 1));
-    const result = sortByReviewField(tied, { field: 'avgRating', ascending: false });
+    const tied = Array.from({ length: 30 }, (_, i) => candidate(`t${i}`, 4, 1));
+    const result = sortHydratedCandidates(tied, { field: 'avgRating', ascending: false });
     expect(result).toHaveLength(MAX_CANDIDATES);
     expect(order(result).slice(0, 3)).toEqual(['t0', 't1', 't2']);
+  });
+});
+
+describe('hydrateCandidates - ordering price', () => {
+  beforeEach(() => jest.resetAllMocks());
+  const rooms = (...prices: number[]) =>
+    prices.map((price, i) => ({ id: `r${i}`, beds: 1, baths: 1, price }));
+
+  it('uses the cheapest room type price when there are room types', async () => {
+    stubReviews([review('a', { price: 500 })]);
+    const [result] = await hydrateCandidates([apt('a', { roomTypes: rooms(2000, 1400) })]);
+    expect(result.sortPrice).toEqual(1400);
+  });
+
+  it('falls back to the average approved-review price when room types are empty', async () => {
+    stubReviews([
+      review('a', { price: 1000 }),
+      review('a', { price: 2000 }),
+      review('a', { price: 0 }),
+      review('a', { price: undefined }),
+    ]);
+    const [result] = await hydrateCandidates([apt('a', { roomTypes: [] })]);
+    expect(result.sortPrice).toEqual(1500);
+  });
+
+  it('is null with neither room types nor priced reviews', async () => {
+    stubReviews([review('a', { price: 0 })]);
+    const [result] = await hydrateCandidates([apt('a', { roomTypes: [] })]);
+    expect(result.sortPrice).toBeNull();
+  });
+
+  it('never exposes the review-derived price on the listing', async () => {
+    stubReviews([review('a', { price: 1500 })]);
+    const [result] = await hydrateCandidates([apt('a', { roomTypes: [] })]);
+    expect(result.listing).toMatchObject({ minPrice: null, maxPrice: null });
+    expect(Object.keys(result.listing)).not.toContain('avgPrice');
+    expect(Object.keys(result.listing)).not.toContain('sortPrice');
   });
 });
 
@@ -1102,6 +1129,42 @@ describe('POST /api/ai-search', () => {
       expect(ids).toHaveLength(MAX_CANDIDATES);
       expect(ids.slice(0, 5).sort()).toEqual(['m25', 'm26', 'm27', 'm28', 'm29']);
       expect(ids.every((id) => Number(id.slice(1)) < REVIEW_SORT_POOL)).toBe(true);
+    });
+
+    it('sorts by price over the 30 nearest, using review prices when room types are empty', async () => {
+      const priced = (id: string, distanceToCampus: number, price: number | null) =>
+        apt(id, {
+          distanceToCampus,
+          roomTypes: price === null ? [] : [{ id: `${id}r`, beds: 2, baths: 1, price }],
+        });
+      const pool = [
+        priced('room-1500', 1, 1500),
+        priced('room-900', 2, 900),
+        priced('review-700', 3, null),
+        priced('unpriced', 4, null),
+        priced('review-1200', 5, null),
+      ];
+      stubReviews([
+        review('review-700', { price: 700, reviewText: undefined }),
+        review('review-1200', { price: 1200, reviewText: undefined }),
+        review('unpriced', { price: 0, reviewText: undefined }),
+      ]);
+      mockedAxios.post
+        .mockResolvedValueOnce(filterReply({ sortBy: 'price', sortLowToHigh: true }))
+        .mockResolvedValueOnce(geminiReply({ blocks: [] }));
+
+      const res = await search(buildApp(pool));
+
+      expect(Object.keys(res.body.listings)).toEqual([
+        'review-700',
+        'room-900',
+        'review-1200',
+        'room-1500',
+        'unpriced',
+      ]);
+      // The review-derived price orders results but is never shown.
+      expect(res.body.listings['review-700']).toMatchObject({ minPrice: null, maxPrice: null });
+      expect(JSON.stringify(res.body)).not.toContain('avgPrice');
     });
 
     it('loads buildings into the cache when it is empty', async () => {
