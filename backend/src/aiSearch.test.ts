@@ -1,5 +1,6 @@
 import axios from 'axios';
 import request from 'supertest';
+import { Server } from 'http';
 import express from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
 import { Block, ListingSummary } from '@common/types/ai-search-types';
@@ -1333,8 +1334,33 @@ describe('POST /api/ai-search', () => {
     app.post('/api/ai-search', validateLlmSearchBody, aiSearchHandler);
     return app;
   };
-  const search = (app: express.Express, query = 'cheap 2br near campus') =>
-    request(app).post('/api/ai-search').send({ query });
+  /**
+   * One server per app, listening on the loopback address before any request. `request(app)`
+   * would start a server on a fresh ephemeral port per request, bound to `::` but reached via
+   * 127.0.0.1, so now and then a request lands on a port another local service holds on
+   * 127.0.0.1 and that service answers in the app's place (a "Parse Error: Expected HTTP/").
+   */
+  const servers = new Map<express.Express, Server>();
+  const serve = async (app: express.Express): Promise<Server> => {
+    const existing = servers.get(app);
+    if (existing) return existing;
+    const server = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
+    });
+    servers.set(app, server);
+    return server;
+  };
+  afterAll(async () => {
+    await Promise.all(
+      Array.from(servers.values()).map((server) => new Promise((resolve) => server.close(resolve)))
+    );
+    servers.clear();
+  });
+
+  const search = async (app: express.Express, query = 'cheap 2br near campus') =>
+    request(await serve(app))
+      .post('/api/ai-search')
+      .send({ query });
 
   /** The `search_context` JSON sent in the nth Gemini call (the second call is index 1). */
   const sentContext = (call: number) => {
@@ -1641,7 +1667,8 @@ describe('POST /api/ai-search', () => {
   describe('errors', () => {
     it('rejects a missing or overlong query without calling Gemini', async () => {
       const app = buildApp();
-      expect((await request(app).post('/api/ai-search').send({})).status).toEqual(400);
+      const server = await serve(app);
+      expect((await request(server).post('/api/ai-search').send({})).status).toEqual(400);
       expect((await search(app, 'x'.repeat(301))).status).toEqual(400);
       expect(mockedAxios.post).not.toHaveBeenCalled();
     });
@@ -1697,10 +1724,11 @@ describe('POST /api/ai-search', () => {
       app.set('apts', apts);
       app.post('/api/ai-search', ...aiSearchMiddleware, aiSearchHandler);
 
+      const server = await serve(app);
       const statuses: number[] = [];
       for (let i = 0; i < 6; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        const res = await request(app)
+        const res = await request(server)
           .post('/api/ai-search')
           .set('X-Forwarded-For', '192.0.2.77')
           .send({ query: 'cheap 2br' });
