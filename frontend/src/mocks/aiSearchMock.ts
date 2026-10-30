@@ -22,10 +22,19 @@ export const MOCK_AI_SEARCH_RESPONSE: AiSearchResponse = {
     {
       type: 'comparison_table',
       heading: 'How they compare',
+      intro:
+        'Prices vary with location and room type. Select a row to see more about each property.',
       rows: [
         { listingId: '238', keyFeature: 'Higher rent, but reviewers say it is worth it' },
         { listingId: '244', keyFeature: 'Fast maintenance and friendly staff' },
-        { listingId: '96', keyFeature: 'Downtown location with no reviews yet' },
+        // No price: shows "—". Long text: wraps onto a second line.
+        {
+          listingId: '96',
+          keyFeature:
+            'Downtown location close to restaurants and the Commons, with no reviews yet to confirm what living there is like.',
+        },
+        // Reviews but no featured review text.
+        { listingId: '245', keyFeature: 'Studio units at a single price' },
       ],
     },
     {

@@ -29,6 +29,17 @@ export const formatListingPrice = (minPrice: number | null, maxPrice: number | n
   return `${formatPriceCompact(minPrice, 'down')}-${formatPriceCompact(maxPrice, 'up')}`;
 };
 
+/**
+ * Formats the "Est. Price" shown for a listing: "~" + the compact minimum price (rounded down)
+ * + "+", e.g. "~$1.2K+". Returns "—" when the minimum price is unknown.
+ */
+export const formatEstimatedPrice = (minPrice: number | null): string =>
+  minPrice === null ? '—' : `~${formatPriceCompact(minPrice, 'down')}+`;
+
+/** Formats a review count: "1 Review", "19 Reviews". */
+export const formatReviewCount = (numReviews: number): string =>
+  `${numReviews} ${numReviews === 1 ? 'Review' : 'Reviews'}`;
+
 const formatBedCount = (beds: number): string => (beds === 0 ? 'Studio' : `${beds} BR`);
 
 /**

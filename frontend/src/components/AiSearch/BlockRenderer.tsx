@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
 import { Block, ListingSummary } from '../../../../common/types/ai-search-types';
 import { colors } from '../../colors';
+import ComparisonTableBlock from './ComparisonTableBlock';
 import PropertyCardsBlock from './PropertyCardsBlock';
 
 const useStyles = makeStyles({
@@ -62,14 +63,7 @@ const renderBlock = (
     case 'property_cards':
       return <PropertyCardsBlock block={block} listings={listings} />;
     case 'comparison_table':
-      return (
-        <BlockPlaceholder
-          type={block.type}
-          heading={block.heading}
-          count={block.rows.length}
-          unit="rows"
-        />
-      );
+      return <ComparisonTableBlock block={block} listings={listings} />;
     case 'neighborhoods':
       return (
         <BlockPlaceholder
