@@ -13,9 +13,9 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     gap: '20px',
     boxSizing: 'border-box',
-    // Figma card is 265px wide; shrink on narrow screens.
-    width: '265px',
-    maxWidth: '100%',
+    // Fills its grid cell; the block's grid sets the width.
+    width: '100%',
+    minWidth: 0,
     padding: '12px',
     backgroundColor: colors.white,
     border: `0.85px solid ${colors.gray5}`,
@@ -29,7 +29,8 @@ const useStyles = makeStyles({
   },
   photo: {
     width: '100%',
-    height: '200px',
+    // Figma photo is 241x200.64; keep that ratio as the card width changes.
+    aspectRatio: '241 / 200.64',
     objectFit: 'cover',
     borderRadius: '4px',
   },
