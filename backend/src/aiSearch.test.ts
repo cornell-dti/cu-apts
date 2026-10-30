@@ -6,6 +6,7 @@ import { Block, ListingSummary } from '@common/types/ai-search-types';
 import { db } from './firebase-config';
 import { EMPTY_FILTERS, ParsedFilters, validateLlmSearchBody } from './llmSearch';
 import {
+  BLOCK_PROMPT_EXAMPLES,
   aiSearchHandler,
   aiSearchMiddleware,
   generateBlocks,
@@ -835,6 +836,202 @@ describe('generateBlocks', () => {
     mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
     await generateBlocks('q', apts, listings, false);
     expect(sentParts()[2]).toContain('"filtersMatched":false');
+  });
+
+  describe('prompt quality rules', () => {
+    const instructionsFor = async () => {
+      mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
+      await generateBlocks('q', apts, listings, true);
+      return sentParts()[0];
+    };
+
+    it('limits text blocks to information the other blocks do not carry', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(/only when it tells the user something the other blocks do not/);
+      expect(instructions).toMatch(/nothing matched exactly/);
+      expect(instructions).toMatch(/price information is missing/);
+      expect(instructions).toMatch(/query is off-topic/);
+      expect(instructions).toMatch(/Never restate or paraphrase a heading or intro/);
+    });
+
+    it('asks for headings and intros specific to the query, ruling out generic labels', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(/Reflect the user's query in specific terms/);
+      expect(instructions).toContain('"Close to Campus"');
+      expect(instructions).toContain('"Popular Neighborhoods"');
+      expect(instructions).toContain('"Studios near Central Campus"');
+      expect(instructions).toContain('"Where first-years usually live"');
+      expect(instructions).toMatch(/Each intro is one sentence on why these listings fit/);
+    });
+
+    it('says when to use a comparison table and how to write keyFeature', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(/comparison_table when the user is weighing options or cost/);
+      expect(instructions).toContain('"2 bedroom under $1500"');
+      expect(instructions).toMatch(/keyFeature is at most 12 words/);
+      expect(instructions).toMatch(/only the candidate's own data: area, bed range/);
+      expect(instructions).toContain('"great value"');
+    });
+
+    it('forbids repeating a listing across property_cards and comparison_table', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(
+        /never put the same listing in both property_cards and comparison_table/
+      );
+    });
+
+    it('limits off-topic queries to one short text block plus at most one other block', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(/off-topic or nonsense, output one short text block/);
+      expect(instructions).toMatch(/plus at most one other block/);
+      expect(instructions).toMatch(/No marketing language/);
+      expect(instructions).toContain('"great locations"');
+    });
+
+    it('still bars stating listing facts, and avoids digits in text', async () => {
+      const instructions = await instructionsFor();
+      expect(instructions).toMatch(/Never write a price, bedroom count, rating/);
+      expect(instructions).toMatch(/avoid digits in all text/);
+    });
+  });
+
+  describe('few-shot examples', () => {
+    const listing = (id: string): ListingSummary => ({
+      id,
+      name: id,
+      address: '',
+      photoUrl: null,
+      minBeds: null,
+      maxBeds: null,
+      minPrice: null,
+      maxPrice: null,
+      avgRating: null,
+      numReviews: 0,
+      latitude: 0,
+      longitude: 0,
+      featuredReview: null,
+    });
+
+    const GENERIC_HEADINGS = ['close to campus', 'popular neighborhoods', 'top picks', 'top rated'];
+    const exampleIds = (example: typeof BLOCK_PROMPT_EXAMPLES[number]) =>
+      example.context.candidates.map((candidate) => candidate.id);
+    const knownListings = (example: typeof BLOCK_PROMPT_EXAMPLES[number]) =>
+      Object.fromEntries(exampleIds(example).map((id) => [id, listing(id)])) as Record<
+        string,
+        ListingSummary
+      >;
+    // Every piece of free text the model writes in an example.
+    const writtenText = (example: typeof BLOCK_PROMPT_EXAMPLES[number]) =>
+      example.blocks.flatMap((block) => {
+        if (block.type === 'text') return [block.content];
+        if (block.type === 'neighborhoods') return [block.heading];
+        const rows = block.type === 'comparison_table' ? block.rows.map((r) => r.keyFeature) : [];
+        return [block.heading, block.intro ?? '', ...rows];
+      });
+
+    it('has three examples, and the prompt shows each query, context and output in full', async () => {
+      mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
+      await generateBlocks('q', apts, listings, true);
+      const instructions = sentParts()[0];
+
+      expect(BLOCK_PROMPT_EXAMPLES).toHaveLength(3);
+      BLOCK_PROMPT_EXAMPLES.forEach((example, index) => {
+        expect(instructions).toContain(`Example ${index + 1}\nQuery: ${example.query}`);
+        expect(instructions).toContain(`Context: ${JSON.stringify(example.context)}`);
+        expect(instructions).toContain(`Output: ${JSON.stringify({ blocks: example.blocks })}`);
+      });
+    });
+
+    it('covers a specific query, a vague query, and a no-match query', () => {
+      const [specific, vague, noMatch] = BLOCK_PROMPT_EXAMPLES;
+      const types = (example: typeof specific) => example.blocks.map((block) => block.type);
+
+      expect(types(specific)).toEqual(['property_cards', 'comparison_table']);
+      expect(specific.context.filtersMatched).toBe(true);
+      expect(types(vague)).toEqual(['neighborhoods']);
+      expect(types(noMatch)).toEqual(['text', 'property_cards']);
+      expect(noMatch.context.filtersMatched).toBe(false);
+    });
+
+    it.each([0, 1, 2])('example %i passes the validator unchanged', (index) => {
+      const example = BLOCK_PROMPT_EXAMPLES[index];
+      expect(validateBlocks({ blocks: example.blocks }, knownListings(example))).toEqual(
+        example.blocks
+      );
+    });
+
+    it.each([0, 1, 2])('example %i follows the rules it teaches', (index) => {
+      const example = BLOCK_PROMPT_EXAMPLES[index];
+
+      // No digits in anything the model writes.
+      writtenText(example).forEach((text) => expect(text).not.toMatch(/\d/));
+
+      // keyFeature is at most 12 words.
+      example.blocks.forEach((block) => {
+        if (block.type !== 'comparison_table') return;
+        block.rows.forEach((row) => {
+          expect(row.keyFeature.split(/\s+/).length).toBeLessThanOrEqual(12);
+        });
+      });
+
+      // A listing appears once across property_cards and comparison_table.
+      const shown = example.blocks.flatMap((block) => {
+        if (block.type === 'property_cards') return [...block.listingIds];
+        if (block.type === 'comparison_table') return block.rows.map((row) => row.listingId);
+        return [];
+      });
+      expect(new Set(shown).size).toEqual(shown.length);
+
+      // Headings are specific, intros are present, and text never repeats a heading or intro.
+      example.blocks.forEach((block) => {
+        if (block.type === 'text') return;
+        expect(GENERIC_HEADINGS).not.toContain(block.heading.toLowerCase());
+        if (block.type !== 'neighborhoods') expect(block.intro).toBeTruthy();
+      });
+      const headings = example.blocks.flatMap((block) =>
+        block.type === 'text' ? [] : [block.heading.toLowerCase()]
+      );
+      example.blocks.forEach((block) => {
+        if (block.type === 'text') expect(headings).not.toContain(block.content.toLowerCase());
+      });
+
+      // Text blocks only appear where they add something: here, an unmatched search.
+      const textCount = example.blocks.filter((block) => block.type === 'text').length;
+      expect(textCount).toEqual(example.context.filtersMatched ? 0 : 1);
+    });
+
+    it('uses the same context shape the real prompt sends', async () => {
+      mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
+      await generateBlocks('q', apts, listings, true);
+      const real = JSON.parse(
+        sentParts()[2].replace(/^<search_context>\n|\n<\/search_context>$/g, '')
+      );
+
+      BLOCK_PROMPT_EXAMPLES.forEach(({ context }) => {
+        expect(Object.keys(context).sort()).toEqual(Object.keys(real).sort());
+        expect(Object.keys(context.priceCoverage).sort()).toEqual(
+          Object.keys(real.priceCoverage).sort()
+        );
+        context.candidates.forEach((candidate) => {
+          expect(Object.keys(candidate).sort()).toEqual(Object.keys(real.candidates[0]).sort());
+        });
+      });
+    });
+
+    it('tells the model the example listings are made up', async () => {
+      mockedAxios.post.mockResolvedValueOnce(reply({ blocks: [] }));
+      await generateBlocks('q', apts, listings, true);
+      expect(sentParts()[0]).toMatch(/made-up listings\. Never reuse their ids/);
+    });
+
+    it('does not let an example id pass validation for a real search', async () => {
+      mockedAxios.post.mockResolvedValueOnce(
+        reply({
+          blocks: [{ type: 'property_cards', heading: 'Copied', listingIds: ['example-a'] }],
+        })
+      );
+      expect(await generateBlocks('q', apts, listings, true)).toEqual([]);
+    });
   });
 
   describe('price coverage', () => {
