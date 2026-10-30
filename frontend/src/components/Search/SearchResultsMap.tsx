@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme) => ({
  * @param Props - Contains:
  *   - `apartments`: Array of apartment data (CardData) to display on the map
  *   - `isMobile`: Boolean indicating if viewing on mobile device
+ *   - `height`: Optional CSS height for the map, for pages that size it themselves
  *   - `user`: Current Firebase user object or null if not logged in
  *   - `setUser`: React setState function to update the user state
  *
@@ -62,11 +63,14 @@ const useStyles = makeStyles((theme) => ({
 function SearchResultsMap({
   apartments,
   isMobile,
+  height,
   user,
   setUser,
 }: {
   apartments: CardData[];
   isMobile: boolean;
+  // Overrides the map's own height (default: 100% of the parent, or 300px on mobile).
+  height?: string;
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 }): ReactElement {
@@ -119,7 +123,7 @@ function SearchResultsMap({
   };
 
   return (
-    <div className={outerMapDiv} style={{ height: !isMobile ? '100%' : '300px' }}>
+    <div className={outerMapDiv} style={{ height: height ?? (!isMobile ? '100%' : '300px') }}>
       <div className={innerMapDiv} style={{ height: !isMobile ? '110%' : '120%' }}>
         <GoogleMapReact
           onGoogleApiLoaded={handleApiLoaded}

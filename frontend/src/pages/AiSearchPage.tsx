@@ -1,17 +1,14 @@
-import React, { ReactElement } from 'react';
-import { Container, Typography, makeStyles } from '@material-ui/core';
+import React, { ReactElement, useMemo } from 'react';
+import { Container, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
-import { ListingSummary } from '../../../common/types/ai-search-types';
 import { useTitle } from '../utils';
 import { colors } from '../colors';
 import { useAiSearch } from '../hooks/useAiSearch';
 import Autocomplete from '../components/Search/Autocomplete';
-import AiSearchMap from '../components/AiSearch/AiSearchMap';
 import BlockRenderer from '../components/AiSearch/BlockRenderer';
+import { toMapCardData } from '../components/AiSearch/listingCardData';
+import SearchResultsMap from '../components/Search/SearchResultsMap';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
-
-// Stable identity so the map doesn't refit on every render while there is no response.
-const NO_LISTINGS: Readonly<Record<string, ListingSummary>> = {};
 
 const useStyles = makeStyles((theme) => ({
   // Figma: the search bar sits directly under the nav at x=38; the right edge is left open so the
@@ -78,15 +75,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+type Props = {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+};
+
 /**
  * AiSearchPage – AI search results. Reads the query from `?q=`, loads the response and renders
  * its blocks in the left column with a map area alongside (stacked below on narrow screens).
  */
-const AiSearchPage = (): ReactElement => {
+const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
   const { container, searchBar, content, blocks, map, message } = useStyles();
   const query = new URLSearchParams(useLocation().search).get('q') ?? '';
   const { data, loading, error } = useAiSearch(query);
   useTitle('AI Search');
+  const isMobile = useMediaQuery('(max-width:600px)');
+  // Memoized: SearchResultsMap re-centers whenever it gets a new array.
+  const mapApartments = useMemo(() => toMapCardData(data?.listings ?? {}), [data]);
 
   const renderBlocks = (): ReactElement => {
     if (loading) {
@@ -118,7 +123,13 @@ const AiSearchPage = (): ReactElement => {
       <div className={content}>
         <div className={blocks}>{renderBlocks()}</div>
         <div className={map}>
-          <AiSearchMap listings={data?.listings ?? NO_LISTINGS} />
+          <SearchResultsMap
+            apartments={mapApartments}
+            isMobile={isMobile}
+            height="100%"
+            user={user}
+            setUser={setUser}
+          />
         </div>
       </div>
     </Container>

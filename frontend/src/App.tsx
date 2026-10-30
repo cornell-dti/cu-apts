@@ -178,7 +178,11 @@ const App = (): ReactElement => {
               path="/search"
               component={() => <SearchResultsPage user={user} setUser={setUser} />}
             />
-            <Route exact path="/ai-search" component={AiSearchPage} />
+            <Route
+              exact
+              path="/ai-search"
+              render={() => <AiSearchPage user={user} setUser={setUser} />}
+            />
             {(isAdmin(user) || isAdminUser) && <Route exact path="/admin" component={AdminPage} />}
           </Switch>
         </div>
