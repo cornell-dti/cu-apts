@@ -9,9 +9,16 @@ import BlockRenderer from '../components/AiSearch/BlockRenderer';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
 
 const useStyles = makeStyles((theme) => ({
+  // Figma: the search bar sits directly under the nav at x=38; the right edge is left open so the
+  // map runs to the window edge. Narrow screens get a symmetric gutter instead.
   container: {
-    marginTop: '93px',
     marginBottom: '40px',
+    paddingLeft: '38px',
+    paddingRight: 0,
+    [theme.breakpoints.down('sm')]: {
+      paddingLeft: '16px',
+      paddingRight: '16px',
+    },
   },
   searchBar: {
     maxWidth: '821px',
@@ -34,6 +41,11 @@ const useStyles = makeStyles((theme) => ({
     flex: '1 1 869px',
     maxWidth: '869px',
     minWidth: 0,
+    // Figma puts the column at x=40, 2px right of the search bar.
+    marginLeft: '2px',
+    [theme.breakpoints.down('sm')]: {
+      marginLeft: 0,
+    },
   },
   // Placeholder for the map, which is built in a later step.
   map: {
@@ -88,7 +100,7 @@ const AiSearchPage = (): ReactElement => {
   };
 
   return (
-    <Container maxWidth="xl" className={container}>
+    <Container maxWidth="xl" disableGutters className={container}>
       <div className={searchBar}>
         <Autocomplete drawerOpen={false} aiMode variant="aiResults" />
       </div>
