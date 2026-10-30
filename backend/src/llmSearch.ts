@@ -194,7 +194,7 @@ const callGemini = async (query: string): Promise<string> => {
  * all - a timeout, DNS failure, or dropped connection. Any other status means Gemini rejected
  * the request itself (a bad request, an invalid API key), which retrying will not fix.
  */
-const isTransientUpstreamError = (err: unknown): boolean => {
+export const isTransientUpstreamError = (err: unknown): boolean => {
   if (!axios.isAxiosError(err)) {
     return false;
   }
@@ -231,6 +231,31 @@ const normalizeFilters = (filters: ParsedFilters): ParsedFilters => {
     return { ...filters, minPrice: null };
   }
   return filters;
+};
+
+/**
+ * Turns a natural language query into validated filters using Gemini.
+ *
+ * A model response that is not valid JSON or fails validation is not an error: it degrades to
+ * empty filters so callers fall back to an unfiltered search. Transport failures (timeout,
+ * throttle, rejected request, missing API key) throw; classify them with
+ * {@link isTransientUpstreamError}.
+ */
+export const extractFilters = async (query: string): Promise<ParsedFilters> => {
+  const text = await callGemini(query);
+  const raw = parseModelJson(text);
+  const result = raw === undefined ? undefined : FilterSchema.safeParse(raw);
+
+  if (!result || !result.success) {
+    // Don't fail on a schema miss - a malformed model response shouldn't break the search bar.
+    console.error(
+      'LLM output failed validation:',
+      result ? result.error.flatten() : 'response was not valid JSON'
+    );
+    return { ...EMPTY_FILTERS, intent: 'Could not confidently parse this query' };
+  }
+
+  return normalizeFilters(result.data);
 };
 
 /** Per-IP limiter: guards against a single abusive client. */
@@ -329,9 +354,8 @@ export const llmSearchHandler = async (req: Request, res: Response): Promise<voi
   // Already checked by validateLlmSearchBody, which must run before this handler.
   const query = req.body.query as string;
 
-  let text: string;
   try {
-    text = await callGemini(query);
+    res.status(200).json(await extractFilters(query));
   } catch (err) {
     // Timeout, network error, Gemini rejecting the request or being down, or a missing API key.
     console.error('LLM search error:', err instanceof Error ? err.message : err);
@@ -341,29 +365,6 @@ export const llmSearchHandler = async (req: Request, res: Response): Promise<voi
       res.status(503).json({ error: 'Search is temporarily unavailable. Please try again.' });
       return;
     }
-    res.status(500).json({ error: 'Error parsing query' });
-    return;
-  }
-
-  try {
-    const raw = parseModelJson(text);
-    const result = raw === undefined ? undefined : FilterSchema.safeParse(raw);
-
-    if (!result || !result.success) {
-      // Don't 500 on a schema miss - a malformed model response shouldn't break the search bar.
-      // Log for visibility and degrade to "no filters extracted" so the frontend can fall back
-      // to an unfiltered search.
-      console.error(
-        'LLM output failed validation:',
-        result ? result.error.flatten() : 'response was not valid JSON'
-      );
-      res.status(200).json({ ...EMPTY_FILTERS, intent: 'Could not confidently parse this query' });
-      return;
-    }
-
-    res.status(200).json(normalizeFilters(result.data));
-  } catch (err) {
-    console.error('LLM search error:', err instanceof Error ? err.message : err);
     res.status(500).json({ error: 'Error parsing query' });
   }
 };
