@@ -11,12 +11,13 @@ import SearchResultsMap from '../components/Search/SearchResultsMap';
 import ProgressSpinner from '../components/utils/ProgressSpinner';
 
 const useStyles = makeStyles((theme) => ({
-  // Figma: the search bar sits directly under the nav at x=38; the right edge is left open so the
-  // map runs to the window edge. Narrow screens get a symmetric gutter instead.
+  // Figma: a 1440px frame with 38px side padding. Centered, so wider screens get equal space on
+  // both sides. Narrow screens use a 16px gutter instead.
   container: {
+    maxWidth: '1440px',
     marginBottom: '40px',
     paddingLeft: '38px',
-    paddingRight: 0,
+    paddingRight: '38px',
     [theme.breakpoints.down('sm')]: {
       paddingLeft: '16px',
       paddingRight: '16px',
@@ -40,20 +41,13 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    flex: '1 1 869px',
-    maxWidth: '869px',
+    // Fills whatever the map leaves.
+    flex: '1 1 0',
     minWidth: 0,
-    // Figma puts the column at x=40, 2px right of the search bar.
-    marginLeft: '2px',
-    [theme.breakpoints.down('sm')]: {
-      marginLeft: 0,
-    },
   },
   // Figma map: 458x601 with a 10px radius. Stays in view beside the scrolling blocks on desktop.
   map: {
-    flex: '1 1 458px',
-    maxWidth: '458px',
-    minWidth: 0,
+    flex: '0 0 458px',
     height: '601px',
     borderRadius: '10px',
     overflow: 'hidden',
@@ -64,7 +58,6 @@ const useStyles = makeStyles((theme) => ({
       flex: 'none',
       position: 'static',
       width: '100%',
-      maxWidth: 'none',
       height: '320px',
     },
   },
@@ -118,7 +111,7 @@ const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
   };
 
   return (
-    <Container maxWidth="xl" disableGutters className={container}>
+    <Container maxWidth={false} disableGutters className={container}>
       <div className={searchBar}>
         <Autocomplete drawerOpen={false} aiMode variant="aiResults" />
       </div>
