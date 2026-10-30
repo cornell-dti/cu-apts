@@ -3,6 +3,7 @@ import { Typography, makeStyles } from '@material-ui/core';
 import { Block, ListingSummary } from '../../../../common/types/ai-search-types';
 import { colors } from '../../colors';
 import ComparisonTableBlock from './ComparisonTableBlock';
+import NeighborhoodsBlock from './NeighborhoodsBlock';
 import PropertyCardsBlock from './PropertyCardsBlock';
 
 const useStyles = makeStyles({
@@ -13,12 +14,6 @@ const useStyles = makeStyles({
     color: colors.black,
     margin: 0,
   },
-  placeholder: {
-    border: `1px dashed ${colors.gray4}`,
-    borderRadius: '10px',
-    padding: '12px 16px',
-    color: colors.gray1,
-  },
 });
 
 type BlockProps<T extends Block['type']> = { readonly block: Extract<Block, { type: T }> };
@@ -26,31 +21,6 @@ type BlockProps<T extends Block['type']> = { readonly block: Extract<Block, { ty
 const TextBlock = ({ block }: BlockProps<'text'>): ReactElement => {
   const { text } = useStyles();
   return <Typography className={text}>{block.content}</Typography>;
-};
-
-// Temporary stand-in for blocks whose real components are not built yet.
-const BlockPlaceholder = ({
-  type,
-  heading,
-  count,
-  unit,
-}: {
-  type: Block['type'];
-  heading: string;
-  count: number;
-  unit: string;
-}): ReactElement => {
-  const { placeholder } = useStyles();
-  return (
-    <div className={placeholder}>
-      <Typography style={{ fontWeight: 600 }}>
-        {type}: {heading}
-      </Typography>
-      <Typography>
-        {count} {unit}
-      </Typography>
-    </div>
-  );
 };
 
 const renderBlock = (
@@ -65,14 +35,7 @@ const renderBlock = (
     case 'comparison_table':
       return <ComparisonTableBlock block={block} listings={listings} />;
     case 'neighborhoods':
-      return (
-        <BlockPlaceholder
-          type={block.type}
-          heading={block.heading}
-          count={block.neighborhoods.length}
-          unit="neighborhoods"
-        />
-      );
+      return <NeighborhoodsBlock block={block} />;
     default: {
       // Compile-time exhaustiveness: adding a Block type without a case above is a type error.
       const unhandled: never = block;

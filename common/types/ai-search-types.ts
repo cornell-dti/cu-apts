@@ -41,7 +41,7 @@ export type Block =
       readonly intro?: string;
       readonly rows: readonly { readonly listingId: string; readonly keyFeature: string }[];
     }
-  // Neighborhood overview cards; content comes from the static neighborhood config.
+  // Neighborhood overview cards; content comes from the frontend's static config (frontend/src/constants/neighborhoods.ts).
   | {
       readonly type: 'neighborhoods';
       readonly heading: string;

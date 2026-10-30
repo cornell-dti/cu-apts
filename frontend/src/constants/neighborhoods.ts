@@ -1,4 +1,4 @@
-import { NeighborhoodId } from '../types/ai-search-types';
+import { NeighborhoodId } from '../../../common/types/ai-search-types';
 
 export type NeighborhoodInfo = {
   readonly displayName: string;
@@ -22,7 +22,7 @@ export const NEIGHBORHOODS: Readonly<Record<NeighborhoodId, NeighborhoodInfo>> =
   },
   DOWNTOWN: {
     displayName: 'Downtown / The Commons',
-    distanceText: 'Walkable to dining',
+    distanceText: 'walkable to dining',
     description: 'Favored by grad students for lower rents and a city feel.',
   },
   WEST: {

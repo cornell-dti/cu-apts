@@ -40,7 +40,8 @@ export const MOCK_AI_SEARCH_RESPONSE: AiSearchResponse = {
     {
       type: 'neighborhoods',
       heading: 'Neighborhoods to consider',
-      neighborhoods: ['COLLEGETOWN', 'DOWNTOWN', 'NORTH'],
+      // COLLEGETOWN is repeated and WEST has no config yet, to exercise both skip paths.
+      neighborhoods: ['COLLEGETOWN', 'DOWNTOWN', 'COLLEGETOWN', 'WEST', 'NORTH'],
     },
   ],
   listings: {
