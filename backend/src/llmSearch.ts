@@ -22,7 +22,13 @@ import { z } from 'zod';
  */
 
 const AREA_VALUES = ['COLLEGETOWN', 'NORTH', 'WEST', 'DOWNTOWN'] as const;
-const SORT_BY_VALUES = ['numReviews', 'avgRating', 'distanceToCampus', 'originalOrder'] as const;
+const SORT_BY_VALUES = [
+  'numReviews',
+  'avgRating',
+  'distanceToCampus',
+  'originalOrder',
+  'price',
+] as const;
 
 type Area = typeof AREA_VALUES[number];
 
@@ -142,6 +148,7 @@ Rules:
 - "near campus" or "close to campus" = area ["COLLEGETOWN", "NORTH"]
 - "best rated" = sortBy "avgRating", sortLowToHigh false
 - "closest to campus" = sortBy "distanceToCampus", sortLowToHigh true
+- "cheapest" / "lowest price" / "lowest rent" / "least expensive" = sortBy "price", sortLowToHigh true (this is a sort, not a cap: do not also set maxPrice)
 - "studio" = numBeds 0
 - "lots of bedrooms" / "big place" = numBeds 3
 - "spacious" = numBeds 2 or more

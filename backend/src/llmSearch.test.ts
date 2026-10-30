@@ -134,6 +134,28 @@ describe('POST /api/llm-search - prompt construction', () => {
     expect(parts[1].text).toEqual(`<user_query>\n${query}\n</user_query>`);
   });
 
+  it('offers price as a sort value, in both the schema and the instructions', async () => {
+    mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
+    await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheapest' });
+
+    const body = geminiRequestBody();
+    const schema = body.generationConfig.responseSchema as unknown as {
+      properties: { sortBy: { enum: string[] } };
+    };
+    expect(schema.properties.sortBy.enum).toEqual(
+      expect.arrayContaining([
+        'numReviews',
+        'avgRating',
+        'distanceToCampus',
+        'originalOrder',
+        'price',
+      ])
+    );
+    const instructions = body.contents[0].parts[0].text;
+    expect(instructions).toContain('"price"');
+    expect(instructions).toMatch(/cheapest.*sortBy "price"/);
+  });
+
   it('constrains output shape and determinism at the API level', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
     await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'studio' });
@@ -253,6 +275,31 @@ describe('POST /api/llm-search - model output validation', () => {
     expect(res.body.area).toEqual(['COLLEGETOWN']);
     expect(res.body.numBeds).toEqual(2);
     expect(res.body.maxPrice).toEqual(1200);
+  });
+
+  it("accepts sortBy: 'price' alongside the other fields", async () => {
+    mockedAxios.post.mockResolvedValueOnce(
+      geminiReplyWithJson({
+        ...GOOD_RESPONSE,
+        maxPrice: null,
+        sortBy: 'price',
+        sortLowToHigh: true,
+      })
+    );
+    const res = await request(buildHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheapest 2br' });
+    expect(res.status).toEqual(200);
+    expect(res.body).toMatchObject({ sortBy: 'price', sortLowToHigh: true, numBeds: 2 });
+  });
+
+  it('still degrades an unknown sortBy to null', async () => {
+    mockedAxios.post.mockResolvedValueOnce(
+      geminiReplyWithJson({ ...GOOD_RESPONSE, sortBy: 'priciest' })
+    );
+    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'x' });
+    expect(res.body.sortBy).toBeNull();
+    expect(res.body.numBeds).toEqual(2);
   });
 
   it('drops invalid area entries, dedupes, and keeps the valid ones', async () => {
