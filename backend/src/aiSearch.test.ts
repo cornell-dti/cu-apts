@@ -1,8 +1,14 @@
 import express from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
+import { ListingSummary } from '@common/types/ai-search-types';
 import { db } from './firebase-config';
 import { EMPTY_FILTERS, ParsedFilters } from './llmSearch';
 import {
+  validateBlocks,
+  MAX_COMPARISON_ROWS,
+  MAX_NON_TEXT_BLOCKS,
+  MAX_PROPERTY_CARDS,
+  MAX_TEXT_BLOCKS,
   hydrateListings,
   loadApartments,
   selectCandidates,
@@ -396,5 +402,197 @@ describe('sortByReviewField', () => {
     const result = sortByReviewField(tied, { field: 'avgRating', ascending: false });
     expect(result).toHaveLength(MAX_CANDIDATES);
     expect(order(result).slice(0, 3)).toEqual(['t0', 't1', 't2']);
+  });
+});
+
+describe('validateBlocks', () => {
+  const listing = (id: string): ListingSummary => ({
+    id,
+    name: id,
+    address: `${id} St`,
+    photoUrl: null,
+    minBeds: 1,
+    maxBeds: 2,
+    minPrice: 1000,
+    maxPrice: 2000,
+    avgRating: 4,
+    numReviews: 3,
+    latitude: 0,
+    longitude: 0,
+    featuredReview: null,
+  });
+  const listings = Object.fromEntries(
+    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'].map((id) => [id, listing(id)])
+  );
+
+  const cards = (listingIds: unknown, extra: Record<string, unknown> = {}) => ({
+    type: 'property_cards',
+    heading: 'Best picks',
+    listingIds,
+    ...extra,
+  });
+  const table = (rows: unknown, extra: Record<string, unknown> = {}) => ({
+    type: 'comparison_table',
+    heading: 'Compare',
+    rows,
+    ...extra,
+  });
+  const row = (listingId: string, keyFeature = 'Closest to campus') => ({ listingId, keyFeature });
+
+  it('passes well-formed blocks through unchanged', () => {
+    const blocks = [
+      { type: 'text', content: 'Here are some options.' },
+      { type: 'property_cards', heading: 'Best picks', intro: 'Top two', listingIds: ['a', 'b'] },
+      { type: 'comparison_table', heading: 'Compare', rows: [row('a'), row('b', 'Cheapest')] },
+      { type: 'neighborhoods', heading: 'Areas', neighborhoods: ['COLLEGETOWN', 'NORTH'] },
+    ];
+    expect(validateBlocks({ blocks }, listings)).toEqual(blocks);
+  });
+
+  it('accepts a bare array as well as { blocks }', () => {
+    expect(validateBlocks([{ type: 'text', content: 'hi' }], listings)).toHaveLength(1);
+  });
+
+  it.each([undefined, null, 'text', 42, {}, { blocks: 'nope' }])(
+    'returns no blocks for unusable output %p',
+    (raw) => {
+      expect(validateBlocks(raw, listings)).toEqual([]);
+    }
+  );
+
+  it('drops unknown listing IDs', () => {
+    const [block] = validateBlocks([cards(['a', 'ghost', 'b'])], listings);
+    expect(block).toMatchObject({ listingIds: ['a', 'b'] });
+  });
+
+  it('does not treat inherited object keys as listing IDs', () => {
+    expect(validateBlocks([cards(['constructor', '__proto__', 'toString'])], listings)).toEqual([]);
+  });
+
+  it('drops duplicate listing IDs within a block, keeping the first', () => {
+    const [block] = validateBlocks([cards(['b', 'a', 'b', 'a'])], listings);
+    expect(block).toMatchObject({ listingIds: ['b', 'a'] });
+  });
+
+  it('ignores non-string IDs', () => {
+    const [block] = validateBlocks([cards(['a', 7, null, { id: 'b' }])], listings);
+    expect(block).toMatchObject({ listingIds: ['a'] });
+  });
+
+  it('allows the same listing in different blocks', () => {
+    const blocks = validateBlocks([cards(['a']), table([row('a'), row('b')])], listings);
+    expect(blocks).toHaveLength(2);
+  });
+
+  it(`caps property_cards at ${MAX_PROPERTY_CARDS} listings`, () => {
+    const [block] = validateBlocks([cards(['a', 'b', 'c', 'd', 'e'])], listings);
+    expect(block).toMatchObject({ listingIds: ['a', 'b', 'c'] });
+  });
+
+  it(`caps comparison_table at ${MAX_COMPARISON_ROWS} rows`, () => {
+    const rows = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'].map((id) => row(id));
+    const [block] = validateBlocks([table(rows)], listings);
+    expect(block.type === 'comparison_table' && block.rows).toHaveLength(MAX_COMPARISON_ROWS);
+  });
+
+  it('drops comparison rows with unknown or repeated IDs or no key feature', () => {
+    const [block] = validateBlocks(
+      [
+        table([
+          row('a'),
+          row('ghost'),
+          row('a', 'again'),
+          row('b', '   '),
+          row('c', 'Pet friendly'),
+        ]),
+      ],
+      listings
+    );
+    expect(block).toMatchObject({ rows: [row('a'), row('c', 'Pet friendly')] });
+  });
+
+  it('drops a comparison_table left with fewer than two rows', () => {
+    expect(validateBlocks([table([row('a'), row('ghost')])], listings)).toEqual([]);
+  });
+
+  it('drops a property_cards block with no valid listings', () => {
+    expect(validateBlocks([cards(['ghost']), cards([])], listings)).toEqual([]);
+  });
+
+  it(`keeps at most ${MAX_NON_TEXT_BLOCKS} blocks besides text, first ones winning`, () => {
+    const blocks = validateBlocks(
+      [
+        cards(['a'], { heading: 'one' }),
+        cards(['b'], { heading: 'two' }),
+        { type: 'neighborhoods', heading: 'three', neighborhoods: ['WEST'] },
+        cards(['c'], { heading: 'four' }),
+      ],
+      listings
+    );
+    expect(blocks.map((b) => (b.type === 'text' ? '' : b.heading))).toEqual([
+      'one',
+      'two',
+      'three',
+    ]);
+  });
+
+  it('does not count text blocks against the non-text cap, but caps them separately', () => {
+    const text = (content: string) => ({ type: 'text', content });
+    const blocks = validateBlocks(
+      [text('one'), cards(['a']), cards(['b']), cards(['c']), text('two'), text('three')],
+      listings
+    );
+    expect(blocks.filter((b) => b.type === 'text')).toHaveLength(MAX_TEXT_BLOCKS);
+    expect(blocks.filter((b) => b.type !== 'text')).toHaveLength(3);
+  });
+
+  it('drops invalid blocks rather than failing the rest', () => {
+    const blocks = validateBlocks(
+      [
+        'not an object',
+        null,
+        { type: 'carousel', heading: 'x' },
+        { type: 'text' },
+        { type: 'text', content: 42 },
+        { type: 'text', content: '   ' },
+        cards('a'),
+        { type: 'property_cards', listingIds: ['a'] },
+        { type: 'neighborhoods', heading: 'Areas', neighborhoods: ['ATLANTIS', 'OTHER'] },
+        { type: 'text', content: 'survivor' },
+      ],
+      listings
+    );
+    expect(blocks).toEqual([{ type: 'text', content: 'survivor' }]);
+  });
+
+  it('drops unknown neighborhoods and repeats, keeping valid ones', () => {
+    const [block] = validateBlocks(
+      [{ type: 'neighborhoods', heading: 'Areas', neighborhoods: ['WEST', 'ATLANTIS', 'WEST', 3] }],
+      listings
+    );
+    expect(block).toMatchObject({ neighborhoods: ['WEST'] });
+  });
+
+  it('strips fields the model should not write, such as prices and addresses', () => {
+    const [block] = validateBlocks(
+      [cards(['a'], { price: 1, address: '1 Fake St', rating: 5, listings: [{ id: 'z' }] })],
+      listings
+    );
+    expect(Object.keys(block).sort()).toEqual(['heading', 'listingIds', 'type']);
+  });
+
+  it('sanitizes and caps free text, and omits an empty intro', () => {
+    const [block, text] = validateBlocks(
+      [
+        cards(['a'], { heading: `Hi\u202Ethere${'x'.repeat(200)}`, intro: '  ' }),
+        { type: 'text', content: `a\u0000b ${'y'.repeat(2000)}` },
+      ],
+      listings
+    );
+    expect(block.type === 'property_cards' && block.heading.length).toEqual(80);
+    expect(block.type === 'property_cards' && block.heading).not.toMatch(/\u202E/);
+    expect('intro' in block).toBe(false);
+    expect(text.type === 'text' && text.content.length).toEqual(1000);
+    expect(text.type === 'text' && text.content.startsWith('a b ')).toBe(true);
   });
 });

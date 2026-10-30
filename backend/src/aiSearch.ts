@@ -1,8 +1,9 @@
 import { Application } from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
-import { ListingSummary } from '@common/types/ai-search-types';
+import { z } from 'zod';
+import { Block, ListingSummary, NeighborhoodId } from '@common/types/ai-search-types';
 import { db } from './firebase-config';
-import { ParsedFilters } from './llmSearch';
+import { ParsedFilters, sanitizeText } from './llmSearch';
 
 /** Longest featured review we return on a listing card. */
 export const MAX_FEATURED_REVIEW_LENGTH = 300;
@@ -240,4 +241,155 @@ export const sortByReviewField = (
     })
     .slice(0, MAX_CANDIDATES)
     .map(({ listing }) => listing);
+};
+
+/** Neighborhoods the model may pick from; mirrors {@link NeighborhoodId}. */
+export const NEIGHBORHOOD_IDS: readonly NeighborhoodId[] = [
+  'COLLEGETOWN',
+  'WEST',
+  'NORTH',
+  'DOWNTOWN',
+];
+
+export const MAX_PROPERTY_CARDS = 3;
+export const MAX_COMPARISON_ROWS = 8;
+/** Most blocks of any type other than text. */
+export const MAX_NON_TEXT_BLOCKS = 3;
+export const MAX_TEXT_BLOCKS = 2;
+
+const MAX_TEXT_LENGTH = 1000;
+const MAX_HEADING_LENGTH = 80;
+const MAX_INTRO_LENGTH = 300;
+const MAX_KEY_FEATURE_LENGTH = 120;
+
+/** A required string, sanitized and capped; fails if nothing is left. */
+const requiredText = (max: number) =>
+  z
+    .string()
+    .transform((value) => sanitizeText(value, max))
+    .refine((value) => value.length > 0);
+
+/** An optional string, sanitized and capped; a bad or empty value is dropped, not fatal. */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .transform((value) => sanitizeText(value, max) || undefined)
+    .optional()
+    .catch(undefined);
+
+const TextBlockSchema = z.object({ content: requiredText(MAX_TEXT_LENGTH) });
+const SectionSchema = {
+  heading: requiredText(MAX_HEADING_LENGTH),
+  intro: optionalText(MAX_INTRO_LENGTH),
+};
+const PropertyCardsSchema = z.object({ ...SectionSchema, listingIds: z.array(z.unknown()) });
+const ComparisonTableSchema = z.object({ ...SectionSchema, rows: z.array(z.unknown()) });
+const ComparisonRowSchema = z.object({
+  listingId: z.string(),
+  keyFeature: requiredText(MAX_KEY_FEATURE_LENGTH),
+});
+const NeighborhoodsSchema = z.object({
+  heading: requiredText(MAX_HEADING_LENGTH),
+  neighborhoods: z.array(z.unknown()),
+});
+
+/** Keeps the first occurrence of each known listing ID, up to `max`. */
+const takeKnownIds = (ids: readonly unknown[], known: ReadonlySet<string>, max: number) =>
+  Array.from(
+    new Set(ids.filter((id): id is string => typeof id === 'string' && known.has(id)))
+  ).slice(0, max);
+
+/** Validates one block from the model, or returns null if it cannot be salvaged. */
+const validateBlock = (raw: unknown, known: ReadonlySet<string>): Block | null => {
+  const type = (raw as { type?: unknown } | null)?.type;
+
+  if (type === 'text') {
+    const parsed = TextBlockSchema.safeParse(raw);
+    return parsed.success ? { type, content: parsed.data.content } : null;
+  }
+
+  if (type === 'property_cards') {
+    const parsed = PropertyCardsSchema.safeParse(raw);
+    if (!parsed.success) return null;
+    const listingIds = takeKnownIds(parsed.data.listingIds, known, MAX_PROPERTY_CARDS);
+    if (listingIds.length === 0) return null;
+    const { heading, intro } = parsed.data;
+    return { type, heading, ...(intro ? { intro } : {}), listingIds };
+  }
+
+  if (type === 'comparison_table') {
+    const parsed = ComparisonTableSchema.safeParse(raw);
+    if (!parsed.success) return null;
+    const seen = new Set<string>();
+    const rows: { listingId: string; keyFeature: string }[] = [];
+    parsed.data.rows.forEach((candidate) => {
+      const row = ComparisonRowSchema.safeParse(candidate);
+      if (!row.success || !known.has(row.data.listingId) || seen.has(row.data.listingId)) return;
+      if (rows.length >= MAX_COMPARISON_ROWS) return;
+      seen.add(row.data.listingId);
+      rows.push(row.data);
+    });
+    // A comparison needs something to compare.
+    if (rows.length < 2) return null;
+    const { heading, intro } = parsed.data;
+    return { type, heading, ...(intro ? { intro } : {}), rows };
+  }
+
+  if (type === 'neighborhoods') {
+    const parsed = NeighborhoodsSchema.safeParse(raw);
+    if (!parsed.success) return null;
+    const neighborhoods = Array.from(
+      new Set(
+        parsed.data.neighborhoods.filter((id): id is NeighborhoodId =>
+          (NEIGHBORHOOD_IDS as readonly unknown[]).includes(id)
+        )
+      )
+    );
+    if (neighborhoods.length === 0) return null;
+    return { type, heading: parsed.data.heading, neighborhoods };
+  }
+
+  return null;
+};
+
+/**
+ * Validates the blocks the model returned, never failing the whole response over a bad one.
+ *
+ * Blocks that are malformed or have an unknown type are dropped. Listing IDs the model made up
+ * are dropped, as are repeats within a block, and a block left with nothing to show is dropped
+ * too. Prices, beds, ratings and addresses are not accepted from the model at all: blocks carry
+ * IDs, and the client looks the facts up in `listings`. Counts are capped; the first blocks in
+ * the model's order win.
+ *
+ * @param raw - the parsed model output: `{ blocks: [...] }`, or the bare array
+ * @param listings - the hydrated candidates; only these IDs are valid
+ */
+export const validateBlocks = (
+  raw: unknown,
+  listings: Readonly<Record<string, ListingSummary>>
+): Block[] => {
+  const candidates = Array.isArray(raw) ? raw : (raw as { blocks?: unknown } | null)?.blocks;
+  if (!Array.isArray(candidates)) {
+    return [];
+  }
+
+  const known = new Set(Object.keys(listings));
+  const blocks: Block[] = [];
+  let textCount = 0;
+  let nonTextCount = 0;
+
+  candidates.forEach((candidate) => {
+    const block = validateBlock(candidate, known);
+    if (!block) return;
+    if (block.type === 'text') {
+      if (textCount >= MAX_TEXT_BLOCKS) return;
+      textCount += 1;
+    } else {
+      if (nonTextCount >= MAX_NON_TEXT_BLOCKS) return;
+      nonTextCount += 1;
+    }
+    blocks.push(block);
+  });
+
+  return blocks;
 };

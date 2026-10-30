@@ -36,7 +36,7 @@ const isArea = (value: unknown): value is Area =>
   typeof value === 'string' && (AREA_VALUES as readonly string[]).includes(value.toUpperCase());
 
 /**
- * Strips characters that let text misrepresent itself when rendered.
+ * Strips characters that let text misrepresent itself when rendered, then caps its length.
  *
  * `intent` is the one free-text field the model controls, so a query that successfully steers
  * the model gets its wording echoed here. Removing control characters and bidirectional
@@ -51,8 +51,10 @@ const UNSAFE_TEXT_CHARS =
   /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2066-\u2069]/g;
 /* eslint-enable no-control-regex */
 
-const sanitizeIntent = (intent: string): string =>
-  intent.replace(UNSAFE_TEXT_CHARS, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_INTENT_LENGTH);
+export const sanitizeText = (text: string, maxLength: number): string =>
+  text.replace(UNSAFE_TEXT_CHARS, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+
+const sanitizeIntent = (intent: string): string => sanitizeText(intent, MAX_INTENT_LENGTH);
 
 /**
  * Validates the model's output field by field.
