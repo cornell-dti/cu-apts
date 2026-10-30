@@ -1,5 +1,5 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Container, Typography, makeStyles, useMediaQuery } from '@material-ui/core';
+import { Container, Typography, makeStyles, useMediaQuery, useTheme } from '@material-ui/core';
 import { useLocation } from 'react-router-dom';
 import { useTitle } from '../utils';
 import { colors } from '../colors';
@@ -90,6 +90,8 @@ const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
   const { data, loading, error } = useAiSearch(query);
   useTitle('AI Search');
   const isMobile = useMediaQuery('(max-width:600px)');
+  // Same breakpoint at which the map stacks under the blocks.
+  const stacked = useMediaQuery(useTheme().breakpoints.down('sm'));
   // Memoized: SearchResultsMap re-centers whenever it gets a new array.
   const mapApartments = useMemo(() => toMapCardData(data?.listings ?? {}), [data]);
 
@@ -127,6 +129,8 @@ const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
             apartments={mapApartments}
             isMobile={isMobile}
             height="100%"
+            // Beside the blocks plain scroll zooms; stacked, the page must still scroll past the map.
+            gestureHandling={stacked ? 'cooperative' : 'greedy'}
             user={user}
             setUser={setUser}
           />
