@@ -53,7 +53,6 @@ type MatchFilters = Pick<ParsedFilters, 'area' | 'numBeds' | 'minPrice' | 'maxPr
 /**
  * Whether an apartment satisfies the filters. Beds and price must be satisfied by the same room
  * type: a 2-bed over budget plus an in-budget 3-bed does not match "2 beds under $1500".
- * `numBeds: 0` (studio) is not enforced, as in /api/search-with-query-and-filters.
  */
 const matchesFilters = (apt: ApartmentWithId, filters: MatchFilters): boolean => {
   if (filters.area.length > 0 && !filters.area.includes(apt.area?.toUpperCase() as never)) {
@@ -61,7 +60,8 @@ const matchesFilters = (apt: ApartmentWithId, filters: MatchFilters): boolean =>
   }
 
   const { numBeds, minPrice, maxPrice } = filters;
-  const wantsBeds = numBeds !== null && numBeds > 0;
+  // null means no preference; 0 means a studio, which only a zero-bedroom room type satisfies.
+  const wantsBeds = numBeds !== null;
   if (!wantsBeds && minPrice === null && maxPrice === null) {
     return true;
   }

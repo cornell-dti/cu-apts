@@ -90,9 +90,44 @@ describe('selectCandidates - matching', () => {
     expect(ids(result)).toEqual(['west-3br']);
   });
 
-  it('does not enforce numBeds: 0', () => {
-    const result = selectCandidates(apts, filters({ numBeds: 0 }));
-    expect(ids(result)).toHaveLength(3);
+  describe('studios', () => {
+    const studio = apt('studio', {
+      roomTypes: [{ id: 's', beds: 0, baths: 1, price: 1100 }],
+    });
+
+    it('treats numBeds: 0 as a studio, matching only zero-bedroom room types', () => {
+      const result = selectCandidates([...apts, studio], filters({ numBeds: 0 }));
+      expect(ids(result)).toEqual(['studio']);
+      expect(result.filtersMatched).toBe(true);
+    });
+
+    it('treats numBeds: null as no bedroom preference', () => {
+      const result = selectCandidates([...apts, studio], filters({ numBeds: null }));
+      expect(ids(result)).toHaveLength(4);
+    });
+
+    it('does not offer a studio for a 1 bedroom search', () => {
+      const oneBed = apt('one', { roomTypes: [{ id: 'o', beds: 1, baths: 1, price: 1300 }] });
+      const result = selectCandidates([studio, oneBed], filters({ numBeds: 1 }));
+      expect(ids(result)).toEqual(['one']);
+    });
+
+    it('relaxes beds when there is no studio, reporting an unmatched search', () => {
+      const result = selectCandidates(apts, filters({ numBeds: 0 }));
+      expect(ids(result)).toHaveLength(3);
+      expect(result.filtersMatched).toBe(false);
+    });
+
+    it('requires a studio room type to meet the price filter too', () => {
+      const mixed = apt('mixed', {
+        roomTypes: [
+          { id: 'a', beds: 0, baths: 1, price: 2000 },
+          { id: 'b', beds: 2, baths: 1, price: 900 },
+        ],
+      });
+      const result = selectCandidates([mixed], filters({ numBeds: 0, maxPrice: 1500 }));
+      expect(result.filtersMatched).toBe(false);
+    });
   });
 
   it('never matches an apartment without room types on a beds or price filter', () => {
