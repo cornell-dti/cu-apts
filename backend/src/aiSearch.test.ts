@@ -182,6 +182,44 @@ describe('selectCandidates - ordering', () => {
     expect(result.reviewSort).toEqual({ field: 'avgRating', ascending: true });
   });
 
+  describe('price sort', () => {
+    const priced = (id: string, prices: number[], distanceToCampus = 10) =>
+      apt(id, {
+        distanceToCampus,
+        roomTypes: prices.map((price, i) => ({ id: `${id}${i}`, beds: 1 + i, baths: 1, price })),
+      });
+    const pool = [
+      priced('mid', [1800, 2600]),
+      priced('none', []),
+      priced('cheap-far', [900, 3000], 30),
+      priced('cheap-near', [900], 2),
+      priced('high', [2400]),
+    ];
+
+    it('orders by minimum room type price, cheapest first', () => {
+      const result = selectCandidates(pool, filters({ sortBy: 'price' }));
+      expect(ids(result)).toEqual(['cheap-near', 'cheap-far', 'mid', 'high', 'none']);
+      expect(result.reviewSort).toBeNull();
+    });
+
+    it('breaks price ties by distance', () => {
+      const result = selectCandidates(pool, filters({ sortBy: 'price' }));
+      expect(ids(result).slice(0, 2)).toEqual(['cheap-near', 'cheap-far']);
+    });
+
+    it('stays ascending whatever sortLowToHigh says', () => {
+      const result = selectCandidates(pool, filters({ sortBy: 'price', sortLowToHigh: false }));
+      expect(ids(result)[0]).toEqual('cheap-near');
+    });
+
+    it('sorts within the filtered set and caps at 20', () => {
+      const many = Array.from({ length: 30 }, (_, i) => priced(`p${i}`, [3000 - i * 10]));
+      const result = selectCandidates(many, filters({ sortBy: 'price' }));
+      expect(result.candidates).toHaveLength(MAX_CANDIDATES);
+      expect(ids(result)[0]).toEqual('p29');
+    });
+  });
+
   it('does not mutate the input array', () => {
     const input = [apt('far', { distanceToCampus: 30 }), apt('near', { distanceToCampus: 1 })];
     selectCandidates(input, filters());

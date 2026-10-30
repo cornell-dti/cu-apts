@@ -77,6 +77,23 @@ const matchesFilters = (apt: ApartmentWithId, filters: MatchFilters): boolean =>
 const byDistance = (a: ApartmentWithId, b: ApartmentWithId): number =>
   a.distanceToCampus - b.distanceToCampus;
 
+/** The lowest room type price, or null if the apartment has none. */
+const minPriceOf = (apt: ApartmentWithId): number | null => {
+  const prices = (apt.roomTypes ?? []).map((room) => room.price).filter(Number.isFinite);
+  return prices.length > 0 ? Math.min(...prices) : null;
+};
+
+/** Cheapest first by minimum room type price, unpriced last, ties nearest first. */
+const byPrice = (a: ApartmentWithId, b: ApartmentWithId): number => {
+  const priceA = minPriceOf(a);
+  const priceB = minPriceOf(b);
+  if (priceA === null || priceB === null) {
+    if (priceA === priceB) return byDistance(a, b);
+    return priceA === null ? 1 : -1;
+  }
+  return priceA - priceB || byDistance(a, b);
+};
+
 /**
  * Picks the apartments to show for a set of filters.
  *
@@ -84,8 +101,8 @@ const byDistance = (a: ApartmentWithId, b: ApartmentWithId): number =>
  * something does, ending with every apartment. `filtersMatched` reports whether the original
  * filters were satisfied, so the prompt can avoid claiming a match that did not happen.
  *
- * Ordering follows `sortBy`: distance (the default) and original order need no review data and
- * are applied here; `avgRating` and `numReviews` return the {@link REVIEW_SORT_POOL} nearest
+ * Ordering follows `sortBy`: distance (the default), price (cheapest first by minimum room type
+ * price, unpriced last) and original order need no review data and are applied here; `avgRating` and `numReviews` return the {@link REVIEW_SORT_POOL} nearest
  * matches along with `reviewSort`, for the caller to finish once reviews are loaded.
  */
 export const selectCandidates = (
@@ -111,6 +128,15 @@ export const selectCandidates = (
       filtersMatched,
       // Higher is better for both fields unless the user asked for the reverse.
       reviewSort: { field: sortBy, ascending: sortLowToHigh === true },
+    };
+  }
+
+  if (sortBy === 'price') {
+    // Ascending only: the filter step only produces "cheapest first", so sortLowToHigh is moot.
+    return {
+      candidates: [...matched].sort(byPrice).slice(0, MAX_CANDIDATES),
+      filtersMatched,
+      reviewSort: null,
     };
   }
 
