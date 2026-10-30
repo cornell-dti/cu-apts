@@ -8,7 +8,7 @@ import { colors } from '../../colors';
 import { formatEstimatedPrice, formatReviewCount } from '../../utils/listingFormat';
 import HeartRating from '../utils/HeartRating';
 
-const PANEL_ANIMATION_MS = 200;
+const PANEL_ANIMATION_MS = 350;
 
 const useStyles = makeStyles((theme) => ({
   row: {
