@@ -90,7 +90,7 @@ const AiSearchPage = (): ReactElement => {
   return (
     <Container maxWidth="xl" className={container}>
       <div className={searchBar}>
-        <Autocomplete drawerOpen={false} aiMode />
+        <Autocomplete drawerOpen={false} aiMode variant="aiResults" />
       </div>
       <div className={content}>
         <div className={blocks}>{renderBlocks()}</div>

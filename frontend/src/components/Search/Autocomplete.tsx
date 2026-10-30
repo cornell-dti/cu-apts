@@ -30,6 +30,8 @@ type Props = {
   drawerOpen: boolean;
   aiMode?: boolean;
   onToggleAiMode?: () => void;
+  // 'aiResults' styles the bar for the AI search results page (shorter, to match the design).
+  variant?: 'aiResults';
 };
 
 const defaultFilters: FilterState = {
@@ -60,11 +62,19 @@ const defaultFilters: FilterState = {
  * @returns {ReactElement} A search bar component with autocomplete and filtering capabilities
  */
 
-const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): ReactElement => {
+const Autocomplete = ({
+  drawerOpen,
+  aiMode = false,
+  onToggleAiMode,
+  variant,
+}: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isSearchResults = location.pathname.startsWith('/search');
+  const isAiResults = variant === 'aiResults';
+  // Only the AI bar is prefilled on /ai-search; the NavBar's regular bar there stays empty.
+  const isAiSearchPath = aiMode && location.pathname.startsWith('/ai-search');
 
   // Initialize filters and query from URL if on search results page
   const getInitialState = () => {
@@ -74,6 +84,12 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
       const filtersParam = params.get('filters');
       const filters = filtersParam ? JSON.parse(decodeURIComponent(filtersParam)) : defaultFilters;
       return { query, filters };
+    }
+    if (isAiSearchPath) {
+      return {
+        query: new URLSearchParams(location.search).get('q') || '',
+        filters: defaultFilters,
+      };
     }
     return { query: '', filters: defaultFilters };
   };
@@ -184,7 +200,16 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
     },
     field: {
       borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
-      height: aiMode && !isMobile ? '68px' : isMobile ? '35px' : isHome ? '68px' : '44px',
+      height:
+        isAiResults && !isMobile
+          ? '52px'
+          : aiMode && !isMobile
+          ? '68px'
+          : isMobile
+          ? '35px'
+          : isHome
+          ? '68px'
+          : '44px',
       padding: isHome ? '24px' : '8px 24px',
     },
     filterRow: {
