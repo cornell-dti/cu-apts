@@ -27,8 +27,8 @@ export const NEIGHBORHOODS: Readonly<Record<NeighborhoodId, NeighborhoodInfo>> =
   },
   WEST: {
     displayName: 'West Campus',
-    // TODO: confirm display name, add distance text and description.
-    distanceText: 'TODO',
-    description: 'TODO',
+    distanceText: 'near West Campus',
+    description:
+      'Popular with upperclassmen who want to stay close to campus with a quieter feel than Collegetown. Below the slope so expect uphill walks to campus.',
   },
 };
