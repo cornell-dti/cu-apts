@@ -1,7 +1,11 @@
 import { Application } from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
+import { ListingSummary } from '@common/types/ai-search-types';
 import { db } from './firebase-config';
 import { ParsedFilters } from './llmSearch';
+
+/** Longest featured review we return on a listing card. */
+export const MAX_FEATURED_REVIEW_LENGTH = 300;
 
 /**
  * AI Search - Turns a natural language query into a set of blocks (prose, property cards,
@@ -118,4 +122,122 @@ export const loadApartments = async (app: Application): Promise<ApartmentWithId[
   const apts = docs.map((doc) => ({ id: doc.id, ...doc.data() } as ApartmentWithId));
   app.set('apts', apts);
   return apts;
+};
+
+/**
+ * Collapses whitespace and shortens text to at most `max` characters, cutting at a word
+ * boundary and ending with "…". Text that already fits is returned (tidied) without the mark.
+ */
+export const truncateAtWord = (text: string, max: number): string => {
+  const tidy = text.replace(/\s+/g, ' ').trim();
+  if (tidy.length <= max) {
+    return tidy;
+  }
+  // Leave room for the ellipsis, and fall back to a hard cut for a single very long word.
+  const room = tidy.slice(0, max - 1);
+  const lastSpace = room.lastIndexOf(' ');
+  // If a space follows `room`, it already ends on a whole word and nothing needs dropping.
+  const endsOnWord = tidy[max - 1] === ' ';
+  const cut = lastSpace > 0 && !endsOnWord ? room.slice(0, lastSpace) : room;
+  return `${cut.replace(/[\s,.;:!?-]+$/, '')}…`;
+};
+
+type ReviewFields = {
+  readonly overallRating?: number;
+  readonly likes?: number;
+  readonly reviewText?: string;
+};
+
+const range = (values: readonly number[]): [number, number] | [null, null] =>
+  values.length === 0 ? [null, null] : [Math.min(...values), Math.max(...values)];
+
+const buildListing = (apt: ApartmentWithId, reviews: readonly ReviewFields[]): ListingSummary => {
+  const rooms = apt.roomTypes ?? [];
+  const [minBeds, maxBeds] = range(rooms.map((room) => room.beds));
+  const [minPrice, maxPrice] = range(rooms.map((room) => room.price));
+
+  const ratingSum = reviews.reduce((sum, review) => sum + (review.overallRating ?? 0), 0);
+
+  // The most-liked review with text to show; the earliest wins a tie.
+  const featured = reviews.reduce<ReviewFields | null>((best, review) => {
+    if (!review.reviewText?.trim()) return best;
+    if (best === null || (review.likes ?? 0) > (best.likes ?? 0)) return review;
+    return best;
+  }, null);
+
+  return {
+    id: apt.id,
+    name: apt.name,
+    address: apt.address,
+    photoUrl: apt.photos?.[0] || null,
+    minBeds,
+    maxBeds,
+    minPrice,
+    maxPrice,
+    avgRating: reviews.length > 0 ? ratingSum / reviews.length : null,
+    numReviews: reviews.length,
+    latitude: apt.latitude,
+    longitude: apt.longitude,
+    featuredReview: featured?.reviewText
+      ? truncateAtWord(featured.reviewText, MAX_FEATURED_REVIEW_LENGTH)
+      : null,
+  };
+};
+
+/**
+ * Builds a {@link ListingSummary} for each apartment, in the same order.
+ *
+ * Ratings and the featured review come from APPROVED reviews only. All reviews are fetched in
+ * one `aptId in [...]` query (Firestore allows 30 values), so the cost is one read per approved
+ * review of these apartments.
+ */
+export const hydrateListings = async (
+  apts: readonly ApartmentWithId[]
+): Promise<ListingSummary[]> => {
+  if (apts.length === 0) {
+    return [];
+  }
+
+  const snapshot = await db
+    .collection('reviews')
+    .where(
+      'aptId',
+      'in',
+      apts.map((apt) => apt.id)
+    )
+    .where('status', '==', 'APPROVED')
+    .get();
+
+  const reviewsByApt = new Map<string, ReviewFields[]>();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const list = reviewsByApt.get(data.aptId) ?? [];
+    list.push(data);
+    reviewsByApt.set(data.aptId, list);
+  });
+
+  return apts.map((apt) => buildListing(apt, reviewsByApt.get(apt.id) ?? []));
+};
+
+/**
+ * Finishes a rating or review-count sort once listings are hydrated, keeping the top
+ * {@link MAX_CANDIDATES}. Unrated listings sort last in either direction, and ties keep the
+ * incoming (nearest-first) order.
+ */
+export const sortByReviewField = (
+  listings: readonly ListingSummary[],
+  sort: { readonly field: ReviewSortField; readonly ascending: boolean }
+): ListingSummary[] => {
+  const direction = sort.ascending ? 1 : -1;
+  return listings
+    .map((listing, index) => ({ listing, index, value: listing[sort.field] }))
+    .sort((a, b) => {
+      if (a.value === null || b.value === null) {
+        if (a.value === b.value) return a.index - b.index;
+        return a.value === null ? 1 : -1;
+      }
+      return direction * (a.value - b.value) || a.index - b.index;
+    })
+    .slice(0, MAX_CANDIDATES)
+    .map(({ listing }) => listing);
 };

@@ -2,7 +2,16 @@ import express from 'express';
 import { ApartmentWithId } from '@common/types/db-types';
 import { db } from './firebase-config';
 import { EMPTY_FILTERS, ParsedFilters } from './llmSearch';
-import { loadApartments, selectCandidates, MAX_CANDIDATES, REVIEW_SORT_POOL } from './aiSearch';
+import {
+  hydrateListings,
+  loadApartments,
+  selectCandidates,
+  sortByReviewField,
+  truncateAtWord,
+  MAX_CANDIDATES,
+  MAX_FEATURED_REVIEW_LENGTH,
+  REVIEW_SORT_POOL,
+} from './aiSearch';
 
 jest.mock('./firebase-config', () => ({ db: { collection: jest.fn() } }));
 
@@ -202,5 +211,190 @@ describe('loadApartments', () => {
     app.set('apts', []);
     await loadApartments(app);
     expect(get).toHaveBeenCalledTimes(1);
+  });
+});
+
+/** Stubs `reviews.where().where().get()` and returns the `where` spy. */
+const stubReviews = (reviews: Record<string, unknown>[]) => {
+  const get = jest.fn().mockResolvedValue({ docs: reviews.map((data) => ({ data: () => data })) });
+  const where = jest.fn();
+  const chain = { where, get };
+  where.mockReturnValue(chain);
+  mockedCollection.mockReturnValue(chain);
+  return where;
+};
+
+const review = (aptId: string, overrides: Record<string, unknown> = {}) => ({
+  aptId,
+  overallRating: 4,
+  likes: 0,
+  reviewText: 'Nice place',
+  ...overrides,
+});
+
+describe('hydrateListings', () => {
+  beforeEach(() => jest.resetAllMocks());
+
+  it('skips Firestore for an empty list', async () => {
+    expect(await hydrateListings([])).toEqual([]);
+    expect(mockedCollection).not.toHaveBeenCalled();
+  });
+
+  it('fetches approved reviews for all apartments in one query', async () => {
+    const where = stubReviews([]);
+    await hydrateListings([apt('a'), apt('b')]);
+    expect(mockedCollection).toHaveBeenCalledTimes(1);
+    expect(mockedCollection).toHaveBeenCalledWith('reviews');
+    expect(where).toHaveBeenNthCalledWith(1, 'aptId', 'in', ['a', 'b']);
+    expect(where).toHaveBeenNthCalledWith(2, 'status', '==', 'APPROVED');
+  });
+
+  it('computes bed and price ranges from room types', async () => {
+    stubReviews([]);
+    const [listing] = await hydrateListings([
+      apt('a', {
+        roomTypes: [
+          { id: '1', beds: 1, baths: 1, price: 1800 },
+          { id: '2', beds: 3, baths: 2, price: 1200 },
+          { id: '3', beds: 2, baths: 1, price: 2500 },
+        ],
+      }),
+    ]);
+    expect(listing).toMatchObject({ minBeds: 1, maxBeds: 3, minPrice: 1200, maxPrice: 2500 });
+  });
+
+  it('uses null ranges when there are no room types', async () => {
+    stubReviews([]);
+    const [listing] = await hydrateListings([apt('a', { roomTypes: [] })]);
+    expect(listing).toMatchObject({
+      minBeds: null,
+      maxBeds: null,
+      minPrice: null,
+      maxPrice: null,
+    });
+  });
+
+  it('averages ratings and counts reviews per apartment', async () => {
+    stubReviews([
+      review('a', { overallRating: 5 }),
+      review('a', { overallRating: 3 }),
+      review('b', { overallRating: 2 }),
+    ]);
+    const [a, b] = await hydrateListings([apt('a'), apt('b')]);
+    expect(a).toMatchObject({ avgRating: 4, numReviews: 2 });
+    expect(b).toMatchObject({ avgRating: 2, numReviews: 1 });
+  });
+
+  it('reports null rating, zero reviews and no featured review for an unreviewed apartment', async () => {
+    stubReviews([review('other')]);
+    const [listing] = await hydrateListings([apt('a')]);
+    expect(listing).toMatchObject({ avgRating: null, numReviews: 0, featuredReview: null });
+  });
+
+  it('features the most-liked review, treating missing likes as zero', async () => {
+    stubReviews([
+      review('a', { likes: undefined, reviewText: 'unliked' }),
+      review('a', { likes: 7, reviewText: 'most liked' }),
+      review('a', { likes: 3, reviewText: 'some likes' }),
+    ]);
+    const [listing] = await hydrateListings([apt('a')]);
+    expect(listing.featuredReview).toEqual('most liked');
+  });
+
+  it('keeps the earliest review on a likes tie and skips reviews without text', async () => {
+    stubReviews([
+      review('a', { likes: 9, reviewText: '   ' }),
+      review('a', { likes: 2, reviewText: 'first' }),
+      review('a', { likes: 2, reviewText: 'second' }),
+    ]);
+    const [listing] = await hydrateListings([apt('a')]);
+    expect(listing.featuredReview).toEqual('first');
+  });
+
+  it('truncates a long featured review', async () => {
+    stubReviews([review('a', { reviewText: 'word '.repeat(200) })]);
+    const [listing] = await hydrateListings([apt('a')]);
+    expect(listing.featuredReview?.length).toBeLessThanOrEqual(MAX_FEATURED_REVIEW_LENGTH);
+    expect(listing.featuredReview?.endsWith('…')).toBe(true);
+  });
+
+  it('uses the first photo, or null when there are none', async () => {
+    stubReviews([]);
+    const [withPhoto, without] = await hydrateListings([
+      apt('a', { photos: ['one.jpg', 'two.jpg'] }),
+      apt('b', { photos: [] }),
+    ]);
+    expect(withPhoto.photoUrl).toEqual('one.jpg');
+    expect(without.photoUrl).toBeNull();
+  });
+
+  it('copies identity and location fields and keeps input order', async () => {
+    stubReviews([]);
+    const listings = await hydrateListings([
+      apt('b', { name: 'Bee', address: '2 B St', latitude: 1, longitude: 2 }),
+      apt('a'),
+    ]);
+    expect(listings.map((l) => l.id)).toEqual(['b', 'a']);
+    expect(listings[0]).toMatchObject({
+      name: 'Bee',
+      address: '2 B St',
+      latitude: 1,
+      longitude: 2,
+    });
+  });
+});
+
+describe('truncateAtWord', () => {
+  it('returns short text unchanged apart from whitespace', () => {
+    expect(truncateAtWord('  hello   world ', 50)).toEqual('hello world');
+  });
+
+  it('cuts at a word boundary and adds an ellipsis within the limit', () => {
+    const result = truncateAtWord('the quick brown fox jumps over', 20);
+    expect(result).toEqual('the quick brown fox…');
+    expect(result.length).toBeLessThanOrEqual(20);
+  });
+
+  it('drops trailing punctuation before the ellipsis', () => {
+    expect(truncateAtWord('well, then, it ends here', 12)).toEqual('well, then…');
+  });
+
+  it('hard-cuts a single word longer than the limit', () => {
+    const result = truncateAtWord('a'.repeat(50), 10);
+    expect(result).toEqual(`${'a'.repeat(9)}…`);
+  });
+});
+
+describe('sortByReviewField', () => {
+  const listing = (id: string, avgRating: number | null, numReviews: number) =>
+    ({ id, avgRating, numReviews } as never);
+  const input = [
+    listing('unrated', null, 0),
+    listing('low', 2, 40),
+    listing('high', 5, 3),
+    listing('mid', 3.5, 10),
+  ];
+  const order = (result: { id: string }[]) => result.map((l) => l.id);
+
+  it('sorts best rating first, unrated last', () => {
+    const result = sortByReviewField(input, { field: 'avgRating', ascending: false });
+    expect(order(result)).toEqual(['high', 'mid', 'low', 'unrated']);
+  });
+
+  it('sorts lowest rating first, still with unrated last', () => {
+    const result = sortByReviewField(input, { field: 'avgRating', ascending: true });
+    expect(order(result)).toEqual(['low', 'mid', 'high', 'unrated']);
+  });
+
+  it('sorts by review count', () => {
+    const result = sortByReviewField(input, { field: 'numReviews', ascending: false });
+    expect(order(result)).toEqual(['low', 'mid', 'high', 'unrated']);
+  });
+
+  it('keeps incoming order on ties and keeps only the top 20', () => {
+    const tied = Array.from({ length: 30 }, (_, i) => listing(`t${i}`, 4, 1));
+    const result = sortByReviewField(tied, { field: 'avgRating', ascending: false });
+    expect(result).toHaveLength(MAX_CANDIDATES);
+    expect(order(result).slice(0, 3)).toEqual(['t0', 't1', 't2']);
   });
 });
