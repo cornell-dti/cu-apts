@@ -26,6 +26,7 @@ import LocationPage from './pages/LocationPage';
 import axios from 'axios';
 import { colors } from './colors';
 import SearchResultsPage from './pages/SearchResultsPage';
+import ComparisonPage from './pages/ComparisonPage';
 import { isAdmin } from './utils/adminTool';
 
 const theme = createTheme({
@@ -171,6 +172,10 @@ const App = (): ReactElement => {
             <Route
               path="/apartment/:aptId"
               component={() => <ApartmentPage user={user} setUser={setUser} />}
+            />
+            <Route
+              path="/compare"
+              component={() => <ComparisonPage user={user} setUser={setUser} />}
             />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route
