@@ -22,7 +22,13 @@ import { z } from 'zod';
  */
 
 const AREA_VALUES = ['COLLEGETOWN', 'NORTH', 'WEST', 'DOWNTOWN'] as const;
-const SORT_BY_VALUES = ['numReviews', 'avgRating', 'distanceToCampus', 'originalOrder'] as const;
+const SORT_BY_VALUES = [
+  'numReviews',
+  'avgRating',
+  'distanceToCampus',
+  'originalOrder',
+  'price',
+] as const;
 
 type Area = typeof AREA_VALUES[number];
 
@@ -36,7 +42,7 @@ const isArea = (value: unknown): value is Area =>
   typeof value === 'string' && (AREA_VALUES as readonly string[]).includes(value.toUpperCase());
 
 /**
- * Strips characters that let text misrepresent itself when rendered.
+ * Strips characters that let text misrepresent itself when rendered, then caps its length.
  *
  * `intent` is the one free-text field the model controls, so a query that successfully steers
  * the model gets its wording echoed here. Removing control characters and bidirectional
@@ -51,8 +57,10 @@ const UNSAFE_TEXT_CHARS =
   /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2066-\u2069]/g;
 /* eslint-enable no-control-regex */
 
-const sanitizeIntent = (intent: string): string =>
-  intent.replace(UNSAFE_TEXT_CHARS, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_INTENT_LENGTH);
+export const sanitizeText = (text: string, maxLength: number): string =>
+  text.replace(UNSAFE_TEXT_CHARS, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+
+const sanitizeIntent = (intent: string): string => sanitizeText(intent, MAX_INTENT_LENGTH);
 
 /**
  * Validates the model's output field by field.
@@ -140,6 +148,7 @@ Rules:
 - "near campus" or "close to campus" = area ["COLLEGETOWN", "NORTH"]
 - "best rated" = sortBy "avgRating", sortLowToHigh false
 - "closest to campus" = sortBy "distanceToCampus", sortLowToHigh true
+- "cheapest" / "lowest price" / "lowest rent" / "least expensive" = sortBy "price", sortLowToHigh true (this is a sort, not a cap: do not also set maxPrice)
 - "studio" = numBeds 0
 - "lots of bedrooms" / "big place" = numBeds 3
 - "spacious" = numBeds 2 or more
@@ -148,13 +157,21 @@ Rules:
 - Never include any field not listed above
 - Never include markdown, commentary, or text outside the JSON object`;
 
+const GEMINI_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+
 /**
- * Sends the query to Gemini and returns the parsed JSON body of its response.
+ * POSTs a structured-output request to Gemini and returns the text of its first reply.
  *
- * @param query - the raw user query, passed as data inside a delimited block
- * @returns the model's response parsed as JSON, still unvalidated
+ * @param parts - prompt parts; callers keep instructions and untrusted data in separate parts
+ * @param responseSchema - Gemini structured-output schema constraining the reply
+ * @returns the model's reply text, still unparsed and unvalidated
  */
-const callGemini = async (query: string): Promise<string> => {
+export const callGeminiJson = async (
+  parts: readonly { readonly text: string }[],
+  responseSchema: Record<string, unknown>,
+  options: { readonly temperature: number; readonly timeoutMs: number }
+): Promise<string> => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     // Fail before any network I/O rather than send a request that can only be rejected.
@@ -162,22 +179,18 @@ const callGemini = async (query: string): Promise<string> => {
   }
 
   const response = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent',
+    GEMINI_URL,
     {
-      contents: [
-        {
-          parts: [{ text: buildSystemPrompt() }, { text: `<user_query>\n${query}\n</user_query>` }],
-        },
-      ],
+      contents: [{ parts }],
       generationConfig: {
         responseMimeType: 'application/json',
-        responseSchema: GEMINI_RESPONSE_SCHEMA,
-        temperature: 0,
+        responseSchema,
+        temperature: options.temperature,
       },
     },
     // In a header rather than a `?key=` query parameter, which would end up in logs and in the
     // URL that axios error messages report.
-    { timeout: 8000, headers: { 'x-goog-api-key': apiKey } }
+    { timeout: options.timeoutMs, headers: { 'x-goog-api-key': apiKey } }
   );
 
   const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -188,13 +201,25 @@ const callGemini = async (query: string): Promise<string> => {
 };
 
 /**
+ * Sends the query to Gemini and returns the text of its response.
+ *
+ * @param query - the raw user query, passed as data inside a delimited block
+ */
+const callGemini = (query: string): Promise<string> =>
+  callGeminiJson(
+    [{ text: buildSystemPrompt() }, { text: `<user_query>\n${query}\n</user_query>` }],
+    GEMINI_RESPONSE_SCHEMA,
+    { temperature: 0, timeoutMs: 8000 }
+  );
+
+/**
  * Whether a failure calling Gemini is transient, so that retrying the same request may succeed.
  *
  * That covers a throttle (429), a Gemini-side fault (5xx), and any failure with no response at
  * all - a timeout, DNS failure, or dropped connection. Any other status means Gemini rejected
  * the request itself (a bad request, an invalid API key), which retrying will not fix.
  */
-const isTransientUpstreamError = (err: unknown): boolean => {
+export const isTransientUpstreamError = (err: unknown): boolean => {
   if (!axios.isAxiosError(err)) {
     return false;
   }
@@ -231,6 +256,31 @@ const normalizeFilters = (filters: ParsedFilters): ParsedFilters => {
     return { ...filters, minPrice: null };
   }
   return filters;
+};
+
+/**
+ * Turns a natural language query into validated filters using Gemini.
+ *
+ * A model response that is not valid JSON or fails validation is not an error: it degrades to
+ * empty filters so callers fall back to an unfiltered search. Transport failures (timeout,
+ * throttle, rejected request, missing API key) throw; classify them with
+ * {@link isTransientUpstreamError}.
+ */
+export const extractFilters = async (query: string): Promise<ParsedFilters> => {
+  const text = await callGemini(query);
+  const raw = parseModelJson(text);
+  const result = raw === undefined ? undefined : FilterSchema.safeParse(raw);
+
+  if (!result || !result.success) {
+    // Don't fail on a schema miss - a malformed model response shouldn't break the search bar.
+    console.error(
+      'LLM output failed validation:',
+      result ? result.error.flatten() : 'response was not valid JSON'
+    );
+    return { ...EMPTY_FILTERS, intent: 'Could not confidently parse this query' };
+  }
+
+  return normalizeFilters(result.data);
 };
 
 /** Per-IP limiter: guards against a single abusive client. */
@@ -329,9 +379,8 @@ export const llmSearchHandler = async (req: Request, res: Response): Promise<voi
   // Already checked by validateLlmSearchBody, which must run before this handler.
   const query = req.body.query as string;
 
-  let text: string;
   try {
-    text = await callGemini(query);
+    res.status(200).json(await extractFilters(query));
   } catch (err) {
     // Timeout, network error, Gemini rejecting the request or being down, or a missing API key.
     console.error('LLM search error:', err instanceof Error ? err.message : err);
@@ -341,29 +390,6 @@ export const llmSearchHandler = async (req: Request, res: Response): Promise<voi
       res.status(503).json({ error: 'Search is temporarily unavailable. Please try again.' });
       return;
     }
-    res.status(500).json({ error: 'Error parsing query' });
-    return;
-  }
-
-  try {
-    const raw = parseModelJson(text);
-    const result = raw === undefined ? undefined : FilterSchema.safeParse(raw);
-
-    if (!result || !result.success) {
-      // Don't 500 on a schema miss - a malformed model response shouldn't break the search bar.
-      // Log for visibility and degrade to "no filters extracted" so the frontend can fall back
-      // to an unfiltered search.
-      console.error(
-        'LLM output failed validation:',
-        result ? result.error.flatten() : 'response was not valid JSON'
-      );
-      res.status(200).json({ ...EMPTY_FILTERS, intent: 'Could not confidently parse this query' });
-      return;
-    }
-
-    res.status(200).json(normalizeFilters(result.data));
-  } catch (err) {
-    console.error('LLM search error:', err instanceof Error ? err.message : err);
     res.status(500).json({ error: 'Error parsing query' });
   }
 };

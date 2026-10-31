@@ -35,6 +35,7 @@ import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
+import { aiSearchHandler, aiSearchMiddleware } from './aiSearch';
 
 // Imports for email sending
 
@@ -3191,5 +3192,13 @@ app.post('/api/admin/init-collections', authenticate, async (req, res) => {
  * @route POST /api/llm-search
  */
 app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
+
+/**
+ * AI Search - Returns AI-arranged result blocks plus the apartments they reference.
+ * Implementation lives in ./aiSearch.
+ *
+ * @route POST /api/ai-search
+ */
+app.post('/api/ai-search', ...aiSearchMiddleware, aiSearchHandler);
 
 export default app;

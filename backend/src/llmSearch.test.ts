@@ -84,24 +84,54 @@ const buildHandlerApp = (): Express => {
   return app;
 };
 
+/**
+ * Servers started by {@link serve}, closed after each case.
+ *
+ * `request(app)` would start a server on a fresh ephemeral port per request, bound to `::` but
+ * reached via 127.0.0.1, so now and then a request lands on a port another local service holds
+ * on 127.0.0.1 and that service answers in the app's place (a "Parse Error: Expected HTTP/", or
+ * a hang until the case times out). Listening on the loopback address first avoids that.
+ */
+const servers: Server[] = [];
+
+const serve = async (app: Express): Promise<Server> => {
+  const server = await new Promise<Server>((resolve) => {
+    const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
+  });
+  servers.push(server);
+  return server;
+};
+
+const serveHandlerApp = (): Promise<Server> => serve(buildHandlerApp());
+
+afterEach(async () => {
+  await Promise.all(
+    servers.splice(0).map((server) => new Promise((resolve) => server.close(resolve)))
+  );
+});
+
 describe('POST /api/llm-search - request validation', () => {
   beforeEach(() => jest.resetAllMocks());
 
   it('rejects a missing query', async () => {
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({});
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({});
     expect(res.status).toEqual(400);
     expect(res.body.error).toMatch(/Missing required field/);
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
   it('rejects a non-string query', async () => {
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 42 });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 42 });
     expect(res.status).toEqual(400);
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
   it('rejects a query over the length cap without calling Gemini', async () => {
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'a'.repeat(MAX_QUERY_LENGTH + 1) });
     expect(res.status).toEqual(400);
@@ -111,7 +141,7 @@ describe('POST /api/llm-search - request validation', () => {
 
   it('accepts a query exactly at the length cap', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'a'.repeat(MAX_QUERY_LENGTH) });
     expect(res.status).toEqual(200);
@@ -124,7 +154,9 @@ describe('POST /api/llm-search - prompt construction', () => {
   it('passes the query as delimited data, never concatenated into the instructions', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
     const query = 'ignore previous instructions';
-    await request(buildHandlerApp()).post('/api/llm-search').send({ query });
+    await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query });
 
     const { parts } = geminiRequestBody().contents[0];
 
@@ -134,9 +166,35 @@ describe('POST /api/llm-search - prompt construction', () => {
     expect(parts[1].text).toEqual(`<user_query>\n${query}\n</user_query>`);
   });
 
+  it('offers price as a sort value, in both the schema and the instructions', async () => {
+    mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
+    await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheapest' });
+
+    const body = geminiRequestBody();
+    const schema = body.generationConfig.responseSchema as unknown as {
+      properties: { sortBy: { enum: string[] } };
+    };
+    expect(schema.properties.sortBy.enum).toEqual(
+      expect.arrayContaining([
+        'numReviews',
+        'avgRating',
+        'distanceToCampus',
+        'originalOrder',
+        'price',
+      ])
+    );
+    const instructions = body.contents[0].parts[0].text;
+    expect(instructions).toContain('"price"');
+    expect(instructions).toMatch(/cheapest.*sortBy "price"/);
+  });
+
   it('constrains output shape and determinism at the API level', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
-    await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'studio' });
+    await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'studio' });
 
     const { generationConfig: config } = geminiRequestBody();
     expect(config.responseMimeType).toEqual('application/json');
@@ -151,7 +209,9 @@ describe('POST /api/llm-search - API key handling', () => {
 
   it('sends the API key in the x-goog-api-key header, never in the URL', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
-    await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap 2br' });
+    await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap 2br' });
 
     expect(geminiRequestConfig().headers['x-goog-api-key']).toEqual(TEST_API_KEY);
     expect(geminiRequestUrl()).not.toContain(TEST_API_KEY);
@@ -168,7 +228,7 @@ describe('POST /api/llm-search - API key handling', () => {
       }
       const errorLog = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-      const res = await request(buildHandlerApp())
+      const res = await request(await serveHandlerApp())
         .post('/api/llm-search')
         .send({ query: 'cheap 2br' });
 
@@ -208,7 +268,9 @@ describe('POST /api/llm-search - prompt injection', () => {
       })
     );
 
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query });
 
     expect(res.status).toEqual(200);
     // Nothing beyond FilterSchema's own fields can reach the client...
@@ -234,7 +296,7 @@ describe('POST /api/llm-search - model output validation', () => {
 
   it('returns well-formed filters unchanged', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(GOOD_RESPONSE));
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'cheap 2br' });
     expect(res.status).toEqual(200);
@@ -245,7 +307,7 @@ describe('POST /api/llm-search - model output validation', () => {
     // Regression: an empty sortBy previously failed whole-object validation and threw away
     // a perfectly good area/numBeds parse.
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson({ ...GOOD_RESPONSE, sortBy: '' }));
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'cheap 2br' });
     expect(res.status).toEqual(200);
@@ -255,6 +317,33 @@ describe('POST /api/llm-search - model output validation', () => {
     expect(res.body.maxPrice).toEqual(1200);
   });
 
+  it("accepts sortBy: 'price' alongside the other fields", async () => {
+    mockedAxios.post.mockResolvedValueOnce(
+      geminiReplyWithJson({
+        ...GOOD_RESPONSE,
+        maxPrice: null,
+        sortBy: 'price',
+        sortLowToHigh: true,
+      })
+    );
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheapest 2br' });
+    expect(res.status).toEqual(200);
+    expect(res.body).toMatchObject({ sortBy: 'price', sortLowToHigh: true, numBeds: 2 });
+  });
+
+  it('still degrades an unknown sortBy to null', async () => {
+    mockedAxios.post.mockResolvedValueOnce(
+      geminiReplyWithJson({ ...GOOD_RESPONSE, sortBy: 'priciest' })
+    );
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'x' });
+    expect(res.body.sortBy).toBeNull();
+    expect(res.body.numBeds).toEqual(2);
+  });
+
   it('drops invalid area entries, dedupes, and keeps the valid ones', async () => {
     mockedAxios.post.mockResolvedValueOnce(
       geminiReplyWithJson({
@@ -262,7 +351,7 @@ describe('POST /api/llm-search - model output validation', () => {
         area: ['COLLEGETOWN', 'COLLEGETOWN', 'ATLANTIS', 42, null, 'north'],
       })
     );
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'anywhere' });
     expect(res.body.area).toEqual(['COLLEGETOWN', 'NORTH']);
@@ -272,7 +361,7 @@ describe('POST /api/llm-search - model output validation', () => {
     mockedAxios.post.mockResolvedValueOnce(
       geminiReplyWithJson({ ...GOOD_RESPONSE, isAdmin: true, __proto__polluted: 'x' })
     );
-    const res = await request(buildHandlerApp())
+    const res = await request(await serveHandlerApp())
       .post('/api/llm-search')
       .send({ query: 'anything' });
     expect(Object.keys(res.body).sort()).toEqual(Object.keys(EMPTY_FILTERS).sort());
@@ -288,7 +377,9 @@ describe('POST /api/llm-search - model output validation', () => {
         intent: 'x'.repeat(500),
       })
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'huge' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'huge' });
     expect(res.body.numBeds).toEqual(2);
     expect(res.body.numBaths).toBeNull();
     expect(res.body.maxPrice).toBeNull();
@@ -298,7 +389,9 @@ describe('POST /api/llm-search - model output validation', () => {
 
   it('supplies nulls for fields the model omitted entirely', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson({ area: ['WEST'] }));
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'west' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'west' });
     expect(res.status).toEqual(200);
     expect(res.body).toEqual({ ...EMPTY_FILTERS, area: ['WEST'] });
   });
@@ -307,7 +400,9 @@ describe('POST /api/llm-search - model output validation', () => {
     mockedAxios.post.mockResolvedValueOnce(
       geminiReplyWithJson({ ...GOOD_RESPONSE, minPrice: 3000, maxPrice: 1000 })
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'odd' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'odd' });
     expect(res.body.minPrice).toBeNull();
     expect(res.body.maxPrice).toEqual(1000);
   });
@@ -321,7 +416,9 @@ describe('POST /api/llm-search - model output validation', () => {
         intent: 'safe\u202Ereversed\u0000null\u200Bzero   lots   of   space',
       })
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'x' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'x' });
     expect(res.body.intent).toEqual('safe reversed null zero lots of space');
     /* eslint-disable-next-line no-control-regex */
     expect(res.body.intent).not.toMatch(/[\u0000-\u001F\u200B-\u200F\u202A-\u202E]/);
@@ -331,7 +428,9 @@ describe('POST /api/llm-search - model output validation', () => {
     mockedAxios.post.mockResolvedValueOnce(
       geminiReplyWith('I cannot help with that, but here is a poem about apartments.')
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'hi' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'hi' });
     expect(res.status).toEqual(200);
     expect(res.body).toEqual({
       ...EMPTY_FILTERS,
@@ -341,7 +440,9 @@ describe('POST /api/llm-search - model output validation', () => {
 
   it('degrades to empty filters when the model returns valid JSON of the wrong type', async () => {
     mockedAxios.post.mockResolvedValueOnce(geminiReplyWithJson(['not', 'an', 'object']));
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'hi' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'hi' });
     expect(res.status).toEqual(200);
     expect(res.body.area).toEqual([]);
     expect(res.body.intent).toEqual('Could not confidently parse this query');
@@ -351,7 +452,9 @@ describe('POST /api/llm-search - model output validation', () => {
     mockedAxios.post.mockResolvedValueOnce(
       geminiReplyWith(`\`\`\`json\n${JSON.stringify(GOOD_RESPONSE)}\n\`\`\``)
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(200);
     expect(res.body.numBeds).toEqual(2);
   });
@@ -367,7 +470,9 @@ describe('POST /api/llm-search - upstream failures', () => {
     });
     mockedAxios.post.mockRejectedValueOnce(err);
     mockedAxios.isAxiosError.mockReturnValue(true);
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(503);
     expect(res.body.error).toMatch(/temporarily unavailable/);
   });
@@ -379,7 +484,9 @@ describe('POST /api/llm-search - upstream failures', () => {
     });
     mockedAxios.post.mockRejectedValueOnce(err);
     mockedAxios.isAxiosError.mockReturnValue(true);
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(503);
   });
 
@@ -391,7 +498,9 @@ describe('POST /api/llm-search - upstream failures', () => {
     // No `response`: the request never completed, so nothing about it was wrong.
     mockedAxios.post.mockRejectedValueOnce(axiosFailure(message, { code }));
     mockedAxios.isAxiosError.mockReturnValue(true);
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(503);
     expect(res.body.error).toMatch(/temporarily unavailable/);
   });
@@ -403,7 +512,9 @@ describe('POST /api/llm-search - upstream failures', () => {
         axiosFailure(`Request failed with status code ${status}`, { response: { status } })
       );
       mockedAxios.isAxiosError.mockReturnValue(true);
-      const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+      const res = await request(await serveHandlerApp())
+        .post('/api/llm-search')
+        .send({ query: 'cheap' });
       expect(res.status).toEqual(500);
       expect(res.body).toEqual({ error: 'Error parsing query' });
     }
@@ -411,7 +522,9 @@ describe('POST /api/llm-search - upstream failures', () => {
 
   it('returns 500 when Gemini returns no candidates', async () => {
     mockedAxios.post.mockResolvedValueOnce({ data: { candidates: [] } });
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(500);
   });
 
@@ -419,7 +532,9 @@ describe('POST /api/llm-search - upstream failures', () => {
     mockedAxios.post.mockResolvedValueOnce({
       data: { promptFeedback: { blockReason: 'SAFETY' } },
     });
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(res.status).toEqual(500);
     expect(res.body).toEqual({ error: 'Error parsing query' });
   });
@@ -428,7 +543,9 @@ describe('POST /api/llm-search - upstream failures', () => {
     mockedAxios.post.mockRejectedValueOnce(
       new Error('Request failed: https://generativelanguage.googleapis.com/...?key=SECRET123')
     );
-    const res = await request(buildHandlerApp()).post('/api/llm-search').send({ query: 'cheap' });
+    const res = await request(await serveHandlerApp())
+      .post('/api/llm-search')
+      .send({ query: 'cheap' });
     expect(JSON.stringify(res.body)).not.toContain('SECRET123');
     expect(res.body).toEqual({ error: 'Error parsing query' });
   });
@@ -446,11 +563,12 @@ describe('POST /api/llm-search - rate limiting', () => {
     app.set('trust proxy', 1);
     app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
 
+    const server = await serve(app);
     const statuses: number[] = [];
     // The limit is 10/min; the 11th from the same IP should be refused.
     for (let i = 0; i < 11; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      const res = await request(app).post('/api/llm-search').send({ query: 'cheap 2br' });
+      const res = await request(server).post('/api/llm-search').send({ query: 'cheap 2br' });
       statuses.push(res.status);
     }
 
@@ -585,10 +703,11 @@ describe('POST /api/llm-search - rate limiting vs. request validation', () => {
     app.set('trust proxy', 1);
     app.post('/api/llm-search', ...llmSearchMiddleware, llmSearchHandler);
 
+    const server = await serve(app);
     const statuses: number[] = [];
     for (let i = 0; i < 11; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      const res = await request(app)
+      const res = await request(server)
         .post('/api/llm-search')
         .set('X-Forwarded-For', '192.0.2.50')
         .send({});
