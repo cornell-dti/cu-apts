@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { AiSearchResponse } from '../../../common/types/ai-search-types';
 
-const RATE_LIMITED_MESSAGE = "You're searching a lot. Please wait a minute and try again.";
+const RATE_LIMITED_MESSAGE = 'Too many searches right now. Please try again later.';
 const BUSY_MESSAGE = 'Search is busy right now. Please try again.';
 const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
 
