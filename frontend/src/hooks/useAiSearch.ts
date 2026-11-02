@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { AiSearchResponse } from '../../../common/types/ai-search-types';
-import { MOCK_AI_SEARCH_RESPONSE } from '../mocks/aiSearchMock';
 
-const MOCK_DELAY_MS = 1000;
+const RATE_LIMITED_MESSAGE = 'Too many searches right now. Please try again later.';
+const BUSY_MESSAGE = 'Search is busy right now. Please try again.';
+const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
 
-/**
- * Fetches the AI search response for a query. Currently resolves the mock after a short delay;
- * swap the body for a real request (e.g. `get`/axios against the AI search endpoint) later.
- */
-const fetchAiSearch = (query: string): Promise<AiSearchResponse> =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve({ ...MOCK_AI_SEARCH_RESPONSE, query }), MOCK_DELAY_MS);
-  });
+const errorMessageFor = (err: unknown): string => {
+  const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+  if (status === 429) return RATE_LIMITED_MESSAGE;
+  if (status === 503) return BUSY_MESSAGE;
+  return GENERIC_MESSAGE;
+};
+
+// Requests in flight, by query. Each search costs two Gemini calls against a 5/min limit, so
+// effects that re-run for the same query (StrictMode remounts, re-renders) share one request.
+const inFlight = new Map<string, Promise<AiSearchResponse>>();
+
+const fetchAiSearch = (query: string): Promise<AiSearchResponse> => {
+  const existing = inFlight.get(query);
+  if (existing) return existing;
+  const request = axios
+    .post<AiSearchResponse>('/api/ai-search', { query })
+    .then((response) => response.data)
+    .finally(() => inFlight.delete(query));
+  inFlight.set(query, request);
+  return request;
+};
 
 type AiSearchState = {
   readonly data: AiSearchResponse | null;
@@ -24,7 +39,7 @@ type AiSearchState = {
  *
  * @param query - The user's natural-language query; an empty query performs no request.
  * @returns The response (`data`), whether a request is in flight (`loading`), and any failure
- * (`error`). Stale responses from a previous query are ignored.
+ * (`error`). A response for a previous query is ignored if the query has changed.
  */
 export const useAiSearch = (query: string): AiSearchState => {
   const [state, setState] = useState<AiSearchState>({ data: null, loading: false, error: null });
@@ -34,9 +49,10 @@ export const useAiSearch = (query: string): AiSearchState => {
       setState({ data: null, loading: false, error: null });
       return;
     }
+    const trimmed = query.trim();
     let cancelled = false;
     setState({ data: null, loading: true, error: null });
-    fetchAiSearch(query)
+    fetchAiSearch(trimmed)
       .then((data) => {
         if (!cancelled) setState({ data, loading: false, error: null });
       })
@@ -45,7 +61,7 @@ export const useAiSearch = (query: string): AiSearchState => {
           setState({
             data: null,
             loading: false,
-            error: err instanceof Error ? err : new Error('AI search failed'),
+            error: new Error(errorMessageFor(err)),
           });
         }
       });

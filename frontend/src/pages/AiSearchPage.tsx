@@ -69,6 +69,9 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: '28px',
     color: colors.black,
   },
+  searching: {
+    textAlign: 'center',
+  },
 }));
 
 type Props = {
@@ -81,7 +84,7 @@ type Props = {
  * its blocks in the left column with a map area alongside (stacked below on narrow screens).
  */
 const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
-  const { container, searchBar, content, blocks, map, message } = useStyles();
+  const { container, searchBar, content, blocks, map, message, searching } = useStyles();
   const query = new URLSearchParams(useLocation().search).get('q') ?? '';
   const { data, loading, error } = useAiSearch(query);
   useTitle('AI Search');
@@ -93,10 +96,15 @@ const AiSearchPage = ({ user, setUser }: Props): ReactElement => {
 
   const renderBlocks = (): ReactElement => {
     if (loading) {
-      return <ProgressSpinner />;
+      return (
+        <>
+          <ProgressSpinner />
+          <Typography className={`${message} ${searching}`}>Searching...</Typography>
+        </>
+      );
     }
     if (error) {
-      return <Typography className={message}>Something went wrong. Please try again.</Typography>;
+      return <Typography className={message}>{error.message}</Typography>;
     }
     if (!data) {
       return <Typography className={message}>Enter a search to see results.</Typography>;
