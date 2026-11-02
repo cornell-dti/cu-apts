@@ -161,6 +161,20 @@ const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 
 /**
+ * Logs the token counts from a Gemini response's `usageMetadata`. Counts only: never prompt or
+ * response text. Fields Gemini did not report (`thoughtsTokenCount` is often absent) are omitted.
+ */
+const logGeminiUsage = (label: string, usage: unknown): void => {
+  const metadata = (usage ?? {}) as Record<string, unknown>;
+  const counts = Object.fromEntries(
+    ['promptTokenCount', 'candidatesTokenCount', 'thoughtsTokenCount', 'totalTokenCount']
+      .map((field) => [field, metadata[field]] as const)
+      .filter(([, value]) => typeof value === 'number')
+  );
+  console.log(`Gemini usage (${label}):`, JSON.stringify(counts));
+};
+
+/**
  * POSTs a structured-output request to Gemini and returns the text of its first reply.
  *
  * @param parts - prompt parts; callers keep instructions and untrusted data in separate parts
@@ -170,7 +184,12 @@ const GEMINI_URL =
 export const callGeminiJson = async (
   parts: readonly { readonly text: string }[],
   responseSchema: Record<string, unknown>,
-  options: { readonly temperature: number; readonly timeoutMs: number }
+  options: {
+    readonly temperature: number;
+    readonly timeoutMs: number;
+    /** When set, the call's token counts are logged under this label. */
+    readonly usageLabel?: string;
+  }
 ): Promise<string> => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -193,6 +212,10 @@ export const callGeminiJson = async (
     { timeout: options.timeoutMs, headers: { 'x-goog-api-key': apiKey } }
   );
 
+  if (options.usageLabel) {
+    logGeminiUsage(options.usageLabel, response.data?.usageMetadata);
+  }
+
   const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== 'string') {
     throw new Error('Empty response from Gemini');
@@ -205,11 +228,11 @@ export const callGeminiJson = async (
  *
  * @param query - the raw user query, passed as data inside a delimited block
  */
-const callGemini = (query: string): Promise<string> =>
+const callGemini = (query: string, usageLabel?: string): Promise<string> =>
   callGeminiJson(
     [{ text: buildSystemPrompt() }, { text: `<user_query>\n${query}\n</user_query>` }],
     GEMINI_RESPONSE_SCHEMA,
-    { temperature: 0, timeoutMs: 8000 }
+    { temperature: 0, timeoutMs: 8000, usageLabel }
   );
 
 /**
@@ -264,10 +287,13 @@ const normalizeFilters = (filters: ParsedFilters): ParsedFilters => {
  * A model response that is not valid JSON or fails validation is not an error: it degrades to
  * empty filters so callers fall back to an unfiltered search. Transport failures (timeout,
  * throttle, rejected request, missing API key) throw; classify them with
- * {@link isTransientUpstreamError}.
+ * {@link isTransientUpstreamError}. Pass `usageLabel` to log the call's token counts.
  */
-export const extractFilters = async (query: string): Promise<ParsedFilters> => {
-  const text = await callGemini(query);
+export const extractFilters = async (
+  query: string,
+  usageLabel?: string
+): Promise<ParsedFilters> => {
+  const text = await callGemini(query, usageLabel);
   const raw = parseModelJson(text);
   const result = raw === undefined ? undefined : FilterSchema.safeParse(raw);
 

@@ -942,7 +942,7 @@ export const generateBlocks = async (
       { text: `<search_context>\n${JSON.stringify(context)}\n</search_context>` },
     ],
     BLOCKS_RESPONSE_SCHEMA,
-    { temperature: 0.3, timeoutMs: BLOCKS_TIMEOUT_MS }
+    { temperature: 0.3, timeoutMs: BLOCKS_TIMEOUT_MS, usageLabel: 'blocks' }
   );
 
   let raw: unknown;
@@ -1032,7 +1032,7 @@ export const aiSearchHandler = async (req: Request, res: Response): Promise<void
 
   let filters: ParsedFilters;
   try {
-    filters = await extractFilters(query);
+    filters = await extractFilters(query, 'filters');
   } catch (err) {
     console.error('AI search filter error:', err instanceof Error ? err.message : err);
     if (isTransientUpstreamError(err)) {
