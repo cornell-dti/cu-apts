@@ -448,17 +448,14 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       if (value === undefined) return; // omitted: leave the stored value alone
       leaseUpdates[key] = isLeaseDateAbsent(value) ? FieldValue.delete() : value;
     });
-    reviewDoc
-      .update({
-        ...updatedReview,
-        ...leaseUpdates,
-        date: new Date(updatedReview.date),
-        status: 'PENDING',
-        reports: reviewData.reports || [],
-      })
-      .then(() => {
-        res.status(201).send(reviewId);
-      });
+    await reviewDoc.update({
+      ...updatedReview,
+      ...leaseUpdates,
+      date: new Date(updatedReview.date),
+      status: 'PENDING',
+      reports: reviewData.reports || [],
+    });
+    res.status(201).send(reviewId);
   } catch (err) {
     console.error(err);
     res.status(500).send('Error');
