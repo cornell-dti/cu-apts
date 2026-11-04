@@ -1,4 +1,7 @@
-import { MIN_LEASE_REVIEWS_FOR_AVERAGE } from '../../common/constants/lease';
+import {
+  MAX_LEASE_START_YEARS_AHEAD,
+  MIN_LEASE_REVIEWS_FOR_AVERAGE,
+} from '../../common/constants/lease';
 import {
   computeLeaseSignedStats,
   monthsBetween,
@@ -96,7 +99,19 @@ describe('validateLeaseDates', () => {
   });
 
   it('allows leaseStart in the future', () => {
-    expect(validateLeaseDates({ leaseStart: '2030-08' }, NOW)).toBeNull();
+    expect(validateLeaseDates({ leaseStart: '2028-08' }, NOW)).toBeNull();
+  });
+
+  it('accepts leaseStart exactly MAX_LEASE_START_YEARS_AHEAD years after the current month', () => {
+    // NOW is October 2026, so the limit is October 2029.
+    expect(MAX_LEASE_START_YEARS_AHEAD).toBe(3);
+    expect(validateLeaseDates({ leaseStart: '2029-10' }, NOW)).toBeNull();
+  });
+
+  it('rejects leaseStart one month past the limit', () => {
+    expect(validateLeaseDates({ leaseStart: '2029-11' }, NOW)).toMatch(
+      /leaseStart cannot be more than 3 years after the current month/
+    );
   });
 
   it('rejects a future leaseSigned even if start is later', () => {

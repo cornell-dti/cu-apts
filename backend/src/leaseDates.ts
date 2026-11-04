@@ -2,6 +2,7 @@ import {
   LEASE_DATE_REGEX,
   LEASE_DATE_MIN_YEAR,
   LEASE_DATE_MAX_YEAR,
+  MAX_LEASE_START_YEARS_AHEAD,
   MIN_LEASE_REVIEWS_FOR_AVERAGE,
 } from '../../common/constants/lease';
 import type { LeaseSignedStats } from '../../common/types/db-types';
@@ -38,7 +39,8 @@ export const monthsBetween = (signed: YearMonth, start: YearMonth): number =>
  * Validates the optional lease dates on a review body.
  * Returns an error message for the client, or null if valid.
  * Rules: each present date is "YYYY-MM"; leaseSigned is not after the current month
- * (leaseStart may be in the future); if both are present, signed is not after start.
+ * (leaseStart may be in the future, but at most MAX_LEASE_START_YEARS_AHEAD years after it);
+ * if both are present, signed is not after start.
  * `now` is a parameter so tests don't depend on the clock.
  */
 export const validateLeaseDates = (
@@ -62,6 +64,13 @@ export const validateLeaseDates = (
     const current = { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
     if (toMonthIndex(signed) > toMonthIndex(current)) {
       return 'leaseSigned cannot be after the current month';
+    }
+  }
+
+  if (start) {
+    const current = { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+    if (monthsBetween(current, start) > MAX_LEASE_START_YEARS_AHEAD * 12) {
+      return `leaseStart cannot be more than ${MAX_LEASE_START_YEARS_AHEAD} years after the current month`;
     }
   }
 
