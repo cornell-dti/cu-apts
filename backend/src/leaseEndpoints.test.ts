@@ -88,6 +88,13 @@ describe('POST /api/new-review lease dates', () => {
     expect(mockSet).not.toHaveBeenCalled();
   });
 
+  it('returns 400 and does not write when the gap is 37 months', async () => {
+    const res = await newReview({ leaseSigned: '2024-01', leaseStart: '2027-02' });
+    expect(res.status).toBe(400);
+    expect(res.text).toMatch(/36 months/);
+    expect(mockSet).not.toHaveBeenCalled();
+  });
+
   it('writes valid dates', async () => {
     const res = await newReview({ leaseSigned: '2025-01', leaseStart: '2025-09' });
     expect(res.status).toBe(201);

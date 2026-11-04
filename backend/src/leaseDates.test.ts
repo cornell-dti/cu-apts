@@ -1,4 +1,5 @@
 import {
+  MAX_LEASE_GAP_MONTHS,
   MAX_LEASE_START_YEARS_AHEAD,
   MIN_LEASE_REVIEWS_FOR_AVERAGE,
 } from '../../common/constants/lease';
@@ -106,6 +107,17 @@ describe('validateLeaseDates', () => {
     // NOW is October 2026, so the limit is October 2029.
     expect(MAX_LEASE_START_YEARS_AHEAD).toBe(3);
     expect(validateLeaseDates({ leaseStart: '2029-10' }, NOW)).toBeNull();
+  });
+
+  it('accepts a gap of exactly MAX_LEASE_GAP_MONTHS', () => {
+    expect(MAX_LEASE_GAP_MONTHS).toBe(36);
+    expect(validateLeaseDates({ leaseSigned: '2024-01', leaseStart: '2027-01' }, NOW)).toBeNull();
+  });
+
+  it('rejects a gap one month past MAX_LEASE_GAP_MONTHS', () => {
+    expect(validateLeaseDates({ leaseSigned: '2024-01', leaseStart: '2027-02' }, NOW)).toMatch(
+      /leaseStart cannot be more than 36 months after leaseSigned/
+    );
   });
 
   it('rejects leaseStart one month past the limit', () => {

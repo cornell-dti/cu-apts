@@ -2,6 +2,7 @@ import {
   LEASE_DATE_REGEX,
   LEASE_DATE_MIN_YEAR,
   LEASE_DATE_MAX_YEAR,
+  MAX_LEASE_GAP_MONTHS,
   MAX_LEASE_START_YEARS_AHEAD,
   MIN_LEASE_REVIEWS_FOR_AVERAGE,
 } from '../../common/constants/lease';
@@ -40,7 +41,7 @@ export const monthsBetween = (signed: YearMonth, start: YearMonth): number =>
  * Returns an error message for the client, or null if valid.
  * Rules: each present date is "YYYY-MM"; leaseSigned is not after the current month
  * (leaseStart may be in the future, but at most MAX_LEASE_START_YEARS_AHEAD years after it);
- * if both are present, signed is not after start.
+ * if both are present, signed is not after start and the gap is at most MAX_LEASE_GAP_MONTHS.
  * `now` is a parameter so tests don't depend on the clock.
  */
 export const validateLeaseDates = (
@@ -76,6 +77,10 @@ export const validateLeaseDates = (
 
   if (signed && start && monthsBetween(signed, start) < 0) {
     return 'leaseSigned must not be after leaseStart';
+  }
+
+  if (signed && start && monthsBetween(signed, start) > MAX_LEASE_GAP_MONTHS) {
+    return `leaseStart cannot be more than ${MAX_LEASE_GAP_MONTHS} months after leaseSigned`;
   }
 
   return null;

@@ -8,6 +8,9 @@ export const LEASE_DATE_MAX_YEAR = 2100;
 // How far past the current month a leaseStart may be. Rejects typos like "2062-08".
 export const MAX_LEASE_START_YEARS_AHEAD = 3;
 
+// Longest gap, in months, between leaseSigned and leaseStart. Keeps typos from skewing the average.
+export const MAX_LEASE_GAP_MONTHS = 36;
+
 // Minimum number of reviews with both lease dates before an average is shown.
 // Below this, the listing returns the empty state (avgMonthsBeforeStart: null).
 export const MIN_LEASE_REVIEWS_FOR_AVERAGE = 3;
