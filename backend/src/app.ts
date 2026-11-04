@@ -448,6 +448,8 @@ app.post('/api/edit-review/:reviewId', authenticate, async (req, res) => {
       if (value === undefined) return; // omitted: leave the stored value alone
       leaseUpdates[key] = isLeaseDateAbsent(value) ? FieldValue.delete() : value;
     });
+    // Order matters: ...leaseUpdates must come after ...updatedReview, because it overrides the raw
+    // null/"" lease values from the request body with FieldValue.delete().
     await reviewDoc.update({
       ...updatedReview,
       ...leaseUpdates,
