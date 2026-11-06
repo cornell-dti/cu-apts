@@ -123,15 +123,25 @@ beforeAll(() => {
 beforeEach(resetFakes);
 
 describe('normalizeNetId and buildInviteEmail', () => {
-  it('accepts NetIDs and cleans up spaces and capital letters', () => {
+  it('accepts NetIDs and Cornell emails, and cleans up spaces and capital letters', () => {
     expect(normalizeNetId('km2253')).toBe('km2253');
     expect(normalizeNetId('  ABC123 ')).toBe('abc123');
+    expect(normalizeNetId('KM2253@Cornell.edu')).toBe('km2253');
   });
 
   it('rejects anything that is not a NetID', () => {
-    ['', 'k2253', 'abcd123', 'km', '2253', 'km2253@cornell.edu', 'km 2253', 42, undefined].forEach(
-      (input) => expect(normalizeNetId(input)).toBeNull()
-    );
+    [
+      '',
+      'k2253',
+      'abcd123',
+      'km',
+      '2253',
+      'km2253@gmail.com',
+      'km2253@cornell.edu.co',
+      'km 2253',
+      42,
+      undefined,
+    ].forEach((input) => expect(normalizeNetId(input)).toBeNull());
   });
 
   it('escapes user-typed names in the HTML and links to the invite', () => {
@@ -162,6 +172,12 @@ describe('POST /api/folders/:folderId/invites', () => {
     expect(mail.to).toBe('xy999@cornell.edu');
     expect(mail.html).toContain('Collegetown 2027');
     expect(mail.text).toContain('/folder-invite/f1_xy999');
+  });
+
+  it('accepts a full Cornell email and invites that NetID', async () => {
+    const res = await sendInvite('ab123', 'EF789@cornell.edu');
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ id: 'f1_ef789', inviteeEmail: 'ef789@cornell.edu' });
   });
 
   it('returns 400 for a missing or invalid NetID and sends nothing', async () => {

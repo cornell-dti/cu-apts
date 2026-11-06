@@ -31,14 +31,22 @@ export const INVITES_PER_HOUR = 10;
 const CUAPTS_URL = 'https://www.cuapts.org';
 
 /**
- * normalizeNetId – Cleans up a NetID typed by a user and checks that it looks like a NetID.
+ * normalizeNetId – Cleans up a NetID or Cornell email typed by a user and checks that it looks
+ * like a NetID.
  *
- * @param {unknown} input – The NetID from the request body.
+ * @remarks
+ * Users can type a NetID ("abc123") or a full Cornell email ("abc123@cornell.edu"); both become
+ * "abc123". Any other email is rejected, since invites only go to Cornell accounts.
+ *
+ * @param {unknown} input – The NetID or Cornell email from the request body.
  * @returns {string | null} – The trimmed, lowercase NetID, or null if it isn't a valid NetID.
  */
 export const normalizeNetId = (input: unknown): string | null => {
   if (typeof input !== 'string') return null;
-  const netId = input.trim().toLowerCase();
+  const netId = input
+    .trim()
+    .toLowerCase()
+    .replace(/@cornell\.edu$/, '');
   return NETID_PATTERN.test(netId) ? netId : null;
 };
 

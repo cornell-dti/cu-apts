@@ -3108,7 +3108,7 @@ app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req,
  * @route POST /api/folders/:folderId/invites
  *
  * @input {string} req.params.folderId - The ID of the folder to share
- * @input {string} req.body.netId - The NetID of the person to invite (e.g. "abc123")
+ * @input {string} req.body.netId - The NetID or Cornell email of the person to invite (e.g. "abc123")
  *
  * @status
  * - 201: Invite saved and email sent (returns the invite)
