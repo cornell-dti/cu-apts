@@ -355,7 +355,8 @@ export default function AddToFolderPopover({
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       disableRestoreFocus
       PaperProps={{
-        onMouseLeave: onClose,
+        // The paper can shrink away from the pointer when the folder list becomes the form.
+        onMouseLeave: createMode ? undefined : onClose,
         onClick: (e) => e.stopPropagation(),
       }}
     >
