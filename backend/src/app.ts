@@ -23,6 +23,7 @@ import {
   BlogPostWithId,
   RoomType,
   Folder,
+  FolderInvite,
 } from '@common/types/db-types';
 // Import Firebase configuration and types
 import { auth } from 'firebase-admin';
@@ -34,6 +35,13 @@ import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { canAccessFolder, isFolderOwner } from './folderAccess';
+import {
+  findUserIdByEmail,
+  getInviteId,
+  inviteRateLimiter,
+  normalizeNetId,
+  sendFolderInviteEmail,
+} from './folderInvites';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
 
@@ -56,6 +64,7 @@ const pendingBuildingsCollection = db.collection('pendingBuildings');
 const contactQuestionsCollection = db.collection('contactQuestions');
 const blogPostCollection = db.collection('blogposts');
 const folderCollection = db.collection('folders');
+const folderInviteCollection = db.collection('folderInvites');
 const adminWhitelistCollection = db.collection('adminWhitelist');
 const travelTimesCollection = db.collection('travelTimes');
 
@@ -3085,6 +3094,91 @@ app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req,
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error removing member from folder');
+  }
+});
+
+/**
+ * Invite to Folder – Invites someone to a folder by NetID and emails them the invite.
+ *
+ * @remarks
+ * Only the owner of the folder can invite people. The invite is saved with status PENDING, and an
+ * email goes to `<netId>@cornell.edu` with a link to accept or decline. Each owner can send up to
+ * 10 invites per hour; requests that fail (for example a mistyped NetID) don't count.
+ *
+ * @route POST /api/folders/:folderId/invites
+ *
+ * @input {string} req.params.folderId - The ID of the folder to share
+ * @input {string} req.body.netId - The NetID or Cornell email of the person to invite (e.g. "abc123")
+ *
+ * @status
+ * - 201: Invite saved and email sent (returns the invite)
+ * - 400: Missing or invalid NetID
+ * - 403: Unauthorized to invite people to this folder (not the owner)
+ * - 404: Folder not found
+ * - 409: That person already has access, or already has a pending invite
+ * - 429: Too many invites sent in the last hour
+ * - 500: Error saving the invite or sending the email
+ */
+app.post('/api/folders/:folderId/invites', authenticate, inviteRateLimiter, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid, email, name } = req.user;
+    const { folderId } = req.params;
+
+    const netId = normalizeNetId(req.body?.netId);
+    if (!netId) {
+      return res.status(400).send('Please enter a valid NetID (for example, abc123)');
+    }
+
+    const folderDoc = await folderCollection.doc(folderId).get();
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    const folder = folderDoc.data() as Folder;
+    if (!isFolderOwner(folder, uid)) {
+      return res.status(403).send('Unauthorized to invite people to this folder');
+    }
+
+    // The invited person may not have a CU Apts account yet. If they do, make sure they aren't
+    // already the owner or a member.
+    const inviteeEmail = `${netId}@cornell.edu`;
+    const inviteeId = await findUserIdByEmail(inviteeEmail);
+    if (inviteeId && canAccessFolder(folder, inviteeId)) {
+      return res.status(409).send(`${netId} already has access to this folder`);
+    }
+
+    const inviteRef = folderInviteCollection.doc(getInviteId(folderId, netId));
+    const existingInvite = await inviteRef.get();
+    if (existingInvite.exists && existingInvite.data()?.status === 'PENDING') {
+      return res.status(409).send(`${netId} already has a pending invite to this folder`);
+    }
+
+    const invitedByName: string = name || email || 'A CUApts user';
+    const invite: FolderInvite = {
+      folderId,
+      folderName: folder.name,
+      invitedBy: uid,
+      invitedByName,
+      inviteeNetId: netId,
+      inviteeEmail,
+      status: 'PENDING',
+      createdAt: new Date(),
+    };
+    await inviteRef.set(invite);
+
+    try {
+      await sendFolderInviteEmail(inviteeEmail, invitedByName, folder.name, inviteRef.id);
+    } catch (emailErr) {
+      // An invite nobody was told about is useless, so remove it and let the owner try again
+      await inviteRef.delete();
+      throw emailErr;
+    }
+
+    return res.status(201).json({ id: inviteRef.id, ...invite });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error sending invite');
   }
 });
 
