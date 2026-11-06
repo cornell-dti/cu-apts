@@ -60,6 +60,17 @@ export const formatLeaseSigned = (value: string | null | undefined): string | nu
   return parsed ? `${MONTH_ABBREVIATIONS[parsed.month - 1]} ${parsed.year}` : null;
 };
 
+/**
+ * Formats the average number of months leases are signed before they start, e.g. 4 -> "~4 months".
+ * Returns null when there is no average (null, undefined or invalid), so callers can hide the callout.
+ */
+export const formatMonthsBeforeStart = (months: number | null | undefined): string | null => {
+  if (months === null || months === undefined || !Number.isFinite(months) || months < 0) {
+    return null;
+  }
+  return `~${months} ${months === 1 ? 'month' : 'months'}`;
+};
+
 const toMonthIndex = ({ year, month }: YearMonth): number => year * 12 + month;
 
 /** Calendar months from `from` to `to`. Negative when `to` is earlier. Same as the backend's monthsBetween. */

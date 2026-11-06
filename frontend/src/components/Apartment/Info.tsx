@@ -4,6 +4,9 @@ import { makeStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import { Link as RouterLink } from 'react-router-dom';
 import { colors } from '../../colors';
+import { ReactComponent as CalendarIcon } from '../../assets/calendar-icon.svg';
+import { formatMonthsBeforeStart } from '../../utils/leaseDates';
+import { LeaseSignedStats } from '../../../../common/types/db-types';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -41,6 +44,22 @@ const useStyles = makeStyles(() => ({
       border: `2px solid ${colors.red1}`,
     },
   },
+  leaseCallout: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '15px',
+    padding: '15px 15px 15px 18px',
+    backgroundColor: colors.reviewBoxGray,
+  },
+  leaseCalloutIcon: {
+    flexShrink: 0,
+    width: '21px',
+    height: '22px',
+  },
+  leaseCalloutHighlight: {
+    fontWeight: 600,
+    color: colors.red2,
+  },
   contactButton: {
     textTransform: 'uppercase',
   },
@@ -51,6 +70,8 @@ type Props = {
   readonly landlord: string | null;
   readonly contact: () => void;
   readonly address: string | null;
+  readonly aptName?: string | null;
+  readonly leaseSignedStats?: LeaseSignedStats;
 };
 
 /**
@@ -78,8 +99,28 @@ const InfoItem = ({ text, className }: { text: string; className: string }) => (
  *
  * @return {ReactElement} – The rendered Info component.
  */
-export default function Info({ landlordId, landlord, contact, address }: Props): ReactElement {
-  const { root, textGroup, title, infoText, button, outlinedButton, contactButton } = useStyles();
+export default function Info({
+  landlordId,
+  landlord,
+  contact,
+  address,
+  aptName,
+  leaseSignedStats,
+}: Props): ReactElement {
+  const {
+    root,
+    textGroup,
+    title,
+    infoText,
+    leaseCallout,
+    leaseCalloutIcon,
+    leaseCalloutHighlight,
+    button,
+    outlinedButton,
+    contactButton,
+  } = useStyles();
+  // null (hide the callout) when there are too few reviews with both lease dates
+  const monthsBeforeStart = formatMonthsBeforeStart(leaseSignedStats?.avgMonthsBeforeStart);
 
   return (
     <div className={root}>
@@ -91,6 +132,18 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
           )}
           {address && <InfoItem className={infoText} text={`Address: ${address}`} />}
         </div>
+        {aptName && monthsBeforeStart && (
+          <div className={leaseCallout}>
+            <CalendarIcon className={leaseCalloutIcon} aria-hidden="true" />
+            <Typography className={infoText}>
+              {'Renters at '}
+              <span className={leaseCalloutHighlight}>{aptName}</span>
+              {' typically sign their leases '}
+              <span className={leaseCalloutHighlight}>{monthsBeforeStart}</span>
+              {' before they start'}
+            </Typography>
+          </div>
+        )}
       </div>
       <Grid container justifyContent="center" spacing={2}>
         <Grid item xs={6} sm={12} md={6}>

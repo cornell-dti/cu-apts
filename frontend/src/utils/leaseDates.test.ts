@@ -1,5 +1,6 @@
 import {
   formatLeaseSigned,
+  formatMonthsBeforeStart,
   formatYearMonth,
   isLeaseMonthDisabled,
   LEASE_DATE_MAX_YEAR,
@@ -99,5 +100,28 @@ describe('formatLeaseSigned', () => {
     expect(formatLeaseSigned('2024-1')).toBeNull();
     expect(formatLeaseSigned('Oct 2024')).toBeNull();
     expect(formatLeaseSigned('1999-05')).toBeNull();
+  });
+});
+
+describe('formatMonthsBeforeStart', () => {
+  it('formats the average with a ~ and pluralizes months', () => {
+    expect(formatMonthsBeforeStart(4)).toBe('~4 months');
+    expect(formatMonthsBeforeStart(12)).toBe('~12 months');
+    expect(formatMonthsBeforeStart(2)).toBe('~2 months');
+  });
+
+  it('uses the singular for exactly 1 month', () => {
+    expect(formatMonthsBeforeStart(1)).toBe('~1 month');
+  });
+
+  it('shows 0 as "~0 months"', () => {
+    expect(formatMonthsBeforeStart(0)).toBe('~0 months');
+  });
+
+  it('returns null when there is no average, so the callout can be hidden', () => {
+    expect(formatMonthsBeforeStart(null)).toBeNull();
+    expect(formatMonthsBeforeStart(undefined)).toBeNull();
+    expect(formatMonthsBeforeStart(Number.NaN)).toBeNull();
+    expect(formatMonthsBeforeStart(-1)).toBeNull();
   });
 });
