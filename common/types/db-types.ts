@@ -131,3 +131,17 @@ export type Folder = {
   // user IDs the folder is shared with; missing on folders created before shared folders
   readonly members?: string[];
 };
+
+export type FolderInviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
+
+export type FolderInvite = {
+  readonly folderId: string;
+  readonly folderName: string; // the folder's name when the invite was sent
+  readonly invitedBy: string; // user ID of the owner who sent the invite
+  readonly invitedByName: string;
+  readonly inviteeNetId: string;
+  readonly inviteeEmail: string; // <netId>@cornell.edu; only this account can accept or decline
+  readonly status: FolderInviteStatus;
+  readonly createdAt: Date;
+  readonly respondedAt?: Date;
+};
