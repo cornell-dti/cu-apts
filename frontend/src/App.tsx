@@ -20,7 +20,7 @@ import { ModalProvider } from './components/utils/Footer/ContactModalContext';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
 import Policies from './pages/Policies';
-import ApartmentPage from './pages/ApartmentPage';
+import NewApartmentPage from './pages/newApartmentPage';
 import AdminPage from './pages/AdminPage';
 import LocationPage from './pages/LocationPage';
 import axios from 'axios';
@@ -168,9 +168,12 @@ const App = (): ReactElement => {
               path="/bookmarks"
               component={() => <BookmarksPage user={user} setUser={setUser} />}
             />
+            {/* `render` rather than `component` so the element type stays stable
+                across App re-renders; an inline `component` arrow remounts the
+                page and refetches on every user state change. */}
             <Route
               path="/apartment/:aptId"
-              component={() => <ApartmentPage user={user} setUser={setUser} />}
+              render={() => <NewApartmentPage user={user} setUser={setUser} />}
             />
             <Route exact path="/notfound" component={NotFoundPage} />
             <Route
