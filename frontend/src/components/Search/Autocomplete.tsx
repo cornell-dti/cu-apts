@@ -21,25 +21,18 @@ import { Link as RouterLink } from 'react-router-dom';
 import searchPropertyIcon from '../../assets/search-property.svg';
 import searchLandlordIcon from '../../assets/search-landlord.svg';
 import filterIcon from '../../assets/filter.svg';
-import FilterSection, { FilterState } from './FilterSection';
+import FilterSection, { defaultFilters, FilterState } from './FilterSection';
 import FilterDropDown from './FilterDropDown';
 import SquareButton from '../utils/SquareButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import SearchHistoryPanel from './SearchHistoryPanel';
+import { recordSearch, searchUrl } from '../../utils/savedSearches';
 
 type Props = {
   drawerOpen: boolean;
   aiMode?: boolean;
   onToggleAiMode?: () => void;
-};
-
-const defaultFilters: FilterState = {
-  locations: [],
-  minPrice: '',
-  maxPrice: '',
-  bedrooms: 0,
-  bathrooms: 0,
-  initialSortBy: 'avgRating',
-  initialSortLowToHigh: false,
+  userId?: string;
 };
 
 /**
@@ -60,7 +53,12 @@ const defaultFilters: FilterState = {
  * @returns {ReactElement} A search bar component with autocomplete and filtering capabilities
  */
 
-const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): ReactElement => {
+const Autocomplete = ({
+  drawerOpen,
+  aiMode = false,
+  onToggleAiMode,
+  userId,
+}: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -215,6 +213,7 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
   const [focus, setFocus] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
+  const [openHistory, setOpenHistory] = useState(false);
   const [options, setOptions] = useState<LandlordOrApartmentWithLabel[]>([]);
   const [selected, setSelected] = useState<LandlordOrApartmentWithLabel | null>(null);
   const [isUserTyping, setIsUserTyping] = useState(false);
@@ -235,6 +234,7 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
       setQuery(urlQuery);
       setFilters(urlFilters);
       setOpenMenu(false);
+      setOpenHistory(false);
 
       // Blur the input to ensure dropdown doesn't show
       setTimeout(() => {
@@ -279,12 +279,11 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
       submitAiSearch();
     } else if (event.key === 'Enter' && checkIfSearchable()) {
       setFocus(false);
-      console.log('Current filter state:', filters);
-      const filterParams = encodeURIComponent(JSON.stringify(filters));
-      console.log('Encoded filter params:', filterParams);
       setIsUserTyping(false);
       setOpenMenu(false);
-      history.push(`/search?q=${query}&filters=${filterParams}`);
+      setOpenHistory(false);
+      recordSearch('manual', query, filters, userId);
+      history.push(searchUrl({ mode: 'manual', query: query.trim(), filters }));
     }
   }
 
@@ -295,7 +294,9 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
     }
     setIsUserTyping(false);
     setOpenMenu(false);
-    history.push(`/ai-search?q=${encodeURIComponent(trimmed)}`);
+    setOpenHistory(false);
+    recordSearch('ai', trimmed, defaultFilters, userId);
+    history.push(searchUrl({ mode: 'ai', query: trimmed, filters: defaultFilters }));
   };
 
   const handleToggleAiMode = () => {
@@ -304,6 +305,7 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
     setLoading(false);
     setIsUserTyping(false);
     setOpenMenu(false);
+    setOpenHistory(false);
     setOpenFilter(false);
     setInputFocused(false);
     onToggleAiMode?.();
@@ -313,22 +315,23 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
     if (aiMode) {
       submitAiSearch();
     } else if (checkIfSearchable()) {
-      console.log('Current filter state:', filters);
-      const filterParams = encodeURIComponent(JSON.stringify(filters));
-      console.log('Encoded filter params:', filterParams);
       setIsUserTyping(false);
       setOpenMenu(false);
-      history.push(`/search?q=${query}&filters=${filterParams}`);
+      setOpenHistory(false);
+      recordSearch('manual', query, filters, userId);
+      history.push(searchUrl({ mode: 'manual', query: query.trim(), filters }));
     }
   };
 
   const handleToggleFilter = () => {
     setOpenFilter(!openFilter);
     setOpenMenu(false);
+    setOpenHistory(false);
   };
 
   const handleClickAway = () => {
     setOpenMenu(false);
+    setOpenHistory(false);
     setOpenFilter(false);
   };
 
@@ -336,6 +339,7 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
     setQuery(query);
     setSelected(null);
     setOpenFilter(false);
+    setOpenHistory(query.trim() === '');
     setIsUserTyping(true); // Mark that user is actively typing
     if (aiMode) {
       return; // AI queries don't use the address/landlord autocomplete
@@ -571,6 +575,7 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
             width: '100%',
           }}
           onKeyDown={textFieldHandleListKeyDown}
+          onFocus={() => setOpenHistory(query.trim() === '' || !isUserTyping)}
           onChange={(event) => {
             const value = event.target.value;
             if (value !== '' || value !== null) {
@@ -641,7 +646,10 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
                   borderRadius: openFilter ? '10px 10px 0px 0px' : '10px',
                   width: isSearchResults ? '58%' : '100%',
                 }}
-                onFocus={(e) => setInputFocused(e.target instanceof HTMLInputElement)}
+                onFocus={(e) => {
+                  setInputFocused(e.target instanceof HTMLInputElement);
+                  setOpenHistory(query.trim() === '' || !isUserTyping);
+                }}
                 onBlur={() => setInputFocused(false)}
                 onKeyDown={textFieldHandleListKeyDown}
                 onChange={(event) => {
@@ -680,6 +688,17 @@ const Autocomplete = ({ drawerOpen, aiMode = false, onToggleAiMode }: Props): Re
             </div>
           )}
           <Menu />
+          {openHistory && (
+            <div
+              style={{
+                position: 'absolute',
+                width: inputRef.current?.offsetWidth || '100%',
+                zIndex: 2,
+              }}
+            >
+              <SearchHistoryPanel userId={userId} onSelect={() => setOpenHistory(false)} />
+            </div>
+          )}
           <FilterSection
             filters={filters}
             onChange={handleFilterChange}

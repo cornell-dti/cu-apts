@@ -15,6 +15,7 @@ import Toast from '../components/utils/Toast';
 import PhotoCarousel from '../components/PhotoCarousel/PhotoCarousel';
 import usePhotoCarousel from '../components/PhotoCarousel/usePhotoCarousel';
 import FolderSection from '../components/Folder/FolderSection';
+import SearchHistoryPanel from '../components/Search/SearchHistoryPanel';
 
 type Props = {
   user: firebase.User | null;
@@ -233,6 +234,9 @@ const BookmarksPage = ({ user, setUser }: Props): ReactElement => {
       )}
       <Grid item xs={11} sm={11} md={9}>
         <FolderSection user={user} setUser={setUser} />
+        <Box mt={4}>
+          <SearchHistoryPanel userId={user?.uid} showRecent={false} />
+        </Box>
         <Box
           display="flex"
           flexDirection={isMobile ? 'column' : 'row'}
