@@ -4,6 +4,8 @@
  * Tests for inviting people to shared folders:
  * - the NetID and email helpers in folderInvites.ts
  * - POST /api/folders/:folderId/invites (who can invite, NetID checks, duplicates, rate limit)
+ * - viewing, accepting, and declining an invite at /api/folder-invites/:inviteId
+ * - the owner's list of invites at GET /api/folders/:folderId/invites
  *
  * Firebase and nodemailer are replaced with fakes, so these tests never touch real data, never
  * send real email, and don't need the Firestore emulator.
@@ -71,6 +73,13 @@ jest.mock('./firebase-config', () => {
             delete getCollection(name)[id];
           },
         }),
+        where: (field: string, _op: string, value: unknown) => ({
+          get: async () => ({
+            docs: Object.entries(getCollection(name))
+              .filter(([, data]) => data[field] === value)
+              .map(([id, data]) => ({ id, data: () => data })),
+          }),
+        }),
       }),
     },
     auth: {
@@ -113,6 +122,8 @@ const resetFakes = () => {
 const as = (uid: string) => ({ Authorization: `Bearer ${uid}` });
 const sendInvite = (uid: string, netId: unknown, folderId = 'f1') =>
   request(app).post(`/api/folders/${folderId}/invites`).set(as(uid)).send({ netId });
+const respond = (uid: string, action: 'accept' | 'decline') =>
+  request(app).post(`/api/folder-invites/f1_xy999/${action}`).set(as(uid));
 const savedInvites = () => Object.keys(mockDb.folderInvites ?? {});
 
 beforeAll(() => {
@@ -234,5 +245,88 @@ describe('POST /api/folders/:folderId/invites', () => {
     expect(blocked.status).toBe(429);
     expect(mockDb.folderInvites.f1_zz99).toBeUndefined();
     expect(mockSendMail).toHaveBeenCalledTimes(INVITES_PER_HOUR);
+  });
+});
+
+describe('/api/folder-invites/:inviteId', () => {
+  // Each test starts with "ab123" having invited "xy999"
+  beforeEach(async () => {
+    await sendInvite('ab123', 'xy999');
+  });
+
+  it('lets only the invited person see the invite', async () => {
+    const res = await request(app).get('/api/folder-invites/f1_xy999').set(as('xy999'));
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ folderName: 'Collegetown 2027', invitedByName: 'User ab123' });
+
+    expect((await request(app).get('/api/folder-invites/f1_xy999').set(as('ef789'))).status).toBe(
+      403
+    );
+    expect((await request(app).get('/api/folder-invites/missing').set(as('xy999'))).status).toBe(
+      404
+    );
+  });
+
+  it('accepting adds the invited person to the folder, so they can open it', async () => {
+    const res = await respond('xy999', 'accept');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ folderId: 'f1', status: 'ACCEPTED' });
+    expect(mockDb.folders.f1.members).toEqual(['cd456', 'xy999']);
+    expect(mockDb.folderInvites.f1_xy999.status).toBe('ACCEPTED');
+    expect((await request(app).get('/api/folders/f1').set(as('xy999'))).status).toBe(200);
+  });
+
+  it('declining marks the invite declined and does not add them to the folder', async () => {
+    expect((await respond('xy999', 'decline')).status).toBe(200);
+    expect(mockDb.folders.f1.members).toEqual(['cd456']);
+    expect(mockDb.folderInvites.f1_xy999.status).toBe('DECLINED');
+  });
+
+  it("doesn't let anyone else accept or decline (403, nothing changes)", async () => {
+    expect((await respond('ef789', 'accept')).status).toBe(403);
+    expect((await respond('ab123', 'decline')).status).toBe(403);
+    expect(mockDb.folders.f1.members).toEqual(['cd456']);
+    expect(mockDb.folderInvites.f1_xy999.status).toBe('PENDING');
+  });
+
+  it('returns 409 once the invite has been answered', async () => {
+    expect((await respond('xy999', 'decline')).status).toBe(200);
+    expect((await respond('xy999', 'accept')).status).toBe(409);
+    expect(mockDb.folders.f1.members).toEqual(['cd456']);
+  });
+
+  it('returns 404 when accepting an invite to a folder that was deleted', async () => {
+    delete mockDb.folders.f1;
+    expect((await respond('xy999', 'accept')).status).toBe(404);
+    expect(mockDb.folderInvites.f1_xy999.status).toBe('PENDING');
+  });
+});
+
+describe('GET /api/folders/:folderId/invites', () => {
+  const listInvites = (uid: string, folderId = 'f1') =>
+    request(app).get(`/api/folders/${folderId}/invites`).set(as(uid));
+
+  it("shows the owner every invite for the folder and its status, and no other folder's", async () => {
+    await sendInvite('ab123', 'xy999');
+    await sendInvite('ab123', 'ef789');
+    await respond('xy999', 'decline');
+    mockDb.folderInvites.other_zz1 = { folderId: 'other', inviteeNetId: 'zz1', status: 'PENDING' };
+
+    const res = await listInvites('ab123');
+    expect(res.status).toBe(200);
+    const statuses = res.body.map((invite: FakeDoc) => `${invite.inviteeNetId}: ${invite.status}`);
+    expect(statuses.sort()).toEqual(['ef789: PENDING', 'xy999: DECLINED']);
+  });
+
+  it('returns an empty list when nobody has been invited yet', async () => {
+    const res = await listInvites('ab123');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('only lets the owner see the invites (403 for others, 404 for a missing folder)', async () => {
+    expect((await listInvites('cd456')).status).toBe(403);
+    expect((await listInvites('ef789')).status).toBe(403);
+    expect((await listInvites('ab123', 'missing')).status).toBe(404);
   });
 });

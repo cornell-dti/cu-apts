@@ -13,6 +13,7 @@
 import { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import nodemailer from 'nodemailer';
+import { FolderInvite } from '@common/types/db-types';
 import { auth } from './firebase-config';
 
 /**
@@ -62,6 +63,18 @@ export const normalizeNetId = (input: unknown): string | null => {
  * @returns {string} – The invite document ID.
  */
 export const getInviteId = (folderId: string, netId: string): string => `${folderId}_${netId}`;
+
+/**
+ * isInvitee – Checks whether the signed-in user is the person an invite was sent to.
+ *
+ * @param {Pick<FolderInvite, 'inviteeEmail'>} invite – The invite.
+ * @param {string | undefined} email – The signed-in user's email.
+ * @returns {boolean} – True only if the user signed in with the invited Cornell email.
+ */
+export const isInvitee = (
+  invite: Pick<FolderInvite, 'inviteeEmail'>,
+  email: string | undefined
+): boolean => email !== undefined && email.toLowerCase() === invite.inviteeEmail;
 
 /**
  * findUserIdByEmail – Looks up the CU Apts account that uses an email, if there is one.

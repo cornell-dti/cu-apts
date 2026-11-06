@@ -39,6 +39,7 @@ import {
   findUserIdByEmail,
   getInviteId,
   inviteRateLimiter,
+  isInvitee,
   normalizeNetId,
   sendFolderInviteEmail,
 } from './folderInvites';
@@ -3181,6 +3182,180 @@ app.post('/api/folders/:folderId/invites', authenticate, inviteRateLimiter, asyn
     return res.status(500).send('Error sending invite');
   }
 });
+
+/**
+ * Get Folder Invites – Lists every invite sent for a folder, with its status.
+ *
+ * @remarks
+ * Only the owner of the folder can see its invites. The collaborator list uses this to show who
+ * is still pending, who accepted, and who declined. Invites come back in no particular order.
+ *
+ * @route GET /api/folders/:folderId/invites
+ *
+ * @input {string} req.params.folderId - The ID of the folder
+ *
+ * @status
+ * - 200: Successfully retrieved invites (an empty list if nobody has been invited)
+ * - 403: Unauthorized to see this folder's invites (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching invites
+ */
+app.get('/api/folders/:folderId/invites', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderDoc = await folderCollection.doc(folderId).get();
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (!isFolderOwner(folderDoc.data() as Folder, uid)) {
+      return res.status(403).send("Unauthorized to see this folder's invites");
+    }
+
+    const snapshot = await folderInviteCollection.where('folderId', '==', folderId).get();
+    const invites = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json(invites);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching invites');
+  }
+});
+
+/**
+ * Get Folder Invite – Fetches an invite so the invited person can see what they were invited to.
+ *
+ * @remarks
+ * Only the invited person (signed in with the invited Cornell email) can see the invite. The
+ * accept/decline page that the invite email links to will use this.
+ *
+ * @route GET /api/folder-invites/:inviteId
+ *
+ * @input {string} req.params.inviteId - The ID of the invite
+ *
+ * @status
+ * - 200: Successfully retrieved invite
+ * - 403: Unauthorized to see this invite (not the invited person)
+ * - 404: Invite not found
+ * - 500: Error fetching invite
+ */
+app.get('/api/folder-invites/:inviteId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const inviteDoc = await folderInviteCollection.doc(req.params.inviteId).get();
+
+    if (!inviteDoc.exists) {
+      return res.status(404).send('Invite not found');
+    }
+
+    const invite = inviteDoc.data() as FolderInvite;
+    if (!isInvitee(invite, req.user.email)) {
+      return res.status(403).send('Unauthorized to see this invite');
+    }
+
+    return res.status(200).json({ id: inviteDoc.id, ...invite });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching invite');
+  }
+});
+
+/**
+ * respondToInviteHandler – Builds the route handler that accepts or declines a folder invite.
+ *
+ * @remarks
+ * Only the invited person can respond, and only while the invite is still pending. Accepting adds
+ * them to the folder's `members` with `arrayUnion`, so two people accepting at the same time don't
+ * overwrite each other.
+ *
+ * @param {boolean} accept – True to accept the invite, false to decline it.
+ * @returns {RequestHandler} – The route handler.
+ */
+const respondToInviteHandler =
+  (accept: boolean): RequestHandler =>
+  async (req, res) => {
+    try {
+      if (!req.user) throw new Error('Not authenticated');
+      const { uid, email } = req.user;
+      const inviteRef = folderInviteCollection.doc(req.params.inviteId);
+      const inviteDoc = await inviteRef.get();
+
+      if (!inviteDoc.exists) {
+        res.status(404).send('Invite not found');
+        return;
+      }
+
+      const invite = inviteDoc.data() as FolderInvite;
+      if (!isInvitee(invite, email)) {
+        res.status(403).send('Unauthorized to respond to this invite');
+        return;
+      }
+
+      if (invite.status !== 'PENDING') {
+        res.status(409).send(`This invite was already ${invite.status.toLowerCase()}`);
+        return;
+      }
+
+      if (accept) {
+        const folderRef = folderCollection.doc(invite.folderId);
+        const folderDoc = await folderRef.get();
+        if (!folderDoc.exists) {
+          res.status(404).send('This folder no longer exists');
+          return;
+        }
+        await folderRef.update({ members: FieldValue.arrayUnion(uid) });
+      }
+
+      const status = accept ? 'ACCEPTED' : 'DECLINED';
+      await inviteRef.update({ status, respondedAt: new Date() });
+      res.status(200).json({ folderId: invite.folderId, status });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send(`Error ${accept ? 'accepting' : 'declining'} invite`);
+    }
+  };
+
+/**
+ * Accept Folder Invite – Adds the invited person to the folder as a member.
+ *
+ * @remarks
+ * Only the invited person can accept, and only while the invite is pending. After accepting, the
+ * folder shows up on their Bookmarks page and they can add and remove apartments.
+ *
+ * @route POST /api/folder-invites/:inviteId/accept
+ *
+ * @input {string} req.params.inviteId - The ID of the invite
+ *
+ * @status
+ * - 200: Invite accepted (returns the folder ID)
+ * - 403: Unauthorized to respond to this invite (not the invited person)
+ * - 404: Invite not found, or the folder was deleted
+ * - 409: The invite was already accepted or declined
+ * - 500: Error accepting invite
+ */
+app.post('/api/folder-invites/:inviteId/accept', authenticate, respondToInviteHandler(true));
+
+/**
+ * Decline Folder Invite – Declines an invite without joining the folder.
+ *
+ * @remarks
+ * Only the invited person can decline, and only while the invite is pending. The owner can send a
+ * new invite later.
+ *
+ * @route POST /api/folder-invites/:inviteId/decline
+ *
+ * @input {string} req.params.inviteId - The ID of the invite
+ *
+ * @status
+ * - 200: Invite declined
+ * - 403: Unauthorized to respond to this invite (not the invited person)
+ * - 404: Invite not found
+ * - 409: The invite was already accepted or declined
+ * - 500: Error declining invite
+ */
+app.post('/api/folder-invites/:inviteId/decline', authenticate, respondToInviteHandler(false));
 
 /**
  * Is Admin – Returns whether the authenticated user has admin privileges.
