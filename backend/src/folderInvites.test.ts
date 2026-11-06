@@ -5,6 +5,7 @@
  * - the NetID and email helpers in folderInvites.ts
  * - POST /api/folders/:folderId/invites (who can invite, NetID checks, duplicates, rate limit)
  * - viewing, accepting, and declining an invite at /api/folder-invites/:inviteId
+ * - the owner's list of invites at GET /api/folders/:folderId/invites
  *
  * Firebase and nodemailer are replaced with fakes, so these tests never touch real data, never
  * send real email, and don't need the Firestore emulator.
@@ -71,6 +72,13 @@ jest.mock('./firebase-config', () => {
           delete: async () => {
             delete getCollection(name)[id];
           },
+        }),
+        where: (field: string, _op: string, value: unknown) => ({
+          get: async () => ({
+            docs: Object.entries(getCollection(name))
+              .filter(([, data]) => data[field] === value)
+              .map(([id, data]) => ({ id, data: () => data })),
+          }),
         }),
       }),
     },
@@ -291,5 +299,34 @@ describe('/api/folder-invites/:inviteId', () => {
     delete mockDb.folders.f1;
     expect((await respond('xy999', 'accept')).status).toBe(404);
     expect(mockDb.folderInvites.f1_xy999.status).toBe('PENDING');
+  });
+});
+
+describe('GET /api/folders/:folderId/invites', () => {
+  const listInvites = (uid: string, folderId = 'f1') =>
+    request(app).get(`/api/folders/${folderId}/invites`).set(as(uid));
+
+  it("shows the owner every invite for the folder and its status, and no other folder's", async () => {
+    await sendInvite('ab123', 'xy999');
+    await sendInvite('ab123', 'ef789');
+    await respond('xy999', 'decline');
+    mockDb.folderInvites.other_zz1 = { folderId: 'other', inviteeNetId: 'zz1', status: 'PENDING' };
+
+    const res = await listInvites('ab123');
+    expect(res.status).toBe(200);
+    const statuses = res.body.map((invite: FakeDoc) => `${invite.inviteeNetId}: ${invite.status}`);
+    expect(statuses.sort()).toEqual(['ef789: PENDING', 'xy999: DECLINED']);
+  });
+
+  it('returns an empty list when nobody has been invited yet', async () => {
+    const res = await listInvites('ab123');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('only lets the owner see the invites (403 for others, 404 for a missing folder)', async () => {
+    expect((await listInvites('cd456')).status).toBe(403);
+    expect((await listInvites('ef789')).status).toBe(403);
+    expect((await listInvites('ab123', 'missing')).status).toBe(404);
   });
 });
