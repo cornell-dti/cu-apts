@@ -11,12 +11,13 @@ import {
   SavedSearch,
   searchLabel,
   searchUrl,
-  toggleSavedSearch,
 } from '../../utils/savedSearches';
 import { useSavedSearches } from '../../utils/useSavedSearches';
+import { useToggleSavedSearch } from '../../utils/useToggleSavedSearch';
 
 type Props = {
-  userId?: string;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   showRecent?: boolean;
   onSelect?: () => void;
 };
@@ -42,10 +43,16 @@ const useStyles = makeStyles({
   actions: { display: 'flex', justifyContent: 'flex-end', marginTop: 4 },
 });
 
-const SearchHistoryPanel = ({ userId, showRecent = true, onSelect }: Props): ReactElement => {
+const SearchHistoryPanel = ({
+  user,
+  setUser,
+  showRecent = true,
+  onSelect,
+}: Props): ReactElement => {
   const classes = useStyles();
   const history = useHistory();
-  const searches = useSavedSearches(userId);
+  const { searches, loading, error: loadError } = useSavedSearches(user);
+  const { toggle, saving, error } = useToggleSavedSearch(user, setUser);
   const saved = searches
     .filter((item) => item.savedAt)
     .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
@@ -69,8 +76,9 @@ const SearchHistoryPanel = ({ userId, showRecent = true, onSelect }: Props): Rea
       </Button>
       <IconButton
         size="small"
+        disabled={saving || loading}
         aria-label={item.savedAt ? 'Unsave search' : 'Save search'}
-        onClick={() => toggleSavedSearch(item.mode, item.query, item.filters, userId)}
+        onClick={() => toggle(item.mode, item.query, item.filters)}
       >
         {item.savedAt ? <StarIcon color="primary" /> : <StarBorderIcon />}
       </IconButton>
@@ -78,7 +86,7 @@ const SearchHistoryPanel = ({ userId, showRecent = true, onSelect }: Props): Rea
         <IconButton
           size="small"
           aria-label="Remove search from history"
-          onClick={() => removeSearch(item.id, userId)}
+          onClick={() => removeSearch(item.id, user?.uid)}
         >
           <DeleteOutlineIcon />
         </IconButton>
@@ -92,8 +100,10 @@ const SearchHistoryPanel = ({ userId, showRecent = true, onSelect }: Props): Rea
         Saved searches
       </Typography>
       <Typography variant="caption" color="textSecondary">
-        Saved in this browser
+        {user ? 'Saved to your account' : 'Sign in to save searches to your account'}
       </Typography>
+      {(error || loadError) && <Typography color="error">{error || loadError}</Typography>}
+      {loading && <Typography>Loading saved searches...</Typography>}
       {saved.length ? saved.map(renderRow) : <Typography>No saved searches yet.</Typography>}
       {showRecent && (
         <>
@@ -103,7 +113,7 @@ const SearchHistoryPanel = ({ userId, showRecent = true, onSelect }: Props): Rea
           {recent.length ? recent.map(renderRow) : <Typography>No recent searches yet.</Typography>}
           {recent.length > 0 && (
             <div className={classes.actions}>
-              <Button size="small" onClick={() => clearRecentSearches(userId)}>
+              <Button size="small" onClick={() => clearRecentSearches(user?.uid)}>
                 Clear history
               </Button>
             </div>

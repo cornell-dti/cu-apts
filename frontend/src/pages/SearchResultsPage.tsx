@@ -267,9 +267,15 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
         {!isMobile ? (
           <>
             <div className={searchBar}>
-              <Autocomplete drawerOpen={false} userId={user?.uid} />
+              <Autocomplete drawerOpen={false} user={user} setUser={setUser} />
             </div>
-            <SaveSearchButton mode="manual" query={query} filters={filters} userId={user?.uid} />
+            <SaveSearchButton
+              mode="manual"
+              query={query}
+              filters={filters}
+              user={user}
+              setUser={setUser}
+            />
             {sortSection()}
           </>
         ) : (
@@ -284,9 +290,15 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             }}
           >
             <div className={searchBar}>
-              <Autocomplete drawerOpen={false} userId={user?.uid} />
+              <Autocomplete drawerOpen={false} user={user} setUser={setUser} />
             </div>
-            <SaveSearchButton mode="manual" query={query} filters={filters} userId={user?.uid} />
+            <SaveSearchButton
+              mode="manual"
+              query={query}
+              filters={filters}
+              user={user}
+              setUser={setUser}
+            />
             {sortSection()}
           </div>
         )}
