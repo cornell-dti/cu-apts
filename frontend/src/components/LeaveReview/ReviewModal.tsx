@@ -4,7 +4,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   TextField,
   Typography,
   makeStyles,
@@ -17,16 +16,19 @@ import { createAuthHeaders, uploadFile } from '../../utils/firebase';
 import ReviewRating from './ReviewRating';
 import { includesProfanity } from '../../utils/profanity';
 import Toast from '../utils/Toast';
-import styles from './ReviewModal.module.scss';
 import DropDown from '../utils/DropDown';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { colors } from '../../colors';
 import getPriceRange from '../../utils/priceRange';
 import UploadPhotos from '../utils/UploadPhotos';
+import ChevronDownSrc from '../../assets/form-chevron-icon.svg';
+import StepperMinusSrc from '../../assets/stepper-minus-icon.svg';
+import StepperPlusSrc from '../../assets/stepper-plus-icon.svg';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
 const REVIEW_PHOTO_MAX_MB = 10;
+const BEDROOMS_MIN = 1;
+const BEDROOMS_MAX = 6;
 
 interface Props {
   open: boolean;
@@ -41,25 +43,101 @@ interface Props {
   initialReview?: ReviewWithId; // Optional initial review to prefill for editing
 }
 
+const MOBILE = '@media (max-width:600px)';
+const MODAL_PADDING = '33.35px';
+const SECTION_GAP = '22.23px';
+
 const useStyle = makeStyles({
   modalWidth: {
-    maxWidth: '750px',
+    maxWidth: '739px',
+    borderRadius: '13.9px',
+    boxShadow: '3px 4px 25px rgba(0, 0, 0, 0.1)',
   },
   leaveAReviewTitle: {
-    fontSize: '23px',
+    padding: `${MODAL_PADDING} ${MODAL_PADDING} 0`,
+    fontSize: '23.68px',
     fontWeight: 600,
-    marginTop: '15px',
+    lineHeight: '28.42px',
+    [MOBILE]: { padding: '20px 16px 0' },
   },
-  dropDownButton: {
-    backgroundColor: '#E8E8E8',
-    border: 'none',
-    borderRadius: '50px',
-    paddingRight: '5px',
-    paddingLeft: '5px',
-    position: 'relative',
-    minHeight: '40px',
+  content: {
+    padding: `${SECTION_GAP} ${MODAL_PADDING} 0`,
+    [MOBILE]: { padding: '16px 16px 0' },
+  },
+  formBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: SECTION_GAP,
+  },
+  topFields: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  fieldRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: '12px 26px',
+    [MOBILE]: { flexDirection: 'column', alignItems: 'stretch' },
+  },
+  fieldGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  fieldLine: {
     display: 'flex',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '4px 16px',
+  },
+  fieldLabel: {
+    fontSize: '18px',
+    lineHeight: '28px',
+  },
+  pill: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    boxSizing: 'border-box',
+    flexShrink: 0,
+    width: '185px',
+    height: '44px',
+    borderRadius: '50px',
+    backgroundColor: colors.gray5,
+    [MOBILE]: { flex: '1 1 185px', width: 'auto' },
+  },
+  stepper: {
+    padding: '8px',
+  },
+  stepperButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '28px',
+    height: '28px',
+    padding: 0,
+    border: 'none',
+    borderRadius: '100px',
+    backgroundColor: colors.red1,
+    cursor: 'pointer',
+    '&:disabled': {
+      backgroundColor: colors.gray2,
+      cursor: 'default',
+    },
+    '&:focus-visible': {
+      outline: `2px solid ${colors.black}`,
+      outlineOffset: '2px',
+    },
+  },
+  stepperValue: {
+    fontSize: '18px',
+    fontWeight: 600,
+    lineHeight: '28px',
+    color: colors.black,
   },
   dropDownStyle: {
     fontWeight: 600,
@@ -69,39 +147,155 @@ const useStyle = makeStyles({
     left: '0',
     textTransform: 'none',
     fontSize: '18px',
+    lineHeight: '28px',
     position: 'absolute',
     borderRadius: '50px',
     justifyContent: 'flex-start',
-    paddingLeft: '20px',
+    paddingLeft: '25px',
   },
-  expandMoreIcon: {
-    right: '10px',
+  chevron: {
     position: 'absolute',
+    top: '18px',
+    right: '25px',
+    width: '16px',
+    height: '8px',
+    pointerEvents: 'none',
+    '& img': {
+      position: 'absolute',
+      top: '-1px',
+      left: '-1px',
+      width: '18px',
+      height: '10.41px',
+      maxWidth: 'none',
+    },
+  },
+  errorText: {
+    fontSize: '12px',
+  },
+  ratingsBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '22px',
+  },
+  detailRatings: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 298px))',
+    justifyContent: 'space-between',
+    rowGap: '6px',
+    [MOBILE]: { gridTemplateColumns: 'minmax(0, 1fr)', rowGap: '12px' },
+  },
+  // The design's divider lines have no height of their own, so draw the stroke around a 0px box.
+  divider: {
+    position: 'relative',
+    height: 0,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: '-0.695px',
+      left: 0,
+      right: 0,
+      height: '1.39px',
+      backgroundColor: colors.gray5,
+    },
+  },
+  reviewRow: {
+    display: 'flex',
+    alignItems: 'stretch',
+    gap: '22px',
+    [MOBILE]: { flexDirection: 'column', gap: '10px' },
+  },
+  reviewColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    flex: '1 1 0',
+    minWidth: 0,
+  },
+  reviewHeader: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '7px',
+  },
+  reviewLabel: {
+    fontSize: '18px',
+    lineHeight: '26px',
+    color: colors.black,
+  },
+  reviewHint: {
+    fontSize: '12.5px',
+    lineHeight: '20px',
+    color: colors.gray2,
+  },
+  reviewInputRoot: {
+    height: '129px',
+    alignItems: 'flex-start',
+    padding: '12px',
+    borderRadius: 0,
+    backgroundColor: colors.reviewBoxGray,
+    '&:hover, &.Mui-focused': {
+      backgroundColor: colors.reviewBoxGray,
+    },
+  },
+  reviewInputError: {
+    outline: `1px solid ${colors.red2}`,
+  },
+  reviewInput: {
+    height: '100%',
+    padding: 0,
+    fontSize: '16px',
+  },
+  reviewHelperText: {
+    margin: '10px 0 0',
+    paddingTop: '7.61px',
+    borderTop: `1.39px solid ${colors.gray1}`,
+    fontSize: '12.5px',
+    lineHeight: '20px',
+    color: colors.gray2,
   },
   promptBox: {
+    flexShrink: 0,
+    boxSizing: 'border-box',
+    width: '300px',
     borderRadius: '8px',
-    boxShadow: '0px 0px 4px 0px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0px 0px 2px 0px rgba(0, 0, 0, 0.25)',
     padding: '16px',
+    [MOBILE]: { width: '100%' },
   },
   promptTitle: {
-    fontSize: '17px',
+    fontSize: '16px',
     fontWeight: 600,
+    lineHeight: '19px',
+  },
+  promptListStyle: {
+    margin: '8px 0 0',
+    paddingLeft: '18px',
+    fontSize: '12px',
+    lineHeight: '14px',
   },
   promptList: {
-    marginBottom: '8px',
+    marginBottom: '12px',
+    '&:last-child': { marginBottom: 0 },
   },
-  submitButton: {
-    borderRadius: '30px',
-    marginTop: '10px',
-    marginBottom: '10px',
-    width: '80px',
-    marginRight: '15px',
+  actions: {
+    justifyContent: 'space-between',
+    padding: `${SECTION_GAP} ${MODAL_PADDING} ${MODAL_PADDING}`,
+    [MOBILE]: { padding: '16px' },
+  },
+  actionButton: {
+    minWidth: 0,
+    height: '33.9px',
+    padding: '0 13.9px',
+    boxSizing: 'border-box',
+    borderRadius: '20.84px',
+    fontSize: '12.5px',
+    fontWeight: 600,
+    lineHeight: '19.45px',
+    letterSpacing: 0,
   },
   hollowRedButton: {
-    minWidth: '80px',
-    height: '35px',
-    borderRadius: '30px',
-    border: '2px solid',
+    // The 2.08px border sits inside the 13.9px padding in the design.
+    padding: '0 11.81px',
+    border: '2.08px solid',
     borderColor: `${colors.red1} !important`,
     backgroundColor: 'transparent',
     color: colors.red1,
@@ -244,13 +438,38 @@ const ReviewModal = ({
   const {
     modalWidth,
     leaveAReviewTitle,
-    dropDownButton,
+    content,
+    formBody,
+    topFields,
+    fieldRow,
+    fieldGroup,
+    fieldLine,
+    fieldLabel,
+    pill,
+    stepper,
+    stepperButton,
+    stepperValue,
     dropDownStyle,
-    expandMoreIcon,
+    chevron,
+    errorText,
+    ratingsBlock,
+    detailRatings,
+    divider,
+    reviewRow,
+    reviewColumn,
+    reviewHeader,
+    reviewLabel,
+    reviewHint,
+    reviewInputRoot,
+    reviewInputError,
+    reviewInput,
+    reviewHelperText,
     promptBox,
     promptTitle,
+    promptListStyle,
     promptList,
-    submitButton,
+    actions,
+    actionButton,
     hollowRedButton,
   } = useStyle();
 
@@ -433,18 +652,15 @@ const ReviewModal = ({
    */
   const reviewPromptBox = () => {
     return (
-      <div
-        className={promptBox}
-        style={!isMobile ? { marginLeft: '20px' } : { marginBottom: '10px' }}
-      >
+      <div className={promptBox}>
         <Typography className={promptTitle}>Things to consider in your review:</Typography>
-        <ul style={{ fontSize: '13px', marginTop: '5px' }}>
+        <ul className={promptListStyle}>
           <li className={promptList}>What do you like/dislike about your apartment?</li>
           <li className={promptList}>Is there a lot of noise?</li>
           <li className={promptList}>What amenities are included?</li>
           <li className={promptList}>Is laundry convenient?</li>
           <li className={promptList}>How responsive is your landlord?</li>
-          <li>Are there maintenance or other additional fees?</li>
+          <li className={promptList}>Are there maintenance or other additional fees?</li>
         </ul>
       </div>
     );
@@ -461,10 +677,8 @@ const ReviewModal = ({
         {initialReview ? 'Edit Review' : 'Leave a Review'}
         {aptName.length > 0 && `: ${aptName}`}
       </DialogTitle>
-      <DialogContent ref={modalRef}>
-        {/* This div padding prevents the scrollbar from displaying unnecessarily */}
-
-        <div>
+      <DialogContent ref={modalRef} className={content}>
+        <div className={formBody}>
           {showError && (
             <Toast
               isOpen={true}
@@ -473,239 +687,205 @@ const ReviewModal = ({
               time={toastTime}
             />
           )}
-          <Grid
-            container
-            spacing={1}
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            style={{ paddingBottom: '25px', paddingTop: '5px' }}
-          >
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              container
-              spacing={1}
-              direction="row"
-              alignItems="center"
-              justifyContent="flex-start"
-            >
-              <Grid item style={{ marginRight: '10px', paddingLeft: '0' }}>
-                <Typography color={!bedroomError ? 'initial' : 'error'}>Bedroom(s) *</Typography>
-              </Grid>
-              <Grid
-                item
-                className={dropDownButton}
-                style={isMobile ? { minWidth: '100%' } : { minWidth: '185px' }}
-              >
-                <DropDown
-                  menuItems={Array.from({ length: 6 }, (_, i) => ({
-                    item: `${i + 1} Bedroom${i > 0 ? 's' : ''}`,
-                    callback: () => updateBedrooms(i + 1),
-                  }))}
-                  defaultValue={
-                    initialReview?.bedrooms
-                      ? `${review.bedrooms} Bedroom${review.bedrooms > 0 ? 's' : ''}`
-                      : 'Select'
-                  }
-                  className={dropDownStyle}
-                  icon={false}
-                />
-                <ExpandMoreIcon className={expandMoreIcon} />
-              </Grid>
-              {bedroomError && (
-                <Typography color="error" style={{ fontSize: '12px', minWidth: '200px' }}>
-                  * Required
-                </Typography>
-              )}
-            </Grid>
+          <div className={topFields}>
+            <div className={fieldRow}>
+              <div className={fieldGroup}>
+                <div className={fieldLine}>
+                  <Typography
+                    id="bedrooms-label"
+                    className={fieldLabel}
+                    color={!bedroomError ? 'initial' : 'error'}
+                  >
+                    Bedroom(s)
+                  </Typography>
+                  <div
+                    className={`${pill} ${stepper}`}
+                    role="group"
+                    aria-labelledby="bedrooms-label"
+                  >
+                    <button
+                      type="button"
+                      className={stepperButton}
+                      aria-label="Decrease bedrooms"
+                      disabled={review.bedrooms <= BEDROOMS_MIN}
+                      onClick={() => updateBedrooms(review.bedrooms - 1)}
+                    >
+                      <img src={StepperMinusSrc} alt="" />
+                    </button>
+                    <span className={stepperValue} aria-live="polite">
+                      {review.bedrooms >= BEDROOMS_MIN ? review.bedrooms : '–'}
+                    </span>
+                    <button
+                      type="button"
+                      className={stepperButton}
+                      aria-label="Increase bedrooms"
+                      disabled={review.bedrooms >= BEDROOMS_MAX}
+                      onClick={() => updateBedrooms(Math.max(review.bedrooms, 0) + 1)}
+                    >
+                      <img src={StepperPlusSrc} alt="" />
+                    </button>
+                  </div>
+                </div>
+                {bedroomError && (
+                  <Typography color="error" className={errorText}>
+                    * Required
+                  </Typography>
+                )}
+              </div>
 
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              container
-              spacing={1}
-              direction="row"
-              alignItems="center"
-              justifyContent={isMobile ? 'flex-start' : 'flex-end'}
-            >
-              <Grid
-                item
-                style={
-                  !isMobile ? { marginRight: '10px', marginLeft: 'auto' } : { marginRight: '10px' }
-                }
-              >
-                <Typography color={!priceError ? 'initial' : 'error'}>
-                  Price Per Person *
-                </Typography>
-              </Grid>
-              <Grid
-                item
-                className={dropDownButton}
-                style={isMobile ? { minWidth: '100%' } : { minWidth: '185px' }}
-              >
-                <DropDown
-                  menuItems={Array.from({ length: 6 }, (_, i) => ({
-                    item: getPriceRange(i + 1),
-                    callback: () => updatePrice(i + 1),
-                  }))}
-                  defaultValue={initialReview?.price ? getPriceRange(review.price) : 'Select'}
-                  className={dropDownStyle}
-                  icon={false}
-                />
-                <ExpandMoreIcon className={expandMoreIcon} />
-              </Grid>
-              {priceError && (
-                <Typography
-                  color="error"
-                  style={{ fontSize: '12px', justifyItems: 'flex-start', minWidth: '180px' }}
-                >
-                  * Required
-                </Typography>
-              )}
-            </Grid>
-          </Grid>
-          <Grid container direction="column" justifyContent="space-evenly" spacing={4}>
-            <Grid container item xs={12}>
-              <Grid container item>
-                <ReviewRating
-                  name="overall"
-                  label="Overall Experience *"
-                  onChange={updateOverall()}
-                  defaultValue={initialReview?.overallRating || 0}
-                  error={ratingError}
-                ></ReviewRating>
-              </Grid>
+              <div className={fieldGroup}>
+                <div className={fieldLine}>
+                  <Typography className={fieldLabel} color={!priceError ? 'initial' : 'error'}>
+                    Price Per Person
+                  </Typography>
+                  <div className={pill}>
+                    <DropDown
+                      menuItems={Array.from({ length: 6 }, (_, i) => ({
+                        item: getPriceRange(i + 1),
+                        callback: () => updatePrice(i + 1),
+                      }))}
+                      defaultValue={initialReview?.price ? getPriceRange(review.price) : 'Select'}
+                      className={dropDownStyle}
+                      icon={false}
+                    />
+                    <span className={chevron}>
+                      <img src={ChevronDownSrc} alt="" />
+                    </span>
+                  </div>
+                </div>
+                {priceError && (
+                  <Typography color="error" className={errorText}>
+                    * Required
+                  </Typography>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className={ratingsBlock}>
+            <div>
+              <ReviewRating
+                name="overall"
+                label="Overall Experience"
+                onChange={updateOverall()}
+                defaultValue={initialReview?.overallRating || 0}
+                error={ratingError}
+              ></ReviewRating>
               {ratingError && (
-                <Typography color="error" style={{ fontSize: '12px' }}>
+                <Typography color="error" className={errorText}>
                   * Required
                 </Typography>
               )}
-            </Grid>
+            </div>
 
-            <div className={styles.div}></div>
-            {/* <Grid container item justifyContent="space-between" xs={12} sm={6}>
-              <TextField
-                fullWidth
-                autoFocus
-                label="Property Address (optional)"
-                value={review.address}
-                onChange={updateAddress}
-              />
-            </Grid> */}
-            <Grid container item>
-              <Grid container spacing={1} justifyContent="center">
+            <div className={divider} />
+
+            <div>
+              <div className={detailRatings}>
                 <ReviewRating
                   name="location"
-                  label="Location *"
+                  label="Location"
+                  labelOffset={37.26}
                   onChange={updateRating('location')}
                   defaultValue={initialReview?.detailedRatings.location || 0}
                   error={locationError}
                 ></ReviewRating>
                 <ReviewRating
                   name="safety"
-                  label="Safety *"
+                  label="Safety"
+                  labelOffset={37.26}
                   onChange={updateRating('safety')}
                   defaultValue={initialReview?.detailedRatings.safety || 0}
                   error={safetyError}
                 ></ReviewRating>
                 <ReviewRating
                   name="maintenance"
-                  label="Maintenance *"
+                  label="Maintenance"
+                  labelOffset={37.26}
                   onChange={updateRating('maintenance')}
                   defaultValue={initialReview?.detailedRatings.maintenance || 0}
                   error={maintenanceError}
                 ></ReviewRating>
                 <ReviewRating
                   name="conditions"
-                  label="Conditions *"
+                  label="Conditions"
+                  labelOffset={37.26}
                   onChange={updateRating('conditions')}
                   defaultValue={initialReview?.detailedRatings.conditions || 0}
                   error={conditionsError}
                 ></ReviewRating>
-              </Grid>
+              </div>
               {(conditionsError || safetyError || maintenanceError || locationError) && (
-                <Typography color="error" style={{ fontSize: '12px', marginTop: '5px' }}>
+                <Typography color="error" className={errorText} style={{ marginTop: '5px' }}>
                   * These fields are required
                 </Typography>
               )}
-            </Grid>
+            </div>
+          </div>
 
-            <div className={styles.div}></div>
+          <div className={divider} />
 
-            <Grid
-              container
-              item
-              spacing={1}
-              direction="row"
-              alignItems="center"
-              justifyContent="center"
-            >
-              {isMobile && reviewPromptBox()}
-              <Grid
-                item
-                xs={!isMobile ? 6 : 12}
-                container
-                spacing={1}
-                direction="row"
-                alignItems="center"
-                justifyContent="flex-start"
-              >
-                <TextField
-                  required={true}
-                  error={emptyTextError || includesProfanityError}
-                  fullWidth
-                  id="body"
-                  label="Review"
-                  multiline
-                  rows={10}
-                  inputProps={{
-                    maxLength: REVIEW_CHARACTER_LIMIT,
-                  }}
-                  placeholder="Write your review here"
-                  helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
-                    emptyTextError ? ' A minimum of 15 characters is required' : ''
-                  }${
-                    includesProfanityError
-                      ? ' This review contains profanity. Please edit it and try again.'
-                      : ''
-                  }`}
-                  onChange={updateBody}
-                  defaultValue={initialReview?.reviewText || ''}
-                />
-              </Grid>
+          <div className={reviewRow}>
+            {isMobile && reviewPromptBox()}
+            <div className={reviewColumn}>
+              <div className={reviewHeader}>
+                <label htmlFor="body" className={reviewLabel}>
+                  Review:
+                </label>
+                <span id="body-hint" className={reviewHint}>
+                  Write your review here
+                </span>
+              </div>
+              <TextField
+                required={true}
+                error={emptyTextError || includesProfanityError}
+                fullWidth
+                id="body"
+                variant="filled"
+                multiline
+                rows={5}
+                InputProps={{
+                  disableUnderline: true,
+                  classes: {
+                    root: reviewInputRoot,
+                    error: reviewInputError,
+                    inputMultiline: reviewInput,
+                  },
+                }}
+                inputProps={{
+                  maxLength: REVIEW_CHARACTER_LIMIT,
+                  'aria-describedby': 'body-hint',
+                }}
+                FormHelperTextProps={{ classes: { root: reviewHelperText } }}
+                helperText={`${review.body.length}/${REVIEW_CHARACTER_LIMIT}${
+                  emptyTextError ? ' A minimum of 15 characters is required' : ''
+                }${
+                  includesProfanityError
+                    ? ' This review contains profanity. Please edit it and try again.'
+                    : ''
+                }`}
+                onChange={updateBody}
+                defaultValue={initialReview?.reviewText || ''}
+              />
+            </div>
+            {!isMobile && reviewPromptBox()}
+          </div>
 
-              {!isMobile && (
-                <Grid
-                  item
-                  xs={6}
-                  container
-                  spacing={1}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="flex-start"
-                >
-                  {reviewPromptBox()}
-                </Grid>
-              )}
-            </Grid>
-          </Grid>
-          <UploadPhotos
-            photosLimit={REVIEW_PHOTOS_LIMIT}
-            photoMaxMB={REVIEW_PHOTO_MAX_MB}
-            photos={review.localPhotos}
-            onPhotosChange={updatePhotos}
-            removePhoto={removePhoto}
-            addedPhoto={addedPhoto}
-            setAddedPhoto={setAddedPhoto}
-          />
+          <div>
+            <UploadPhotos
+              photosLimit={REVIEW_PHOTOS_LIMIT}
+              photoMaxMB={REVIEW_PHOTO_MAX_MB}
+              photos={review.localPhotos}
+              onPhotosChange={updatePhotos}
+              removePhoto={removePhoto}
+              addedPhoto={addedPhoto}
+              setAddedPhoto={setAddedPhoto}
+              reviewFormDesign
+            />
+          </div>
         </div>
       </DialogContent>
-      <DialogActions
-        style={{ display: 'flex', justifyContent: 'space-between', alignContent: 'center' }}
-      >
+      <DialogActions className={actions}>
         <Button
           variant="contained"
           disableElevation
@@ -713,8 +893,7 @@ const ReviewModal = ({
             (initialReview ? onClose : onCloseClearPhotos)();
             resetErrors();
           }}
-          className={hollowRedButton}
-          style={{ marginLeft: '15px' }}
+          className={`${actionButton} ${hollowRedButton}`}
         >
           Cancel
         </Button>
@@ -725,9 +904,9 @@ const ReviewModal = ({
           disableElevation
           onClick={onSubmit}
           disabled={sending}
-          className={submitButton}
+          className={actionButton}
         >
-          Submit
+          {initialReview ? 'Save Edits' : 'Submit'}
         </Button>
       </DialogActions>
     </Dialog>
