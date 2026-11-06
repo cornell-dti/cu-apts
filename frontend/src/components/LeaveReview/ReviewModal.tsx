@@ -23,6 +23,8 @@ import UploadPhotos from '../utils/UploadPhotos';
 import ChevronDownSrc from '../../assets/form-chevron-icon.svg';
 import StepperMinusSrc from '../../assets/stepper-minus-icon.svg';
 import StepperPlusSrc from '../../assets/stepper-plus-icon.svg';
+import LeaseDateField from '../LeaseDates/LeaseDateField';
+import { isLeaseMonthDisabled } from '../../utils/leaseDates';
 
 const REVIEW_CHARACTER_LIMIT = 2000;
 const REVIEW_PHOTOS_LIMIT = 3;
@@ -172,6 +174,13 @@ const useStyle = makeStyles({
   errorText: {
     fontSize: '12px',
   },
+  leaseRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '4px 16px',
+  },
   ratingsBlock: {
     display: 'flex',
     flexDirection: 'column',
@@ -306,6 +315,17 @@ const useStyle = makeStyles({
   },
 });
 
+/**
+ * Returns the backend's message when it rejected the lease dates with a 400 (it replies with
+ * "Error: <message>"), or null for any other failure.
+ */
+const getLeaseDateErrorMessage = (err: unknown): string | null => {
+  if (!axios.isAxiosError(err) || err.response?.status !== 400) return null;
+  const body = err.response.data;
+  if (typeof body !== 'string' || !/^Error:\s*lease/i.test(body)) return null;
+  return body.replace(/^Error:\s*/i, '');
+};
+
 interface FormData {
   bedrooms: number;
   price: number;
@@ -314,6 +334,8 @@ interface FormData {
   ratings: DetailedRating;
   localPhotos: File[];
   body: string;
+  leaseSigned: string | null; // "YYYY-MM", or null when not chosen
+  leaseStart: string | null; // "YYYY-MM", or null when not chosen
 }
 
 const defaultReview: FormData = {
@@ -329,6 +351,8 @@ const defaultReview: FormData = {
   },
   localPhotos: [],
   body: '',
+  leaseSigned: null,
+  leaseStart: null,
 };
 
 type Action =
@@ -339,6 +363,8 @@ type Action =
   | { type: 'updateRating'; category: keyof DetailedRating; rating: number }
   | { type: 'updatePhotos'; photos: File[] }
   | { type: 'updateBody'; body: string }
+  | { type: 'updateLeaseSigned'; leaseSigned: string | null }
+  | { type: 'updateLeaseStart'; leaseStart: string | null }
   | { type: 'reset' };
 
 const reducer = (state: FormData, action: Action): FormData => {
@@ -357,6 +383,10 @@ const reducer = (state: FormData, action: Action): FormData => {
       return { ...state, localPhotos: action.photos ? [...action.photos] : [] };
     case 'updateBody':
       return { ...state, body: action.body };
+    case 'updateLeaseSigned':
+      return { ...state, leaseSigned: action.leaseSigned };
+    case 'updateLeaseStart':
+      return { ...state, leaseStart: action.leaseStart };
     case 'reset':
       return defaultReview;
     default:
@@ -369,7 +399,8 @@ const reducer = (state: FormData, action: Action): FormData => {
  *
  * This component displays a modal for users to input information for their review about a specific apartment.
  * This includes the bedroom(s), price per person, overall rating, detailed ratings (location, safety, maintenance,
- * conditions), review text/body, pictures (up to 3 pictures). All fields are required.
+ * conditions), review text/body, pictures (up to 3 pictures). All fields are required except the pictures
+ * and the two lease dates (when the lease was signed and when it started), which are both optional.
  * The submit button will add the review to the database and set the status as PENDING until an admin approves it.
  * The modal is responsive for all screen sizes and mobile display.
  *
@@ -415,6 +446,9 @@ const ReviewModal = ({
       body: review.reviewText,
       bedrooms: review.bedrooms,
       price: review.price,
+      // Old reviews have no lease dates, so these are undefined and become null.
+      leaseSigned: review.leaseSigned ?? null,
+      leaseStart: review.leaseStart ?? null,
     };
   };
   const [review, dispatch] = useReducer(
@@ -432,6 +466,7 @@ const ReviewModal = ({
   const [conditionsError, setConditionsError] = useState(false);
   const [includesProfanityError, setIncludesProfanityError] = useState(false);
   const [addedPhoto, setAddedPhoto] = useState(false);
+  const [leaseDateError, setLeaseDateError] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -452,6 +487,7 @@ const ReviewModal = ({
     dropDownStyle,
     chevron,
     errorText,
+    leaseRow,
     ratingsBlock,
     detailRatings,
     divider,
@@ -475,6 +511,16 @@ const ReviewModal = ({
 
   const updateBedrooms = (bedrooms: number) => {
     dispatch({ type: 'updateBedrooms', bedrooms });
+  };
+
+  const updateLeaseSigned = (leaseSigned: string | null) => {
+    setLeaseDateError('');
+    dispatch({ type: 'updateLeaseSigned', leaseSigned });
+  };
+
+  const updateLeaseStart = (leaseStart: string | null) => {
+    setLeaseDateError('');
+    dispatch({ type: 'updateLeaseStart', leaseStart });
   };
 
   const updatePrice = (price: number) => {
@@ -527,6 +573,8 @@ const ReviewModal = ({
     ratings,
     body,
     localPhotos,
+    leaseSigned,
+    leaseStart,
   }: FormData): Promise<Review> => {
     const photos = await Promise.all(localPhotos.map(uploadFile));
     return {
@@ -541,12 +589,16 @@ const ReviewModal = ({
       reviewText: body,
       //added userId to the data
       userId: user?.uid,
+      // Always sent, as null when empty: the backend uses null to clear a date when editing.
+      leaseSigned,
+      leaseStart,
     };
   };
 
   const onSubmit = async () => {
     try {
       setSending(true);
+      setLeaseDateError('');
       const token = await user!.getIdToken(true);
       const data = await formDataToReview(review);
       if (
@@ -597,10 +649,19 @@ const ReviewModal = ({
     } catch (err) {
       console.log(err);
       console.log('Failed to submit form');
-      setShowError(true);
-      setTimeout(() => {
-        setShowError(false);
-      }, toastTime);
+      const lease400 = getLeaseDateErrorMessage(err);
+      if (lease400) {
+        // The backend rejected the lease dates. Show its message next to the date fields.
+        setLeaseDateError(lease400);
+        if (modalRef.current) {
+          modalRef.current.scrollTop = 0;
+        }
+      } else {
+        setShowError(true);
+        setTimeout(() => {
+          setShowError(false);
+        }, toastTime);
+      }
     } finally {
       setSending(false);
     }
@@ -760,6 +821,48 @@ const ReviewModal = ({
                 )}
               </div>
             </div>
+
+            <div className={leaseRow}>
+              <Typography id="lease-signed-label" className={fieldLabel}>
+                When did you sign your lease?
+              </Typography>
+              <LeaseDateField
+                id="lease-signed"
+                labelId="lease-signed-label"
+                value={review.leaseSigned}
+                onChange={updateLeaseSigned}
+                isMonthDisabled={(year, month) =>
+                  isLeaseMonthDisabled('signed', year, month, {
+                    signed: review.leaseSigned,
+                    start: review.leaseStart,
+                  })
+                }
+              />
+            </div>
+
+            <div className={leaseRow}>
+              <Typography id="lease-start-label" className={fieldLabel}>
+                When did your lease start?
+              </Typography>
+              <LeaseDateField
+                id="lease-start"
+                labelId="lease-start-label"
+                value={review.leaseStart}
+                onChange={updateLeaseStart}
+                isMonthDisabled={(year, month) =>
+                  isLeaseMonthDisabled('start', year, month, {
+                    signed: review.leaseSigned,
+                    start: review.leaseStart,
+                  })
+                }
+              />
+            </div>
+
+            {leaseDateError && (
+              <Typography color="error" className={errorText}>
+                {leaseDateError}
+              </Typography>
+            )}
           </div>
 
           <div className={ratingsBlock}>

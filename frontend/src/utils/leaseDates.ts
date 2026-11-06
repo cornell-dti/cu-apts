@@ -39,3 +39,47 @@ const toMonthIndex = ({ year, month }: YearMonth): number => year * 12 + month;
 /** Calendar months from `from` to `to`. Negative when `to` is earlier. Same as the backend's monthsBetween. */
 export const monthsBetween = (from: YearMonth, to: YearMonth): number =>
   toMonthIndex(to) - toMonthIndex(from);
+
+/** The two lease date fields on the review form. */
+export type LeaseDateField = 'signed' | 'start';
+
+type LeaseDateValues = {
+  /** The chosen leaseSigned month as "YYYY-MM", if any. */
+  readonly signed?: string | null;
+  /** The chosen leaseStart month as "YYYY-MM", if any. */
+  readonly start?: string | null;
+};
+
+/**
+ * Whether a month cannot be chosen for a lease date field, given the other field's value.
+ * Mirrors validateLeaseDates in backend/src/leaseDates.ts, but works month by month and uses the
+ * user's local current month. `now` is a parameter so tests don't depend on the clock.
+ *
+ * - Signed: disabled after the current month, or after the chosen start month.
+ * - Start: disabled before the chosen signed month, more than MAX_LEASE_START_YEARS_AHEAD years after
+ *   the current month, or more than MAX_LEASE_GAP_MONTHS after the chosen signed month.
+ */
+export const isLeaseMonthDisabled = (
+  field: LeaseDateField,
+  year: number,
+  month: number,
+  { signed, start }: LeaseDateValues,
+  now: Date = new Date()
+): boolean => {
+  if (year < LEASE_DATE_MIN_YEAR || year > LEASE_DATE_MAX_YEAR) return true;
+
+  const candidate = { year, month };
+  const current = { year: now.getFullYear(), month: now.getMonth() + 1 };
+  const signedMonth = parseYearMonth(signed);
+  const startMonth = parseYearMonth(start);
+
+  if (field === 'signed') {
+    if (monthsBetween(current, candidate) > 0) return true;
+    return startMonth !== null && monthsBetween(startMonth, candidate) > 0;
+  }
+
+  if (monthsBetween(current, candidate) > MAX_LEASE_START_YEARS_AHEAD * 12) return true;
+  if (signedMonth === null) return false;
+  const gap = monthsBetween(signedMonth, candidate);
+  return gap < 0 || gap > MAX_LEASE_GAP_MONTHS;
+};
