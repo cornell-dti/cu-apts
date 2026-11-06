@@ -1,8 +1,24 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
-import { Box, Divider } from '@material-ui/core';
+import { Divider } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { colors } from '../../colors';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
+
+const useStyles = makeStyles(() => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32px',
+    padding: '24px 20px',
+    border: `1px solid ${colors.gray5}`,
+    borderRadius: '9px',
+  },
+  divider: {
+    backgroundColor: colors.gray5,
+  },
+}));
 
 type Props = {
   readonly landlordId: string | null;
@@ -38,15 +54,12 @@ export default function AptInfo({
   latitude = 0,
   longitude = 0,
 }: Props): ReactElement {
+  const { root, divider } = useStyles();
   return (
-    <Box border={1} borderColor="grey.300" borderRadius={10}>
-      <Box mx={2} mt={1}>
-        <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
-      </Box>
-      <Divider variant="middle" />
-      <Box mx={2} mb={1} mt={2}>
-        <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
-      </Box>
-    </Box>
+    <div className={root}>
+      <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
+      <Divider className={divider} />
+      <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
+    </div>
   );
 }

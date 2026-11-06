@@ -1,20 +1,48 @@
-import {
-  Box,
-  Button,
-  Grid,
-  Link,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@material-ui/core';
+import { Button, Grid, Link, Typography } from '@material-ui/core';
 import React, { ReactElement } from 'react';
 import { makeStyles } from '@material-ui/styles';
+import clsx from 'clsx';
 import { Link as RouterLink } from 'react-router-dom';
+import { colors } from '../../colors';
 
 const useStyles = makeStyles(() => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  textGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
   title: {
-    fontWeight: 500,
+    fontSize: '18px',
+    fontWeight: 600,
+    lineHeight: '28px',
+    color: colors.black,
+  },
+  infoText: {
+    fontSize: '16px',
+    lineHeight: '24px',
+    color: colors.black,
+  },
+  button: {
+    borderRadius: '10px',
+    padding: '10px 20px',
+    fontSize: '16px',
+    fontWeight: 600,
+    lineHeight: '24px',
+    textTransform: 'none',
+  },
+  outlinedButton: {
+    border: `2px solid ${colors.red1}`,
+    '&:hover': {
+      border: `2px solid ${colors.red1}`,
+    },
+  },
+  contactButton: {
+    textTransform: 'uppercase',
   },
 }));
 
@@ -26,16 +54,14 @@ type Props = {
 };
 
 /**
- * InfoItem – Renders a single list item displaying text information.
+ * InfoItem – Renders a single line of text information.
  *
  * @param {string} props.text – The text content to display.
  *
- * @return {JSX.Element} – A ListItem component with the text.
+ * @return {JSX.Element} – A Typography line with the text.
  */
-const InfoItem = ({ text }: { text: string }) => (
-  <ListItem disableGutters>
-    <ListItemText primary={text} />
-  </ListItem>
+const InfoItem = ({ text, className }: { text: string; className: string }) => (
+  <Typography className={className}>{text}</Typography>
 );
 
 /**
@@ -53,17 +79,19 @@ const InfoItem = ({ text }: { text: string }) => (
  * @return {ReactElement} – The rendered Info component.
  */
 export default function Info({ landlordId, landlord, contact, address }: Props): ReactElement {
-  const { title } = useStyles();
+  const { root, textGroup, title, infoText, button, outlinedButton, contactButton } = useStyles();
 
   return (
-    <Box mt={1} mb={3}>
-      <Typography variant="h6" className={title} style={{ fontWeight: 400 }}>
-        Information
-      </Typography>
-      <List dense>
-        {landlord && <InfoItem text={`Landlord/Renting Company: ${landlord}`} />}
-        {address && <InfoItem text={`Address: ${address}`} />}
-      </List>
+    <div className={root}>
+      <div className={textGroup}>
+        <Typography className={title}>Information</Typography>
+        <div>
+          {landlord && (
+            <InfoItem className={infoText} text={`Landlord/Renting Company: ${landlord}`} />
+          )}
+          {address && <InfoItem className={infoText} text={`Address: ${address}`} />}
+        </div>
+      </div>
       <Grid container justifyContent="center" spacing={2}>
         <Grid item xs={6} sm={12} md={6}>
           {landlord && (
@@ -74,7 +102,13 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
                 component: RouterLink,
               }}
             >
-              <Button color="primary" variant="outlined" fullWidth disableElevation>
+              <Button
+                color="primary"
+                variant="outlined"
+                fullWidth
+                disableElevation
+                className={clsx(button, outlinedButton)}
+              >
                 Visit Landlord
               </Button>
             </Link>
@@ -88,12 +122,13 @@ export default function Info({ landlordId, landlord, contact, address }: Props):
               variant="contained"
               fullWidth
               disableElevation
+              className={clsx(button, contactButton)}
             >
               Contact
             </Button>
           )}
         </Grid>
       </Grid>
-    </Box>
+    </div>
   );
 }
