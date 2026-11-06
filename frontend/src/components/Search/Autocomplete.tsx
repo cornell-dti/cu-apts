@@ -32,7 +32,8 @@ type Props = {
   drawerOpen: boolean;
   aiMode?: boolean;
   onToggleAiMode?: () => void;
-  userId?: string;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
 };
 
 /**
@@ -57,7 +58,8 @@ const Autocomplete = ({
   drawerOpen,
   aiMode = false,
   onToggleAiMode,
-  userId,
+  user,
+  setUser,
 }: Props): ReactElement => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const location = useLocation();
@@ -282,7 +284,7 @@ const Autocomplete = ({
       setIsUserTyping(false);
       setOpenMenu(false);
       setOpenHistory(false);
-      recordSearch('manual', query, filters, userId);
+      recordSearch('manual', query, filters, user?.uid);
       history.push(searchUrl({ mode: 'manual', query: query.trim(), filters }));
     }
   }
@@ -295,7 +297,7 @@ const Autocomplete = ({
     setIsUserTyping(false);
     setOpenMenu(false);
     setOpenHistory(false);
-    recordSearch('ai', trimmed, defaultFilters, userId);
+    recordSearch('ai', trimmed, defaultFilters, user?.uid);
     history.push(searchUrl({ mode: 'ai', query: trimmed, filters: defaultFilters }));
   };
 
@@ -318,7 +320,7 @@ const Autocomplete = ({
       setIsUserTyping(false);
       setOpenMenu(false);
       setOpenHistory(false);
-      recordSearch('manual', query, filters, userId);
+      recordSearch('manual', query, filters, user?.uid);
       history.push(searchUrl({ mode: 'manual', query: query.trim(), filters }));
     }
   };
@@ -696,7 +698,11 @@ const Autocomplete = ({
                 zIndex: 2,
               }}
             >
-              <SearchHistoryPanel userId={userId} onSelect={() => setOpenHistory(false)} />
+              <SearchHistoryPanel
+                user={user}
+                setUser={setUser}
+                onSelect={() => setOpenHistory(false)}
+              />
             </div>
           )}
           <FilterSection
