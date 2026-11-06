@@ -3184,6 +3184,47 @@ app.post('/api/folders/:folderId/invites', authenticate, inviteRateLimiter, asyn
 });
 
 /**
+ * Get Folder Invites – Lists every invite sent for a folder, with its status.
+ *
+ * @remarks
+ * Only the owner of the folder can see its invites. The collaborator list uses this to show who
+ * is still pending, who accepted, and who declined. Invites come back in no particular order.
+ *
+ * @route GET /api/folders/:folderId/invites
+ *
+ * @input {string} req.params.folderId - The ID of the folder
+ *
+ * @status
+ * - 200: Successfully retrieved invites (an empty list if nobody has been invited)
+ * - 403: Unauthorized to see this folder's invites (not the owner)
+ * - 404: Folder not found
+ * - 500: Error fetching invites
+ */
+app.get('/api/folders/:folderId/invites', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderDoc = await folderCollection.doc(folderId).get();
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (!isFolderOwner(folderDoc.data() as Folder, uid)) {
+      return res.status(403).send("Unauthorized to see this folder's invites");
+    }
+
+    const snapshot = await folderInviteCollection.where('folderId', '==', folderId).get();
+    const invites = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json(invites);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching invites');
+  }
+});
+
+/**
  * Get Folder Invite – Fetches an invite so the invited person can see what they were invited to.
  *
  * @remarks
