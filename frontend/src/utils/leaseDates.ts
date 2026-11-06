@@ -34,6 +34,32 @@ export const parseYearMonth = (value: string | null | undefined): YearMonth | nu
 export const formatYearMonth = ({ year, month }: YearMonth): string =>
   `${year}-${String(month).padStart(2, '0')}`;
 
+const MONTH_ABBREVIATIONS = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+] as const;
+
+/**
+ * Formats a "YYYY-MM" lease month for display, e.g. "2024-10" -> "OCT 2024".
+ * Reads the year and month straight from the string. Never go through new Date(): "2024-10" parses
+ * as UTC midnight, which is the previous month in US timezones.
+ * Returns null for missing or malformed values, so callers can hide the label.
+ */
+export const formatLeaseSigned = (value: string | null | undefined): string | null => {
+  const parsed = parseYearMonth(value);
+  return parsed ? `${MONTH_ABBREVIATIONS[parsed.month - 1]} ${parsed.year}` : null;
+};
+
 const toMonthIndex = ({ year, month }: YearMonth): number => year * 12 + month;
 
 /** Calendar months from `from` to `to`. Negative when `to` is earlier. Same as the backend's monthsBetween. */

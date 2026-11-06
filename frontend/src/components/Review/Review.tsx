@@ -43,6 +43,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
+import { formatLeaseSigned } from '../../utils/leaseDates';
 import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
@@ -282,6 +283,8 @@ const ReviewComponent = ({
 }: Props): ReactElement => {
   const formattedDate = format(new Date(review.date), 'MMM dd, yyyy').toUpperCase();
   const shortenedDate = format(new Date(review.date), 'MMM yyyy').toUpperCase();
+  // null (hide the label) for older reviews with no leaseSigned, or a malformed value
+  const leaseSignedText = formatLeaseSigned(review.leaseSigned);
   const {
     root,
     expand,
@@ -698,7 +701,13 @@ const ReviewComponent = ({
                       ? '(min-width:1410px)'
                       : '(min-width:1075px)'
                   ) && bedroomsPriceLabel(1)}
-                  <Grid item style={{ marginLeft: 'auto' }} />
+                  <Grid item style={{ marginLeft: 'auto' }}>
+                    {leaseSignedText && (
+                      <Typography variant="body2" className={dateText}>
+                        {`LEASE SIGNED: ${leaseSignedText}`}
+                      </Typography>
+                    )}
+                  </Grid>
                   {user &&
                     review.userId &&
                     user.uid === review.userId &&

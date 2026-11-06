@@ -1,4 +1,5 @@
 import {
+  formatLeaseSigned,
   formatYearMonth,
   isLeaseMonthDisabled,
   LEASE_DATE_MAX_YEAR,
@@ -74,5 +75,29 @@ describe('isLeaseMonthDisabled for the start field', () => {
     // Signed Dec 2026: the 36-month limit (Dec 2029) is later than the 3-year limit (Nov 2029).
     expect(start(2029, 11, '2026-12')).toBe(false);
     expect(start(2029, 12, '2026-12')).toBe(true);
+  });
+});
+
+describe('formatLeaseSigned', () => {
+  it('formats a month as uppercase abbreviated month and year', () => {
+    expect(formatLeaseSigned('2024-10')).toBe('OCT 2024');
+    expect(formatLeaseSigned('2025-01')).toBe('JAN 2025');
+    expect(formatLeaseSigned('2023-12')).toBe('DEC 2023');
+  });
+
+  it('does not depend on the local timezone', () => {
+    // new Date('2024-10') is UTC midnight, which is September in US timezones.
+    // Reading the year and month straight from the string avoids that.
+    expect(formatLeaseSigned('2024-10')).not.toBe('SEP 2024');
+  });
+
+  it('returns null for missing or malformed values so the label can be hidden', () => {
+    expect(formatLeaseSigned(undefined)).toBeNull();
+    expect(formatLeaseSigned(null)).toBeNull();
+    expect(formatLeaseSigned('')).toBeNull();
+    expect(formatLeaseSigned('2024-13')).toBeNull();
+    expect(formatLeaseSigned('2024-1')).toBeNull();
+    expect(formatLeaseSigned('Oct 2024')).toBeNull();
+    expect(formatLeaseSigned('1999-05')).toBeNull();
   });
 });
