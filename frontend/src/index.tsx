@@ -6,9 +6,12 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { initPostHog } from './utils/posthog';
 
 // Probably put this value in .env file
 axios.defaults.baseURL = process.env.REACT_APP_BASE_URL;
+
+initPostHog();
 
 ReactDOM.render(
   <React.StrictMode>
