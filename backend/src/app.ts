@@ -35,6 +35,12 @@ import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
+import {
+  BUS_STOPS,
+  getTravelTimes,
+  findClosestStop,
+  withIthacaContext,
+} from './travel-times-utils';
 
 // Imports for email sending
 
@@ -2417,41 +2423,12 @@ interface TravelTimeInput {
 }
 
 /**
- * getTravelTimes – Calculates travel times between an origin and multiple destinations using Google Distance Matrix API.
- *
- * @remarks
- * Makes an HTTP request to the Google Distance Matrix API and processes the response to extract duration values.
- * Times are converted from seconds to minutes before being returned.
- *
- * @param {string} origin - Starting location as either an address or coordinates in "lat,lng" format
- * @param {string[]} destinations - Array of destination addresses to calculate times to
- * @param {'walking' | 'driving'} mode - Mode of transportation to use for calculations
- * @return {Promise<number[]>} - Array of travel times in minutes to each destination
- */
-async function getTravelTimes(
-  origin: string,
-  destinations: string[],
-  mode: 'walking' | 'driving'
-): Promise<number[]> {
-  const response = await axios.get(
-    `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-      origin
-    )}&destinations=${destinations
-      .map((dest) => encodeURIComponent(dest))
-      .join('|')}&mode=${mode}&key=${REACT_APP_MAPS_API_KEY}`
-  );
-
-  return response.data.rows[0].elements.map(
-    (element: { duration: { value: number } }) => element.duration.value / 60
-  );
-}
-
-/**
  * Travel Times Calculator - Calculates walking and driving times from a given origin to Cornell landmarks.
  *
  * @remarks
  * Uses Google Maps Distance Matrix API to calculate travel times to three landmarks: Engineering Quad,
- * Agriculture Quad, and Ho Plaza. Returns both walking and driving durations in minutes.
+ * Agriculture Quad, and Ho Plaza, plus the walking time to the nearest Collegetown bus stop.
+ * Returns both walking and driving durations in minutes.
  * Origin can be either an address or coordinates in "latitude,longitude" format.
  *
  * @route POST /api/travel-times
@@ -2465,24 +2442,41 @@ async function getTravelTimes(
  */
 app.post('/api/calculate-travel-times', async (req, res) => {
   try {
-    const { origin } = req.body as TravelTimeInput;
-    console.log('Origin:', origin);
+    const { origin: rawOrigin } = req.body as TravelTimeInput;
+    console.log('Origin:', rawOrigin);
 
-    if (!origin) {
+    if (!rawOrigin) {
       return res.status(400).json({ error: 'Origin is required' });
     }
+
+    // Coordinate origins pass through untouched; a bare address gets its city
+    // appended so Google does not resolve it against the whole country.
+    const origin = withIthacaContext(rawOrigin);
 
     const destinations = Object.values(LANDMARKS);
     console.log('Destinations array:', destinations);
 
+    const busStopNames = Object.keys(BUS_STOPS);
+    const busStopAddresses = Object.values(BUS_STOPS);
+
     // Get walking and driving times using the helper function
-    const [walkingTimes, drivingTimes] = await Promise.all([
+    const [walkingTimes, drivingTimes, busStopWalkingTimes] = await Promise.all([
       getTravelTimes(origin, destinations, 'walking'),
       getTravelTimes(origin, destinations, 'driving'),
+      getTravelTimes(origin, busStopAddresses, 'walking'),
     ]);
 
     console.log('Raw walking times:', walkingTimes);
     console.log('Raw driving times:', drivingTimes);
+
+    // Reduce the per-stop walking times to the single closest stop. Falls back
+    // to -1 when the API returns an unexpected number of results, matching the
+    // sentinel used elsewhere for "not yet calculated".
+    const busStopTimes: Record<string, number> = {};
+    busStopNames.forEach((name, index) => {
+      busStopTimes[name] = busStopWalkingTimes[index];
+    });
+    const closestBusStop = findClosestStop(busStopTimes);
 
     const travelTimes: LocationTravelTimes = {
       engQuadWalking: walkingTimes[0],
@@ -2491,6 +2485,7 @@ app.post('/api/calculate-travel-times', async (req, res) => {
       agQuadDriving: drivingTimes[1],
       hoPlazaWalking: walkingTimes[2],
       hoPlazaDriving: drivingTimes[2],
+      busStopWalking: closestBusStop ? closestBusStop.timeMinutes : -1,
     };
 
     console.log('Final travel times:', travelTimes);

@@ -301,6 +301,20 @@ function MapInfo({
               walkDistance={Math.round(travelTimes?.agQuadWalking || 0)}
             />
           </Box>
+          {/* Only shown when a bus stop time has actually been calculated;
+              travelTimes documents predating bus stop support omit the field,
+              and -1 is the sentinel for "not yet calculated". */}
+          {(travelTimes?.busStopWalking ?? 0) > 0 && (
+            <Box style={{ lineHeight: 'normal', letterSpacing: '0.38px', marginTop: '8px' }}>
+              <Typography variant="h6" style={{ fontWeight: 400, fontSize: '16.964px' }}>
+                Distance to Transportation
+              </Typography>
+              <WalkDistanceInfo
+                location={'Bus Station'}
+                walkDistance={Math.round(travelTimes?.busStopWalking ?? 0)}
+              />
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
