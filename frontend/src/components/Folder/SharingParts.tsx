@@ -120,6 +120,8 @@ const useStyles = makeStyles({
     color: colors.black,
   },
   closeButton: { width: 40, height: 40, color: colors.black },
+  topContainer: { alignItems: 'flex-start' },
+  topPaper: { marginTop: '12vh' },
   dialogFooter: {
     display: 'flex',
     alignItems: 'center',
@@ -272,6 +274,7 @@ type SharingDialogProps = {
   title?: string;
   children: ReactNode;
   footer?: ReactNode;
+  alignTop?: boolean;
 };
 
 /**
@@ -286,6 +289,8 @@ type SharingDialogProps = {
  * @param {string} props.title – The title in the header, if the modal has one.
  * @param {ReactNode} props.children – The modal's body.
  * @param {ReactNode} props.footer – Buttons for the bottom right, if any.
+ * @param {boolean} props.alignTop – Pins the modal near the top of the screen instead of the
+ * middle, so it grows downward instead of jumping when its content changes height.
  * @returns {ReactElement} – The modal.
  */
 export const SharingDialog = ({
@@ -294,10 +299,16 @@ export const SharingDialog = ({
   title,
   children,
   footer,
+  alignTop = false,
 }: SharingDialogProps): ReactElement => {
   const classes = useStyles();
+  const paper = `${classes.dialogPaper} ${alignTop ? classes.topPaper : ''}`;
   return (
-    <Dialog open={open} onClose={onClose} classes={{ paper: classes.dialogPaper }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      classes={{ paper, container: alignTop ? classes.topContainer : undefined }}
+    >
       {title && (
         <div className={classes.dialogHeader}>
           <h2 className={classes.dialogTitle}>{title}</h2>
