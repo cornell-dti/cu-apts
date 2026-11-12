@@ -6,6 +6,8 @@
  * - POST /api/folders/:folderId/invites (who can invite, NetID checks, duplicates, rate limit)
  * - viewing, accepting, and declining an invite at /api/folder-invites/:inviteId
  * - the owner's list of invites at GET /api/folders/:folderId/invites
+ * - resending invites, the 10-collaborator limit, and cancelling an invite
+ * - the collaborator list at GET /api/folders/:folderId/collaborators
  *
  * Firebase and nodemailer are replaced with fakes, so these tests never touch real data, never
  * send real email, and don't need the Firestore emulator.
@@ -16,6 +18,7 @@ import request from 'supertest';
 import app from './app';
 import {
   buildInviteEmail,
+  COLLABORATOR_LIMIT,
   INVITES_PER_HOUR,
   inviteRateLimiter,
   normalizeNetId,
@@ -94,6 +97,11 @@ jest.mock('./firebase-config', () => {
         }
         return { uid: mockAccounts[email] };
       },
+      getUsers: async (ids: { uid: string }[]) => ({
+        users: ids
+          .filter(({ uid }) => Object.values(mockAccounts).includes(uid))
+          .map(({ uid }) => ({ uid, email: `${uid}@cornell.edu`, displayName: `User ${uid}` })),
+      }),
     },
     FieldValue: {
       arrayUnion: (...values: unknown[]) => ({ op: 'arrayUnion', values }),
@@ -156,11 +164,35 @@ describe('normalizeNetId and buildInviteEmail', () => {
   });
 
   it('escapes user-typed names in the HTML and links to the invite', () => {
-    const { html, text } = buildInviteEmail('<b>Karan</b>', 'Apts & "Co"', 'f1_cd456');
+    const { html, text } = buildInviteEmail({
+      inviterName: '<b>Karan</b>',
+      folderName: 'Apts & "Co"',
+      inviteId: 'f1_cd456',
+      inviteeEmail: 'cd456@cornell.edu',
+      apartmentCount: 2,
+      peopleCount: 3,
+    });
     expect(html).toContain('&lt;b&gt;Karan&lt;/b&gt;');
     expect(html).toContain('Apts &amp; &quot;Co&quot;');
     expect(html).not.toContain('<b>Karan</b>');
+    expect(html).toContain('href="https://www.cuapts.org/folder-invite/f1_cd456"');
     expect(text).toContain('https://www.cuapts.org/folder-invite/f1_cd456');
+  });
+
+  it('shows the folder size and who the invite was sent to, like the Figma email', () => {
+    const details = {
+      inviterName: 'Karan',
+      folderName: 'Collegetown',
+      inviteId: 'f1_cd456',
+      inviteeEmail: 'cd456@cornell.edu',
+    };
+    const many = buildInviteEmail({ ...details, apartmentCount: 2, peopleCount: 3 });
+    expect(many.html).toContain('2 apartments · 3 people');
+    expect(many.html).toContain('OPEN FOLDER');
+    expect(many.html).toContain('This invitation was sent to cd456@cornell.edu.');
+    expect(buildInviteEmail({ ...details, apartmentCount: 1, peopleCount: 1 }).text).toContain(
+      '1 apartment · 1 person'
+    );
   });
 });
 
@@ -217,10 +249,14 @@ describe('POST /api/folders/:folderId/invites', () => {
     expect(mockSendMail).not.toHaveBeenCalled();
   });
 
-  it('returns 409 while an invite is pending, but allows a new invite after a decline', async () => {
+  it('resends the same invite while it is pending, and allows a new invite after a decline', async () => {
     expect((await sendInvite('ab123', 'ef789')).status).toBe(201);
-    expect((await sendInvite('ab123', 'ef789')).status).toBe(409);
-    expect(mockSendMail).toHaveBeenCalledTimes(1);
+    const resent = await sendInvite('ab123', 'ef789');
+    expect(resent.status).toBe(200);
+    expect(resent.body).toMatchObject({ id: 'f1_ef789', status: 'PENDING', resent: true });
+    expect(mockDb.folderInvites.f1_ef789.lastSentAt).toBeDefined();
+    expect(mockSendMail).toHaveBeenCalledTimes(2);
+    expect(mockSendMail.mock.calls[1][0].text).toContain('/folder-invite/f1_ef789');
 
     mockDb.folderInvites.f1_ef789.status = 'DECLINED';
     expect((await sendInvite('ab123', 'ef789')).status).toBe(201);
@@ -235,10 +271,12 @@ describe('POST /api/folders/:folderId/invites', () => {
   });
 
   it(`limits each owner to ${INVITES_PER_HOUR} invites per hour; failed requests don't count`, async () => {
+    // Spread the invites over two folders so the collaborator limit isn't what stops them
+    mockDb.folders.f2 = { name: 'Downtown', userId: 'ab123', members: [], apartments: [] };
     expect((await sendInvite('ab123', 'bad netid')).status).toBe(400);
     for (let i = 0; i < INVITES_PER_HOUR; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      expect((await sendInvite('ab123', `zz${i}`)).status).toBe(201);
+      expect((await sendInvite('ab123', `zz${i}`, i % 2 === 0 ? 'f1' : 'f2')).status).toBe(201);
     }
 
     const blocked = await sendInvite('ab123', 'zz99');
@@ -328,5 +366,79 @@ describe('GET /api/folders/:folderId/invites', () => {
     expect((await listInvites('cd456')).status).toBe(403);
     expect((await listInvites('ef789')).status).toBe(403);
     expect((await listInvites('ab123', 'missing')).status).toBe(404);
+  });
+});
+
+describe('collaborator limit', () => {
+  it(`stops new invites once members plus pending invites reach ${COLLABORATOR_LIMIT}`, async () => {
+    // cd456 is already a member, so 9 pending invites fill the folder
+    for (let i = 0; i < COLLABORATOR_LIMIT - 1; i += 1) {
+      mockDb.folderInvites = mockDb.folderInvites ?? {};
+      mockDb.folderInvites[`f1_zz${i}`] = {
+        folderId: 'f1',
+        inviteeNetId: `zz${i}`,
+        status: 'PENDING',
+      };
+    }
+    const blocked = await sendInvite('ab123', 'xy999');
+    expect(blocked.status).toBe(403);
+    expect(blocked.text).toContain(`${COLLABORATOR_LIMIT}-collaborator limit`);
+    expect(mockSendMail).not.toHaveBeenCalled();
+
+    // Answered invites don't count, and resending a pending invite still works
+    mockDb.folderInvites.f1_zz0.status = 'DECLINED';
+    expect((await sendInvite('ab123', 'zz1')).status).toBe(200);
+    expect((await sendInvite('ab123', 'xy999')).status).toBe(201);
+  });
+});
+
+describe('DELETE /api/folder-invites/:inviteId', () => {
+  const cancel = (uid: string) => request(app).delete('/api/folder-invites/f1_xy999').set(as(uid));
+
+  beforeEach(async () => {
+    await sendInvite('ab123', 'xy999');
+  });
+
+  it('lets the owner cancel a pending invite', async () => {
+    expect((await cancel('cd456')).status).toBe(403);
+    expect((await cancel('ab123')).status).toBe(200);
+    expect(savedInvites()).toEqual([]);
+    expect((await cancel('ab123')).status).toBe(404);
+  });
+
+  it('returns 409 for an invite that was already answered', async () => {
+    mockDb.folderInvites.f1_xy999.status = 'ACCEPTED';
+    expect((await cancel('ab123')).status).toBe(409);
+    expect(savedInvites()).toEqual(['f1_xy999']);
+  });
+});
+
+describe('GET /api/folders/:folderId/collaborators', () => {
+  const getCollaborators = (uid: string, folderId = 'f1') =>
+    request(app).get(`/api/folders/${folderId}/collaborators`).set(as(uid));
+
+  it('gives the owner names, emails, and pending invites', async () => {
+    await sendInvite('ab123', 'xy999');
+    const res = await getCollaborators('ab123');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      owner: { id: 'ab123', name: 'User ab123', email: 'ab123@cornell.edu' },
+      members: [{ id: 'cd456', name: 'User cd456', email: 'cd456@cornell.edu' }],
+      pendingInvites: [{ id: 'f1_xy999', netId: 'xy999', email: 'xy999@cornell.edu' }],
+      limit: COLLABORATOR_LIMIT,
+    });
+  });
+
+  it('shows members who is in the folder, but not the pending invites', async () => {
+    await sendInvite('ab123', 'xy999');
+    const res = await getCollaborators('cd456');
+    expect(res.status).toBe(200);
+    expect(res.body.members).toHaveLength(1);
+    expect(res.body.pendingInvites).toEqual([]);
+  });
+
+  it('returns 403 for people without access and 404 for a missing folder', async () => {
+    expect((await getCollaborators('ef789')).status).toBe(403);
+    expect((await getCollaborators('ab123', 'missing')).status).toBe(404);
   });
 });

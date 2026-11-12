@@ -241,9 +241,16 @@ describe('DELETE /api/folders/:folderId/members/:memberId', () => {
   });
 
   it('blocks members from removing other people', async () => {
-    const res = await request(app).delete('/api/folders/shared/members/member').set(as('member'));
+    mockDb.folders.shared.members = ['member', 'roommate'];
+    const res = await request(app).delete('/api/folders/shared/members/roommate').set(as('member'));
     expect(res.status).toBe(403);
-    expect(mockDb.folders.shared.members).toEqual(['member']);
+    expect(mockDb.folders.shared.members).toEqual(['member', 'roommate']);
+  });
+
+  it('lets a member leave the folder by removing themselves', async () => {
+    const res = await request(app).delete('/api/folders/shared/members/member').set(as('member'));
+    expect(res.status).toBe(200);
+    expect(mockDb.folders.shared.members).toEqual([]);
   });
 
   it('returns 404 when the user is not a member or the folder does not exist', async () => {
