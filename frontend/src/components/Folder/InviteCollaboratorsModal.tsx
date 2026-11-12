@@ -81,6 +81,7 @@ const useStyles = makeStyles({
     '&:hover, &:focus': { backgroundColor: colors.gray3, outline: 'none' },
     '&:disabled': { cursor: 'default', backgroundColor: colors.white },
   },
+  noMatches: { padding: '16px 12px', fontSize: 14, lineHeight: '20px', color: colors.gray1 },
   hasAccess: { fontSize: 14, lineHeight: '20px', color: colors.gray2, whiteSpace: 'nowrap' },
   skeletonRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px' },
   skeletonAvatar: { width: 36, height: 36, borderRadius: '50%', backgroundColor: colors.gray5 },
@@ -157,7 +158,9 @@ const InviteCollaboratorsModal = ({
 }: Props): ReactElement => {
   const classes = useStyles();
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
+  // The latest search answer. It stays on screen while the next search runs, so the list
+  // doesn't flash or change height on every keystroke.
+  const [results, setResults] = useState<UserSuggestion[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<Invitee[]>([]);
   const [showInvalid, setShowInvalid] = useState(false);
@@ -175,6 +178,7 @@ const InviteCollaboratorsModal = ({
   useEffect(() => {
     if (!open) return;
     setQuery('');
+    setResults(null);
     setSelected(initialNetIds.map((netId) => ({ netId, label: netId })));
     setSendError('');
     sentCount.current = 0;
@@ -184,7 +188,7 @@ const InviteCollaboratorsModal = ({
   // Search after a short pause in typing, and ignore answers to older searches
   useEffect(() => {
     if (!user || typed.length < 2 || isInvalidInvite(typed)) {
-      setSuggestions([]);
+      setResults(null);
       setSearching(false);
       return undefined;
     }
@@ -192,10 +196,10 @@ const InviteCollaboratorsModal = ({
     setSearching(true);
     const timer = setTimeout(async () => {
       try {
-        const results = await searchUsers(user, typed);
-        if (!stale) setSuggestions(results);
+        const people = await searchUsers(user, typed);
+        if (!stale) setResults(people);
       } catch (err) {
-        if (!stale) setSuggestions([]);
+        if (!stale) setResults([]);
       } finally {
         if (!stale) setSearching(false);
       }
@@ -215,10 +219,14 @@ const InviteCollaboratorsModal = ({
     setSendError('');
   };
 
+  // While a new search runs, keep showing the last answer, minus people who no longer match
+  const search = typed.toLowerCase().split('@')[0];
+  const suggestions = (results ?? []).filter(
+    ({ netId, name }) => netId.startsWith(search) || name.toLowerCase().startsWith(search)
+  );
   const visibleSuggestions = suggestions.filter(({ netId }) => !selectedIds.includes(netId));
   const showInviteRow =
     !!typedNetId &&
-    !searching &&
     !selectedIds.includes(typedNetId) &&
     !suggestions.some(({ netId }) => netId === typedNetId);
   const typedHasAccess = !!typedNetId && peopleWithAccess.includes(typedNetId);
@@ -278,12 +286,17 @@ const InviteCollaboratorsModal = ({
   else if (showInviteRow) note = 'They’ll get access once they sign in with their Cornell email.';
 
   const showResults = typed.length >= 2 && !invalid;
+  // Loading rows only show for the first search, before there's anything to keep on screen
+  const showSkeleton = showResults && searching && results === null;
+  const showNoMatches =
+    showResults && results !== null && visibleSuggestions.length === 0 && !showInviteRow;
 
   return (
     <SharingDialog
       open={open}
       onClose={onClose}
       title="Invite collaborators"
+      alignTop
       footer={
         <>
           <PillButton variant="secondary" onClick={onClose}>
@@ -325,7 +338,7 @@ const InviteCollaboratorsModal = ({
           )}
         </div>
 
-        {showResults && searching && (
+        {showSkeleton && (
           <div className={classes.results}>
             {[0, 1, 2].map((row) => (
               <div key={row} className={classes.skeletonRow}>
@@ -342,44 +355,51 @@ const InviteCollaboratorsModal = ({
           </div>
         )}
 
-        {showResults && !searching && (visibleSuggestions.length > 0 || showInviteRow) && (
-          <div className={classes.results}>
-            {visibleSuggestions.map(({ netId, name, email }) => {
-              const hasAccess = peopleWithAccess.includes(netId);
-              return (
+        {showResults &&
+          !showSkeleton &&
+          (visibleSuggestions.length > 0 || showInviteRow || showNoMatches) && (
+            <div className={classes.results}>
+              {showNoMatches && (
+                <div className={classes.noMatches}>
+                  No CU Apts users found. Type their full NetID to invite them.
+                </div>
+              )}
+              {visibleSuggestions.map(({ netId, name, email }) => {
+                const hasAccess = peopleWithAccess.includes(netId);
+                return (
+                  <button
+                    key={netId}
+                    type="button"
+                    className={classes.result}
+                    disabled={hasAccess}
+                    onClick={() => addInvitee({ netId, label: name })}
+                  >
+                    <PersonRow
+                      name={name}
+                      email={email}
+                      muted={hasAccess}
+                      action={hasAccess && <span className={classes.hasAccess}>Has access</span>}
+                    />
+                  </button>
+                );
+              })}
+              {showInviteRow && typedNetId && (
                 <button
-                  key={netId}
                   type="button"
                   className={classes.result}
-                  disabled={hasAccess}
-                  onClick={() => addInvitee({ netId, label: name })}
+                  disabled={typedHasAccess}
+                  onClick={() => addInvitee({ netId: typedNetId, label: typedNetId })}
                 >
                   <PersonRow
-                    name={name}
-                    email={email}
-                    muted={hasAccess}
-                    action={hasAccess && <span className={classes.hasAccess}>Has access</span>}
+                    name={`Invite ${typedNetId}@cornell.edu`}
+                    pending
+                    muted={typedHasAccess}
+                    action={typedHasAccess && <span className={classes.hasAccess}>Has access</span>}
                   />
                 </button>
-              );
-            })}
-            {showInviteRow && typedNetId && (
-              <button
-                type="button"
-                className={classes.result}
-                disabled={typedHasAccess}
-                onClick={() => addInvitee({ netId: typedNetId, label: typedNetId })}
-              >
-                <PersonRow
-                  name={`Invite ${typedNetId}@cornell.edu`}
-                  pending
-                  muted={typedHasAccess}
-                  action={typedHasAccess && <span className={classes.hasAccess}>Has access</span>}
-                />
-              </button>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
 
         {selected.length > 0 && (
           <div className={classes.chips}>
