@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import './App.scss';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -101,6 +101,7 @@ const App = (): ReactElement => {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const { pathname } = useLocation();
+  const savedProfileFor = useRef<string | null>(null);
 
   useEffect(() => {
     const setData = async () => {
@@ -127,6 +128,26 @@ const App = (): ReactElement => {
       }
     };
     checkAdmin();
+  }, [user]);
+
+  // Save the signed-in person's NetID and name once per sign-in, so friends can find them when
+  // sharing a folder
+  useEffect(() => {
+    const saveProfile = async () => {
+      if (!user || savedProfileFor.current === user.uid) return;
+      savedProfileFor.current = user.uid;
+      try {
+        const token = await user.getIdToken();
+        await axios.post(
+          '/api/users/profile',
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (err) {
+        console.error('Error saving user profile:', err);
+      }
+    };
+    saveProfile();
   }, [user]);
 
   return (

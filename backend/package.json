@@ -11,6 +11,7 @@
     "update_apartments": "env-cmd -f ../.env.prod ts-node scripts/update_apartments_from_csv.ts",
     "export_apartment_names": "ts-node scripts/export_apartment_names.ts",
     "init_blogposts": "env-cmd -f ../.env.prod ts-node scripts/init_blogposts_collection.ts",
+    "backfill_user_profiles": "env-cmd -f ../.env.prod ts-node scripts/backfill_user_profiles.ts",
     "build": "tsc",
     "tsc": "tsc",
     "start": "node dist/backend/src/server.js",
