@@ -143,5 +143,6 @@ export type FolderInvite = {
   readonly inviteeEmail: string; // <netId>@cornell.edu; only this account can accept or decline
   readonly status: FolderInviteStatus;
   readonly createdAt: Date;
+  readonly lastSentAt?: Date; // set when the owner re-invites someone who hasn't answered yet
   readonly respondedAt?: Date;
 };
