@@ -19,6 +19,7 @@ import { colors } from '../../colors';
 import axios from 'axios';
 import { createAuthHeaders } from '../../utils/firebase';
 import { CardData } from '../../App';
+import ConfirmSharingDialog from './ConfirmSharingDialog';
 
 type Folder = {
   id: string;
@@ -32,6 +33,7 @@ type Props = {
   folder: Folder;
   onDelete: (folderId: string) => void;
   onRename: (folderId: string, newName: string) => void;
+  onLeave: (folderId: string) => void;
   user: firebase.User | null;
 };
 
@@ -98,14 +100,18 @@ const useStyles = makeStyles((theme) => ({
  * @param {Folder} props.folder - The folder data to display
  * @param {function} props.onDelete - Callback function when the folder is deleted
  * @param {function} props.onRename - Callback function when the folder is renamed
+ * @param {function} props.onLeave - Callback function when a member leaves a shared folder
  * @returns ReactElement: The FolderCard component.
  */
-const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement => {
+const FolderCard = ({ folder, onDelete, onRename, onLeave, user }: Props): ReactElement => {
   const classes = useStyles();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showRenameDialog, setShowRenameDialog] = useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState<boolean>(false);
+  // Only the owner can rename or delete a folder. People it was shared with can leave it instead.
+  const isOwner = !user || folder.userId === user.uid;
   const [newName, setNewName] = useState<string>(folder.name);
 
   const [savedAptsData, setSavedAptsData] = useState<CardData[]>([]);
@@ -209,11 +215,42 @@ const FolderCard = ({ folder, onDelete, onRename, user }: Props): ReactElement =
 
       {/* Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleRenameClick}>Rename</MenuItem>
-        <MenuItem onClick={handleDeleteClick} style={{ color: colors.red1 }}>
-          Delete
-        </MenuItem>
+        {isOwner
+          ? [
+              <MenuItem key="rename" onClick={handleRenameClick}>
+                Rename
+              </MenuItem>,
+              <MenuItem key="delete" onClick={handleDeleteClick} style={{ color: colors.red1 }}>
+                Delete
+              </MenuItem>,
+            ]
+          : [
+              <MenuItem
+                key="leave"
+                onClick={() => {
+                  setShowLeaveDialog(true);
+                  handleMenuClose();
+                }}
+                style={{ color: colors.red1 }}
+              >
+                Leave
+              </MenuItem>,
+            ]}
       </Menu>
+
+      <div onClick={(e) => e.stopPropagation()}>
+        <ConfirmSharingDialog
+          open={showLeaveDialog}
+          title={`Leave “${folder.name}”?`}
+          body="You’ll lose access to this folder. The owner and other collaborators keep it, and listings you added will stay."
+          confirmLabel="Leave folder"
+          onConfirm={() => {
+            setShowLeaveDialog(false);
+            onLeave(folder.id);
+          }}
+          onClose={() => setShowLeaveDialog(false)}
+        />
+      </div>
 
       {/* Rename Dialog */}
       <Dialog
