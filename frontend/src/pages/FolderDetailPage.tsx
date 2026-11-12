@@ -27,6 +27,8 @@ import { CardData } from '../App';
 import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
 import DropDownWithLabel from '../components/utils/DropDownWithLabel';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import ShareFolderPopover from '../components/Folder/ShareFolderPopover';
 
 type Props = {
   user: firebase.User | null;
@@ -134,6 +136,7 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [apartmentIdsToRemove, setApartmentIdsToRemove] = useState<string[]>([]);
   const [showRemoveApartmentModal, setShowRemoveApartmentModal] = useState<boolean>(false);
+  const [shareAnchorEl, setShareAnchorEl] = useState<HTMLElement | null>(null);
   // handle toggle
   const handleViewAll = () => {
     setAptsToShow(aptsToShow + (apartments.length - defaultShow));
@@ -344,6 +347,20 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
           <Button onClick={() => setShowRemoveApartmentModal(true)} className={classes.editButton}>
             Edit
           </Button>
+          <Button
+            onClick={(e) => setShareAnchorEl(e.currentTarget)}
+            className={classes.editButton}
+            startIcon={<PersonAddIcon />}
+          >
+            Share
+          </Button>
+          <ShareFolderPopover
+            anchorEl={shareAnchorEl}
+            onClose={() => setShareAnchorEl(null)}
+            user={user}
+            folder={folder}
+            onLeft={() => history.push('/bookmarks')}
+          />
         </Box>
 
         {apartments.length > 0 ? (
