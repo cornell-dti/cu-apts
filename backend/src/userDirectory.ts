@@ -10,7 +10,11 @@
  * - The invite box searches those documents by NetID or name, so suggestions only include people
  *   who have signed in to CU Apts before. Anyone else can still be invited by typing their NetID.
  * - `scripts/backfill_user_profiles.ts` fills in profiles for people who signed in before this.
+ *   Until it runs, typing someone's full NetID still finds them through Firebase Auth.
  */
+
+import { auth } from './firebase-config';
+import { normalizeNetId } from './folderInvites';
 
 /**
  * The most suggestions one search returns, matching the dropdown in the Figma.
@@ -96,4 +100,29 @@ export const mergeSearchResults = (
     }
   });
   return results;
+};
+
+/**
+ * findAccountByNetId – Finds a CU Apts account by full NetID, even if it has no saved profile.
+ *
+ * @remarks
+ * Profiles are only saved when someone signs in, so people who haven't signed in since this
+ * feature shipped (and before the backfill script runs) are missing from the prefix search.
+ * Typing their full NetID still finds them through Firebase Auth.
+ *
+ * @param {string} query – The cleaned-up search.
+ * @returns {Promise<UserSearchResult | null>} – The person, or null if the search isn't a full
+ * NetID or nobody with that NetID has signed in to CU Apts.
+ */
+export const findAccountByNetId = async (query: string): Promise<UserSearchResult | null> => {
+  const netId = normalizeNetId(query);
+  if (!netId) return null;
+  const email = `${netId}@cornell.edu`;
+  try {
+    const account = await auth.getUserByEmail(email);
+    return { netId, name: account.displayName || netId, email };
+  } catch (err) {
+    if ((err as { code?: string }).code === 'auth/user-not-found') return null;
+    throw err;
+  }
 };

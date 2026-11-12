@@ -47,6 +47,7 @@ import {
 } from './folderInvites';
 import {
   buildUserProfile,
+  findAccountByNetId,
   mergeSearchResults,
   normalizeSearch,
   SEARCH_LIMIT,
@@ -3543,7 +3544,8 @@ app.post('/api/users/profile', authenticate, async (req, res) => {
  * @remarks
  * Matches the start of a NetID ("ab" finds ab123) or a name ("ale" finds Alex Bennett), ignoring
  * capital letters. Only people who have signed in to CU Apts show up, and only their name, NetID,
- * and Cornell email are returned. Searches shorter than 2 characters return no suggestions.
+ * and Cornell email are returned. A full NetID also finds people who signed in before profiles
+ * were saved. Searches shorter than 2 characters return no suggestions.
  *
  * @route GET /api/users/search
  *
@@ -3576,7 +3578,14 @@ app.get('/api/users/search', authenticate, async (req, res) => {
       searchByPrefix('nameLower'),
     ]);
     const searcherNetId = buildUserProfile(req.user.email ?? '', undefined)?.netId ?? '';
-    return res.status(200).json(mergeSearchResults(netIdMatches, nameMatches, searcherNetId));
+    const results = mergeSearchResults(netIdMatches, nameMatches, searcherNetId);
+
+    // People who signed in before profiles were saved can still be found by their full NetID
+    if (query !== searcherNetId && !results.some(({ netId }) => netId === query)) {
+      const account = await findAccountByNetId(query);
+      if (account) results.unshift(account);
+    }
+    return res.status(200).json(results.slice(0, SEARCH_LIMIT));
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error searching users');

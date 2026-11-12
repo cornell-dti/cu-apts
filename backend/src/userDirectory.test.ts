@@ -22,6 +22,8 @@ type Filter = { field: string; op: '>=' | '<='; value: string };
 const mockUsers: Record<string, FakeDoc> = {};
 // Names on the fake Google accounts. Logging in with "Bearer abc" makes you user "abc".
 const mockNames: Record<string, string> = {};
+// Fake Firebase Auth accounts (email -> name), whether or not they have a saved profile
+const mockAccounts: Record<string, string> = {};
 
 jest.mock('./firebase-config', () => {
   const matches = (data: FakeDoc, { field, op, value }: Filter) => {
@@ -63,6 +65,12 @@ jest.mock('./firebase-config', () => {
         email: `${token}@cornell.edu`,
         name: mockNames[token],
       }),
+      getUserByEmail: async (email: string) => {
+        if (!(email in mockAccounts)) {
+          throw Object.assign(new Error('No user record'), { code: 'auth/user-not-found' });
+        }
+        return { displayName: mockAccounts[email] };
+      },
     },
     FieldValue: {},
     FieldPath: {},
@@ -82,6 +90,7 @@ const signIn = (uid: string, name: string) => {
 beforeEach(() => {
   Object.keys(mockUsers).forEach((id) => delete mockUsers[id]);
   Object.keys(mockNames).forEach((id) => delete mockNames[id]);
+  Object.keys(mockAccounts).forEach((email) => delete mockAccounts[email]);
 });
 
 describe('normalizeSearch and buildUserProfile', () => {
@@ -157,6 +166,14 @@ describe('GET /api/users/search', () => {
   it('returns no suggestions for short searches or when nobody matches', async () => {
     expect((await search('km2253', 'a')).body).toEqual([]);
     expect((await search('km2253', 'zz9')).body).toEqual([]);
+  });
+
+  it('finds someone by full NetID even if they have no profile yet', async () => {
+    mockAccounts['xy999@cornell.edu'] = 'Xavier Young';
+    expect((await search('km2253', 'XY999')).body).toEqual([
+      { netId: 'xy999', name: 'Xavier Young', email: 'xy999@cornell.edu' },
+    ]);
+    expect((await search('km2253', 'zz999')).body).toEqual([]);
   });
 
   it('returns at most 5 suggestions', async () => {
