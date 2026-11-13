@@ -55,6 +55,7 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [drawerOpen] = useState<boolean>(false);
+  const [aiMode, setAiMode] = useState<boolean>(false);
   const path = useLocation();
   const [pathName] = useState(path.pathname);
   const introText =
@@ -127,13 +128,43 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
   return (
     <Container maxWidth="xl">
       <Box className={header} mt={isMobile ? -2 : 0} position="relative">
-        <Typography variant="h1" className={jumboText}>
-          Discover Housing{' '}
-          <span style={{ color: '#B94630' }}>{isMobile ? <br /> : ''}@ Cornell</span>
-        </Typography>
-        <Typography className={jumboSub}>{introText}</Typography>
+        {/* Both text blocks share one grid cell so the container is always as tall as the taller
+            one; this keeps the search bar and logo from shifting when the mode is toggled. */}
+        <div style={{ display: 'grid' }}>
+          <div style={{ gridArea: '1 / 1', visibility: aiMode ? 'hidden' : 'visible' }}>
+            <Typography variant="h1" className={jumboText}>
+              Discover Housing{' '}
+              <span style={{ color: '#B94630' }}>{isMobile ? <br /> : ''}@ Cornell</span>
+            </Typography>
+            <Typography className={jumboSub}>{introText}</Typography>
+          </div>
+          <div style={{ gridArea: '1 / 1', visibility: aiMode ? 'visible' : 'hidden' }}>
+            <Typography variant="h1" className={jumboText} style={{ letterSpacing: 0 }}>
+              Find your next place at Cornell,
+              <br />
+              <span style={{ color: colors.red1 }}>
+                described in{' '}
+                <span
+                  style={{
+                    textDecoration: 'underline solid',
+                    textDecorationColor: colors.red1,
+                    textDecorationThickness: '0.115em',
+                    textUnderlineOffset: 0,
+                    textDecorationSkipInk: 'none',
+                  }}
+                >
+                  your own words
+                </span>
+              </span>
+            </Typography>
+          </div>
+        </div>
         <Box mt={isMobile ? 8 : 3} paddingBottom={isMobile ? 4 : 0}>
-          <Autocomplete drawerOpen={drawerOpen} />
+          <Autocomplete
+            drawerOpen={drawerOpen}
+            aiMode={aiMode}
+            onToggleAiMode={() => setAiMode((prev) => !prev)}
+          />
         </Box>
 
         <Box className={logoContainer}>
