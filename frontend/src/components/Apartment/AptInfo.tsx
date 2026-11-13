@@ -1,14 +1,33 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
-import { Box, Divider } from '@material-ui/core';
+import { Divider } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { colors } from '../../colors';
 import PropertyInfo from '../Review/PropertyInfo';
 import { CardData } from '../../App';
+import { LeaseSignedStats } from '../../../../common/types/db-types';
+
+const useStyles = makeStyles(() => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32px',
+    padding: '24px 20px',
+    border: `1px solid ${colors.gray5}`,
+    borderRadius: '9px',
+  },
+  divider: {
+    backgroundColor: colors.gray5,
+  },
+}));
 
 type Props = {
   readonly landlordId: string | null;
   readonly landlord: string;
   readonly contact: () => void;
   readonly address: string | null;
+  readonly aptName?: string | null;
+  readonly leaseSignedStats?: LeaseSignedStats;
   readonly buildings: CardData[];
   readonly latitude?: number;
   readonly longitude?: number;
@@ -25,6 +44,8 @@ type Props = {
  * @param {string} props.landlord – The name of the landlord or renting company.
  * @param {string | null} props.contact – Contact URL for the landlord.
  * @param {string | null} props.address – The address of the apartment.
+ * @param {string | null} props.aptName – The name of this apartment, shown in the lease signing callout.
+ * @param {LeaseSignedStats} props.leaseSignedStats – Average months leases are signed before they start.
  * @param {CardData[]} props.buildings – List of other properties owned by the landlord.
  *
  * @return {ReactElement} – The rendered AptInfo component.
@@ -34,19 +55,25 @@ export default function AptInfo({
   landlord,
   contact,
   address,
+  aptName,
+  leaseSignedStats,
   buildings,
   latitude = 0,
   longitude = 0,
 }: Props): ReactElement {
+  const { root, divider } = useStyles();
   return (
-    <Box border={1} borderColor="grey.300" borderRadius={10}>
-      <Box mx={2} mt={1}>
-        <Info landlordId={landlordId} landlord={landlord} contact={contact!} address={address!} />
-      </Box>
-      <Divider variant="middle" />
-      <Box mx={2} mb={1} mt={2}>
-        <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
-      </Box>
-    </Box>
+    <div className={root}>
+      <Info
+        landlordId={landlordId}
+        landlord={landlord}
+        contact={contact!}
+        address={address!}
+        aptName={aptName}
+        leaseSignedStats={leaseSignedStats}
+      />
+      <Divider className={divider} />
+      <PropertyInfo title="Other Properties Owned by This Landlord" info={buildings} />
+    </div>
   );
 }

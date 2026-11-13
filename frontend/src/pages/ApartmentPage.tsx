@@ -788,6 +788,10 @@ const ApartmentPage = ({ user, setUser }: Props): ReactElement => {
         landlord={landlordData.name}
         contact={() => setLandLordMessagingOpen(true)}
         address={apt!.address}
+        aptName={apt!.name}
+        leaseSignedStats={
+          otherProperties.find((prop) => prop.buildingData.id === apt!.id)?.leaseSignedStats
+        }
         buildings={otherProperties.filter((prop) => prop.buildingData.name !== apt!.name)}
         longitude={apt!.longitude}
         latitude={apt!.latitude}

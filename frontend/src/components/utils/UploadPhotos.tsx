@@ -19,6 +19,7 @@ interface Props {
   removePhoto: (index: number) => void;
   addedPhoto: boolean;
   setAddedPhoto: React.Dispatch<React.SetStateAction<boolean>>;
+  reviewFormDesign?: boolean;
 }
 
 const useStyle = makeStyles({
@@ -30,6 +31,48 @@ const useStyle = makeStyles({
     borderColor: `${colors.red1} !important`,
     backgroundColor: 'transparent',
     color: colors.red1,
+    '&:hover': {
+      backgroundColor: 'rgba(0,0,0,0.1)',
+      opacity: 0.8,
+    },
+  },
+  reviewFormHeader: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  reviewFormTitleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '8px',
+    minHeight: '33.9px',
+  },
+  reviewFormLabel: {
+    fontSize: '18px',
+    lineHeight: '26px',
+    color: colors.black,
+  },
+  reviewFormCaption: {
+    fontSize: '12.5px',
+    lineHeight: '20px',
+    color: colors.gray2,
+  },
+  reviewFormButton: {
+    minWidth: 0,
+    height: '33.9px',
+    // The 2.08px border sits inside the 13.9px padding in the design.
+    padding: '0 11.81px',
+    boxSizing: 'border-box',
+    borderRadius: '20.84px',
+    border: '2.08px solid',
+    borderColor: `${colors.red1} !important`,
+    backgroundColor: 'transparent',
+    color: colors.red1,
+    fontSize: '12.5px',
+    fontWeight: 600,
+    lineHeight: '19.45px',
+    letterSpacing: 0,
     '&:hover': {
       backgroundColor: 'rgba(0,0,0,0.1)',
       opacity: 0.8,
@@ -99,6 +142,8 @@ const useStyle = makeStyles({
  * @param {(index: number) => void} removePhoto – The callback function that handles removing a photo.
  * @param {boolean} addedPhoto – Boolean state to indicate whether a new photo has been added.
  * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setAddedPhoto - State setter function to update the `addedPhoto` state.
+ * @param {boolean} [props.reviewFormDesign] - Opt in to the review form layout: the button sits on the same row as
+ * the title and the caption sits underneath. Other callers keep the default layout.
  *
  * @returns UploadPhotos – The UploadPhotos component.
  */
@@ -111,6 +156,7 @@ export default function UploadPhotos({
   removePhoto,
   addedPhoto,
   setAddedPhoto,
+  reviewFormDesign = false,
 }: Props) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -122,6 +168,11 @@ export default function UploadPhotos({
     photoRemoveButton,
     photoAndButton,
     photo,
+    reviewFormHeader,
+    reviewFormTitleRow,
+    reviewFormLabel,
+    reviewFormCaption,
+    reviewFormButton,
   } = useStyle();
 
   useEffect(() => {
@@ -133,50 +184,80 @@ export default function UploadPhotos({
 
   return (
     <>
-      <Grid
-        container
-        item
-        justifyContent="space-between"
-        spacing={3}
-        style={{ paddingTop: '0', paddingBottom: '0' }}
-      >
-        <Grid item>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-            <FormLabel>Upload Pictures: </FormLabel>
-            <FormLabel
-              style={{
-                fontSize: '13px',
-                color: colors.gray2,
-                paddingTop: '8px',
-                marginBottom: '0 !important',
-              }}
+      {reviewFormDesign ? (
+        <div className={reviewFormHeader}>
+          <div className={reviewFormTitleRow}>
+            <FormLabel className={reviewFormLabel}>Upload Pictures:</FormLabel>
+            <Button
+              component={'label'}
+              variant="contained"
+              disableElevation
+              className={photos.length >= photosLimit ? disabledButton : reviewFormButton}
             >
-              {`Reviewers may upload up to ${photosLimit} photos. Max photo size of ${photoMaxMB}MB`}
-            </FormLabel>
+              Choose File(s)
+              <Input
+                style={{ display: 'none' }}
+                id="upload"
+                type="file"
+                inputProps={{ multiple: true, accept: 'image/*' }}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  onPhotosChange(event);
+                  setAddedPhoto(!addedPhoto);
+                }}
+                disabled={photos.length >= photosLimit}
+              />
+            </Button>
           </div>
+          <FormLabel className={reviewFormCaption}>
+            {`Reviewers may upload up to ${photosLimit} photos. Max photo size of ${photoMaxMB}MB.`}
+          </FormLabel>
+        </div>
+      ) : (
+        <Grid
+          container
+          item
+          justifyContent="space-between"
+          spacing={3}
+          style={{ paddingTop: '0', paddingBottom: '0' }}
+        >
+          <Grid item>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+              <FormLabel>Upload Pictures: </FormLabel>
+              <FormLabel
+                style={{
+                  fontSize: '13px',
+                  color: colors.gray2,
+                  paddingTop: '8px',
+                  marginBottom: '0 !important',
+                }}
+              >
+                {`Reviewers may upload up to ${photosLimit} photos. Max photo size of ${photoMaxMB}MB`}
+              </FormLabel>
+            </div>
+          </Grid>
+          <Grid item>
+            <Button
+              component={'label'}
+              variant="contained"
+              disableElevation
+              className={photos.length >= photosLimit ? disabledButton : hollowRedButton}
+            >
+              Choose File(s)
+              <Input
+                style={{ display: 'none' }}
+                id="upload"
+                type="file"
+                inputProps={{ multiple: true, accept: 'image/*' }}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  onPhotosChange(event);
+                  setAddedPhoto(!addedPhoto);
+                }}
+                disabled={photos.length >= photosLimit}
+              />
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item>
-          <Button
-            component={'label'}
-            variant="contained"
-            disableElevation
-            className={photos.length >= photosLimit ? disabledButton : hollowRedButton}
-          >
-            Choose File(s)
-            <Input
-              style={{ display: 'none' }}
-              id="upload"
-              type="file"
-              inputProps={{ multiple: true, accept: 'image/*' }}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                onPhotosChange(event);
-                setAddedPhoto(!addedPhoto);
-              }}
-              disabled={photos.length >= photosLimit}
-            />
-          </Button>
-        </Grid>
-      </Grid>
+      )}
       <Grid item>
         {photos.length > 0 && (
           <Grid
