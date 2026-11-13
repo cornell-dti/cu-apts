@@ -80,7 +80,7 @@ const useStyle = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: '12px 26px',
     [MOBILE]: { flexDirection: 'column', alignItems: 'stretch' },
   },
@@ -732,6 +732,7 @@ const ReviewModal = ({
       open={open}
       onClose={initialReview ? onClose : onCloseClearPhotos} // If editing a review, close modal without clearing photos
       fullWidth
+      maxWidth={false}
       PaperProps={{ className: modalWidth }}
     >
       <DialogTitle disableTypography className={leaveAReviewTitle}>
