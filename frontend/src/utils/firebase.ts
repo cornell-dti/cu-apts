@@ -87,4 +87,22 @@ const uploadBlogCoverAndSave = async (postId: string, file: File) => {
   return url;
 };
 
-export { uploadBlogCoverAndSave, createAuthHeaders, getUser, uploadFile, subscribeLikes, signOut };
+/**
+ * onUserChange – Calls back once Firebase restores the signed-in session, and again on every sign
+ * in or sign out.
+ *
+ * @param {(user: firebase.User | null) => void} callback – Gets the user, or null if signed out.
+ * @returns {firebase.Unsubscribe} – Call it to stop listening.
+ */
+const onUserChange = (callback: (user: firebase.User | null) => void): firebase.Unsubscribe =>
+  auth.onAuthStateChanged(callback);
+
+export {
+  uploadBlogCoverAndSave,
+  createAuthHeaders,
+  getUser,
+  uploadFile,
+  subscribeLikes,
+  signOut,
+  onUserChange,
+};

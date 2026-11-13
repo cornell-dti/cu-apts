@@ -9,6 +9,7 @@ import LandlordPage from './pages/LandlordPage';
 import ProfilePage from './pages/ProfilePage';
 import FolderDetailPage from './pages/FolderDetailPage';
 import BookmarksPage from './pages/BookmarksPage';
+import FolderInviteModal from './components/Folder/FolderInviteModal';
 import { ThemeProvider } from '@material-ui/core';
 import { createTheme } from '@material-ui/core/styles';
 import NavBar, { NavbarButton } from './components/utils/NavBar/index';
@@ -182,6 +183,11 @@ const App = (): ReactElement => {
               component={() => <ProfilePage user={user} setUser={setUser} />}
             />
 
+            {/* The link in a folder invite email opens the invite popup over the home page */}
+            <Route path="/folder-invite/:inviteId">
+              <HomePage user={user} setUser={setUser} />
+              <FolderInviteModal user={user} setUser={setUser} />
+            </Route>
             <Route path="/bookmarks/:folderId">
               <FolderDetailPage user={user} setUser={setUser} />
             </Route>

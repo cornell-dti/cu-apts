@@ -6,6 +6,7 @@
  */
 import axios from 'axios';
 import { createAuthHeaders } from './firebase';
+import { FolderInvite } from '../../../common/types/db-types';
 
 /**
  * UserSuggestion – Someone the invite box suggests while you type.
@@ -187,4 +188,41 @@ export const removeFolderMember = async (
  */
 export const cancelFolderInvite = async (user: firebase.User, inviteId: string): Promise<void> => {
   await axios.delete(`/api/folder-invites/${inviteId}`, await authHeaders(user));
+};
+
+/**
+ * FolderInviteDetails – An invite as the invited person sees it.
+ */
+export type FolderInviteDetails = FolderInvite & { id: string };
+
+/**
+ * getFolderInvite – Gets an invite, so the invited person can see what they were invited to.
+ *
+ * @param {firebase.User} user – The signed-in user (must be the invited person).
+ * @param {string} inviteId – The invite from the email link.
+ * @returns {Promise<FolderInviteDetails>} – The invite.
+ */
+export const getFolderInvite = async (
+  user: firebase.User,
+  inviteId: string
+): Promise<FolderInviteDetails> => {
+  const { data } = await axios.get(`/api/folder-invites/${inviteId}`, await authHeaders(user));
+  return data;
+};
+
+/**
+ * respondToFolderInvite – Accepts or declines an invite.
+ *
+ * @param {firebase.User} user – The signed-in user (must be the invited person).
+ * @param {string} inviteId – The invite to answer.
+ * @param {boolean} accept – True to join the folder, false to decline.
+ * @returns {Promise<void>} – Resolves once the answer is saved.
+ */
+export const respondToFolderInvite = async (
+  user: firebase.User,
+  inviteId: string,
+  accept: boolean
+): Promise<void> => {
+  const action = accept ? 'accept' : 'decline';
+  await axios.post(`/api/folder-invites/${inviteId}/${action}`, {}, await authHeaders(user));
 };
