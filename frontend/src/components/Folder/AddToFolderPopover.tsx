@@ -17,6 +17,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { FolderRounded } from '@material-ui/icons';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import InviteCollaboratorsModal from './InviteCollaboratorsModal';
+import InviteSuccessModal from './InviteSuccessModal';
+import { getErrorMessage, netIdFromEmail, sendFolderInvite } from '../../utils/folderSharing';
 
 const useStyles = makeStyles({
   popoverPaper: {
@@ -164,6 +168,33 @@ const useStyles = makeStyles({
     justifyContent: 'flex-end',
     gap: 12,
   },
+  shareRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 14,
+  },
+  shareTitle: {
+    fontSize: 11,
+    fontWeight: 600,
+    lineHeight: '16px',
+    letterSpacing: 0.2,
+    color: colors.black,
+  },
+  shareSubtitle: {
+    fontSize: 10,
+    lineHeight: '12px',
+    color: colors.gray1,
+    overflowWrap: 'anywhere',
+  },
+  shareButton: {
+    width: 37,
+    height: 37,
+    borderRadius: 12,
+    backgroundColor: colors.gray5,
+    color: colors.black,
+    '&:hover': { backgroundColor: colors.gray4 },
+  },
   cancelButton: {
     textTransform: 'none',
     fontSize: 14,
@@ -228,6 +259,10 @@ export default function AddToFolderPopover({
   const [error, setError] = useState('');
   const [createMode, setCreateMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  // NetIDs picked with the Share folder button, invited once the new folder is created
+  const [invitees, setInvitees] = useState<string[]>([]);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [invited, setInvited] = useState<{ count: number; folderName: string } | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -300,6 +335,15 @@ export default function AddToFolderPopover({
     }
   };
 
+  const openInviteModal = async () => {
+    if (!user) {
+      const logged = await getUser(true);
+      setUser(logged);
+      if (!logged) return;
+    }
+    setInviteModalOpen(true);
+  };
+
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
       setError('Folder name cannot be empty.');
@@ -334,12 +378,31 @@ export default function AddToFolderPopover({
         createAuthHeaders(token)
       );
 
+      // Now that the folder exists, send the invites picked with the Share folder button
+      const signedInUser = u;
+      const failedInvites = await invitees.reduce<Promise<string[]>>(async (previous, netId) => {
+        const failed = await previous;
+        try {
+          await sendFolderInvite(signedInUser, newFolder.id, netId);
+          return failed;
+        } catch (err) {
+          return [...failed, `${netId}: ${getErrorMessage(err, 'the invite was not sent.')}`];
+        }
+      }, Promise.resolve([]));
+
       await fetchFolders();
       onSuccess();
 
+      const sentCount = invitees.length - failedInvites.length;
+      if (sentCount > 0) setInvited({ count: sentCount, folderName: newFolderName.trim() });
       setCreateMode(false);
       setNewFolderName('');
-      setError('');
+      setInvitees([]);
+      setError(
+        failedInvites.length > 0
+          ? `Folder created, but some invites were not sent. ${failedInvites.join(' ')}`
+          : ''
+      );
     } catch (err) {
       setError('Failed to create folder.');
     }
@@ -355,7 +418,10 @@ export default function AddToFolderPopover({
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       disableRestoreFocus
       PaperProps={{
-        onMouseLeave: onClose,
+        // Moving the mouse onto the invite or success modal shouldn't close this popover
+        onMouseLeave: () => {
+          if (!inviteModalOpen && !invited) onClose();
+        },
         onClick: (e) => e.stopPropagation(),
       }}
     >
@@ -386,6 +452,24 @@ export default function AddToFolderPopover({
             autoFocus
             className={classes.inputField}
           />
+
+          <Box className={classes.shareRow}>
+            <Box flex={1} minWidth={0}>
+              <Typography className={classes.shareTitle}>Share folder</Typography>
+              <Typography className={classes.shareSubtitle}>
+                {invitees.length > 0
+                  ? `Inviting ${invitees.join(', ')}`
+                  : 'Invite friends or roommates to view and edit'}
+              </Typography>
+            </Box>
+            <IconButton
+              className={classes.shareButton}
+              onClick={openInviteModal}
+              aria-label="Share folder"
+            >
+              <PersonAddIcon />
+            </IconButton>
+          </Box>
 
           <div className={classes.modalActions}>
             <Button className={classes.cancelButton} onClick={() => setCreateMode(false)}>
@@ -450,6 +534,21 @@ export default function AddToFolderPopover({
           {error && <div className={classes.footerError}>{error}</div>}
         </>
       )}
+      {/* These stay inside the popover so clicks in them don't reach the apartment card */}
+      <InviteCollaboratorsModal
+        open={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        user={user}
+        peopleWithAccess={[netIdFromEmail(user?.email)]}
+        initialNetIds={invitees}
+        onSelect={setInvitees}
+      />
+      <InviteSuccessModal
+        open={invited !== null}
+        onClose={() => setInvited(null)}
+        count={invited?.count ?? 0}
+        folderName={invited?.folderName ?? ''}
+      />
     </Popover>
   );
 }
