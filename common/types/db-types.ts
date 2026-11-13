@@ -31,6 +31,20 @@ export type Review = {
   readonly status?: 'PENDING' | 'APPROVED' | 'DECLINED' | 'DELETED' | 'REPORTED';
   readonly userId?: string | null;
   readonly reports?: readonly ReportEntry[];
+  /** Month the lease was signed, "YYYY-MM". Optional. */
+  readonly leaseSigned?: string | null;
+  /** Month the lease starts, "YYYY-MM". Optional. */
+  readonly leaseStart?: string | null;
+};
+
+/**
+ * Average gap between signing and lease start for a listing.
+ * avgMonthsBeforeStart is null when there are too few qualifying reviews (empty state);
+ * sampleSize is always the number of qualifying reviews.
+ */
+export type LeaseSignedStats = {
+  readonly avgMonthsBeforeStart: number | null;
+  readonly sampleSize: number;
 };
 
 export type BlogPost = {
