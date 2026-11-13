@@ -45,6 +45,14 @@ import {
   normalizeNetId,
   sendFolderInviteEmail,
 } from './folderInvites';
+import {
+  buildUserProfile,
+  findAccountByNetId,
+  mergeSearchResults,
+  normalizeSearch,
+  SEARCH_LIMIT,
+  UserProfile,
+} from './userDirectory';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
 
@@ -3495,6 +3503,92 @@ app.delete('/api/folder-invites/:inviteId', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error cancelling invite');
+  }
+});
+
+/**
+ * Save User Profile – Saves the signed-in person's NetID, name, and email so others can find them.
+ *
+ * @remarks
+ * The frontend calls this after someone signs in. It merges into the person's existing `users`
+ * document, so their saved apartments are kept. This is what lets the invite box suggest people
+ * by name.
+ *
+ * @route POST /api/users/profile
+ *
+ * @status
+ * - 200: Profile saved (returns the profile)
+ * - 400: The account doesn't have a Cornell email
+ * - 500: Error saving the profile
+ */
+app.post('/api/users/profile', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid, email, name } = req.user;
+    const profile = buildUserProfile(email ?? '', name);
+    if (!profile) {
+      return res.status(400).send('Only Cornell accounts have a profile');
+    }
+
+    await usersCollection.doc(uid).set(profile, { merge: true });
+    return res.status(200).json(profile);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error saving profile');
+  }
+});
+
+/**
+ * Search Users – Suggests CU Apts users by NetID or name for the folder invite box.
+ *
+ * @remarks
+ * Matches the start of a NetID ("ab" finds ab123) or a name ("ale" finds Alex Bennett), ignoring
+ * capital letters. Only people who have signed in to CU Apts show up, and only their name, NetID,
+ * and Cornell email are returned. A full NetID also finds people who signed in before profiles
+ * were saved. Searches shorter than 2 characters return no suggestions.
+ *
+ * @route GET /api/users/search
+ *
+ * @input {string} req.query.q - What the person typed, a NetID, name, or Cornell email
+ *
+ * @status
+ * - 200: Up to 5 suggestions, each `{ netId, name, email }` (an empty list if nothing matches)
+ * - 500: Error searching users
+ */
+app.get('/api/users/search', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const query = normalizeSearch(req.query.q);
+    if (!query) {
+      return res.status(200).json([]);
+    }
+
+    // A prefix search: everything from the query up to the query followed by the last character
+    const searchByPrefix = async (field: 'netId' | 'nameLower') => {
+      const snapshot = await usersCollection
+        .where(field, '>=', query)
+        .where(field, '<=', `${query}\uf8ff`)
+        .limit(SEARCH_LIMIT + 1)
+        .get();
+      return snapshot.docs.map((doc) => doc.data() as UserProfile);
+    };
+
+    const [netIdMatches, nameMatches] = await Promise.all([
+      searchByPrefix('netId'),
+      searchByPrefix('nameLower'),
+    ]);
+    const searcherNetId = buildUserProfile(req.user.email ?? '', undefined)?.netId ?? '';
+    const results = mergeSearchResults(netIdMatches, nameMatches, searcherNetId);
+
+    // People who signed in before profiles were saved can still be found by their full NetID
+    if (query !== searcherNetId && !results.some(({ netId }) => netId === query)) {
+      const account = await findAccountByNetId(query);
+      if (account) results.unshift(account);
+    }
+    return res.status(200).json(results.slice(0, SEARCH_LIMIT));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error searching users');
   }
 });
 
