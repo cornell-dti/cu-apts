@@ -128,3 +128,63 @@ export const sendFolderInvite = async (
   );
   return { resent: data?.resent === true };
 };
+
+/**
+ * FolderPerson – The owner or a member of a folder, as shown in the Share menu.
+ */
+export type FolderPerson = { id: string; name: string; email: string };
+
+/**
+ * FolderCollaborators – Everyone with access to a folder. Only the owner gets `pendingInvites`.
+ */
+export type FolderCollaborators = {
+  owner: FolderPerson;
+  members: FolderPerson[];
+  pendingInvites: { id: string; netId: string; email: string }[];
+  limit: number; // the most members plus pending invites a folder can have
+};
+
+/**
+ * getCollaborators – Gets who has access to a folder, with names and emails.
+ *
+ * @param {firebase.User} user – The signed-in user (the owner or a member).
+ * @param {string} folderId – The folder.
+ * @returns {Promise<FolderCollaborators>} – The owner, members, and pending invites.
+ */
+export const getCollaborators = async (
+  user: firebase.User,
+  folderId: string
+): Promise<FolderCollaborators> => {
+  const { data } = await axios.get(
+    `/api/folders/${folderId}/collaborators`,
+    await authHeaders(user)
+  );
+  return data;
+};
+
+/**
+ * removeFolderMember – Removes a member from a folder. Removing yourself leaves the folder.
+ *
+ * @param {firebase.User} user – The signed-in user (the owner, or the member who is leaving).
+ * @param {string} folderId – The folder.
+ * @param {string} memberId – The user ID of the member to remove.
+ * @returns {Promise<void>} – Resolves once they're removed.
+ */
+export const removeFolderMember = async (
+  user: firebase.User,
+  folderId: string,
+  memberId: string
+): Promise<void> => {
+  await axios.delete(`/api/folders/${folderId}/members/${memberId}`, await authHeaders(user));
+};
+
+/**
+ * cancelFolderInvite – Takes back an invite that hasn't been answered yet.
+ *
+ * @param {firebase.User} user – The signed-in user (the folder's owner).
+ * @param {string} inviteId – The invite to cancel.
+ * @returns {Promise<void>} – Resolves once the invite is cancelled.
+ */
+export const cancelFolderInvite = async (user: firebase.User, inviteId: string): Promise<void> => {
+  await axios.delete(`/api/folder-invites/${inviteId}`, await authHeaders(user));
+};

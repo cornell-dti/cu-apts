@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 import Toast from '../utils/Toast';
 import FolderCard from './FolderCard';
+import { removeFolderMember } from '../../utils/folderSharing';
 import axios from 'axios';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { AddRounded } from '@material-ui/icons';
@@ -234,6 +235,19 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
     }
   };
 
+  const handleLeaveFolder = async (folderId: string) => {
+    try {
+      if (!user) {
+        throw new Error('Failed to login');
+      }
+      await removeFolderMember(user, folderId, user.uid);
+      setFolders(folders.filter((f) => f.id !== folderId));
+    } catch (error) {
+      console.error('Error leaving folder:', error);
+      showError('Failed to leave folder');
+    }
+  };
+
   return (
     <div className={classes.background}>
       <Box className={classes.container}>
@@ -271,6 +285,7 @@ const FolderSection = ({ user, setUser }: Props): ReactElement => {
                 folder={folder}
                 onDelete={handleDeleteFolder}
                 onRename={handleRenameFolder}
+                onLeave={handleLeaveFolder}
               />
             ))}
             <Box className={classes.createButton} onClick={() => setShowCreateDialog(true)}>
