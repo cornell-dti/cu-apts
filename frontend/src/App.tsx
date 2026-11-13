@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import './App.scss';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -19,6 +19,7 @@ import ContactModal from './components/utils/Footer/ContactModal';
 import { ModalProvider } from './components/utils/Footer/ContactModalContext';
 import { hotjar } from 'react-hotjar';
 import { HJID, HJSV } from './constants/hotjar';
+import posthog, { isPostHogEnabled } from './utils/posthog';
 import Policies from './pages/Policies';
 import ApartmentPage from './pages/ApartmentPage';
 import AdminPage from './pages/AdminPage';
@@ -108,6 +109,19 @@ const App = (): ReactElement => {
     };
     setData();
   }, []);
+
+  // Tie PostHog events to the signed-in user, and reset on sign-out
+  const prevUserRef = useRef<firebase.User | null>(null);
+  useEffect(() => {
+    if (isPostHogEnabled()) {
+      if (user) {
+        posthog.identify(user.uid, { email: user.email, name: user.displayName });
+      } else if (prevUserRef.current) {
+        posthog.reset();
+      }
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   // Check admin status whenever user changes — checks both hardcoded list and Firestore whitelist
   useEffect(() => {
