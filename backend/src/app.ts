@@ -36,8 +36,10 @@ import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
 import { canAccessFolder, isFolderOwner } from './folderAccess';
 import {
+  COLLABORATOR_LIMIT,
   findUserIdByEmail,
   getInviteId,
+  getPeople,
   inviteRateLimiter,
   isInvitee,
   normalizeNetId,
@@ -3060,11 +3062,12 @@ app.get('/api/folders/:folderId/apartments', authenticate, async (req, res) => {
  * @route DELETE /api/folders/:folderId/members/:memberId
  *
  * @input {string} req.params.folderId - The ID of the folder
- * @input {string} req.params.memberId - The user ID of the member to remove
+ * @input {string} req.params.memberId - The user ID of the member to remove. A member can pass
+ * their own user ID to leave the folder.
  *
  * @status
  * - 200: Successfully removed member
- * - 403: Unauthorized to remove members from this folder (not the owner)
+ * - 403: Unauthorized to remove this member (only the owner can remove other people)
  * - 404: Folder not found, or the user is not a member of this folder
  * - 500: Error removing member from folder
  */
@@ -3082,7 +3085,8 @@ app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req,
     }
 
     const folder = folderDoc.data() as Folder;
-    if (!isFolderOwner(folder, uid)) {
+    const isLeaving = memberId === uid;
+    if (!isFolderOwner(folder, uid) && !isLeaving) {
       return res.status(403).send('Unauthorized to remove members from this folder');
     }
 
@@ -3103,8 +3107,10 @@ app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req,
  *
  * @remarks
  * Only the owner of the folder can invite people. The invite is saved with status PENDING, and an
- * email goes to `<netId>@cornell.edu` with a link to accept or decline. Each owner can send up to
- * 10 invites per hour; requests that fail (for example a mistyped NetID) don't count.
+ * email goes to `<netId>@cornell.edu` with a link to accept or decline. Inviting someone who
+ * already has a pending invite emails it to them again. A folder can have up to 10 collaborators,
+ * counting members and pending invites. Each owner can send up to 10 invites per hour; requests
+ * that fail (for example a mistyped NetID) don't count.
  *
  * @route POST /api/folders/:folderId/invites
  *
@@ -3112,11 +3118,14 @@ app.delete('/api/folders/:folderId/members/:memberId', authenticate, async (req,
  * @input {string} req.body.netId - The NetID or Cornell email of the person to invite (e.g. "abc123")
  *
  * @status
+ * - 200: That person already had a pending invite, so it was emailed again (returns the invite
+ *   with `resent: true`)
  * - 201: Invite saved and email sent (returns the invite)
  * - 400: Missing or invalid NetID
- * - 403: Unauthorized to invite people to this folder (not the owner)
+ * - 403: Unauthorized to invite people to this folder (not the owner), or the folder already has
+ *   10 collaborators
  * - 404: Folder not found
- * - 409: That person already has access, or already has a pending invite
+ * - 409: That person already has access
  * - 429: Too many invites sent in the last hour
  * - 500: Error saving the invite or sending the email
  */
@@ -3149,13 +3158,39 @@ app.post('/api/folders/:folderId/invites', authenticate, inviteRateLimiter, asyn
       return res.status(409).send(`${netId} already has access to this folder`);
     }
 
+    const invitedByName: string = name || email || 'A CUApts user';
     const inviteRef = folderInviteCollection.doc(getInviteId(folderId, netId));
+    const emailDetails = {
+      inviterName: invitedByName,
+      folderName: folder.name,
+      inviteId: inviteRef.id,
+      inviteeEmail,
+      apartmentCount: (folder.apartments ?? []).length,
+      peopleCount: 1 + (folder.members ?? []).length,
+    };
+
+    // Someone who hasn't answered yet gets the same invite again, so the link in their first
+    // email keeps working
     const existingInvite = await inviteRef.get();
     if (existingInvite.exists && existingInvite.data()?.status === 'PENDING') {
-      return res.status(409).send(`${netId} already has a pending invite to this folder`);
+      await sendFolderInviteEmail(emailDetails);
+      const lastSentAt = new Date();
+      await inviteRef.update({ lastSentAt });
+      return res
+        .status(200)
+        .json({ id: inviteRef.id, ...existingInvite.data(), lastSentAt, resent: true });
     }
 
-    const invitedByName: string = name || email || 'A CUApts user';
+    const folderInvites = await folderInviteCollection.where('folderId', '==', folderId).get();
+    const pendingCount = folderInvites.docs.filter((doc) => doc.data().status === 'PENDING').length;
+    if ((folder.members ?? []).length + pendingCount >= COLLABORATOR_LIMIT) {
+      return res
+        .status(403)
+        .send(
+          `This folder has reached the ${COLLABORATOR_LIMIT}-collaborator limit. Remove someone to invite more people.`
+        );
+    }
+
     const invite: FolderInvite = {
       folderId,
       folderName: folder.name,
@@ -3169,7 +3204,7 @@ app.post('/api/folders/:folderId/invites', authenticate, inviteRateLimiter, asyn
     await inviteRef.set(invite);
 
     try {
-      await sendFolderInviteEmail(inviteeEmail, invitedByName, folder.name, inviteRef.id);
+      await sendFolderInviteEmail(emailDetails);
     } catch (emailErr) {
       // An invite nobody was told about is useless, so remove it and let the owner try again
       await inviteRef.delete();
@@ -3221,6 +3256,62 @@ app.get('/api/folders/:folderId/invites', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error fetching invites');
+  }
+});
+
+/**
+ * Get Folder Collaborators – Lists who has access to a folder, with names and emails.
+ *
+ * @remarks
+ * The owner and members can both see who is in the folder. Only the owner also gets the pending
+ * invites, since only the owner can resend or cancel them. Used by the Share menu on the folder
+ * page.
+ *
+ * @route GET /api/folders/:folderId/collaborators
+ *
+ * @input {string} req.params.folderId - The ID of the folder
+ *
+ * @status
+ * - 200: Returns `{ owner, members, pendingInvites, limit }`. `owner` and each member are
+ *   `{ id, name, email }`, each pending invite is `{ id, netId, email }`, and `limit` is the most
+ *   collaborators the folder can have.
+ * - 403: Unauthorized to see this folder (not the owner or a member)
+ * - 404: Folder not found
+ * - 500: Error fetching collaborators
+ */
+app.get('/api/folders/:folderId/collaborators', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const { folderId } = req.params;
+
+    const folderDoc = await folderCollection.doc(folderId).get();
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    const folder = folderDoc.data() as Folder;
+    if (!canAccessFolder(folder, uid)) {
+      return res.status(403).send('Unauthorized to access this folder');
+    }
+
+    const [owner, ...members] = await getPeople([folder.userId, ...(folder.members ?? [])]);
+    let pendingInvites: { id: string; netId: string; email: string }[] = [];
+    if (isFolderOwner(folder, uid)) {
+      const snapshot = await folderInviteCollection.where('folderId', '==', folderId).get();
+      pendingInvites = snapshot.docs
+        .filter((doc) => doc.data().status === 'PENDING')
+        .map((doc) => ({
+          id: doc.id,
+          netId: doc.data().inviteeNetId,
+          email: doc.data().inviteeEmail,
+        }));
+    }
+
+    return res.status(200).json({ owner, members, pendingInvites, limit: COLLABORATOR_LIMIT });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error fetching collaborators');
   }
 });
 
@@ -3356,6 +3447,56 @@ app.post('/api/folder-invites/:inviteId/accept', authenticate, respondToInviteHa
  * - 500: Error declining invite
  */
 app.post('/api/folder-invites/:inviteId/decline', authenticate, respondToInviteHandler(false));
+
+/**
+ * Cancel Folder Invite – Lets the owner take back an invite that hasn't been answered.
+ *
+ * @remarks
+ * Deletes the invite, so the link in the email stops working and the spot counts toward the
+ * collaborator limit again. Answered invites are kept as a record and can't be cancelled.
+ *
+ * @route DELETE /api/folder-invites/:inviteId
+ *
+ * @input {string} req.params.inviteId - The ID of the invite
+ *
+ * @status
+ * - 200: Invite cancelled
+ * - 403: Unauthorized to cancel this invite (not the folder's owner)
+ * - 404: Invite or folder not found
+ * - 409: The invite was already accepted or declined
+ * - 500: Error cancelling invite
+ */
+app.delete('/api/folder-invites/:inviteId', authenticate, async (req, res) => {
+  try {
+    if (!req.user) throw new Error('Not authenticated');
+    const { uid } = req.user;
+    const inviteRef = folderInviteCollection.doc(req.params.inviteId);
+    const inviteDoc = await inviteRef.get();
+    if (!inviteDoc.exists) {
+      return res.status(404).send('Invite not found');
+    }
+
+    const invite = inviteDoc.data() as FolderInvite;
+    const folderDoc = await folderCollection.doc(invite.folderId).get();
+    if (!folderDoc.exists) {
+      return res.status(404).send('Folder not found');
+    }
+
+    if (!isFolderOwner(folderDoc.data() as Folder, uid)) {
+      return res.status(403).send('Unauthorized to cancel this invite');
+    }
+
+    if (invite.status !== 'PENDING') {
+      return res.status(409).send(`This invite was already ${invite.status.toLowerCase()}`);
+    }
+
+    await inviteRef.delete();
+    return res.status(200).send('Invite cancelled');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error cancelling invite');
+  }
+});
 
 /**
  * Is Admin – Returns whether the authenticated user has admin privileges.
