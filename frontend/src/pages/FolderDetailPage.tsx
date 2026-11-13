@@ -22,7 +22,7 @@ import { ArrowBack as ArrowBackIcon } from '@material-ui/icons';
 import Toast from '../components/utils/Toast';
 import { colors } from '../colors';
 import axios from 'axios';
-import { createAuthHeaders } from '../utils/firebase';
+import { createAuthHeaders, subscribeToFolder } from '../utils/firebase';
 import { CardData } from '../App';
 import BookmarkAptCard from '../components/Bookmarks/BookmarkAptCard';
 import { AptSortFields, sortApartments } from '../utils/sortApartments';
@@ -167,9 +167,9 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
     fetchFolderDetails();
   }, [folderId]);
 
-  const fetchFolderDetails = async () => {
+  const fetchFolderDetails = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       if (!user) {
         throw new Error('Failed to login');
       }
@@ -239,7 +239,24 @@ const FolderDetailPage = ({ user, setUser }: Props): ReactElement => {
     if (folder) {
       fetchApartmentsInFolder(folder);
     }
-  }, [folder?.id]);
+    // Also refetch when the list of apartments changes, like when a roommate adds one
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folder?.id, folder?.apartments?.join(',')]);
+
+  // Live updates for shared folders: when anyone in the folder changes it, reload it here. If
+  // this person is removed from the folder (or it's deleted), it no longer shows for them, so
+  // send them back to Bookmarks.
+  useEffect(() => {
+    if (!user) return undefined;
+    return subscribeToFolder(
+      folderId,
+      () => fetchFolderDetails(false),
+      (hadAccess) => {
+        if (hadAccess) history.push('/bookmarks');
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, folderId]);
 
   if (loading) {
     return (

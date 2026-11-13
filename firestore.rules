@@ -8,5 +8,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    // Lets the owner and members of a shared folder listen to it from the browser, so changes
+    // show up right away. Only single folders can be read (no listing), only by Cornell accounts
+    // with access, and all writes still go through the backend.
+    match /folders/{folderId} {
+      allow get: if request.auth != null
+        && request.auth.token.email.matches('.*@cornell[.]edu$')
+        && (request.auth.uid == resource.data.userId
+            || request.auth.uid in resource.data.get('members', []));
+      allow list, write: if false;
+    }
   }
 }

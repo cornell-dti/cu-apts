@@ -97,7 +97,46 @@ const uploadBlogCoverAndSave = async (postId: string, file: File) => {
 const onUserChange = (callback: (user: firebase.User | null) => void): firebase.Unsubscribe =>
   auth.onAuthStateChanged(callback);
 
+/**
+ * subscribeToFolder – Listens for changes to a folder, so everyone in a shared folder sees
+ * updates (like a roommate adding a listing) right away.
+ *
+ * @remarks
+ * Reads the folder straight from Firestore, which firestore.rules only allows for the folder's
+ * owner and members. If reading isn't allowed, `onDenied` is called with whether the listener had
+ * already received the folder: true means the user just lost access (they were removed or the
+ * folder was deleted), and false means live updates aren't available for them.
+ *
+ * @param {string} folderId – The folder to listen to.
+ * @param {() => void} onChange – Called each time the folder changes after the first load.
+ * @param {(hadAccess: boolean) => void} onDenied – Called if Firestore stops allowing the reads.
+ * @returns {() => void} – Call it to stop listening.
+ */
+const subscribeToFolder = (
+  folderId: string,
+  onChange: () => void,
+  onDenied: (hadAccess: boolean) => void
+): (() => void) => {
+  let hasLoaded = false;
+  return firestore
+    .collection('folders')
+    .doc(folderId)
+    .onSnapshot(
+      () => {
+        // The first snapshot is the folder as it is now, which the page already loaded
+        if (hasLoaded) onChange();
+        hasLoaded = true;
+      },
+      (error) => {
+        const { code } = error as firebase.firestore.FirestoreError;
+        if (code === 'permission-denied') onDenied(hasLoaded);
+        else console.error('Error listening to folder:', error);
+      }
+    );
+};
+
 export {
+  subscribeToFolder,
   uploadBlogCoverAndSave,
   createAuthHeaders,
   getUser,

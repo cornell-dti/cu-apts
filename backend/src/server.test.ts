@@ -1,6 +1,7 @@
 // eslint-disable-next-line
 import {
   initializeTestApp,
+  initializeAdminApp,
   clearFirestoreData,
   assertSucceeds,
   assertFails,
@@ -32,6 +33,45 @@ describe('firestore permissions', () => {
     const testDoc = firestore.collection('faqs').doc('testDoc2');
     await assertFails(testDoc.set({ foo: 'bar' }));
     return Promise.resolve();
+  });
+});
+
+describe('shared folder permissions', () => {
+  const projectId = 'cuapts-68201';
+  // A browser signed in as this person (no uid means signed out)
+  const browserAs = (uid?: string, email = `${uid}@cornell.edu`) =>
+    initializeTestApp({ projectId, auth: uid ? { uid, email } : undefined }).firestore();
+  const folderAs = (uid?: string, email?: string) =>
+    browserAs(uid, email).collection('folders').doc('shared');
+
+  beforeEach(async () => {
+    await clearFirestoreData({ projectId });
+    // The backend (admin) saves folders, so the rules don't apply here
+    await initializeAdminApp({ projectId })
+      .firestore()
+      .collection('folders')
+      .doc('shared')
+      .set({ name: 'Collegetown', userId: 'owner', members: ['member'], apartments: [] });
+  });
+
+  it('lets the owner and members read the folder, so they can listen for changes', async () => {
+    await assertSucceeds(folderAs('owner').get());
+    await assertSucceeds(folderAs('member').get());
+  });
+
+  it('blocks everyone else, including people who are signed out', async () => {
+    await assertFails(folderAs('stranger').get());
+    await assertFails(folderAs().get());
+  });
+
+  it('only allows Cornell accounts', async () => {
+    await assertFails(folderAs('member', 'member@gmail.com').get());
+  });
+
+  it('does not allow listing folders or writing from the browser', async () => {
+    await assertFails(browserAs('owner').collection('folders').get());
+    await assertFails(folderAs('owner').update({ name: 'Renamed' }));
+    await assertFails(browserAs('owner').collection('folders').doc('new').set({ userId: 'owner' }));
   });
 });
 
