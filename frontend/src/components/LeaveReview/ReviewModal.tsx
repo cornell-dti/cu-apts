@@ -87,17 +87,22 @@ const useStyle = makeStyles({
   fieldGroup: {
     display: 'flex',
     flexDirection: 'column',
+    flexShrink: 0,
     gap: '4px',
+    [MOBILE]: { flexShrink: 1 },
   },
   fieldLine: {
     display: 'flex',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '4px 16px',
+    flexWrap: 'nowrap',
+    gap: '16px',
+    [MOBILE]: { flexWrap: 'wrap', gap: '4px 16px' },
   },
   fieldLabel: {
     fontSize: '18px',
     lineHeight: '28px',
+    whiteSpace: 'nowrap',
+    [MOBILE]: { whiteSpace: 'normal' },
   },
   pill: {
     position: 'relative',
