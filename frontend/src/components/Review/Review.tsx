@@ -16,7 +16,7 @@ import {
 import HeartRating from '../utils/HeartRating';
 import { format } from 'date-fns';
 import { makeStyles } from '@material-ui/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ArrowDownCircleIcon from '../../assets/arrow-down-circle-icon.svg';
 import HelpfulIcon from '../../assets/helpful-icon.svg';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -43,6 +43,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { createAuthHeaders, getUser } from '../../utils/firebase';
 import { get } from '../../utils/call';
 import getPriceRange from '../../utils/priceRange';
+import { formatLeaseSigned } from '../../utils/leaseDates';
 import OptionMenu from '../utils/OptionMenu';
 import { ReactComponent as BedIcon } from '../../assets/bed-icon.svg';
 import { ReactComponent as MoneyIcon } from '../../assets/money-icon.svg';
@@ -66,7 +67,20 @@ type Props = {
 
 const useStyles = makeStyles(() => ({
   root: {
-    borderRadius: '10px',
+    borderRadius: '12px',
+    border: `1px solid ${colors.gray5}`,
+  },
+  cardContent: {
+    padding: '32px 32px 22px',
+    '@media (max-width:600px)': {
+      padding: '16px 16px 12px',
+    },
+  },
+  cardActions: {
+    padding: '0 32px 32px',
+    '@media (max-width:600px)': {
+      padding: '0 16px 16px',
+    },
   },
   // styling for apartment indicator text
   apartmentIndicator: {
@@ -76,7 +90,7 @@ const useStyles = makeStyles(() => ({
     fontSize: '19px',
   },
   bottomborder: {
-    borderBottom: '1px #E8E8E8 solid',
+    borderBottom: `1px ${colors.gray5} solid`,
     marginBottom: '5px',
   },
   expand: {
@@ -87,7 +101,46 @@ const useStyles = makeStyles(() => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
+  chevronIcon: {
+    display: 'block',
+  },
+  // Uppercase, letter-spaced labels: "DATE REVIEWED: ..." (and "LEASE SIGNED: ...")
   dateText: {
+    color: colors.gray1,
+    letterSpacing: '0.08em',
+  },
+  reviewText: {
+    color: colors.gray1,
+  },
+  // "View More" / "View Less" inline after the review text
+  viewMore: {
+    fontSize: 'inherit',
+    fontWeight: 700,
+    textDecoration: 'underline',
+    color: 'inherit',
+    padding: 0,
+    minWidth: 0,
+    marginLeft: '6px',
+    verticalAlign: 'baseline',
+    '&:hover': {
+      backgroundColor: 'transparent',
+      textDecoration: 'underline',
+    },
+  },
+  // Helpful and Report Abuse sit together on the left of the bottom row
+  actionsLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '42px',
+    '@media (max-width:600px)': {
+      gap: '16px',
+    },
+  },
+  actionText: {
+    fontSize: '16px',
+    fontWeight: 600,
+    lineHeight: '24px',
     color: colors.gray1,
   },
   reviewHeader: {
@@ -127,27 +180,27 @@ const useStyles = makeStyles(() => ({
   bedroomsPrice: {
     display: 'flex',
     alignItems: 'center',
-    gap: '30px',
+    gap: '22px',
   },
   bedroomsWithIcon: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '13px',
   },
   priceWithIcon: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '13px',
   },
   bedroomsPriceText: {
     fontWeight: 600,
   },
   bedPriceIcon: {
-    width: '21px',
-    height: '21px',
+    width: '25px',
+    height: '25px',
   },
   helpfulIcon: {
-    width: '21px',
+    width: '22px',
     height: '21px',
     marginRight: '5px',
   },
@@ -230,11 +283,20 @@ const ReviewComponent = ({
 }: Props): ReactElement => {
   const formattedDate = format(new Date(review.date), 'MMM dd, yyyy').toUpperCase();
   const shortenedDate = format(new Date(review.date), 'MMM yyyy').toUpperCase();
+  // null (hide the label) for older reviews with no leaseSigned, or a malformed value
+  const leaseSignedText = formatLeaseSigned(review.leaseSigned);
   const {
     root,
     expand,
     expandOpen,
     dateText,
+    chevronIcon,
+    reviewText,
+    viewMore,
+    actionsLeft,
+    actionText,
+    cardContent,
+    cardActions,
     button,
     photoStyle,
     photoRowStyle,
@@ -600,17 +662,20 @@ const ReviewComponent = ({
   };
   const reportAbuseButton = () => {
     return (
-      <Grid item>
-        <Button onClick={handleReportModalOpen} className={button} size="small">
-          Report Abuse
-        </Button>
-      </Grid>
+      <Button
+        onClick={handleReportModalOpen}
+        className={clsx(button, actionText)}
+        size="small"
+        disableRipple
+      >
+        Report Abuse
+      </Button>
     );
   };
   return (
     <Card className={root} variant="outlined">
       <Box minHeight="200px">
-        <CardContent>
+        <CardContent className={cardContent}>
           <Grid container spacing={2}>
             <Grid item container justifyContent="space-between">
               <Grid item container justifyContent="space-between" className={bottomborder}>
@@ -628,7 +693,7 @@ const ReviewComponent = ({
                       aria-label="show more"
                       size="small"
                     >
-                      <ExpandMoreIcon />
+                      <img src={ArrowDownCircleIcon} alt="" className={chevronIcon} />
                     </IconButton>
                   </Grid>
                   {useMediaQuery(
@@ -637,9 +702,11 @@ const ReviewComponent = ({
                       : '(min-width:1075px)'
                   ) && bedroomsPriceLabel(1)}
                   <Grid item style={{ marginLeft: 'auto' }}>
-                    <Typography className={dateText}>
-                      {isSmallScreen ? shortenedDate : formattedDate}
-                    </Typography>
+                    {leaseSignedText && (
+                      <Typography variant="body2" className={dateText}>
+                        {`LEASE SIGNED: ${leaseSignedText}`}
+                      </Typography>
+                    )}
                   </Grid>
                   {user &&
                     review.userId &&
@@ -666,12 +733,16 @@ const ReviewComponent = ({
               </Grid>
 
               <Grid item container alignContent="center">
-                <Typography>
+                <Typography className={reviewText}>
                   {expandedText ? review.reviewText : review.reviewText.substring(0, 500)}
                   {!expandedText && review.reviewText.length > 500 && '...'}
                   {review.reviewText.length > 500 ? (
-                    <Button className={button} onClick={() => setExpandedText(!expandedText)}>
-                      {expandedText ? 'Read Less' : 'Read More'}
+                    <Button
+                      className={clsx(button, viewMore)}
+                      disableRipple
+                      onClick={() => setExpandedText(!expandedText)}
+                    >
+                      {expandedText ? 'View Less' : 'View More'}
                     </Button>
                   ) : null}
                 </Typography>
@@ -699,12 +770,12 @@ const ReviewComponent = ({
           </Grid>
         </CardContent>
       </Box>
-      <CardActions>
-        <Grid item container justifyContent="space-between">
-          <Grid item>
+      <CardActions className={cardActions}>
+        <Grid item container justifyContent="space-between" alignItems="center">
+          <div className={actionsLeft}>
             <Button
               onClick={() => likeHandler(review.id)}
-              className={button}
+              className={clsx(button, actionText)}
               size="small"
               disabled={likeLoading || user?.uid === review.userId}
               style={liked ? { color: colors.red1 } : { color: colors.gray1 }}
@@ -718,11 +789,17 @@ const ReviewComponent = ({
               />
               {`Helpful (${review.likes})`}
             </Button>
+            {/* If user is logged in and the review is not theirs, show report abuse button.
+             * If user is not logged in, show report abuse button.
+             */}
+            {((user && review.userId && review.userId !== user?.uid) || !user) &&
+              reportAbuseButton()}
+          </div>
+          <Grid item>
+            <Typography variant="body2" className={dateText}>
+              {`DATE REVIEWED: ${isSmallScreen ? shortenedDate : formattedDate}`}
+            </Typography>
           </Grid>
-          {/* If user is logged in and the review is not theirs, show report abuse button.
-           * If user is not logged in, show report abuse button.
-           */}
-          {((user && review.userId && review.userId !== user?.uid) || !user) && reportAbuseButton()}
         </Grid>
       </CardActions>
       {Modals}

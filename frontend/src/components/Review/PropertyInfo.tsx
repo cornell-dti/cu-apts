@@ -22,22 +22,46 @@ type CardProps = {
 };
 
 const useStyles = makeStyles({
+  sectionTitle: {
+    fontSize: '18px',
+    fontWeight: 600,
+    lineHeight: '28px',
+    color: colors.black,
+    marginBottom: '24px',
+  },
   aptNameTxt: {
-    fontWeight: 700,
+    fontSize: '18px',
+    fontWeight: 600,
+    lineHeight: '28px',
+    color: colors.black,
+  },
+  aptAddressTxt: {
+    fontSize: '14px',
+    lineHeight: '20px',
+    color: colors.black,
   },
   card: {
-    borderRadius: '10px',
-    backgroundColor: colors.red6,
+    borderRadius: '15px',
+    backgroundColor: colors.red5,
+    border: `1px solid ${colors.gray5}`,
+    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.07)',
     cursor: 'pointer', // Add cursor pointer to make it clickable
   },
+  cardContent: {
+    padding: '16px 26px !important',
+    minHeight: '105px',
+    display: 'flex',
+    alignItems: 'center',
+    boxSizing: 'border-box',
+  },
   reviewNum: {
-    fontWeight: 700,
+    fontSize: '18px',
     marginLeft: '10px',
   },
 });
 
 const PropertyCard = ({ buildingData, numReviews }: CardProps): ReactElement => {
-  const { aptNameTxt, card, reviewNum } = useStyles();
+  const { aptNameTxt, aptAddressTxt, card, cardContent, reviewNum } = useStyles();
   const { id, name, address } = buildingData;
   const [reviewData, setReviewData] = useState<ReviewWithId[]>([]);
 
@@ -61,11 +85,11 @@ const PropertyCard = ({ buildingData, numReviews }: CardProps): ReactElement => 
 
   return (
     <Card className={card} onClick={handleCardClick}>
-      <CardContent>
+      <CardContent className={cardContent}>
         <Grid container direction="row" alignItems="center" justifyContent="space-between">
           <Grid md={12} lg={6} item>
             <Typography className={aptNameTxt}>{name}</Typography>
-            <Typography variant="subtitle1">{address}</Typography>
+            <Typography className={aptAddressTxt}>{address}</Typography>
           </Grid>
           <Grid md={12} lg={6} item direction="row" alignItems="center" spacing={1}>
             <Box display="flex" alignItems="center">
@@ -86,12 +110,11 @@ const PropertyCard = ({ buildingData, numReviews }: CardProps): ReactElement => 
 };
 
 const PropertyInfo = ({ info, title }: Props): ReactElement => {
+  const { sectionTitle } = useStyles();
   return (
-    <Box mt={2} mb={1}>
-      <Typography variant="h6" style={{ fontWeight: 400, fontSize: '17px', marginBottom: '10px' }}>
-        {title}
-      </Typography>
-      <List dense component="ul">
+    <Box>
+      <Typography className={sectionTitle}>{title}</Typography>
+      <List dense component="ul" disablePadding>
         <Grid container spacing={0} direction="row">
           {info.length === 0 && <Typography variant="body1">No information available.</Typography>}
           <Grid container spacing={2}>

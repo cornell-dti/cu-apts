@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import Info from './Info';
 import PropertyInfo from './PropertyInfo';
-import { Card, CardContent, Divider } from '@material-ui/core';
+import { Box, Card, CardContent, Divider } from '@material-ui/core';
 import { CardData } from '../../App';
 
 type Props = {
@@ -16,7 +16,9 @@ export default function InfoFeatures({ buildings, contact, address }: Props): Re
       <CardContent>
         <Info contact={contact} address={address} />
         <Divider />
-        <PropertyInfo title="Properties Owned" info={buildings} />
+        <Box mt={2} mb={1}>
+          <PropertyInfo title="Properties Owned" info={buildings} />
+        </Box>
       </CardContent>
     </Card>
   );
