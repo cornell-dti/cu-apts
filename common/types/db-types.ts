@@ -75,6 +75,26 @@ export type RoomType = {
   readonly price: number; // >= 1, integer (in dollars)
 };
 
+/**
+ * A single floor plan offered by an apartment.
+ *
+ * @remarks
+ * Floor plans carry presentation details (photo, square footage, availability)
+ * that `RoomType` does not. `RoomType` remains the source of truth for search
+ * filtering and price sorting; floor plans are supplementary detail-page data.
+ */
+export type ApartmentFloorPlan = {
+  readonly bedrooms: number;
+  readonly bathrooms: number;
+  readonly costPerPerson: number;
+  // Optional: no current data source supplies these. Floor plans derived from
+  // roomTypes carry bed/bath/price only, and the agency scrapers publish
+  // neither square footage nor floor plan imagery.
+  readonly photo?: string;
+  readonly unitsAvailable?: number;
+  readonly sqft?: number;
+};
+
 export type Apartment = {
   readonly name: string;
   readonly address: string; // may change to placeID for Google Maps integration
@@ -85,6 +105,11 @@ export type Apartment = {
   readonly latitude: number;
   readonly longitude: number;
   readonly distanceToCampus: number; // walking distance to ho plaza in minutes
+  // Optional detail-page fields. Absent on documents that predate the
+  // apartment page redesign, so every consumer must handle `undefined`.
+  readonly description?: string;
+  readonly amenities?: readonly string[]; // parking, laundry, heat, kitchen, internet
+  readonly floorplans?: readonly ApartmentFloorPlan[];
 };
 
 export type LocationTravelTimes = {
@@ -94,6 +119,9 @@ export type LocationTravelTimes = {
   engQuadWalking: number;
   hoPlazaDriving: number;
   hoPlazaWalking: number;
+  // Walking time to the nearest bus stop. Optional because travelTimes
+  // documents written before bus stop support lack the field.
+  busStopWalking?: number;
 };
 
 export type ApartmentWithId = Apartment & Id;
