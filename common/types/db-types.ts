@@ -126,6 +126,8 @@ export type QuestionFormWithId = QuestionForm & Id;
 
 export type Folder = {
   readonly name: string;
-  readonly userId: string;
+  readonly userId: string; // the owner: the user who created the folder
   readonly apartments: string[];
+  // user IDs the folder is shared with; missing on folders created before shared folders
+  readonly members?: string[];
 };
