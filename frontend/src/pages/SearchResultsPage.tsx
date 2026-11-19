@@ -12,6 +12,8 @@ import SearchResultsMap from '../components/Search/SearchResultsMap';
 import SortDropDown from '../components/Search/SortDropDown';
 import { ApartmentWithId } from '../../../common/types/db-types';
 import { useModal } from '../components/utils/Footer/ContactModalContext';
+import SaveSearchButton from '../components/Search/SaveSearchButton';
+import { recordSearch } from '../utils/savedSearches';
 
 const useStyles = makeStyles({
   header: {
@@ -117,6 +119,10 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
   const { openModal } = useModal();
 
   useTitle('Search Result');
+
+  useEffect(() => {
+    recordSearch('manual', query, filters, user?.uid);
+  }, [query, filters, user?.uid]);
 
   useEffect(() => {
     console.log('Received search query:', query);
@@ -261,8 +267,9 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
         {!isMobile ? (
           <>
             <div className={searchBar}>
-              <Autocomplete drawerOpen={false} />
+              <Autocomplete drawerOpen={false} userId={user?.uid} />
             </div>
+            <SaveSearchButton mode="manual" query={query} filters={filters} userId={user?.uid} />
             {sortSection()}
           </>
         ) : (
@@ -277,8 +284,9 @@ const SearchResultsPage = ({ user, setUser }: Props): ReactElement => {
             }}
           >
             <div className={searchBar}>
-              <Autocomplete drawerOpen={false} />
+              <Autocomplete drawerOpen={false} userId={user?.uid} />
             </div>
+            <SaveSearchButton mode="manual" query={query} filters={filters} userId={user?.uid} />
             {sortSection()}
           </div>
         )}
