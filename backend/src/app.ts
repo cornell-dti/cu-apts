@@ -33,6 +33,7 @@ import { db, FieldValue, FieldPath } from './firebase-config';
 import { Faq } from './firebase-config/types';
 import authenticate from './auth';
 import authenticateAdmin, { isAdminEmail } from './authAdmin';
+import savedSearchRouter from './savedSearches';
 import { admins } from '../../frontend/src/constants/HomeConsts';
 import { llmSearchHandler, llmSearchMiddleware } from './llmSearch';
 
@@ -67,6 +68,7 @@ app.use(morgan('combined'));
 // Heroku terminates TLS at its router, so req.ip is the proxy unless we trust one hop.
 // Required for per-IP rate limiting to key on the real client.
 app.set('trust proxy', 1);
+app.use('/api/saved-searches', savedSearchRouter);
 
 // API endpoint to get FAQs
 app.get('/api/faqs', async (_, res) => {

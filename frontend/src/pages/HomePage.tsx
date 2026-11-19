@@ -164,7 +164,8 @@ const HomePage = ({ user, setUser }: Props): ReactElement => {
             drawerOpen={drawerOpen}
             aiMode={aiMode}
             onToggleAiMode={() => setAiMode((prev) => !prev)}
-            userId={user?.uid}
+            user={user}
+            setUser={setUser}
           />
         </Box>
 

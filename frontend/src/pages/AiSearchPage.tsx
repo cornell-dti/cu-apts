@@ -9,7 +9,13 @@ import { recordSearch } from '../utils/savedSearches';
 /**
  * AiSearchPage – placeholder for AI search results. Currently just shows the query from `?q=`.
  */
-const AiSearchPage = ({ user }: { user: firebase.User | null }): ReactElement => {
+const AiSearchPage = ({
+  user,
+  setUser,
+}: {
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+}): ReactElement => {
   const query = new URLSearchParams(useLocation().search).get('q') ?? '';
   useTitle('AI Search');
 
@@ -23,7 +29,13 @@ const AiSearchPage = ({ user }: { user: firebase.User | null }): ReactElement =>
         AI Search
       </Typography>
       <Typography>Query: {query}</Typography>
-      <SaveSearchButton mode="ai" query={query} filters={defaultFilters} userId={user?.uid} />
+      <SaveSearchButton
+        mode="ai"
+        query={query}
+        filters={defaultFilters}
+        user={user}
+        setUser={setUser}
+      />
     </Container>
   );
 };

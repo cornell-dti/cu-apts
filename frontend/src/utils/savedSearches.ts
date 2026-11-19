@@ -88,19 +88,30 @@ export const readSearches = (userId?: string): SavedSearch[] => {
 const writeSearches = (searches: SavedSearch[], userId?: string) => {
   const saved = searches
     .filter((item) => item.savedAt)
-    .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0))
-    .slice(0, 50);
+    .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
   const recent = searches
     .filter((item) => !item.savedAt)
     .sort((a, b) => b.lastSearchedAt - a.lastSearchedAt)
     .slice(0, 20);
   try {
     localStorage.setItem(storageKey(userId), JSON.stringify([...saved, ...recent]));
-    window.dispatchEvent(new Event(searchesChangedEvent));
   } catch {
     // Searching remains usable when browser storage is disabled or full.
   }
+  window.dispatchEvent(new Event(searchesChangedEvent));
 };
+
+/** Replace cached favorites with the account's saved searches while keeping local recent history. */
+export const replaceSavedSearches = (saved: SavedSearch[], userId: string) =>
+  writeSearches(
+    [
+      ...saved,
+      ...readSearches(userId).filter(
+        (item) => !item.savedAt && !saved.some((s) => s.id === item.id)
+      ),
+    ],
+    userId
+  );
 
 export const recordSearch = (
   mode: SavedSearch['mode'],
@@ -121,32 +132,6 @@ export const recordSearch = (
         filters,
         lastSearchedAt: Date.now(),
         savedAt: previous?.savedAt,
-      },
-      ...searches.filter((item) => item.id !== id),
-    ],
-    userId
-  );
-};
-
-export const toggleSavedSearch = (
-  mode: SavedSearch['mode'],
-  query: string,
-  filters: FilterState = defaultFilters,
-  userId?: string
-) => {
-  if (!hasSearchCriteria(query, filters, mode)) return;
-  const id = searchId(mode, query, filters);
-  const searches = readSearches(userId);
-  const previous = searches.find((item) => item.id === id);
-  writeSearches(
-    [
-      {
-        id,
-        mode,
-        query: query.trim(),
-        filters,
-        lastSearchedAt: previous?.lastSearchedAt || Date.now(),
-        savedAt: previous?.savedAt ? undefined : Date.now(),
       },
       ...searches.filter((item) => item.id !== id),
     ],
