@@ -831,52 +831,31 @@ app.get('/api/search-with-query-and-filters', async (req, res) => {
       return apts.filter((apt) => locationArray.includes(apt.area ? apt.area.toUpperCase() : ''));
     };
 
-    // Helper: Filter by price only
-    const filterByPrice = (apts: ApartmentWithId[]): ApartmentWithId[] => {
-      if (!hasPrice) return [];
-      return apts.filter((apt) => {
-        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
-        return apt.roomTypes.some((roomType) => {
-          if (minPrice !== null && roomType.price < minPrice) return false;
-          if (maxPrice !== null && roomType.price > maxPrice) return false;
-          return true;
-        });
-      });
-    };
+    const matchesPrice = (room: RoomType): boolean =>
+      Number.isFinite(room.price) &&
+      room.price > 0 &&
+      (minPrice === null || room.price >= minPrice) &&
+      (maxPrice === null || room.price <= maxPrice);
 
-    // Helper: Filter by bed/bath only
-    const filterByBedBath = (apts: ApartmentWithId[]): ApartmentWithId[] => {
-      if (!hasBedBath) return [];
-      return apts.filter((apt) => {
-        if (!apt.roomTypes || apt.roomTypes.length === 0) return false;
-        return apt.roomTypes.some((roomType) => {
-          if (bedrooms !== null && bedrooms > 0 && roomType.beds !== bedrooms) return false;
-          if (bathrooms !== null && bathrooms > 0 && roomType.baths !== bathrooms) return false;
-          return true;
-        });
-      });
-    };
+    const matchesBedBath = (room: RoomType): boolean =>
+      (bedrooms === null || bedrooms <= 0 || room.beds === bedrooms) &&
+      (bathrooms === null || bathrooms <= 0 || room.baths === bathrooms);
 
-    // Helper: Filter by ALL criteria (main results)
+    const filterByPrice = (apts: ApartmentWithId[]): ApartmentWithId[] =>
+      hasPrice ? apts.filter((apt) => apt.roomTypes?.some(matchesPrice)) : [];
+
+    const filterByBedBath = (apts: ApartmentWithId[]): ApartmentWithId[] =>
+      hasBedBath ? apts.filter((apt) => apt.roomTypes?.some(matchesBedBath)) : [];
+
     const filterByAll = (apts: ApartmentWithId[]): ApartmentWithId[] => {
-      let filtered = apts;
+      const byLocation = hasLocation ? filterByLocation(apts) : apts;
+      if (!hasPrice && !hasBedBath) return byLocation;
 
-      // Apply location filter
-      if (hasLocation) {
-        filtered = filterByLocation(filtered);
-      }
-
-      // Apply price filter
-      if (hasPrice) {
-        filtered = filterByPrice(filtered);
-      }
-
-      // Apply bed/bath filter
-      if (hasBedBath) {
-        filtered = filterByBedBath(filtered);
-      }
-
-      return filtered;
+      return byLocation.filter((apt) =>
+        apt.roomTypes?.some(
+          (room) => (!hasPrice || matchesPrice(room)) && (!hasBedBath || matchesBedBath(room))
+        )
+      );
     };
 
     // STEP 3: Calculate results based on active filter count

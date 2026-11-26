@@ -51,3 +51,64 @@ describe('Faqs', () => {
     return Promise.resolve();
   });
 });
+
+describe('apartment search room filters', () => {
+  const search = '/api/search-with-query-and-filters';
+  const room = (id: string, price: number, beds: number) => ({ id, price, beds, baths: 1 });
+  const apartment = (roomTypes: ReturnType<typeof room>[]) => ({
+    id: 'room-filter-test',
+    landlordId: null,
+    roomTypes,
+  });
+  let previousApartments: unknown;
+
+  beforeEach(() => {
+    previousApartments = app.get('apts');
+    app.set('apts', [apartment([room('one-bed', 1000, 1), room('two-bed', 1500, 2)])]);
+  });
+
+  afterEach(() => {
+    app.set('apts', previousApartments);
+  });
+
+  it('keeps split room matches out of the exact results', async () => {
+    const response = await request(app).get(search).query({ maxPrice: 1200, bedrooms: 2 });
+    expect(response.status).toBe(200);
+    const { main, additionalPrice, additionalBedBath } = JSON.parse(response.text);
+    expect(main).toEqual([]);
+    expect(additionalPrice).toHaveLength(1);
+    expect(additionalBedBath).toHaveLength(1);
+  });
+
+  it('includes a room that meets all filters at the price limit', async () => {
+    app.set('apts', [apartment([room('two-bed', 1200, 2)])]);
+    const response = await request(app)
+      .get(search)
+      .query({ minPrice: 1200, maxPrice: 1200, bedrooms: 2, bathrooms: 1 });
+    expect(response.status).toBe(200);
+    expect(JSON.parse(response.text).main).toHaveLength(1);
+  });
+
+  it.each([{ maxPrice: 1200 }, { bedrooms: 2 }])(
+    'preserves a single room filter: %p',
+    async (filters) => {
+      const response = await request(app).get(search).query(filters);
+      expect(response.status).toBe(200);
+      expect(JSON.parse(response.text).main).toHaveLength(1);
+    }
+  );
+
+  it('does not treat a missing-price sentinel as within budget', async () => {
+    app.set('apts', [apartment([room('unknown-price', 0, 2)])]);
+    const response = await request(app).get(search).query({ maxPrice: 1200 });
+    expect(response.status).toBe(200);
+    expect(JSON.parse(response.text).main).toEqual([]);
+  });
+
+  it('includes listings without rooms if no room filter is active', async () => {
+    app.set('apts', [apartment([])]);
+    const response = await request(app).get(search);
+    expect(response.status).toBe(200);
+    expect(JSON.parse(response.text).main).toHaveLength(1);
+  });
+});
